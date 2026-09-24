@@ -1,0 +1,1 @@
+/opt/homebrew/lib/node_modules/@trycore/spec-product-flow/agents/priorizacion-auditor.md

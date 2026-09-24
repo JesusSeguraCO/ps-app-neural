@@ -1,0 +1,1 @@
+/opt/homebrew/lib/node_modules/@trycore/spec-product-flow/commands/trycore/mapa.md
