@@ -31,14 +31,15 @@
     },
     {
       "id": "llm-interpreter",
-      "name": "Modelo de lenguaje (interpretación consulta → taxonomía)",
+      "name": "Gemini API (requerimientos pegados y propuestas de léxico)",
       "source": "docs/01-prd/portal-people-service.md#rf-16--contrato-del-modelo",
       "paths": [
         "server/adapters/llm/**"
       ],
-      "credential_env": "LLM_API_KEY",
+      "credential_env": "GEMINI_API_KEY",
       "message_kinds": [
-        "interpret-query"
+        "extract-requirement-criteria",
+        "suggest-lexicon-entries"
       ],
       "na": null,
       "verified": []

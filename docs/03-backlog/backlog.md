@@ -1,10 +1,10 @@
 ---
 artefacto: backlog
 proyecto: portal-people-service
-version: 5.2
+version: 5.4
 fecha: 2026-09-22
-prd_version: 4.8
-epicas_version: 5.2
+prd_version: 4.11
+epicas_version: 5.4
 historias_escritas: 79
 historias_descartadas: 1
 ---
@@ -145,6 +145,7 @@ El backlog ya no espera a nadie. Lo que lo limita ahora es lo que no está escri
 | **D-1** Identificación del perfil | Nombre y primer apellido visibles, capacidad como descriptor, código al pie, sin fotografía |
 | **D-4** Control de acceso del cliente | Enlace firmado + lista nominal de correos invitados + código al buzón, una vez por dispositivo, sin proveedor de identidad. Reenviar no da acceso; el colega se invita con aprobación de Talento Humano |
 | **D-22** Acceso al panel | Correo `@trycore.com` inscrito + código de un uso + sesión de una jornada, con rol administrador y rol observador; sin proveedor de identidad |
+| **D-24** Interpretación y modelo | Algoritmo propio primero (léxico + normalización + tolerancia a errores); Gemini solo para requerimientos pegados largos y para proponer léxico con aprobación humana. Desarrollo con token personal y datos ficticios; producción con llave de negocio |
 | **D-23** Plataforma de la v1 | Hosting compartido de Trycore: estático + PHP 8.3 + MariaDB + tareas programadas (PRD §8.3) |
 | **D-18** Ubicación del profesional | Solo país publicado; la ciudad se carga y se cruza en la alineación |
 | **D-20** Vista de banco para el comercial | Diferida hasta que exista una necesidad observada |
