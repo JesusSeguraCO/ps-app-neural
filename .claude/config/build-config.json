@@ -16,7 +16,7 @@
       "name": "HubSpot API (CRM + correo curado)",
       "source": "docs/01-prd/portal-people-service.md#rf-9--integración-con-hubspot",
       "paths": [
-        "server/adapters/hubspot/**"
+        "packages/infra/src/hubspot/**"
       ],
       "credential_env": "HUBSPOT_PRIVATE_APP_TOKEN",
       "message_kinds": [
@@ -34,7 +34,7 @@
       "name": "Gemini API (requerimientos pegados y propuestas de léxico)",
       "source": "docs/01-prd/portal-people-service.md#rf-16--contrato-del-modelo",
       "paths": [
-        "server/adapters/llm/**"
+        "packages/infra/src/gemini/**"
       ],
       "credential_env": "GEMINI_API_KEY",
       "message_kinds": [
@@ -46,14 +46,18 @@
     },
     {
       "id": "otp-mail",
-      "name": "Correo saliente: SMTP autenticado de notify@people.trycore.com (códigos de acceso)",
-      "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-hosting-compartido-de-trycore",
+      "name": "Correo saliente: Mailgun desde notify@people.trycore.com (códigos de acceso, avisos y boletín) + webhook de eventos",
+      "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-contenedores-en-digitalocean",
       "paths": [
-        "server/adapters/mail/**"
+        "packages/infra/src/mailgun/**",
+        "apps/panel/app/api/v1/webhooks/mailgun/**"
       ],
-      "credential_env": "SMTP_PASSWORD",
+      "credential_env": "MAILGUN_API_KEY",
       "message_kinds": [
-        "send-access-code"
+        "send-access-code",
+        "send-notification",
+        "send-newsletter",
+        "receive-delivery-event"
       ],
       "na": null,
       "verified": []

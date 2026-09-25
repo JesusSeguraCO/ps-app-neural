@@ -2,7 +2,7 @@
 artefacto: user-story-map
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
-prd_version: 4.11
+prd_version: 4.12
 epicas_origen: docs/03-backlog/epicas.md
 epicas_version: 5.4
 version: 3.2
