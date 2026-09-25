@@ -16,7 +16,7 @@
       "name": "HubSpot API (CRM + correo curado)",
       "source": "docs/01-prd/portal-people-service.md#rf-9--integración-con-hubspot",
       "paths": [
-        "server/adapters/hubspot/**"
+        "server/src/Adapters/HubSpot/**"
       ],
       "credential_env": "HUBSPOT_PRIVATE_APP_TOKEN",
       "message_kinds": [
@@ -34,7 +34,7 @@
       "name": "Gemini API (requerimientos pegados y propuestas de léxico)",
       "source": "docs/01-prd/portal-people-service.md#rf-16--contrato-del-modelo",
       "paths": [
-        "server/adapters/llm/**"
+        "server/src/Adapters/Gemini/**"
       ],
       "credential_env": "GEMINI_API_KEY",
       "message_kinds": [
@@ -49,7 +49,7 @@
       "name": "Correo saliente: SMTP autenticado de notify@people.trycore.com (códigos de acceso)",
       "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-hosting-compartido-de-trycore",
       "paths": [
-        "server/adapters/mail/**"
+        "server/src/Adapters/Mail/**"
       ],
       "credential_env": "SMTP_PASSWORD",
       "message_kinds": [
