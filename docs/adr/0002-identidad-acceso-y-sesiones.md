@@ -2,7 +2,7 @@
 id: 0002
 title: "Identidad, acceso y sesiones"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [seguridad, identidad, sesiones, enlaces, otp, autorizacion, csrf]
@@ -126,8 +126,8 @@ add:
   - Sesiones: rutas `~/portal-data/sesiones/{portal,panel,portal-staging,panel-staging}`, permisos
     700, fuera de `public_html`; `session.gc_probability = 0` y purga por cron según el
     `gc_maxlifetime` de cada host.
-  - Cliente: sesión por dispositivo, duración propuesta 30 días, acotada siempre a `vigente_hasta` del
-    enlace (*a validar*, CRN-16). La sesión guarda `enlace_id` e `invitado_id`, nunca la lista de
+  - Cliente: sesión por dispositivo de **30 días**, acotada siempre a `vigente_hasta` del enlace
+    (aceptado el 2026-09-25, CRN-16). Vigencia por defecto del enlace: **30 días**. La sesión guarda `enlace_id` e `invitado_id`, nunca la lista de
     perfiles.
   - Panel: sesión ≤ 12 h absolutas desde la autenticación y cierre a los 60 min sin actividad. La
     marca de última actividad se reescribe como mucho una vez por minuto (así casi todas las lecturas
@@ -259,9 +259,9 @@ accesos en `accesos_log` y actos administrativos en la auditoría encadenada.
 | CON-6 | ✅ | Secretos en `~/portal-config/config.php` fuera de `public_html`. Plan: grep de secretos en el bundle y en el repositorio en CI | Rotar el secreto de códigos invalida los códigos vivos (10 min): aceptable. Rotar el secreto del HMAC de correos rompe el cruce histórico de `accesos_log` |
 | CON-10 | ⚠️ | Respuesta neutra en ambas ramas; sin motivo `no_invitado`; token fuera de logs y de `Referer`; correo en `accesos_log` como HMAC | `accesos_log` guarda IP y actividad por persona: la retención de 180 días está sin validar (CRN-10, Ley 1581) |
 | CON-15 | ⚠️ | Origen cerrado a los rangos de Cloudflare; `CF-Connecting-IP` solo si `REMOTE_ADDR` es de Cloudflare; límite de Cloudflare sobre `/api/v1/acceso/*`. Plan: petición directa al origen saltándose Cloudflare → 403; petición con `CF-Connecting-IP` falsificado → se ignora | La lista de rangos de Cloudflare cambia: si la tarea semanal falla, una IP nueva de Cloudflare quedaría fuera (caída parcial). Regla de límite sin confirmar en el plan. ModSecurity podría bloquear los POST de acceso (CRN-18, ADR-0007) |
-| CRN-16 | ⚠️ | Propuesta: sesión del cliente 30 días acotada al enlace; código 10 min; panel 12 h / 60 min; bloqueo 24 h | Valores sin validar por negocio; la vigencia por defecto del enlace sigue sin fijar |
+| CRN-16 | ⚠️ | Propuesta: sesión del cliente 30 días acotada al enlace; código 10 min; panel 12 h / 60 min; bloqueo 24 h | Sesión 30 días y vigencia por defecto del enlace 30 días aceptadas (2026-09-25); código, panel y bloqueo se calibran con datos reales |
 
-**Drivers no resueltos en esta iteración:** vigencia por defecto del enlace (CRN-16); proyección del
+**Drivers no resueltos en esta iteración:** proyección del
 catálogo y estado real de cada perfil del enlace (UC-4, ADR-0003); entrega y cola del correo
 (QA-8, ADR-0005); atribución por envío y notificación de invitaciones pendientes (QA-21, ADR-0006);
 retención de `accesos_log` (CRN-10).
@@ -297,11 +297,10 @@ retención de `accesos_log` (CRN-10).
   - Un redirector de clics que pierda el fragmento dejaría al cliente sin token; mitigado con una
     prueba en ADR-0006 antes del primer envío.
   - ModSecurity puede bloquear los POST de acceso; mitigado por las pruebas de humo de ADR-0007.
+- **Decisiones de la revisión única (sponsor, 2026-09-25):**
+  - **Sesión del cliente: 30 días** por dispositivo, acotada a la vigencia del enlace (CRN-16).
+  - **Vigencia por defecto del enlace: 30 días** (se descarta la propuesta de 60 días renovable).
 - **Trade-offs de negocio abiertos (decide Dirección de Mercadeo con Tecnología):**
-  - **Sesión del cliente de 30 días** por dispositivo: comodidad para el cliente frente a exposición en
-    equipos compartidos. Alternativas: 7 días, o 30 días con cierre por inactividad de 7.
-  - **Vigencia por defecto del enlace**: sin fijar. Propuesta de arquitectura: 60 días, renovable desde
-    el panel. Más larga favorece que el cliente vuelva; más corta reduce el riesgo de reenvíos.
   - **Tope diario y bloqueo de 24 h**: ¿Talento Humano acepta recibir alertas y desbloquear a mano?
   - **Retención de `accesos_log`** (propuesta 180 días) bajo Ley 1581.
   - **Normalización de alias `+etiqueta`** en correos invitados.

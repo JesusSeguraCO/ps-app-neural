@@ -16,7 +16,8 @@
 - `EN DISEÑO` — iteración en curso.
 - `ABORDADO` — existe ADR que lo cubre con análisis (Paso 7) registrado en su §5.
 - `VERIFICADO` — el análisis confirma que la decisión satisface la medida de respuesta (idealmente
-  revisado por un par). Ningún driver está aún en `VERIFICADO`: todos los ADRs siguen en `proposed`.
+  revisado por un par). Ningún driver está aún en `VERIFICADO`. Los ADRs 0001–0007 están `accepted`
+  desde la revisión única del sponsor (2026-09-25).
 
 La marca entre paréntesis es el **peor veredicto** que el driver recibe en el §5 de los ADRs que lo cubren
 (✅ medida o plan de verificación concreto · ⚠️ cubierto con verificación pendiente o riesgo residual ·
@@ -107,8 +108,8 @@ La marca entre paréntesis es el **peor veredicto** que el driver recibe en el �
 | Driver | Tipo | Prioridad | Trazabilidad (EP/HU) | Iteración | ADR | Estado |
 |--------|------|-----------|----------------------|-----------|-----|--------|
 | CRN-1 HubSpot no expone la «apertura» del negocio | Concern | — | EP-007 · RF-9.7.3, 9.7.4 | 5 | 0005 | ABORDADO (⚠️) |
-| CRN-2 Canal diario de notificaciones sin identificar | Concern · negocio | — | EP-007 · RF-9.7.1 | 5 | 0005 | PENDIENTE (negocio) |
-| CRN-3 Calendario hábil sin definir | Concern · negocio | — | EP-007 · RF-9.7, 17 | 5 | 0005 | PENDIENTE (negocio) |
+| CRN-2 Canal diario de notificaciones sin identificar | Concern · negocio | — | EP-007 · RF-9.7.1 | 5 | 0005 | ABORDADO (✅) |
+| CRN-3 Calendario hábil sin definir | Concern · negocio | — | EP-007 · RF-9.7, 17 | 5 | 0005 | ABORDADO (✅) |
 | CRN-4 Reintento infinito vs. bandeja de fallos | Concern | — | EP-007 · HU-105 · RF-9.6.1 | 5 | 0005 | ABORDADO (✅) |
 | CRN-5 Medición del correo con SMTP propio | Concern | — | EP-011 · RF-18 | 5, 6 | 0005, 0006 | ABORDADO (⚠️) |
 | CRN-6 Salida HTTPS a Gemini y cuota sin verificar | Concern | — | EP-009 · RF-12.2.1 | 4 | 0004 | ABORDADO (⚠️) |
@@ -116,8 +117,8 @@ La marca entre paréntesis es el **peor veredicto** que el driver recibe en el �
 | CRN-8 Caída del crontab entero | Concern | — | EP-007 · RF-9.6.2 | 5 | 0005 | ABORDADO (✅) |
 | CRN-9 Pérdida del servidor | Concern | — | §8.3, §10.3 | 3 | 0003 | ABORDADO (⚠️) |
 | CRN-10 Retención de datos personales | Concern | — | EP-008, EP-006 · Ley 1581 | 3, 6 | 0003, 0006 | ABORDADO (⚠️) |
-| CRN-11 Motor del borrador de evidencia (HU-140) | Concern · negocio | — | EP-006 · HU-140 · RF-8.11 · D-24 | 3 | 0003 | PENDIENTE (negocio) |
-| CRN-12 Dónde vive «Mi equipo» | Concern · negocio | — | EP-002, EP-001 · HU-095 · RF-4.1 · D-16 | 4 | 0004 | PENDIENTE (negocio) |
+| CRN-11 Motor del borrador de evidencia (HU-140) | Concern · negocio | — | EP-006 · HU-140 · RF-8.11 · D-24 | 3 | 0003 | ABORDADO (✅) |
+| CRN-12 Dónde vive «Mi equipo» | Concern · negocio | — | EP-002, EP-001 · HU-095 · RF-4.1 · D-16 | 4 | 0003, 0004 | ABORDADO (✅) |
 | CRN-13 Restos anteriores a D-4/D-16 en discovery | Concern · discovery | — | EP-009 · HU-090 · RF-13.4.1, §13.7, §10.3 | — | — | PENDIENTE (discovery) |
 | CRN-14 Nivel 0 de validación contradictorio | Concern · discovery | — | EP-006 · RF-8.10, B.8.1 | 3 | 0003 | PENDIENTE (discovery) |
 | CRN-15 Concurrencia entre administradoras | Concern | — | EP-006 | 3 | 0003 | ABORDADO (✅) |
@@ -127,8 +128,8 @@ La marca entre paréntesis es el **peor veredicto** que el driver recibe en el �
 | CRN-19 Entrada por instrucción retirable (D-17) | Concern | — | EP-009, EP-010 · D-17 | 1, 4 | 0001, 0004 | ABORDADO (✅) |
 | CRN-20 Agendamiento en el portal (HU-099) | Concern · negocio | — | EP-005 · HU-099 · RF-9.1.3 | — | — | PENDIENTE (fuera de capa, v1.1) |
 
-**Resumen:** 78 drivers · **70 ABORDADO** · **8 PENDIENTE** (CON-17; CRN-2, 3, 11, 12 de negocio;
-CRN-13, 14 de discovery; CRN-20 fuera de capa) · 0 VERIFICADO.
+**Resumen:** 78 drivers · **74 ABORDADO** · **4 PENDIENTE** (CON-17; CRN-13, 14 de discovery; CRN-20
+fuera de capa) · 0 VERIFICADO. CRN-2, 3, 11 y 12 pasaron a ABORDADO en la revisión única (2026-09-25).
 
 ## Riesgos arquitectónicos abiertos
 
@@ -145,7 +146,7 @@ CRN-13, 14 de discovery; CRN-20 fuera de capa) · 0 VERIFICADO.
 | R-5 | SPF/DKIM/DMARC o lista negra de la IP compartida mandan códigos a spam | QA-8, CON-5 | Prueba con buzones reales en staging; SMTP de staging solo a destinatarios internos | 5, 7 |
 | R-6 | ModSecurity bloquea POST legítimos (solicitud, texto pegado, importación, artefacto de 60 MB) o URL de 2 000 caracteres | CRN-18, QA-16, UC-14 | Humo con cargas reales en staging tras Cloudflare; excepciones por id de regla | 7 |
 | R-7 | Restauración nunca ensayada; RTO de 4 h sin validar | QA-12, CRN-17 | Restauración de prueba cronometrada antes de producción (V-5 de ADR-0007) | 7 |
-| R-8 | Perder el servidor = hasta 7 días de datos, consentimientos incluidos (el banco vuelve a borrador) | QA-12, CRN-9 | Exportación semanal fuera del servidor; destino y RPO/RTO a decidir por negocio (opción: exportación diaria cifrada) | 3, 7 |
+| R-8 | Perder el servidor = hasta 7 días de datos, consentimientos incluidos (el banco vuelve a borrador) | QA-12, CRN-9 | Decidido (2026-09-25): exportación semanal cifrada a Google Drive de Trycore, manual en v1; RPO 24 h / RTO 4 h. Riesgo residual aceptado: la ventana ante pérdida total sigue en 7 días y depende de que la copia manual se haga | 3, 7 |
 | R-9 | Sin `fastcgi_finish_request`/`litespeed_finish_request` la respuesta neutra depende de la cola | QA-3, CON-1 | Verificar en staging antes de EP-001; si faltan, ambas ramas encolan el envío | 2 |
 | R-10 | Bloqueo de 24 h usable para negar el acceso a un invitado concreto | QA-3 | Alerta a Talento Humano y desbloqueo auditado desde el panel | 2 |
 | R-11 | Lista de rangos IP de Cloudflare desactualizada, o el hosting reescribe `REMOTE_ADDR` | CON-15, QA-3 | Tarea semanal que compara la lista publicada; prueba V-8 en staging | 2, 7 |
@@ -172,29 +173,32 @@ CRN-13, 14 de discovery; CRN-20 fuera de capa) · 0 VERIFICADO.
 | R-32 | `realpath_cache_ttl` sirve la release vieja hasta 120 s tras el cambio de symlink | CON-3 | Migraciones expand/contract; exponer `release` en `/api/v1/salud` | 7 |
 | R-33 | Staging comparte CPU, inodos e IP de correo con producción | CON-3, QA-8 | Sin pruebas de carga en staging; decisión de negocio sobre un segundo hosting | 7 |
 | R-34 | CON-17 sin fila de §5 que verifique el alcance completo del panel | CON-17 | Cubrir en el DoR de EP-006 contra UC-10..UC-14 | 3 |
-| R-35 | Canal diario sin elegir: el aviso solo sale por correo | CRN-2, UC-15 | Decisión de negocio en la revisión única | 5 |
-| R-36 | Sin calendario hábil ni destinatarios nominales el escalamiento no corre | CRN-3, UC-15 | Decisión de negocio en la revisión única | 5 |
-| R-37 | HU-140 sin motor autorizado para el borrador de evidencia | CRN-11 | Decisión de negocio: ampliar D-24 con saneamiento, extracción determinista o diferir con acuerdo | 3 |
-| R-38 | Modelo de datos de «Mi equipo» abierto | CRN-12 | Por defecto en la URL (`equipo=`), reversible; decisión de negocio | 4 |
+| R-35 | ✅ CERRADO (2026-09-25) — Canal diario sin elegir | CRN-2, UC-15 | Solo correo + notificación nativa de HubSpot al asignar propietario | 5 |
+| R-36 | Calendario hábil ✅ CERRADO (2026-09-25: L–V 8–18 `America/Bogota`, festivos de Colombia, 24 h hábiles); siguen sin definir los destinatarios nominales | CRN-3, UC-15 | Fijar destinatarios antes de EP-007 | 5 |
+| R-37 | ✅ CERRADO (2026-09-25) — HU-140 sin motor autorizado | CRN-11 | Plantilla determinista sin IA, confirmada por una persona | 3 |
+| R-38 | ✅ CERRADO (2026-09-25) — Modelo de datos de «Mi equipo» abierto | CRN-12 | Por invitado en servidor (`equipos`, `equipo_perfiles`) | 4 |
 | R-39 | La guarda de modalidad para publicar depende de CRN-14 | CRN-14, UC-10 | Devolver a discovery | 3 |
 | R-40 | Restos anteriores a D-4/D-16 y «carpeta privada» en UC-4/CON-9 del `0000` | CRN-13, CON-9 | Corrección en discovery y en el `0000` con aprobación | — |
 
 ## Trade-offs de negocio para la revisión única
 
-| # | Decisión | Opciones | Recomendación de arquitectura | ADR |
-|---|----------|----------|-------------------------------|-----|
-| T-1 | **CRN-12 «Mi equipo»**: ¿por dispositivo o por invitado en servidor? | (a) Dispositivo/URL (D-16); (b) servidor por invitado (RF-4.1, HU-095) | (a) por defecto, reversible; (b) si negocio necesita continuidad entre dispositivos | 0004 |
-| T-2 | **CRN-11 motor del borrador de evidencia (HU-140)** | Ampliar D-24 con saneamiento · extracción determinista · diferir con acuerdo del equipo | Extracción determinista; nunca diferir sin acuerdo | 0003 |
-| T-3 | **CRN-2 canal diario de notificaciones** | Correo · Slack/Chat · WhatsApp | Correo mientras no se decida | 0005 |
-| T-4 | **CRN-3 horario hábil** y si las 24 h de RF-9.7 son hábiles o naturales | Horario, zona, festivos de Colombia, dueño del calendario | Tabla administrable; 24 h hábiles | 0005 |
-| T-5 | **Sesión del cliente 30 días y vigencia por defecto del enlace** | 30 d / 60 d renovable / otros | 30 d de sesión; 60 d renovable de enlace | 0002 |
-| T-6 | **Retención**: telemetría 24 meses (seudónimo a los 12), accesos 180 días, auditoría con datos personales frente al derecho de supresión | Plazos propuestos vs. validación legal | Validar con el área legal antes de producción | 0003, 0006 |
-| T-7 | **Destino de la exportación semanal y objetivos RPO/RTO/SLO** | Semanal fuera del servidor · diaria cifrada a Drive · segundo hosting | Diaria cifrada; RTO 4 h tras ensayo | 0003, 0007 |
-| T-8 | **Aviso al cliente por texto pegado a Gemini** (transferencia internacional) | Aviso informativo · autorización explícita · sin Gemini en la cara cliente | Aviso previo con opción «Interpretar sin servicio externo»; decide Mercadeo con asesoría legal | 0004 |
-| T-9 | **Precisión de la ciudad** que devuelve el servidor | Filtro mínimo en PHP · filtro completo en servidor | Filtro mínimo (modalidad ≠ Remoto + obligatorios de rol/país) | 0003 |
-| T-10 | **Regla «3 envíos sin abrir»** medida por clic/entrada en lugar del píxel | Clic/entrada (más estricta) · píxel (falsos «abiertos») | Clic/entrada | 0006 |
-| T-11 | **Staging en el mismo servidor** | Mismo servidor · segundo hosting de pago | Mismo servidor, sin pruebas de carga | 0007 |
-| T-12 | **CRN-13 / CRN-14 correcciones de discovery** (restos pre D-4/D-16; nivel 0 de validación) | Corregir en discovery con aprobación | Corregir antes del DoR de EP-006 y EP-009 | 0003 |
+> Revisión única cerrada por el sponsor (Jesús Segura) el 2026-09-25.
+
+| # | Decisión | Opciones | Recomendación de arquitectura | ADR | Estado |
+|---|----------|----------|-------------------------------|-----|--------|
+| T-1 | **CRN-12 «Mi equipo»**: ¿por dispositivo o por invitado en servidor? | (a) Dispositivo/URL (D-16); (b) servidor por invitado (RF-4.1, HU-095) | (a) por defecto, reversible; (b) si negocio necesita continuidad entre dispositivos | 0003, 0004 | **RESUELTA 2026-09-25:** (b) por invitado en servidor (`equipos`/`equipo_perfiles` ligadas al correo verificado y al enlace; cada invitado ve solo el suyo; se recupera en otro dispositivo; viaja completo a la solicitud). Perfil Objetivo sigue por dispositivo (D-16) |
+| T-2 | **CRN-11 motor del borrador de evidencia (HU-140)** | Ampliar D-24 con saneamiento · extracción determinista · diferir con acuerdo del equipo | Extracción determinista; nunca diferir sin acuerdo | 0003 | **RESUELTA 2026-09-25:** plantilla determinista sin IA (precarga desde la modalidad de prueba, fecha y resultado por patrones, nada sale del servidor, confirma una persona) |
+| T-3 | **CRN-2 canal diario de notificaciones** | Correo · Slack/Chat · WhatsApp | Correo mientras no se decida | 0005 | **RESUELTA 2026-09-25:** solo correo + notificación nativa de HubSpot al asignar propietario, sin integración nueva. RF-9.7.1 pide «no solo por correo»: el aviso de HubSpot cuenta como segundo canal |
+| T-4 | **CRN-3 horario hábil** y si las 24 h de RF-9.7 son hábiles o naturales | Horario, zona, festivos de Colombia, dueño del calendario | Tabla administrable; 24 h hábiles | 0005 | **RESUELTA 2026-09-25:** L–V 8:00–18:00 `America/Bogota`, festivos de Colombia en tabla administrable; 24 h en horas hábiles |
+| T-5 | **Sesión del cliente 30 días y vigencia por defecto del enlace** | 30 d / 60 d renovable / otros | 30 d de sesión; 60 d renovable de enlace | 0002 | **RESUELTA 2026-09-25:** sesión 30 días acotada a la vigencia del enlace; vigencia por defecto del enlace 30 días |
+| T-6 | **Retención**: telemetría 24 meses (seudónimo a los 12), accesos 180 días, auditoría con datos personales frente al derecho de supresión | Plazos propuestos vs. validación legal | Validar con el área legal antes de producción | 0003, 0006 | **RESUELTA 2026-09-25 (parcial):** telemetría 24 meses. Accesos 180 días y auditoría frente a supresión siguen como propuesta |
+| T-7 | **Destino de la exportación semanal y objetivos RPO/RTO/SLO** | Semanal fuera del servidor · diaria cifrada a Drive · segundo hosting | Diaria cifrada; RTO 4 h tras ensayo | 0003, 0007 | **RESUELTA 2026-09-25:** exportación semanal cifrada a Google Drive de Trycore; en v1 procedimiento manual del responsable técnico (descarga y carga a Drive), sin integración nueva; RPO 24 h / RTO 4 h |
+| T-8 | **Aviso al cliente por texto pegado a Gemini** (transferencia internacional) | Aviso informativo · autorización explícita · sin Gemini en la cara cliente | Aviso previo con opción «Interpretar sin servicio externo»; decide Mercadeo con asesoría legal | 0004 | **RESUELTA 2026-09-25:** aviso previo antes de enviar texto largo a Gemini, con opción «Interpretar sin servicio externo» |
+| T-9 | **Precisión de la ciudad** que devuelve el servidor | Filtro mínimo en PHP · filtro completo en servidor | Filtro mínimo (modalidad ≠ Remoto + obligatorios de rol/país) | 0003 | **RESUELTA 2026-09-25:** ciudad solo cuando la necesidad es presencial o híbrida, con el filtro mínimo en servidor |
+| T-10 | **Regla «3 envíos sin abrir»** medida por clic/entrada en lugar del píxel | Clic/entrada (más estricta) · píxel (falsos «abiertos») | Clic/entrada | 0005, 0006 | **RESUELTA 2026-09-25:** por clic o entrada, no por apertura |
+| T-11 | **Staging en el mismo servidor** | Mismo servidor · segundo hosting de pago | Mismo servidor, sin pruebas de carga | 0007 | **RESUELTA 2026-09-25:** staging en el mismo hosting |
+| T-12 | **CRN-13 / CRN-14 correcciones de discovery** (restos pre D-4/D-16; nivel 0 de validación) | Corregir en discovery con aprobación | Corregir antes del DoR de EP-006 y EP-009 | 0003 | **PENDIENTE (discovery, no arquitectura)** |
+| T-13 | **Reflejar en el PRD las divergencias** decididas en esta revisión: «Mi equipo» por invitado en servidor (RF-4.1, HU-095, D-16), HU-140 determinista sin IA y canal de notificación solo correo + HubSpot (RF-9.7.1) | Actualizar PRD e HU con aprobación | Hacerlo antes del DoR de EP-001, EP-002, EP-006 y EP-007 | 0003, 0004, 0005 | **PENDIENTE (discovery, no arquitectura)** |
 
 ## Bitácora de iteraciones
 
@@ -212,3 +216,4 @@ CRN-13, 14 de discovery; CRN-20 fuera de capa) · 0 VERIFICADO.
 | 6 | 2026-09-25 | Telemetría y atribución (UC-17 · QA-21 · CRN-10) | ADR-0006: endpoint anónimo acotado, `contacto_id`, atribución al último envío; informes en EP-008 |
 | 7 | 2026-09-25 | Entornos, despliegue y perímetro (CON-3, 15 · QA-12, 13 · CRN-17, 18) | ADR-0007: release por sha + symlink, CSP con hashes en CI, origen solo IPs de Cloudflare; verificaciones de hosting pendientes |
 | Evaluación ATAM-lite | 2026-09-25 | Refutar adversarialmente 0001–0007 | Hallazgos incorporados: hosts de un nivel; CSRF con cabecera + Origin; catálogo como proyección desde la BD; respuesta neutra con `finish_request` y mensaje único; bloqueo 5/15 min y 20/día; `accesos_log` separado; ciudad decidida en servidor; importación con GET_LOCK y 90 s; HMAC + ancla diaria; ETag tras sesión con `no-store`; Playwright ×4 con 300 perfiles; aviso por Gemini; `ps_solicitud_id` único; arrendamiento `locked_until`; dead man's switch; endpoint anónimo de eventos; despliegue atómico; una regla de Cloudflare. 40 riesgos abiertos y 12 trade-offs de negocio a la revisión única |
+| Cierre | 2026-09-25 | Revisión única del sponsor | ADRs 0001–0007 accepted; decisiones de negocio registradas; stack consolidado en .claude/config/stack-allowlist.json |

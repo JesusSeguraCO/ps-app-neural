@@ -2,7 +2,7 @@
 id: 0004
 title: "Búsqueda determinista, estado en la URL e interpretación con Gemini"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [busqueda, motor-de-criterios, interprete, estado-url, persistencia-local, gemini, llm-interpreter]
@@ -56,10 +56,10 @@ add:
 | UC-5 | **Intérprete determinista propio en TypeScript puro**: normalización NFD sin tildes + minúsculas + plurales simples, tokenización, léxico término → IDs de catálogo con coincidencia exacta y difusa Damerau-Levenshtein con umbral por longitud de token, patrones regex (seniority, «8 años», modalidad, país/ciudad) | Librería de búsqueda difusa (Fuse.js, MiniSearch); Gemini para toda consulta; solo facetas sin texto libre | Sin dependencias (inodos, bundle, CON-3); la distancia acotada es explicable y testeable; D-24 fija algoritmo primero; RF-2.6 exige texto libre |
 | UC-5, QA-1 | **Un solo motor de criterios** (RF-13.8) para panel de ajuste, tarjetas y tabla: obligatorio/deseable, tecnologías por «cualquiera», «cumple N de M» sin porcentajes, evidencia ✓/– con texto determinista desde el dato, «lo más cercano» = falla exactamente un obligatorio, opciones consecuentes con conteo (RF-13.7) | Lógica separada para panel y resultados; puntaje ponderado o porcentaje de ajuste; justificaciones redactadas por modelo | Un solo cálculo garantiza contador = resultados; el porcentaje oculta qué falla; RF-13.10.1 y RF-16.1 prohíben que un modelo redacte sobre personas |
 | CON-14, CRN-19 | **Separación interpretación ↔ recuperación** tras la interfaz `Criterios` (esquema versionado del Perfil Objetivo, `rol` como lista). El intérprete y la entrada por instrucción son módulos retirables | Intérprete que filtra directamente el catálogo; `rol` escalar | RF-16.3/16.4: barata ahora, cara después; D-17 exige poder retirar la instrucción sin tocar ficha, cero ni demanda |
-| QA-16, CON-13 | **Estado solo en la query string** (ADR-0001): la URL es la única fuente de verdad del estado de búsqueda (criterios, vista, ámbito, ficha abierta, equipo). Se lee con `useSearchParams` **dentro de un `<Suspense>`** (exigencia del export estático de Next.js) y se escribe con `router.replace`; parseadores tipados propios en `packages/contratos`; formato legible (`?rol=o:Backend|Frontend`), parámetro `v=` de versión de esquema, parámetros desconocidos ignorados | Estado en memoria/Redux o contexto de React duplicando la URL; estado completo en `localStorage`; base64 del JSON en un solo parámetro; siempre token en servidor | Una sola fuente evita desincronizar URL y pantalla; la URL legible es compartible y requisito duro; base64 no se lee ni degrada por parámetro; siempre-servidor agrega red a cada cambio |
+| QA-16, CON-13 | **Estado solo en la query string** (ADR-0001): la URL es la única fuente de verdad del estado de búsqueda (criterios, vista, ámbito, ficha abierta; «Mi equipo» no es estado de búsqueda y vive en servidor, CRN-12). Se lee con `useSearchParams` **dentro de un `<Suspense>`** (exigencia del export estático de Next.js) y se escribe con `router.replace`; parseadores tipados propios en `packages/contratos`; formato legible (`?rol=o:Backend|Frontend`), parámetro `v=` de versión de esquema, parámetros desconocidos ignorados | Estado en memoria/Redux o contexto de React duplicando la URL; estado completo en `localStorage`; base64 del JSON en un solo parámetro; siempre token en servidor | Una sola fuente evita desincronizar URL y pantalla; la URL legible es compartible y requisito duro; base64 no se lee ni degrada por parámetro; siempre-servidor agrega red a cada cambio |
 | QA-16, QA-3 | **Desborde a token de estado largo** por encima de 2 000 caracteres (RF-19.8): el servidor guarda el estado y la URL queda `?v=1&s=<token>`. El token es **aleatorio de 128 bits** (`random_bytes(16)`, base64url, 22 caracteres), no derivado del contenido, **ligado a la sesión que lo creó** (guarda sesión y cuenta) y solo se resuelve con una sesión válida de la misma cuenta; en cualquier otro caso responde 404 neutro. Caduca a los 90 días (*a validar*) (tácticas: *limitar la exposición*, *autenticar*) | Token secuencial o hash del estado (adivinable o enumerable); token sin sesión (cualquiera con el enlace ve los criterios de la cuenta); ligar solo a la sesión exacta | 128 bits aleatorios hacen inviable adivinar un token; exigir sesión alinea el token con la puerta de acceso (ADR-0002). Ligarlo solo a la sesión exacta impediría que otro invitado de la misma cuenta abra una URL compartida (QA-16), por eso el alcance es sesión válida + misma cuenta |
 | CON-14, UC-6 | **Persistencia local versionada solo para lo que es por dispositivo** (`localStorage` con esquema `v`, migración o descarte): Perfil Objetivo (D-16), vista por defecto cuando la URL no trae `vista`, descarte del sondeo y la elección del aviso de servicio externo. Nunca guarda estado de búsqueda | IndexedDB; cookies; persistencia en servidor por invitado | Volumen mínimo; D-16 fija por dispositivo; una cookie viaja en cada petición sin necesidad; separar preferencia de estado mantiene la regla de la query string |
-| CRN-12 | **«Mi equipo» en la URL (`equipo=`)** como opción por defecto reversible, a la espera de la decisión de negocio | Por invitado en servidor (tabla `equipos`) ya ahora | Mantiene D-16 y no cambia el modelo de datos hasta que negocio decida; la alternativa queda viable porque la identidad está verificada (ADR-0002) |
+| CRN-12 | **«Mi equipo» por invitado en servidor** (decisión del sponsor, revisión única 2026-09-25): tablas `equipos`/`equipo_perfiles` (ADR-0003) ligadas al invitado verificado y al enlace; cada invitado ve solo el suyo, lo recupera desde otro dispositivo y viaja completo a la solicitud. El Perfil Objetivo sigue por dispositivo (D-16) | En la URL (`equipo=`), por dispositivo | La identidad ya está verificada (ADR-0002), así que el equipo puede seguir al invitado; en la URL se perdía si el cliente no la conservaba y no sobrevivía al cambio de dispositivo |
 | UC-18, QA-15, CON-8 | **Gemini tras el adaptador `Adapters/Gemini`** (frontera `llm-interpreter`), invocado solo si el texto supera un umbral (propuesta: 280 caracteres o 2 párrafos); salida estructurada con JSON schema contra la taxonomía; validación del JSON contra el catálogo (se descartan IDs inexistentes); timeout duro 6 s; ante fallo o demora el cliente aplica el intérprete determinista y avisa sin jerga (tácticas: *degradación*, *timeout*, *validación de entrada*) | Llamada directa desde el navegador; streaming; texto libre del modelo parseado con regex; reintentos síncronos | La llave nunca sale del servidor (CON-6); JSON schema elimina el parseo frágil; sin reintento síncrono se respeta QA-15 |
 | UC-18, CRN-6 | **Verificación de la salida y vigilancia de la vuelta al determinista** (tácticas: *condición de entrada*, *monitorizar*): antes de EP-009 se prueba desde el hosting una llamada HTTPS real a `generativelanguage.googleapis.com` (condición de entrada de la épica). En producción cada llamada registra resultado y causa (sin el texto); si la **tasa de vuelta al determinista supera el 20 %** en una ventana de 24 h (mínimo 10 llamadas elegibles) se alerta al responsable técnico | Descubrir en producción que el hosting no sale a Google (hoy solo se ha probado `api.hubapi.com` y `api.anthropic.com`); sin métrica de vuelta al determinista | Si el hosting bloquea la salida, la degradación esconde el fallo: el cliente nunca ve un error y UC-18 queda muerto en silencio. La alerta convierte ese silencio en señal |
 | CON-8, CON-10 | **Aviso al cliente antes de enviar el texto pegado** (táctica: *informar al actor*): cuando el texto supera el umbral, antes de llamar a Gemini el portal indica que el texto se procesará con un servicio externo y ofrece dos opciones: «Continuar» o «Interpretar sin servicio externo» (determinista). La elección se recuerda por dispositivo. Además se quitan del texto, antes de enviarlo, correos, teléfonos y URL (saneamiento determinista) | Enviar sin aviso; bloquear toda llamada hasta un consentimiento formal | El cliente puede pegar datos de terceros; avisar antes cumple el deber de información. La base legal de la transferencia internacional queda como trade-off de negocio abierto (§6) |
@@ -83,7 +83,7 @@ add:
     a medida.
   - `server/`: `POST /api/v1/interpretar-requerimiento`, `GET /api/v1/lexico` (ETag),
     `POST /api/v1/estado` y `GET /api/v1/estado/{token}` (estado largo),
-    `POST /api/v1/consultas-sin-coincidencia`, puerto `InterpreteLlm` con adaptador
+    `POST /api/v1/consultas-sin-coincidencia`, `GET /api/v1/equipo` y `PUT /api/v1/equipo` (CRN-12), puerto `InterpreteLlm` con adaptador
     `server/src/Adapters/Gemini`, tablas `estados_largos` y `llamadas_llm`,
     `server/cron/proponer-lexico.php`, `server/bin/verificar-salida-gemini.php`.
   - `e2e/rendimiento-filtrado.spec.ts` (Playwright) y fixture `catalogo-300-sinteticos.json`.
@@ -101,6 +101,10 @@ add:
     hora (*a validar*), resuelve solo con sesión válida de la misma cuenta y responde 404 neutro en
     cualquier otro caso (token inexistente, caducado, de otra cuenta o sin sesión). Un cron diario borra
     los caducados.
+  - El **servicio de «Mi equipo»** (CRN-12) resuelve el equipo por `invitado_id` y `enlace_id` de la
+    sesión (nunca por un id que mande el cliente); crea el equipo en la primera adición; responde solo
+    el del invitado de la sesión (404 neutro a cualquier otro); solo admite perfiles publicables del
+    enlace; al crear la solicitud (ADR-0005) se copia completo a ella.
   - El **almacén local** lee con `v`; si la versión no se reconoce, migra o descarta sin error.
   - El **aviso de servicio externo** se muestra antes de la primera llamada a Gemini del dispositivo
     (o de cada llamada si el cliente no pidió recordarlo); «Interpretar sin servicio externo» aplica
@@ -131,7 +135,9 @@ add:
   - `POST /api/v1/estado` `{estado}` → `201 {token}` (requiere sesión) ·
     `GET /api/v1/estado/{token}` → `200 {estado}` | `404` neutro.
   - `GET /api/v1/lexico` → `200` con `ETag` + `version`; `304` si no cambió.
-  - Parámetros de URL: `v`, `rol`, `tec`, `sen`, `mod`, `pais`, `vista`, `ambito`, `ficha`, `equipo`, `s`.
+  - Parámetros de URL: `v`, `rol`, `tec`, `sen`, `mod`, `pais`, `vista`, `ambito`, `ficha`, `s`.
+  - `GET /api/v1/equipo` → `200 {perfiles: [codigo]}` · `PUT /api/v1/equipo` `{perfiles: [codigo]}` →
+    `200` (requieren sesión; siempre el equipo del invitado de la sesión).
 
 ## 4. Vistas y registro de la decisión (Paso 6)
 
@@ -235,8 +241,8 @@ EP-009.
 - La CPU frenada 4× en Chromium de escritorio es una aproximación a un teléfono de gama media, no una
   medida en el dispositivo; se acepta a cambio de una medida repetible en cada PR.
 - El léxico lo mantiene Talento Humano: la calidad del intérprete depende de esa curaduría.
-- «Mi equipo» en la URL se pierde si el cliente no conserva o comparte la URL, hasta que se decida
-  CRN-12.
+- «Mi equipo» en servidor añade dos tablas y una escritura por cambio del equipo, a cambio de que el
+  invitado lo recupere en otro dispositivo (CRN-12).
 - El token largo exige sesión de la misma cuenta: una URL con `s=` reenviada fuera de la cuenta no abre
   (404), a cambio de que los criterios de una cuenta no se lean con solo conocer el enlace.
 - El aviso previo añade un paso a quien pega un requerimiento largo.
@@ -261,7 +267,7 @@ EP-009.
 | CON-13 | ✅ | Todo `EstadoBusqueda` se serializa a la URL (fast-check); revisión de código y prueba E2E sin estado de búsqueda fuera de la query string | — |
 | CON-14 | ✅ | `PerfilObjetivo` versionado, `rol: string[]`, interpretación separada tras `Criterios` (verificado por tipos en `packages/contratos`) | — |
 | CRN-6 | ⚠️ | Verificación real de salida como condición de entrada de EP-009; registro por llamada y alerta si la vuelta al determinista supera el 20 % en 24 h | Cuota, coste y términos de la llave de producción desconocidos; sin tope de llamadas por invitado y día definido |
-| CRN-12 | ⚠️ | Opción reversible por defecto (en la URL) | Decisión de negocio pendiente; si se elige servidor cambia el modelo de datos (tabla `equipos`) |
+| CRN-12 | ✅ | Decidido: por invitado en servidor. Plan: tests de aceptación de aislamiento (otro invitado de la misma cuenta recibe 404 y no ve el equipo), recuperación desde un segundo dispositivo con la misma identidad y copia completa a la solicitud | Divergencia con el texto actual del PRD/HU-095, a reflejar por discovery |
 | CRN-16 | ⚠️ | Umbral de texto largo y de confianza de RF-12.3 propuestos; el registro de `llamadas_llm` da datos para calibrar | Sin requerimientos reales para calibrar antes de EP-009 |
 | CRN-19 | ✅ | Intérprete y entrada por instrucción aislados en módulo retirable; E2E del panel de ajuste con el módulo desactivado | — |
 
@@ -269,7 +275,7 @@ EP-009.
 2 000 caracteres (decide cuándo aparece la dependencia del servidor en el estado) y el alcance del
 token (sesión exacta frente a cuenta: seguridad frente a compartir entre invitados).
 
-**Drivers no resueltos en esta iteración:** CRN-12 (decisión de negocio), CRN-6 (verificación de
+**Drivers no resueltos en esta iteración:** CRN-6 (verificación de
 salida HTTPS, cuota y coste antes de EP-009), CRN-16 (calibración del umbral de texto largo y del de
 confianza de RF-12.3) y la validación del límite de 2 000 caracteres de QA-16. Se devuelven al backlog
 arquitectónico.
@@ -308,16 +314,18 @@ arquitectónico.
     cargas reales (CRN-18).
   - Coste y cuota de Gemini sin conocer; mitigación: umbral, registro por llamada y alerta.
 - **Trade-offs de negocio abiertos (no los decide la arquitectura):**
-  - **Transferencia internacional del texto pegado (Ley 1581):** el aviso informa, pero no fija la base
-    legal de enviar a Google un texto que puede contener datos de terceros. Opciones: (a) aviso
-    informativo y seguir, (b) autorización explícita del cliente antes de la primera llamada, (c) no usar
-    Gemini en la cara cliente y dejar solo el determinista. Decide Dirección de Mercadeo con asesoría
-    legal.
-  - **Dónde vive «Mi equipo» (CRN-12):** en la URL por dispositivo (hoy) o por invitado en servidor.
   - **Tope y presupuesto de Gemini (CRN-6):** límite de llamadas por invitado y día y coste mensual
     aceptable.
   - **Caducidad del token de estado largo:** 90 días propuestos; depende de cuánto tiempo debe seguir
     abriendo una URL compartida.
+- **Decisiones de la revisión única (sponsor, 2026-09-25):**
+  - **CRN-12 «Mi equipo»: por invitado en servidor.** Tablas `equipos`/`equipo_perfiles` ligadas al
+    correo invitado verificado y al enlace; cada invitado ve solo el suyo, lo recupera desde otro
+    dispositivo y viaja completo a la solicitud. El Perfil Objetivo sigue por dispositivo (D-16). El
+    parámetro `equipo=` sale de la URL. Discovery debe reflejar la divergencia en el PRD.
+  - **Aviso previo al enviar texto largo a Gemini: aceptado** (opción de aviso informativo con
+    «Interpretar sin servicio externo»). Descartadas la autorización explícita y la cara cliente sin
+    Gemini.
 - **Operacionales:** `GEMINI_API_KEY` en `config.php` fuera de la carpeta pública; cron semanal de
   léxico y cron diario de limpieza de tokens con registro en `tareas_ejecucion` (ADR-0005); alerta de
   vuelta al determinista en la vigilancia de ADR-0005; prueba de rendimiento y tests de propiedades en

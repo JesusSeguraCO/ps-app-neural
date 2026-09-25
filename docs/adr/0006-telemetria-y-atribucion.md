@@ -2,7 +2,7 @@
 id: 0006
 title: "Telemetría y atribución"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [telemetria, atribucion, eventos, informes, privacidad, ley-1581]
@@ -234,12 +234,12 @@ externa de analítica.
 | QA-6 · la solicitud no depende de la telemetría | ✅ | Tablas y transacciones separadas; «solicitud enviada» se deriva de la tabla de solicitudes. Plan: test de integración con la tabla `eventos` bloqueada o caída que confirma que la solicitud se persiste y se confirma | — |
 | QA-13 · retención vigilada | ✅ | `RetencionEventos` registra cada corrida en `tareas_ejecucion` y entra en la alerta de 2× su intervalo (ADR-0005). Plan: test con reloj simulado sobre eventos de 11, 13 y 25 meses | Si la tarea deja de correr, la retención se incumple en silencio hasta que salte la alerta (≤ 48 h) |
 | CON-3 · sin dependencias de runtime | ✅ | Sin SDK de analítica ni paquetes nuevos; `stack-allowlist.json` prohíbe SDKs de terceros en `apps/portal` y `apps/panel`. Plan: el hook `stack-guard.sh` y el gate `stack_arch` lo comprueban | — |
-| CRN-10 · retención y datos personales | ⚠️ | Política propuesta (24 m / seudónimo a 12 m) con mecanismo técnico | Falta la validación de Dirección o del responsable de datos y el texto del aviso de privacidad que la mencione |
+| CRN-10 · retención y datos personales | ⚠️ | Retención de 24 meses aceptada por el sponsor (2026-09-25), seudónimo a los 12, con mecanismo técnico | Falta reflejarla en el texto del aviso de privacidad |
 | CRN-5 · medición del correo sin píxel fiable | ⚠️ | La entrada al portal y el clic se miden en primera parte y sirven de señal fiable; la apertura por píxel queda como `sin_dato` cuando no llega | La regla «3 envíos sin abrir» (RF-18.6) pasa a medirse por clic o entrada, lo que cambia su significado (ver §6) |
 
-**Drivers no resueltos en esta iteración:** la validación de la política de retención (CRN-10), la
+**Drivers no resueltos en esta iteración:** la
 regla de atribución heredada y su ventana (QA-21), la tolerancia de pérdida (QA-21), el límite de
-tasa del endpoint anónimo (QA-3) y el significado de «sin abrir» en RF-18.6 se devuelven al backlog
+tasa del endpoint anónimo (QA-3) se devuelven al backlog
 arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-008.
 
 ## 6. Consecuencias
@@ -269,15 +269,12 @@ arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-0
     de producción.
   - El crecimiento de la tabla es bajo (decenas de cuentas); se revisa en cada release y se migra a
     particionado nativo solo si una consulta de informe supera su presupuesto.
+- **Decisiones de la revisión única (sponsor, 2026-09-25):**
+  - **Retención de la telemetría (CRN-10): 24 meses**, con seudónimo a los 12. Hay que reflejarla en
+    el aviso de privacidad.
+  - **Regla «3 envíos sin abrir» (RF-18.6): por clic o entrada, no por apertura.** El píxel no es
+    fiable con SMTP propio; se acepta que una cuenta que lee sin hacer clic cuente como «sin abrir».
 - **Trade-offs de negocio abiertos (decide Mercadeo con el responsable de datos):**
-  - **Retención de la telemetría: 24 meses, con seudónimo a los 12.** Más tiempo da historia para
-    ciclos de venta largos y para el reclutamiento inverso; menos tiempo reduce la exposición bajo la
-    Ley 1581. Hay que validarlo y reflejarlo en el aviso de privacidad.
-  - **Regla «3 envíos sin abrir» (RF-18.6) medida por clic o entrada, no por apertura.** Con SMTP
-    propio el píxel no es fiable (Apple Mail Privacy Protection marca todo como abierto, otros
-    clientes bloquean imágenes). Medir por clic o entrada es fiable, pero más estricto: una cuenta
-    que lee el correo y no hace clic contará como «sin abrir» y se escalará al ejecutivo antes. La
-    alternativa es mantener la apertura y aceptar falsos «abiertos».
   - **Atribución heredada del último envío** y su ventana (propuesta de 90 días): define cuánto
     crédito recibe el correo curado en los informes.
 

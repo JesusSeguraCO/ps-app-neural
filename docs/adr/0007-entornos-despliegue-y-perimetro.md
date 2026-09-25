@@ -2,7 +2,7 @@
 id: 0007
 title: "Entornos, CI/CD, despliegue y seguridad perimetral"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [entornos, ci-cd, despliegue, cpanel, cloudflare, seguridad-perimetral, respaldo, observabilidad]
@@ -56,7 +56,7 @@ add:
 | CON-3 | **Despliegue atómico por release**: cada despliegue crea `releases/<sha>/`, migra, verifica y solo entonces cambia un enlace simbólico `current` por renombre atómico (`mv -T`). Script con `set -euo pipefail`: cualquier fallo aborta **antes** del cambio | (a) `.cpanel.yml` copiando encima de las raíces vivas; (b) rollback por redeploy del commit anterior de `deploy` | (a) una copia a medias deja HTML nuevo apuntando a chunks que aún no están (o al revés) y no hay forma limpia de abortar; (b) tarda un ciclo completo de *Update from Remote* + *Deploy* y repite copias. Con releases, volver atrás es mover el enlace a la release anterior (segundos) |
 | CON-3 | **Migraciones expand/contract antes del cambio**: la release N solo **añade** (columnas, tablas, índices); lo que se retira se borra en una release posterior, cuando la release que aún lo usaba ya salió de las 3 conservadas | Migraciones destructivas en la misma release que el código que las necesita | Mientras el esquema sea compatible hacia atrás, las 3 releases conservadas pueden volver a activarse sin tocar la BD |
 | CON-3, QA-2 | **Conservar 3 releases y sus chunks**: la release nueva recibe, por enlace duro (`cp -al`), los `/_next/static/` de las 2 anteriores | Borrar la release anterior al activar | Un navegador con la página abierta pide chunks con nombre de la versión que cargó; sin ellos recibe 404 a mitad de sesión. Los enlaces duros **no consumen inodos nuevos** |
-| QA-12, QA-13, CRN-18 | **Staging en el mismo hosting, con directorios, rama (`deploy-staging`), repositorio de cPanel, BD, crons y config propios**; la ruta del fichero de config la fija el front controller de cada entorno | (a) Sin staging (local → producción); (b) staging en otro proveedor; (c) staging compartiendo carpetas con producción y distinguiendo por variable de entorno | (a) ModSecurity, Cloudflare, certificado de origen, cron y SMTP solo se prueban en el hosting real; (b) no reproduce esas reglas (y cuesta); (c) cPanel compartido no da variables de entorno por vhost de forma fiable y un error de carpeta mezclaría datos. **Trade-off de negocio abierto** (§6): comparte recursos con producción |
+| QA-12, QA-13, CRN-18 | **Staging en el mismo hosting, con directorios, rama (`deploy-staging`), repositorio de cPanel, BD, crons y config propios**; la ruta del fichero de config la fija el front controller de cada entorno | (a) Sin staging (local → producción); (b) staging en otro proveedor; (c) staging compartiendo carpetas con producción y distinguiendo por variable de entorno | (a) ModSecurity, Cloudflare, certificado de origen, cron y SMTP solo se prueban en el hosting real; (b) no reproduce esas reglas (y cuesta); (c) cPanel compartido no da variables de entorno por vhost de forma fiable y un error de carpeta mezclaría datos. **Decisión de negocio (2026-09-25):** staging en el mismo hosting, aceptando que comparte recursos con producción |
 | QA-5 | **CSP estricta con hashes por página calculados en CI**: script *post-build* recorre cada `index.html` del export, calcula `sha256` de cada `<script>` y `<style>` inline (incluido el de `next-themes`) y escribe un `.htaccess` por carpeta con la cabecera CSP de esa página. **Test de Playwright que falla ante cualquier violación de CSP** en consola | (a) `'unsafe-inline'`; (b) nonce; (c) CSP en `<meta>`; (d) `script-src 'self'` sin hashes | (a) anula la CSP; (b) un nonce exige generar HTML por petición y el export es estático; (c) `<meta>` no admite `frame-ancestors` y una segunda CSP en cabecera se intersecta con ella; (d) el export de Next.js (App Router) emite scripts inline de carga del payload y `next-themes` inyecta uno para evitar el parpadeo de tema: sin hashes la página no hidrata |
 | QA-5 | **Fuentes autoalojadas** (Geist) y 0 CDNs | Mantener el `@import` de Google Fonts del design system | Google Fonts obliga a abrir `style-src`/`font-src` a terceros y filtra la IP del invitado a Google |
 | QA-2, CON-15 | **`trailingSlash: true`** en ambos `next.config`: cada ruta se exporta como `carpeta/index.html` que Apache sirve con `DirectoryIndex`, sin reglas de reescritura | `trailingSlash: false` (`ruta.html`) con reglas `RewriteRule` para quitar la extensión | Menos `mod_rewrite` = menos superficie y menos choques con ModSecurity; además cada página tiene su carpeta, donde vive su `.htaccess` de CSP. `/ruta` sin barra recibe un 301 de `mod_dir` a `/ruta/` |
@@ -68,8 +68,8 @@ add:
 | QA-5, CON-6 | **Secretos en `~/portal-config/<entorno>/config.php`**, permisos `600`, fuera del repo, de las releases y de las raíces | Variables de entorno de Apache; `.env` en el repo o en la raíz | cPanel compartido no ofrece variables por vhost de forma fiable; un `.env` desplegado puede servirse como texto |
 | CRN-18 | **Humo con cargas reales** (solicitud, requerimiento pegado, importación) en staging tras Cloudflare + ModSecurity antes de producción; **excepciones por id de regla** pedidas al proveedor | Desactivar ModSecurity en el dominio | Quitarlo elimina una capa; la excepción puntual es el mínimo necesario |
 | QA-13, CRN-8 | **Observabilidad mínima**: logs PHP, de cron y de despliegue en carpeta privada con rotación; `GET /api/v1/salud` para un **monitor externo**; alertas por correo (ADR-0005) | APM/SaaS de logs; solo el correo de salida del cron | Un APM envía datos a terceros y no cabe en el hosting; el monitor externo cumple «la vigilancia no depende solo del cron» |
-| QA-12, CON-16 | **JetBackup diario/semanal + exportación semanal del banco fuera del servidor + restauración de prueba obligatoria** | Solo JetBackup | JetBackup guarda en el mismo servidor (riesgo aceptado §10.3); la exportación semanal reduce el daño si se pierde el servidor |
-| CRN-17 | **Declarar el hueco**: no se inventa un SLO; se propone un objetivo operativo (RPO 24 h / RTO 4 h) a validar | Fijar un 99,9 % sin base | El hosting compartido no ofrece garantía que sostenga un SLO |
+| QA-12, CON-16 | **JetBackup diario/semanal + exportación semanal cifrada del banco a Google Drive de Trycore** (v1: procedimiento manual del responsable técnico, sin integración nueva) **+ restauración de prueba obligatoria** | Solo JetBackup | JetBackup guarda en el mismo servidor (riesgo aceptado §10.3); la exportación semanal reduce el daño si se pierde el servidor |
+| CRN-17 | **Declarar el hueco**: no se inventa un SLO; objetivo operativo **RPO 24 h / RTO 4 h** aceptado por el sponsor (2026-09-25) | Fijar un 99,9 % sin base | El hosting compartido no ofrece garantía que sostenga un SLO |
 
 ## 3. Instanciación: responsabilidades e interfaces (Paso 5)
 
@@ -280,15 +280,14 @@ JetBackup + exportación semanal + restauración de prueba.
 | QA-5 (apoyo) | ✅ | Grep de secretos en `out/`; test de contrato del catálogo; `X-Robots-Tag: noindex` global; PHP y config fuera de las raíces; CSP con hashes generada en CI, build que falla ante inline no permitido y test de Playwright que falla ante cualquier violación, en CI (Apache) y en staging (tras Cloudflare) | Una función de Cloudflare activada a mano que inyecte scripts rompería páginas: la detecta el test de humo de staging, no producción |
 | QA-2 (apoyo) | ✅ | Lighthouse CI con presupuesto (LCP, JS ≤ 200 KB) bloquea el merge; `/_next/static/*` inmutable en caché de Cloudflare; sin reescrituras | El presupuesto mide en laboratorio; el P75 de campo no se mide sin analítica externa |
 | QA-8 (apoyo) | ⚠️ | Registros de correo de `people.trycore.com` en la zona, en modo solo DNS | V-6 sin hacer; IP compartida 192.99.84.46 y staging enviando desde el mismo servidor afectan la reputación |
-| QA-12 | ⚠️ | JetBackup diario cumple pérdida ≤ 24 h; restauración de prueba cronometrada (V-5) obligatoria antes de producción; exportación semanal fuera del servidor | RTO 4 h *a validar*; pérdida del servidor = riesgo aceptado; destino y responsable de la exportación semanal sin definir |
+| QA-12 | ⚠️ | JetBackup diario cumple pérdida ≤ 24 h; restauración de prueba cronometrada (V-5) obligatoria antes de producción; exportación semanal fuera del servidor | RTO 4 h aceptado, pendiente de ensayo (V-5); pérdida total del servidor = hasta 7 días (riesgo aceptado); exportación a Drive manual, depende de que el responsable técnico la haga cada semana |
 | QA-13 | ⚠️ | Cada cron registra su corrida; `/api/v1/salud` expone estado y release; monitor externo que no depende del cron | Monitor externo no elegido (verificar que solo ve el estado, sin datos) |
-| CRN-17 | ⚠️ | Se declara el hueco; se propone RPO 24 h / RTO 4 h | Sin SLO ni ventana de mantenimiento acordada con Dirección |
+| CRN-17 | ⚠️ | Se declara el hueco; se propone RPO 24 h / RTO 4 h | Sin SLO de disponibilidad ni ventana de mantenimiento acordada |
 | CRN-18 | ⚠️ | Humo con cargas reales en staging tras Cloudflare + ModSecurity antes de producción; excepciones por id de regla | Staging y producción pueden tener reglas ModSecurity distintas por host; el proveedor no tiene plazo conocido para excepciones |
 
-**Drivers no resueltos en esta iteración:** SLO (CRN-17) y RTO (QA-12) vuelven al backlog
-arquitectónico como decisiones de negocio; las verificaciones V-1…V-10 son tareas de operación
-previas al primer despliegue real; elección del monitor externo y del destino de la exportación
-semanal quedan como tareas de operación.
+**Drivers no resueltos en esta iteración:** SLO de disponibilidad (CRN-17); las verificaciones V-1…V-10 son tareas de operación
+previas al primer despliegue real; la elección del monitor externo queda como tarea de
+operación.
 
 ## 6. Consecuencias
 
@@ -319,12 +318,14 @@ semanal quedan como tareas de operación.
     de cada PR con migración.
   - Tras activar, PHP puede servir hasta 120 s la release anterior (V-10).
   - Inodos: estimado sin medir (V-1).
-- **Trade-offs de negocio abiertos:**
-  - **Staging en el mismo servidor que producción.** Ahorra un hosting y es el único modo de probar
+- **Decisiones de la revisión única (sponsor, 2026-09-25):**
+  - **Exportación semanal cifrada del banco a Google Drive de Trycore.** En v1 es un procedimiento
+    manual del responsable técnico (descarga el export cifrado de `cron/exportar-banco.php` y lo carga
+    a Drive), sin integración nueva. Objetivo **RPO 24 h / RTO 4 h** (QA-12), a ensayar en V-5.
+  - **Staging en el mismo servidor que producción (aceptado).** Ahorra un hosting y es el único modo de probar
     ModSecurity, cron y SMTP reales, pero comparte CPU, memoria, inodos e IP de correo: una prueba
     pesada o un envío masivo de staging degrada producción y su reputación de correo. Alternativa:
-    un segundo hosting pequeño del mismo proveedor (coste mensual, reglas casi iguales). Decide
-    Dirección con Tecnología; mientras tanto, en staging no se hacen pruebas de carga y el SMTP solo
+    un segundo hosting pequeño del mismo proveedor (coste mensual, reglas casi iguales), descartada. En staging no se hacen pruebas de carga y el SMTP solo
     envía a destinatarios internos.
 - **Operacionales:**
   - Crear los 4 subdominios en cPanel (quedan cupos: 19/50 usados) con sus raíces en

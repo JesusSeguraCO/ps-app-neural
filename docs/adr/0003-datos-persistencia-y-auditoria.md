@@ -2,7 +2,7 @@
 id: 0003
 title: "Datos, persistencia, auditoría e importación"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [datos, mariadb, migraciones, auditoria, importacion, consentimiento, recuperabilidad]
@@ -61,7 +61,9 @@ add:
 | QA-9, QA-10 | **Importación en dos fases**: `calcularPlan` (sin escritura) y `aplicarPlan` (una transacción), con `lote_importacion` y **foto previa JSON** por perfil tocado; **`GET_LOCK` exclusivo** para aplicar y revertir; **presupuesto de 90 s** por petición; **endpoint de estado del lote** | Importar fila a fila con commit; cola asíncrona; sin bloqueo | Todo o nada es requisito; la foto permite revertir con diff = 0. Con ≤ 200 filas la vía síncrona evita depender del cron (*a validar*). Cloudflare corta la conexión a los 100 s aunque PHP permita 180 s: el presupuesto de 90 s y el estado consultable evitan que la administradora quede sin saber si se aplicó |
 | QA-20, UC-13 | **Catálogos con `activo` y fusión transaccional**; el léxico apunta solo a IDs de catálogo (FK) | Borrado de valores; léxico por texto libre | CON-11 prohíbe borrar. La FK impide entradas de léxico hacia valores inexistentes |
 | UC-14, QA-5 | **Evidencia en carpeta privada** `~/portal-privado/evidencia/<hash>` servida por el panel (`people-panel.trycore.com`) tras autorización | Carpeta dentro de `public_html`; almacenamiento externo (S3) | 0 URL públicas (QA-5); S3 añade proveedor y secreto sin necesidad |
-| QA-12, CRN-9 | **JetBackup diario + exportación JSON/CSV semanal** fuera del servidor + restauración de prueba. **Perder el servidor = hasta 7 días de pérdida**, consentimientos incluidos | Réplica en otro servidor; exportación diaria | Coste y operación fuera de alcance del hosting compartido; riesgo aceptado en §10.3. El destino de la exportación y el RPO/RTO ante pérdida del servidor son decisión de negocio (§6) |
+| QA-12, CRN-9 | **JetBackup diario + exportación semanal cifrada del banco a Google Drive de Trycore** (en v1, procedimiento manual del responsable técnico: descarga el export cifrado y lo carga a Drive; sin integración nueva) + restauración de prueba. Objetivo aceptado: **RPO 24 h / RTO 4 h** (revisión única 2026-09-25). **Perder el servidor entero = hasta 7 días de pérdida**, consentimientos incluidos | Réplica en otro servidor; exportación diaria automática a Drive | Coste y operación fuera de alcance del hosting compartido; riesgo aceptado en §10.3. El RPO de 24 h lo cubre JetBackup; ante pérdida total del servidor manda la exportación semanal |
+| CRN-11, UC-14 | **Borrador de evidencia de colocado (HU-140) por plantilla determinista, sin IA** (decisión del sponsor, 2026-09-25): precarga desde la modalidad de prueba del catálogo y extrae fecha y resultado con patrones; ningún dato sale del servidor; una persona confirma el resultado antes de guardarlo | Ampliar D-24 para usar Gemini con saneamiento; diferir HU-140 | D-24 y CON-8 impiden enviar datos de perfiles a un modelo; los patrones son explicables y testeables; diferir exige acuerdo del equipo |
+| CRN-12 | **«Mi equipo» por invitado en servidor** (`equipos`, `equipo_perfiles`), ligado al invitado verificado y al enlace (detalle en ADR-0004) | En la URL por dispositivo | Decisión del sponsor (2026-09-25): continuidad entre dispositivos y equipo completo en la solicitud |
 
 ## 3. Instanciación: responsabilidades e interfaces (Paso 5)
 
@@ -91,6 +93,9 @@ add:
 | `solicitudes`, `trabajos` | ver ADR-0005 | |
 | `eventos` | ver ADR-0006 | |
 | `colocados` | codigo_perfil, cuenta, fecha_corte | Espejo de solo lectura |
+| `equipos` | id, invitado_id (correo verificado), enlace_id, creado_en, actualizado_en; único (invitado_id, enlace_id) | «Mi equipo» (CRN-12): cada invitado ve solo el suyo; se copia completo a la solicitud |
+| `equipo_perfiles` | equipo_id, codigo_perfil, orden, agregado_en | Solo perfiles publicables del enlace |
+| `borradores_evidencia` | colocado_id, modalidad_prueba_id, fecha_extraida, resultado_extraido, texto_plantilla, confirmado_por, confirmado_en | HU-140 (CRN-11): plantilla determinista; no vale como evidencia hasta que una persona lo confirma |
 | `artefactos` | hash_sha256, ruta_privada, tipo, tamano, perfil_id | Nunca URL pública |
 | `lotes_importacion` | id, archivo_hash, modo, estado (`calculado|aplicando|aplicado|abortado|revertido`), iniciado_en, terminado_en, filas_aplicadas, error, aplicado_por, foto_previa JSON por perfil | Solo el último aplicado es reversible |
 | `auditoria` | id, actor, entidad, entidad_id, campo, antes, despues, origen, cuando, hash_anterior, hash (HMAC) | Solo inserción; índice por (entidad, entidad_id) |
@@ -167,6 +172,11 @@ add:
     consentimientos vigentes, así que todos los perfiles quedan en `borrador` hasta que Talento Humano
     vuelva a registrar cada consentimiento con su evidencia. La cola de solicitudes, la auditoría y los
     artefactos de evidencia de esa ventana también se pierden.
+  - **Borrador de evidencia (HU-140, CRN-11):** `ServicioBorradorEvidencia` arma el texto desde una
+    plantilla por modalidad de prueba del catálogo y extrae fecha y resultado del material de entrada
+    con patrones (regex de fecha y de resultado sobre un vocabulario cerrado). Si un patrón no
+    encuentra valor, el campo queda vacío para que la persona lo complete. No llama a ningún servicio
+    externo. Guardarlo exige confirmación nominal (queda en la auditoría).
   - **Retención (propuesta, CRN-10, a validar):** consentimientos revocados y su evidencia se
     conservan 5 años como prueba y luego se anonimizan; `intentos` y códigos se purgan a los 30 días;
     auditoría se conserva mientras exista el perfil más 5 años.
@@ -301,13 +311,15 @@ pérdida de hasta 7 días declarada.
 | CON-16 | ✅ | JetBackup diario asumido; restauración de prueba planificada | — |
 | CRN-9 | ⚠️ | Consecuencia declarada con cifra (hasta 7 días, consentimientos incluidos); exportación fuera del servidor | Consentimientos no reconstruibles desde exportación; destino de la exportación sin decidir |
 | CRN-10 | ⚠️ | Retención propuesta (5 años consentimientos y auditoría, 30 días intentos) | Propuesta sin validar legalmente |
+| CRN-11 | ✅ | Plantilla determinista sin IA; plan: unitarios de extracción por patrón (fechas en formatos locales, resultados del vocabulario, campo vacío si no hay coincidencia), test de contrato de 0 llamadas salientes y test de que sin confirmación no se guarda como evidencia | Divergencia con el texto actual de HU-140, a reflejar por discovery |
+| CRN-12 | ✅ | `equipos`/`equipo_perfiles` con único (invitado, enlace); plan en ADR-0004 | — |
 | CRN-14 | ❌ | No se resuelve aquí | Devuelto a discovery |
 | CRN-15 | ✅ | `If-Match` + `version` que sube en hijas, consentimiento y fusión; 409; reintento ante interbloqueo. Plan: test de dos ediciones concurrentes, una sobre roles y otra sobre el perfil (la segunda recibe 409); test de interbloqueo inyectado que termina en éxito o 503 sin escritura parcial | — |
 
 **Drivers no resueltos en esta iteración:** CRN-14 (modalidad obligatoria para publicar, a corregir en
 discovery); CRN-10 (retención: propuesta sin validar); verificaciones pendientes en el hosting
 (permiso de triggers, tiempo y memoria de importación, subida de artefactos grandes) para QA-9,
-QA-11, UC-14 y CON-2; decisiones de negocio de §6 para UC-4 y QA-12.
+QA-11, UC-14 y CON-2; las decisiones de negocio de UC-4 y QA-12 quedaron tomadas en la revisión única (§6).
 
 ## 6. Consecuencias
 
@@ -340,17 +352,19 @@ QA-11, UC-14 y CON-2; decisiones de negocio de §6 para UC-4 y QA-12.
     límite de filas.
   - Interbloqueos más frecuentes de lo previsto si coinciden importación, panel y cron de colocados.
 - **Trade-offs de negocio abiertos (decide el equipo, no la arquitectura):**
-  - **Precisión de ciudades:** aceptar que el servidor revele la ciudad de perfiles que cumplen
-    modalidad, rol y país aunque fallen otros criterios (coste: pequeña exposición extra de un dato
-    personal), o llevar más criterios a PHP (coste: duplicar más del motor y romper D-14 en la
-    práctica). Recomendación: aceptar el filtro mínimo.
-  - **Destino de la exportación y RPO/RTO ante pérdida del servidor:** hoy hasta 7 días de pérdida,
-    consentimientos incluidos, y sin cifra de restauración. Opciones: exportación diaria cifrada a
-    Google Drive de Trycore (baja la pérdida a 1 día, añade un cron y una credencial); mantener la
-    semanal (sin coste extra, 7 días); réplica en otro servidor (fuera del hosting compartido).
-    Quién custodia la copia lo decide Tecnología con Talento Humano.
   - **Destinatario del ancla diaria:** qué persona o buzón es el «responsable técnico» y cuánto tiempo
     conserva esos correos (debe ser al menos lo que dure la auditoría).
+- **Decisiones de la revisión única (sponsor, 2026-09-25):**
+  - **CRN-11 (HU-140):** borrador de evidencia por plantilla determinista, sin IA; ningún dato sale
+    del servidor; el resultado lo confirma una persona. Discovery debe reflejarlo en HU-140.
+  - **CRN-12:** «Mi equipo» por invitado en servidor (`equipos`, `equipo_perfiles`); el Perfil
+    Objetivo sigue por dispositivo (D-16).
+  - **Ciudad:** solo cuando la necesidad es presencial o híbrida, con el filtro mínimo en servidor
+    (se acepta la pequeña exposición extra de R-20).
+  - **Exportación y recuperación:** semanal, cifrada, a Google Drive de Trycore; en v1 la hace a mano
+    el responsable técnico (descarga el export cifrado y lo carga a Drive), sin integración nueva.
+    Objetivo RPO 24 h / RTO 4 h (QA-12). Ante pérdida total del servidor la ventana sigue siendo de
+    hasta 7 días (R-8 aceptado).
 - **Operacionales:** tres crons diarios (verificar auditoría y enviar ancla, colocados, purga) y uno
   semanal (exportación); ensayo de restauración antes de producción y tras cada cambio de esquema
   mayor; rotar la clave de auditoría exige empezar un nuevo tramo de cadena y anclarlo.

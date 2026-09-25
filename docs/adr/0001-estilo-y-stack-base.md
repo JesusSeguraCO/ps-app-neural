@@ -2,7 +2,7 @@
 id: 0001
 title: "Estilo arquitectónico, stack y estructura del sistema"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [estilo, stack, monorepo, estatico, php, mariadb]
@@ -263,4 +263,15 @@ las iteraciones 2–6.
   [0007](0007-entornos-despliegue-y-perimetro.md) (hosts por entorno, pipeline, CON-3).
 - PRD §8, §8.1 (M-1..M-8), §8.2 (A-1..A-8), §8.3, §14.7, D-2, D-17, D-23 · prototipo
   `docs/07-prototipo/handoff/README.md`
-- Stack operacionalizado en: `.claude/config/stack-allowlist.json`
+- Stack operacionalizado en: `.claude/config/stack-allowlist.json` (consolidado tras la revisión única del sponsor,
+  2026-09-25).
+
+### Stack consolidado (2026-09-25)
+
+| Ecosistema | Producción | Desarrollo |
+|------------|------------|------------|
+| npm | `next` 15, `react` 19, `react-dom` 19, `typescript`, `tailwindcss` 3.4, `tailwindcss-animate`, `@radix-ui/*` (primitivas de shadcn/ui), `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `nuqs`, `next-themes` | `vitest`, `@testing-library/react`, `fast-check`, `@playwright/test`, `@axe-core/playwright`, `@lhci/cli`, `eslint`, `prettier` |
+| composer | `slim/slim` 4, `slim/psr7`, `phpmailer/phpmailer` 6 | `phpunit/phpunit` |
+
+Toda dependencia fuera de esta lista la bloquea el hook `stack-guard.sh` y exige un ADR nuevo o una
+enmienda a este.

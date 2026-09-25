@@ -2,7 +2,7 @@
 id: 0005
 title: "Integraciones y trabajo diferido: HubSpot, correo, notificaciones y cron"
 date: 2026-09-25
-status: proposed
+status: accepted
 authors:
   - setup-architecture (/build:architect)
 tags: [integraciones, hubspot, outbox, cron, correo, smtp, notificaciones, escalamiento, observabilidad]
@@ -60,9 +60,9 @@ add:
 | QA-7 | **Asociaciones y nota idempotentes**: las asociaciones (negocio↔contacto, negocio↔empresa, negocio↔negocio abierto relacionado) se crean con la API de asociaciones, que es idempotente para el mismo par; la nota lleva el marcador `[ps:<solicitud_id>:nota]` en el cuerpo y antes de crearla se listan las notas **asociadas al negocio** (lectura por asociación, no por búsqueda) buscando el marcador. El contacto se lee por `idProperty=email`; si la creación devuelve conflicto se reutiliza el id existente. La empresa **no se crea**: se usa `hubspot_company_id` de la cuenta | Crear nota y contacto sin comprobación; crear empresa por dominio | Evita notas y contactos repetidos; 0 empresas duplicadas por construcción |
 | UC-7, CRN-7 | **Resolución de contacto y empresa** desde la cuenta del portal (`hubspot_company_id`, propietario); contacto creado asociado a la empresa del enlace si no existe; si la cuenta tiene un negocio abierto se crea uno nuevo **relacionado** (D-7); resumen como nota en la línea de tiempo | Buscar la empresa por dominio del correo; actualizar el negocio abierto | El dominio no identifica la cuenta de forma fiable; D-7 manda negocio nuevo relacionado |
 | QA-6 | **Respeto de rate limits**: 429 → backoff con `Retry-After` si viene, sin contar como fallo de negocio | Reintento inmediato | Evita agravar el límite y falsas alertas |
-| UC-15, QA-22 | **Notificación como trabajo en la misma cola**, encolada al completar `crear_negocio` y procesada **en la misma corrida** si el presupuesto lo permite; 5 campos de RF-9.7.2 por correo + canal diario detrás del puerto `CanalAviso` (pendiente CRN-2). Si `crear_negocio` llega a `fallando` (3.er fallo), se envía un **aviso degradado** sin enlace al negocio y con enlace a la solicitud en el panel (propuesta, a confirmar) | Solo correo; notificación síncrona en la petición; esperar indefinidamente al negocio | RF-9.7.1 pide canal diario además del correo; la cola da reintento; el aviso degradado evita que una caída de HubSpot deje al comercial sin saber de la solicitud |
+| UC-15, QA-22 | **Notificación como trabajo en la misma cola**, encolada al completar `crear_negocio` y procesada **en la misma corrida** si el presupuesto lo permite; 5 campos de RF-9.7.2 **solo por correo**; el segundo canal es la **notificación nativa de HubSpot al asignar propietario** (sin integración nueva; CRN-2 decidido el 2026-09-25). El puerto `CanalAviso` queda sin adaptador en v1. Si `crear_negocio` llega a `fallando` (3.er fallo), se envía un **aviso degradado** sin enlace al negocio y con enlace a la solicitud en el panel (propuesta, a confirmar) | Google Chat por webhook; WhatsApp; notificación síncrona en la petición; esperar indefinidamente al negocio | RF-9.7.1 pide «no solo por correo»: la notificación de HubSpot cuenta como segundo canal sin integración nueva (divergencia a reflejar en el PRD por discovery); la cola da reintento; el aviso degradado evita que una caída de HubSpot deje al comercial sin saber de la solicitud |
 | CRN-1, QA-14 | **Señal de apertura propia**: el negocio se considera abierto por (a) primer clic en el enlace rastreado `/r/<token>` de la notificación, que registra y redirige al negocio, o (b) cambio de etapa o de propietario leído de HubSpot. **Riesgo declarado:** si el comercial abre el negocio directamente en HubSpot y no cambia etapa ni propietario, el portal no lo ve y escalará a Dirección Comercial a las 4 h hábiles (**escalamiento falso**). Mitigaciones: el aviso de escalamiento incluye «ya lo estoy atendiendo» (`/r/<token>?atender`) que corta la cadena; se evalúa como señal adicional la actividad registrada por un usuario en el negocio (nota, llamada, correo) si la API la expone de forma fiable (a verificar) | Esperar que la API de HubSpot exponga «visto»; píxel en el correo de aviso; `hs_lastmodifieddate` (cambia también por procesos del sistema) | La API no expone apertura; el píxel es poco fiable (CRN-5); preferimos un falso positivo visible y cortable a un escalamiento que nunca ocurre |
-| QA-14, CRN-3 | **Escalador por cron cada 15 min** con calendario hábil en tabla (horario, festivos de Colombia, zona `America/Bogota`, administrable); 4 h hábiles sin apertura → Dirección Comercial; 24 h hábiles sin cambio de etapa → Dirección General; registra tiempo hasta la primera apertura (RF-9.7.4). **Puerto `Reloj`** para pruebas con reloj simulado. Mismo presupuesto de tiempo y timeouts que el despachador | Workflows de HubSpot para escalar; festivos fijos en código; hora del servidor sin zona | Los workflows dependen de permisos y del plan (CRN-7) y dejan la métrica fuera del portal; festivos móviles cambian cada año |
+| QA-14, CRN-3 | **Escalador por cron cada 15 min** con calendario hábil en tabla (**L–V 8:00–18:00 `America/Bogota` con festivos de Colombia**, administrable; valores aceptados el 2026-09-25); 4 h hábiles sin apertura → Dirección Comercial; **24 h hábiles** (no naturales) sin cambio de etapa → Dirección General; registra tiempo hasta la primera apertura (RF-9.7.4). **Puerto `Reloj`** para pruebas con reloj simulado. Mismo presupuesto de tiempo y timeouts que el despachador | Workflows de HubSpot para escalar; festivos fijos en código; hora del servidor sin zona | Los workflows dependen de permisos y del plan (CRN-7) y dejan la métrica fuera del portal; festivos móviles cambian cada año |
 | QA-8, CON-5 | **Un solo adaptador de correo** con PHPMailer por SMTP autenticado (587, STARTTLS, timeout 15 s) de `notify@people.trycore.com`; códigos de acceso **en línea** (P95 ≤ 60 s); si el envío en línea falla (error o timeout), el **mismo código** se encola como trabajo `enviar_codigo` de prioridad alta y se reintenta en la siguiente corrida, y la pantalla lo dice («puede tardar unos minutos»). Avisos y boletín siempre por la cola | `mail()`/`sendmail`; proveedor transaccional externo (SendGrid, SES); todo por la cola; fallo en línea sin reintento | `sendmail` prohibido (CON-5); un proveedor externo no está en el stack del PRD; el código no puede esperar 5 min en el camino normal, pero tampoco perderse si el SMTP falla una vez |
 | UC-16, CRN-5 | **Boletín por lotes** dentro de cada corrida (presupuesto de 150 s), enlace firmado por destinatario (ADR-0002), bajas persistentes, píxel propio con estado «sin dato» explícito, clic rastreado, rebotes leídos del buzón por IMAP si la extensión está disponible o marcados «sin dato» | Envío masivo en una sola petición; herramienta de marketing de HubSpot | Límite de 180 s por proceso; RF-18.2 exige enlace generado desde el envío por contacto |
 | QA-13, CRN-8 | **Vigilancia en tres capas**: (1) tabla `tareas_ejecucion` escrita por cada corrida (en `finally`, también si hay excepción) y vigilante que compara con 2× intervalo; (2) chequeo muestreado en el middleware de la API; (3) **monitor externo OBLIGATORIO tipo «dead man's switch»**: al terminar cada corrida del despachador se hace un ping HTTPS (`curl`, timeout 5 s) a una URL del monitor; si el monitor no recibe ping en 10 min, avisa por su propio canal al responsable técnico. Además el monitor sondea `GET /api/v1/salud`, que devuelve 503 si el último despacho tiene más de 10 min (tácticas: *heartbeat*, *dead man's switch*, *monitor externo*) | Solo el correo de salida del cron de cPanel; solo un vigilante en cron; monitor externo opcional solo sobre `/salud` | Si cae el crontab entero caen el vigilante y el despachador (CRN-8); sin tráfico nocturno el chequeo muestreado no corre; si cae el SMTP la alerta local tampoco sale. Solo un observador fuera del hosting que espera un latido detecta todos esos casos |
@@ -80,7 +80,7 @@ add:
     `NotificarSolicitud`, `EscalarSolicitudes`, `EnviarCodigoAcceso`, `EnviarLoteBoletin`,
     `VigilarTareas`, `RegistrarVoto`.
   - Puertos: `CrmPort` (→ `Adapters/HubSpot`), `CorreoPort` (→ `Adapters/Mail`, PHPMailer),
-    `CanalAviso` (adaptador por decidir, CRN-2), `LectorRebotes` (IMAP o nulo), `Reloj`,
+    `CanalAviso` (sin adaptador en v1: CRN-2 decidido como solo correo + notificación nativa de HubSpot), `LectorRebotes` (IMAP o nulo), `Reloj`,
     `Arrendamiento` (reclamo de filas), `Latido` (→ monitor externo), repositorios en
     `Adapters/Persistencia`.
   - Crons (`/usr/local/bin/php`, salida a log propio en la carpeta privada):
@@ -110,7 +110,8 @@ add:
        negocio↔negocio relacionado (D-7).
     3. `nota`: lista notas asociadas al negocio; si ninguna tiene el marcador `[ps:<id>:nota]`, la crea.
     Al completar los tres, encola `notificar` con el enlace al negocio.
-  - `NotificarSolicitud`: envía los 5 campos por correo y por `CanalAviso`, con enlace rastreado
+  - `NotificarSolicitud`: envía los 5 campos por correo (el aviso nativo de HubSpot sale al asignar
+    propietario en `crear_negocio`, sin código propio), con enlace rastreado
     `/r/<token>`; variante degradada (sin enlace al negocio) si `crear_negocio` está `fallando`.
   - `EscalarSolicitudes`: con `Reloj` y `calendario_habil`, calcula horas hábiles transcurridas; consulta
     apertura (clic `/r/`, «ya lo estoy atendiendo», o cambio de propietario/etapa en HubSpot); encola aviso
@@ -159,7 +160,7 @@ flowchart LR
   MW --> DB
   D --> HS[Adapters/HubSpot · curl 20 s]
   D --> ML[Adapters/Mail · PHPMailer SMTP 587 · 15 s]
-  D --> CA[CanalAviso · CRN-2]
+  D --> CA[CanalAviso · sin adaptador en v1]
   E --> HS
   HS --> HUB[[HubSpot API<br/>ps_solicitud_id único]]
   ML --> SMTP[[notify@people.trycore.com]]
@@ -242,28 +243,28 @@ llamada extra cada 5 min mientras dure la caída).
 | Driver | ✅/⚠️/❌ | Evidencia / medida | Riesgo residual |
 |--------|---------|--------------------|-----------------|
 | UC-7 | ⚠️ | Outbox + `CrearNegocioHubSpot` por subpasos con resolución de contacto/empresa y D-7. Verificación: prueba de integración contra un portal de pruebas de HubSpot en staging | Bloqueado por CRN-7: pipeline, scopes de la private app y propiedad única `ps_solicitud_id` sin crear |
-| UC-15 | ⚠️ | Aviso por correo con 5 campos + escalador con calendario y reloj simulado | Canal diario sin decidir (CRN-2); destinatarios nominales sin definir; escalamiento falso (CRN-1) |
+| UC-15 | ⚠️ | Aviso por correo con 5 campos + notificación nativa de HubSpot al asignar propietario + escalador con calendario y reloj simulado | Destinatarios nominales sin definir; escalamiento falso (CRN-1) |
 | UC-16 | ⚠️ | Lotes dentro del presupuesto de 150 s, enlace firmado, bajas, píxel/clic propios | Límite de envío por hora del SMTP compartido y extensión IMAP sin verificar en el hosting |
 | UC-19 | ✅ | `tareas_ejecucion` escrita en `finally` por cada corrida + vigilante + monitor externo. Plan: test que fuerza excepción y comprueba el registro; en staging, apagar el crontab y medir la alerta | — |
 | QA-6 | ⚠️ | 100 % persistido antes de responder (outbox en 1 transacción); confirmación sin HubSpot; alerta al 3.er fallo; recuperación automática de trabajos `en_curso` > 10 min | **Peor caso ~65 min tras la recuperación** > meta de 60 min (mitigable con tope 55 min o sonda de recuperación); P95 ≤ 2 s sin medir en el hosting; ModSecurity sobre el POST sin probar con cargas reales |
 | QA-7 | ✅ | Propiedad única en HubSpot (duplicado imposible por construcción) + clave por subpaso + lease por fila + `clave_idempotencia` + hash D-7. Plan: inyección de 50 respuestas perdidas y corridas solapadas (doble de HubSpot en CI y repetición en el portal de pruebas en staging) con 0 negocios, 0 empresas y 0 notas duplicadas | Depende de que la propiedad se cree única (el adaptador lo verifica al arrancar y no despacha si no); una nota podría repetirse si la lectura por asociación falla justo después de crearla (fuera de la medida de QA-7) |
 | QA-8 | ⚠️ | Un solo adaptador SMTP con timeout 15 s; 0 `sendmail` por diseño; código en línea con reintento por cola | SPF/DKIM/DMARC de `people.trycore.com` y colocación en bandeja con IP compartida 192.99.84.46 sin prueba con buzones reales; si el SMTP falla, el código sale en la siguiente corrida (hasta ~5 min) y rompe el P95 ≤ 60 s en ese caso |
 | QA-13 | ✅ | 100 % de corridas registradas; presupuesto propio de 150 s + timeouts 20 s/15 s (corrida < 180 s); alerta a 2× intervalo por vigilante y por latido externo (sin latido 10 min → alerta), independiente del cron, del tráfico y del SMTP. Plan: en staging, detener el crontab y medir alerta ≤ 10 min; doble de HubSpot que tarda 20 s por llamada y medir duración < 180 s | Proveedor del monitor sin elegir; posibles falsas alarmas por fallos puntuales de salida HTTPS |
-| QA-14 | ⚠️ | Cron cada 15 min cumple «vencimiento + 15 min»; prueba con reloj simulado sobre semana con festivo | Horario hábil y festivos pendientes (CRN-3); escalamiento falso si abren el negocio directo en HubSpot (CRN-1) |
+| QA-14 | ⚠️ | Cron cada 15 min cumple «vencimiento + 15 min»; prueba con reloj simulado sobre semana con festivo | Festivos de Colombia a cargar y mantener en la tabla cada año; escalamiento falso si abren el negocio directo en HubSpot (CRN-1) |
 | QA-22 | ⚠️ | `notificar` encolado al completar el negocio y procesado en la misma corrida; aviso degradado al 3.er fallo | Tick de 5 min + llamadas a HubSpot + SMTP puede rozar o pasar los 5 min en el P95; sin medir en el hosting; aviso degradado pendiente de confirmar |
 | CON-1 | ✅ | Solo MariaDB + cron + PHP CLI; sin workers ni colas externas | — |
 | CON-2 | ✅ | Presupuesto medido por el propio bucle (PHP CLI no aplica `max_execution_time`), coste máximo por tipo y timeouts; plan de medición en QA-13 | Si el hosting admite `pcntl_alarm`, añadirlo como corte duro (a verificar) |
 | CON-5 | ✅ | PHPMailer SMTP 587 STARTTLS con `notify@people.trycore.com`; `SMTP_PASSWORD` en `config.php`; grep en CI de `mail(`/`sendmail` = 0 | — |
 | CON-7 | ✅ | Todos los adaptadores HTTP, incluido el latido, con `curl`; grep en CI de `file_get_contents('http` = 0 | — |
 | CRN-1 | ⚠️ | Clic rastreado `/r/<token>` + cambio de etapa/propietario + «ya lo estoy atendiendo» | Escalamiento falso si el comercial trabaja el negocio en HubSpot sin esas señales; actividad de usuario como señal adicional sin verificar |
-| CRN-2 | ❌ | Puerto `CanalAviso` diseñado, adaptador sin elegir | Decisión de negocio pendiente |
-| CRN-3 | ⚠️ | Tabla administrable diseñada | Valores y responsable pendientes |
+| CRN-2 | ✅ | Decidido: solo correo + notificación nativa de HubSpot al asignar propietario. Plan: test de contrato de que `crear_negocio` asigna `hubspot_owner_id` (dispara el aviso nativo) y prueba en staging de que el comercial lo recibe | RF-9.7.1 pide «no solo por correo»; se cumple con el aviso de HubSpot. Divergencia a reflejar en el PRD por discovery |
+| CRN-3 | ✅ | Valores aceptados: L–V 8:00–18:00 `America/Bogota`, festivos de Colombia en tabla administrable, 24 h en horas hábiles. Plan: prueba con reloj simulado sobre semana con festivo | Carga anual de festivos |
 | CRN-4 | ✅ | Reintento infinito + bandeja de fallos desde el 3.er fallo; test de un trabajo que pasa a `fallando` sin dejar de reintentar | — |
 | CRN-5 | ✅ | Estados «sin dato» explícitos para apertura y rebotes | Extensión IMAP de PHP sin verificar: si falta, todos los rebotes quedan «sin dato» |
 | CRN-7 | ⚠️ | `hubspot_company_id` y propietario en la cuenta; verificación de propiedad única al arrancar | Scopes, pipeline y propiedad `ps_solicitud_id` (única) dependen de Mercadeo y Comercial |
 | CRN-8 | ✅ | Monitor externo obligatorio con latido por corrida + sondeo de `/salud`; plan de prueba en QA-13 | Ver QA-13 |
 
-**Drivers no resueltos en esta iteración:** CRN-2 (canal diario), CRN-3 (calendario hábil), CRN-7
+**Drivers no resueltos en esta iteración:** CRN-7
 (configuración de HubSpot, incluida la propiedad única), el peor caso de ~65 min de QA-6 (elegir
 mitigación), el aviso degradado de QA-22, y las verificaciones en el hosting (límite de envío SMTP,
 extensión IMAP, SPF/DKIM/DMARC, ModSecurity con cargas reales, P95 de confirmación). Se devuelven al
@@ -299,10 +300,6 @@ backlog arquitectónico.
     código de acceso hasta la siguiente corrida.
   - Falsas alarmas del monitor si la salida HTTPS del hosting falla de forma intermitente.
 - **Trade-offs de negocio abiertos (requieren decisión humana):**
-  - **CRN-2 — canal diario de notificaciones:** Google Chat por webhook, notificación nativa de HubSpot
-    por asignación de propietario, u otro. Sin decisión, el aviso solo sale por correo.
-  - **CRN-3 — horario hábil:** horario semanal, festivos, zona y quién mantiene el calendario. Sin
-    datos, el escalamiento no corre.
   - **Destinatarios nominales** de escalamiento (Dirección Comercial, Dirección General) y responsable
     técnico de la bandeja de fallos y del monitor.
   - **Peor caso de QA-6:** aceptar ~65 min, bajar el tope a 55 min o añadir la sonda de recuperación.
@@ -310,6 +307,14 @@ backlog arquitectónico.
   - **Tolerancia al escalamiento falso:** aceptarlo con «ya lo estoy atendiendo» o pedir al equipo
     comercial que siempre abra desde el enlace del aviso.
   - **Proveedor del monitor externo** (servicio de latido gratuito o de pago).
+- **Decisiones de la revisión única (sponsor, 2026-09-25):**
+  - **CRN-2 canal de notificaciones:** solo correo + notificación nativa de HubSpot al asignar
+    propietario, sin integración nueva. RF-9.7.1 pide «no solo por correo»; la notificación de
+    HubSpot cuenta como segundo canal. Divergencia a reflejar en el PRD por discovery.
+  - **CRN-3 horario hábil:** L–V 8:00–18:00 `America/Bogota` con festivos de Colombia en tabla
+    administrable; las 24 h de escalamiento de RF-9.7 son horas hábiles.
+  - **Regla «3 envíos sin abrir» (RF-18.6):** se mide por clic o entrada al portal, no por apertura
+    (píxel). Detalle en ADR-0006.
 - **Operacionales:** crons con `/usr/local/bin/php` y salida redirigida a log propio en la carpeta
   privada (el cron de cPanel envía por correo toda salida no redirigida); `HUBSPOT_PRIVATE_APP_TOKEN`,
   `SMTP_PASSWORD` y `LATIDO_URL` en `config.php`; pruebas de ModSecurity con cargas reales antes de
