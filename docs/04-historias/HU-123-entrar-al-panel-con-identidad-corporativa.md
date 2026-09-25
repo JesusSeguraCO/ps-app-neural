@@ -53,7 +53,7 @@ prd_version: 4.9
 
 ## Notas
 
-Cubre **RF-8.1**, **RF-8.1.1**, **RF-8.1.3**, **RF-8.1.4**, **RF-8.1.5** y **RF-8.1.6**. Aplica **D-22 revisada el 2026-09-24**: no hay proveedor de identidad; el acceso es correo inscrito más código de un uso, dentro de lo que permite el hosting compartido (§8.3 del PRD). El archivo conserva su nombre anterior para no romper referencias.
+Cubre **RF-8.1**, **RF-8.1.1**, **RF-8.1.3**, **RF-8.1.4**, **RF-8.1.5** y **RF-8.1.6**. Aplica **D-22 revisada el 2026-09-24**: no hay proveedor de identidad; el acceso es correo inscrito más código de un uso, dentro de lo que resuelve el propio portal, sin servicios externos de identidad (§8.3 del PRD). El archivo conserva su nombre anterior para no romper referencias.
 
 **Por qué esta historia va primera de la épica.** RF-8.1.3 lo dice sin rodeos: el registro de auditoría de RF-8.9 exige saber *quién* cambió algo, y el «quién» solo existe si hay identidad. Sin esta historia, HU-138 no se puede construir.
 
@@ -70,6 +70,6 @@ Cubre **RF-8.1**, **RF-8.1.1**, **RF-8.1.3**, **RF-8.1.4**, **RF-8.1.5** y **RF-
 | I | Independiente | ✓ no depende de otra historia del panel |
 | N | Negociable | ✓ describe el resultado; el formato del código y del mensaje es negociable |
 | V | Valiosa | ✓ elimina administración de credenciales y cierra el riesgo de accesos huérfanos |
-| E | Estimable | ✓ sin proveedor externo: firma, código, sesión y correo saliente, todo en el hosting |
+| E | Estimable | ✓ sin proveedor de identidad: firma, código y sesión en el propio portal; correo saliente por Mailgun (§8.3) |
 | S | Pequeña | ✓ |
 | T | Testeable | ✓ los criterios describen resultados observables |

@@ -245,8 +245,7 @@ latido.
   QA-8, QA-13, QA-14, QA-22 · CON-18, CON-19, CON-20, CON-21 · CRN-1, 2, 3, 4, 5, 7, 8.
 - Sustituye a: [ADR-0005](0005-integraciones-y-trabajo-diferido.md) (su §3 sigue siendo la referencia
   del algoritmo de subpasos de HubSpot).
-- PRD v4.11: RF-5, RF-9.1–9.7, RF-10.8, RF-17, RF-18, RF-1.6 · D-6, D-7, D-21 · **§8.3 pendiente de
-  reescribir en discovery** (SMTP del hosting → Mailgun).
+- PRD v4.11: RF-5, RF-9.1–9.7, RF-10.8, RF-17, RF-18, RF-1.6 · D-6, D-7, D-21 · §8.3 reescrita en el PRD v4.12 (Mailgun).
 - Specs: `docs/10-specs/correo-curado.md`, `docs/10-specs/enlaces-curados.md`.
 - HU: HU-096–HU-107, HU-077, HU-113–HU-117 · Épicas: EP-005, EP-007, EP-011.
 - ADR relacionados: [0008](0008-plataforma-contenedores-y-stack.md), [0002](0002-identidad-acceso-y-sesiones.md)

@@ -103,7 +103,7 @@ La marca entre paréntesis es el **peor veredicto** que el driver recibe en el �
 | CON-15 Cloudflare, ModSecurity, sin listado | Restricción | — | §8.3, hosting §5 | 2, 7, 8 | 0002, 0003, 0010 | REEMPLAZADA (it. 8 → CON-22) |
 | CON-16 JetBackup en el mismo servidor, 1 día | Restricción | — | §8.3, §10.3 | 3 | 0003 | REEMPLAZADA (it. 8 → CON-19) |
 | CON-17 Alcance completo del panel en el MVP | Restricción | — | D-8 | 3 | 0003 (implícito) | PENDIENTE |
-| CON-18 Contenedores Docker portables → DO App Platform; Next.js TS + worker Node | Restricción | — | Decisión del sponsor 2026-09-25 (sustituye a D-23; PRD §8.3 pendiente) | 8 | 0008, 0010 | ABORDADO (⚠️) |
+| CON-18 Contenedores Docker portables → DO App Platform; Next.js TS + worker Node | Restricción | — | D-23 revisada, PRD v4.12 §8.3 | 8 | 0008, 0010 | ABORDADO (⚠️) |
 | CON-19 PostgreSQL administrado | Restricción | — | Decisión del sponsor 2026-09-25 | 8 | 0008, 0009, 0010 | ABORDADO (⚠️) |
 | CON-20 Correo solo por Mailgun | Restricción | — | Decisión del sponsor 2026-09-25 (sustituye a CON-5) | 8 | 0009 | ABORDADO (✅) |
 | CON-21 Llamadas externas solo desde servidor con timeout | Restricción | — | Derivada de CON-7 | 8 | 0009 | ABORDADO (✅) |
@@ -232,7 +232,7 @@ fuera de capa) · 0 VERIFICADO. Los drivers antes cubiertos por 0001/0005/0007 a
 | T-14 | **Dónde vive la BD de staging** | (a) Clúster propio pequeño (coste mensual extra); (b) base separada en el clúster de producción (sin coste extra, pero el PITR es por clúster: un ensayo de restauración de staging arrastra datos reales de producción, Ley 1581, y staging tiene camino de red a producción) | (a) | 0010 | **RESUELTA 2026-09-25:** staging completo en un servidor de la empresa con Docker (mismas imágenes, PostgreSQL en contenedor, Cloudflare Tunnel); lo propio de App Platform se verifica en producción en oscuro |
 | T-15 | **Región de datos** | (a) DO `nyc` + Mailgun EE. UU. (latencia ~70 ms desde Bogotá; transferencia internacional a EE. UU.); (b) DO `ams`/`fra` + Mailgun UE (más latencia) | (a), con validación legal de la transferencia | 0008, 0009, 0010 | **RESUELTA 2026-09-25:** indiferente para el sponsor → DO `nyc` + Mailgun EE. UU.; validación legal de la transferencia sigue en R-44 |
 | T-16 | **Ventana de pérdida ante caída de la cuenta o la región de DO y copia de evidencias** | (a) Aceptar hasta 7 días (exportación semanal) y evidencias sin copia fuera de DO; (b) exportación diaria cifrada fuera de DO (más carga manual o integración nueva) | (a), como ya se aceptó para la pérdida del servidor | 0010 | **RESUELTA 2026-09-25:** indiferente para el sponsor → hasta 7 días y evidencias sin copia fuera de DO |
-| T-17 | **Reescribir D-23 y §8.3 del PRD** (plataforma), `requisitos-tecnicos-hosting.md`, el bloque de dominio de `CLAUDE.md` (secretos y fronteras: SMTP → Mailgun) y `build-config.json#boundaries` | Actualizar con aprobación | Hacerlo antes del DoR de la épica caparazón | 0008–0010 | PENDIENTE (discovery, no arquitectura) |
+| T-17 | **Reescribir D-23 y §8.3 del PRD** (plataforma), `requisitos-tecnicos-hosting.md`, el bloque de dominio de `CLAUDE.md` (secretos y fronteras: SMTP → Mailgun) y `build-config.json#boundaries` | Actualizar con aprobación | Hacerlo antes del DoR de la épica caparazón | 0008–0010 | **RESUELTA 2026-09-25:** PRD v4.12 (D-23 revisada, §8.3 reescrita, RF-1.2.6, 2.6.4, 8.1, 8.11.1, 8.13.1, 9.6.1, 9.7.3 y §10.3), épicas, backlog y HU-123 alineados; `requisitos-tecnicos-hosting.md` marcado como antecedente; `CLAUDE.md`, `build-config.json` y `stack-allowlist.json#source` actualizados |
 
 ## Bitácora de iteraciones
 
@@ -259,5 +259,4 @@ fuera de capa) · 0 VERIFICADO. Los drivers antes cubiertos por 0001/0005/0007 a
 
 El sponsor cambió la plataforma después de aceptar 0001–0007 (Docker portable → DigitalOcean App
 Platform; Next.js TypeScript + worker Node; PostgreSQL administrado; Mailgun; se abandona cPanel). La
-iteración 8 lo recoge en ADR-0008, 0009 y 0010 y en las enmiendas de 0002, 0003, 0004 y 0006. Queda en
-discovery reescribir D-23, §8.3 y los documentos asociados (T-17).
+iteración 8 lo recoge en ADR-0008, 0009 y 0010 y en las enmiendas de 0002, 0003, 0004 y 0006. Discovery quedó alineado en el PRD v4.12 (T-17).

@@ -1,6 +1,6 @@
 {
-  "_comment": "Allowlist de dependencias del proyecto. Derivada de la sección de requisitos técnicos del PRD. El hook stack-guard.sh bloquea dependencias fuera de `allow` al editar package.json. Iteración 8 (2026-09-25): plataforma Docker/DO App Platform + Next.js TS + PostgreSQL + Mailgun; `source` se conserva por contrato del arnés y apunta al PRD §8.3, que aún describe cPanel hasta que discovery lo reescriba (T-17).",
-  "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-hosting-compartido-de-trycore",
+  "_comment": "Allowlist de dependencias del proyecto. Derivada de la sección de requisitos técnicos del PRD. El hook stack-guard.sh bloquea dependencias fuera de `allow` al editar package.json. Iteración 8 (2026-09-25): plataforma Docker/DO App Platform + Next.js TS + PostgreSQL + Mailgun; `source` apunta al PRD §8.3 reescrito en la v4.12 (D-23 revisada).",
+  "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-contenedores-en-digitalocean",
   "version": "2.0",
   "runtime": {
     "node": "22 LTS (portal, panel y worker en contenedor; ADR-0008)",

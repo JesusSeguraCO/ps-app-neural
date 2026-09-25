@@ -285,8 +285,7 @@ despliegue, perímetro y respaldo a ADR-0010.
 - ADR relacionados: [0002](0002-identidad-acceso-y-sesiones.md), [0003](0003-datos-persistencia-y-auditoria.md),
   [0004](0004-busqueda-determinista-y-estado.md), [0006](0006-telemetria-y-atribucion.md) (enmiendas
   de plataforma), [0009](0009-trabajo-diferido-worker-y-correo.md), [0010](0010-entornos-despliegue-y-perimetro.md).
-- PRD §8, §8.1, §8.2, §14.7, D-2, D-17 · **D-23 y §8.3 pendientes de reescribir en discovery** (el PRD
-  aún describe el hosting cPanel) · prototipo `docs/07-prototipo/handoff/README.md`.
+- PRD §8, §8.1, §8.2, §14.7, D-2, D-17 · D-23 y §8.3 reescritos en el PRD v4.12 · prototipo `docs/07-prototipo/handoff/README.md`.
 - Stack operacionalizado en: `.claude/config/stack-allowlist.json`.
 
 ### Stack propuesto (iteración 8)

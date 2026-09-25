@@ -1,5 +1,9 @@
 # Especificaciones del servidor de hosting
 
+> ⛔ **Antecedente — plataforma abandonada el 2026-09-25** (D-23 revisada, PRD v4.12). La v1 ya no corre en este
+> hosting: corre en contenedores Docker en DigitalOcean (PRD §8.3, ADR 0008–0010). Este documento se conserva
+> como registro de lo que se verificó; no es fuente de requisitos ni de stack.
+
 **Proyecto:** Portal de perfiles — línea People Service
 **Última verificación:** 25 de septiembre de 2026 (servidor migrado a CloudLinux 8; valores anteriores entre paréntesis)
 **Fuente:** cPanel de Trycore (paquete WP ULTIMATE V2)

@@ -27,8 +27,7 @@ tags:
 >
 > **Iteración 8 (2026-09-25):** el sponsor cambió la plataforma después de aceptar 0001–0007. Las
 > restricciones de hosting (CON-1, 2, 3, 5, 7, 15, 16) quedan marcadas como reemplazadas por CON-18..22,
-> que salen de esa decisión y **aún no están en el PRD** (D-23 y §8.3 describen cPanel hasta que
-> discovery los reescriba).
+> que salen de esa decisión, recogida en el PRD v4.12 (D-23 revisada, §8.3 reescrita).
 >
 > Las medidas marcadas *a validar* las propone la capa de arquitectura porque el PRD no las fija; se
 > confirman en la revisión única o quedan como riesgo abierto.
@@ -289,9 +288,9 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-15 | ⛔ **Reemplazada en la iteración 8 por CON-22** (ya no hay ModSecurity ni listado de directorios). Texto original: Cloudflare delante (caché de estáticos, límite de peticiones en token y código); ModSecurity activo; listado de directorios desactivado | §8.3, hosting §5 |
 | CON-16 | ⛔ **Reemplazada en la iteración 8 por CON-19** (respaldo y PITR de la BD administrada). Texto original: Respaldo JetBackup en el mismo servidor, pérdida máxima 1 día (riesgo aceptado) | §8.3, §10.3 |
 | CON-17 | Alcance completo del panel en el MVP | D-8 |
-| CON-18 | **Contenedores Docker portables**; destino inicial **DigitalOcean App Platform**. Backend TypeScript con **Next.js** (servidor + rutas de API) y un **worker Node** para trabajo diferido. El hosting cPanel se abandona | Decisión del sponsor 2026-09-25 (sustituye a D-23; **pendiente reflejar en PRD §8.3**) |
-| CON-19 | **PostgreSQL administrado** (respaldos y PITR fuera de los contenedores) | Decisión del sponsor 2026-09-25 (pendiente reflejar en PRD §8.3) |
-| CON-20 | Correo transaccional y boletín **solo por Mailgun** desde `notify@people.trycore.com`; `trycore.com` sigue en Google Workspace | Decisión del sponsor 2026-09-25 (sustituye a CON-5; pendiente reflejar en PRD §8.3) |
+| CON-18 | **Contenedores Docker portables**; destino inicial **DigitalOcean App Platform**. Backend TypeScript con **Next.js** (servidor + rutas de API) y un **worker Node** para trabajo diferido. El hosting cPanel se abandona | D-23 revisada, PRD v4.12 §8.3 |
+| CON-19 | **PostgreSQL administrado** (respaldos y PITR fuera de los contenedores) | D-23 revisada, PRD v4.12 §8.3 |
+| CON-20 | Correo transaccional y boletín **solo por Mailgun** desde `notify@people.trycore.com`; `trycore.com` sigue en Google Workspace | PRD v4.12 §8.3 (sustituye a CON-5) |
 | CON-21 | Llamadas externas **solo desde el servidor**, por adaptadores con timeout; nunca a URL aportadas por el usuario | Derivada de CON-7 y de la frontera de `build-config.json` (iteración 8) |
 | CON-22 | **Cloudflare delante** de los 4 hosts (proxy, caché de estáticos, límite de peticiones en el acceso) y el origen no alcanzable saltándose Cloudflare | Derivada de CON-15 (iteración 8) |
 

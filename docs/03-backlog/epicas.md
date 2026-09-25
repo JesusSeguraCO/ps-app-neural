@@ -2,11 +2,11 @@
 artefacto: epicas
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
-prd_version: 4.11
+prd_version: 4.12
 version: 5.4
 fecha: 2026-09-18
 total_epicas: 11
-prd_version_alineada: 4.11
+prd_version_alineada: 4.12
 ---
 
 # Épicas — Portal de Perfiles People Service
@@ -39,7 +39,7 @@ prd_version_alineada: 4.11
   - **RF-1.2.3 · Lo que no sirve.** Un código estático incluido en el mismo correo que el enlace: quien tiene el enlace tiene el código. Es fricción con ganancia nula.
   - **RF-1.2.4 · Beneficio adicional.** Hoy solo se sabe quién es el visitante si llega a enviar la solicitud. Con verificación al entrar se sabe desde el primer momento, que es lo que RF-7.3 y el informe del correo necesitan.
   - **RF-1.2.5** El mensaje de la puerta explica la razón —*los perfiles incluyen nombre y trayectoria de profesionales reales*—. Una fricción explicada construye marca; una fricción muda la destruye.
-  - **RF-1.2.6 · Sin proveedor de identidad.** El control completo —firma del enlace, lista de dominios, código, vigencia y revocación— lo resuelve el propio portal en el hosting (§8.3). No se instala ningún sistema de identidad externo (Keycloak, OAuth o similar).
+  - **RF-1.2.6 · Sin proveedor de identidad.** El control completo —firma del enlace, lista de dominios, código, vigencia y revocación— lo resuelve el propio portal en su servidor (§8.3). No se instala ningún sistema de identidad externo (Keycloak, OAuth o similar).
   - **RF-1.2.7 · Los correos invitados los declara quien genera el enlace.** Uno o varios por enlace. Por omisión se propone el contacto del envío en HubSpot; Talento Humano lo confirma o añade a otras personas de la cuenta. Cada invitado queda registrado con el enlace (RF-19.5).
   - **RF-1.2.8 · Descartado: un código temporal generado por Talento Humano y enviado junto al enlace.** Es el caso de RF-1.2.3: quien tiene el correo tiene el enlace y el código, así que no aporta nada. El código que protege es el que llega **al buzón que la persona escribe**, porque prueba que lo controla.
   - **RF-1.2.10 · Invitar a un colega.** Un invitado puede pedir desde el portal que se invite a otra persona, indicando su correo. La petición llega a Talento Humano, que la aprueba añadiendo ese correo al enlace, o la rechaza. **El acceso no se concede sin esa aprobación.** Así la segunda opinión del arquitecto sigue siendo posible, sin que el enlace sea una llave que abre a quien lo tenga.
@@ -206,7 +206,7 @@ prd_version_alineada: 4.11
 
 ### Requisitos de esta épica
 
-- **RF-8.1 · Acceso al panel: correo corporativo de Trycore con código de un uso** (D-22 revisada el 2026-09-24). Quien administra entra con su correo `@trycore.com`, recibe en él un código de un uso y abre una sesión de duración corta. **No se instala proveedor de identidad** (Keycloak, OAuth o similar): el hosting compartido no lo justifica y el correo corporativo ya resuelve lo que la identidad corporativa prometía. No es el mismo mecanismo que el del cliente y no debe serlo: el cliente entra dos o tres veces al año y es externo; quien administra el panel entra cada semana, escribe datos y maneja información personal de profesionales.
+- **RF-8.1 · Acceso al panel: correo corporativo de Trycore con código de un uso** (D-22 revisada el 2026-09-24). Quien administra entra con su correo `@trycore.com`, recibe en él un código de un uso y abre una sesión de duración corta. **No se instala proveedor de identidad** (Keycloak, OAuth o similar): un panel de pocas personas no lo justifica y el correo corporativo ya resuelve lo que la identidad corporativa prometía. No es el mismo mecanismo que el del cliente y no debe serlo: el cliente entra dos o tres veces al año y es externo; quien administra el panel entra cada semana, escribe datos y maneja información personal de profesionales.
   - **RF-8.1.1 · Por qué el buzón corporativo y no credenciales propias.** No hay contraseñas nuevas que administrar; **el segundo factor se hereda del buzón**, que ya lo tiene configurado; y —lo decisivo— **cuando alguien sale de la empresa su buzón muere y con él la posibilidad de recibir el código**. La sesión vigente caduca sola en horas, así que nadie tiene que acordarse de desactivar a nadie.
   - **RF-8.1.2 · Dos roles.** *Administrador de inventario* (Talento Humano): crea, edita, publica, importa, genera enlaces y administra catálogos. *Observador* (Mercadeo y Comercial): consulta inventario, enlaces, colocados, demanda y cobertura. No escribe nada.
   - **RF-8.1.3 · Sin identidad no hay auditoría.** RF-8.9 exige registrar qué cambió, quién y cuándo. El «quién» es el correo corporativo verificado con el código.
@@ -223,11 +223,11 @@ prd_version_alineada: 4.11
 - **RF-8.9** Registro de auditoría: qué cambió, quién y cuándo.
 - **RF-8.10** **La publicación de un perfil nunca se bloquea por falta del reporte detallado de validación.** Basta el Nivel 0 (Anexo B.9), que se deriva del rol sin intervención. El detalle enriquece la ficha cuando existe.
 - **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4).
-  - **RF-8.11.1 · Formatos y límites (§8.3).** **El proyecto no opera con video.** La evidencia es un documento, una transcripción en texto o el enlace a un repositorio. El archivo se guarda **fuera de la carpeta pública**, con un máximo de 64 MB por archivo, y el borrador se genera a partir de ese texto.
+  - **RF-8.11.1 · Formatos y límites (§8.3).** **El proyecto no opera con video.** La evidencia es un documento, una transcripción en texto o el enlace a un repositorio. El archivo se guarda en **almacenamiento privado**, al que solo se llega desde el panel con autorización y nunca desde la cara cliente, con un máximo de 64 MB por archivo, y el borrador se genera a partir de ese texto.
 - **RF-8.12** **El léxico de búsqueda se administra desde el panel.** Términos del cliente, sinónimos y su equivalencia en rol, tecnología o sector. Si vive en el código, en seis meses está desactualizado. Las consultas sin coincidencia se ofrecen como candidatas a incorporar al léxico o a la agenda de reclutamiento.
   - **RF-8.12.1 · El modelo propone, Talento Humano aprueba (D-24).** Periódicamente, Gemini revisa las consultas sin coincidencia (RF-2.6.3) y **propone** equivalencias nuevas para el léxico —«pagos en tiempo real» → Kafka, sector Banca—. Nada entra al léxico sin aprobación humana. Así el intérprete determinista mejora con el uso sin que cada búsqueda dependa del modelo. Al modelo solo viaja el texto de la consulta y la taxonomía, nunca datos de perfiles (RF-16.2).
 - **RF-8.13** **Pestaña de perfiles colocados**, con la cuenta, la fecha de inicio y la de vencimiento, ordenada por proximidad del vencimiento y destacando los que vencen dentro de 60 días.
-  - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. **La sincronización es periódica, nunca en tiempo real** —tarea programada diaria o importación del archivo que el sistema de asignación exporte—, porque el hosting no sostiene conexiones permanentes con sistemas internos (§8.3).
+  - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. **La sincronización es periódica, nunca en tiempo real** —tarea programada diaria o importación del archivo que el sistema de asignación exporte—: no hay conexión permanente con sistemas internos de Trycore (§8.3).
   - **RF-8.13.2** **Un perfil colocado no se oculta: se ofrece para cuando queda libre.** Permanece *publicado* con su disponibilidad igual a la fecha de fin de la asignación. Ocultarlo esconde inventario que sí es vendible —un perfil que arranca en un mes es información útil para un cliente que planea el trimestre siguiente, y así se lo muestra el portal según RF-3.13— y con un banco de decenas, ocultar cuatro perfiles es caro. *Corrige la redacción anterior de este requisito, que forzaba el estado pausado.*
   - **RF-8.13.3** Esta pestaña es el disparador operativo de la renovación anticipada (V2-2): convierte un dato administrativo en una lista de conversaciones comerciales con fecha.
 - **RF-8.14 · Coherencia entre estado y disponibilidad.** Son **dos ejes distintos** y el panel no debe permitir que se contradigan.
@@ -283,12 +283,12 @@ prd_version_alineada: 4.11
 - **RF-9.4** El resumen completo de la solicitud queda en la línea de tiempo del contacto.
 - **RF-9.5** El propietario del negocio se asigna según el propietario de la cuenta. Notificación a Comercial y a Delivery.
 - **RF-9.6** Si la creación falla, la solicitud no se pierde: cola de reintento y alerta al responsable. Ninguna solicitud puede quedar solo en el portal.
-  - **RF-9.6.1 · La cola es una tabla, no un servicio.** El hosting no admite colas de trabajo ni procesos permanentes (§8.3). La solicitud se guarda primero en la base de datos y después se envía a HubSpot. Si falla, queda marcada como pendiente y una tarea programada la reintenta cada cinco minutos con espera creciente. Al tercer fallo se avisa por correo al responsable, sin dejar de reintentar. Guardar antes de enviar es lo que garantiza que ninguna solicitud dependa de que HubSpot responda en ese segundo.
+  - **RF-9.6.1 · La cola vive en la base de datos, no en un servicio aparte.** La solicitud se guarda primero en la base de datos y después se envía a HubSpot. Si falla, queda marcada como pendiente y el proceso de trabajo diferido (§8.3) la reintenta con espera creciente, desde minutos hasta un tope de 55. Al tercer fallo se avisa por correo al responsable, sin dejar de reintentar. Guardar antes de enviar es lo que garantiza que ninguna solicitud dependa de que HubSpot responda en ese segundo.
   - **RF-9.6.2 · Vigilancia de la tarea.** Si la tarea de reintento o la de escalamiento lleva más del doble de su intervalo sin ejecutarse, se avisa por correo al responsable técnico. Una cola que nadie procesa es otra forma de que la solicitud se quede solo en el portal.
 - **RF-9.7 · Notificación con escalamiento.** Con pipeline propio (D-6), el comercial no ve la solicitud por casualidad: la notificación es lo único que evita que exista y nadie la atienda.
   - **RF-9.7.1** Al enviarse una solicitud se notifica **al propietario de la cuenta y a Coordinación de Servicio**, por el canal de trabajo diario del equipo, no solo por correo.
   - **RF-9.7.2** La notificación trae lo necesario para decidir sin abrir el CRM: cuenta, quién solicita, perfiles o especificación, momento de incorporación y enlace al negocio.
-  - **RF-9.7.3 · Escalamiento.** Si nadie abre el negocio en **4 horas hábiles**, se reenvía a la dirección comercial. A las **24 horas hábiles** sin movimiento de etapa, se escala a Dirección General. Un punto único de falla sin escalamiento no es un mecanismo: es una esperanza. *Mecanismo:* una tarea programada cada quince minutos compara los plazos en horas hábiles contra el estado del negocio en HubSpot. Es lo que obliga a activar las tareas programadas del hosting desde la v1 (§8.3).
+  - **RF-9.7.3 · Escalamiento.** Si nadie abre el negocio en **4 horas hábiles**, se reenvía a la dirección comercial. A las **24 horas hábiles** sin movimiento de etapa, se escala a Dirección General. Un punto único de falla sin escalamiento no es un mecanismo: es una esperanza. *Mecanismo:* una tarea programada cada quince minutos compara los plazos en horas hábiles contra el estado del negocio en HubSpot. La ejecuta el proceso de trabajo diferido, activo desde la v1 (§8.3).
   - **RF-9.7.4** El tiempo entre la notificación y la primera apertura del negocio se registra. Es la métrica que dice si el mecanismo funciona, y sin ella el escalamiento se calibra a ciegas.
 ---
 
@@ -404,7 +404,7 @@ prd_version_alineada: 4.11
   - **RF-2.6.1** Los resultados se presentan en dos niveles: **coincidencias directas** y **relacionados**. Un buscador que devuelve cero ante un casi-acierto es peor que no tener buscador: el cliente concluye que no hay nada cuando sí hay algo cercano.
   - **RF-2.6.2** El portal **muestra cómo interpretó la consulta** —qué rol y qué tecnologías entendió— para que el usuario corrija en lugar de adivinar por qué salió lo que salió.
   - **RF-2.6.3** Toda consulta sin coincidencia directa se registra con su texto literal (RF-7.2). Con texto libre esta señal es mucho más rica que con facetas: revela con qué palabras piensa el cliente, no solo qué casilla marcó.
-  - **RF-2.6.4 · Sin índice semántico ni vectorial.** El hosting no los soporta (§8.3) y el banco no los necesita: con decenas de perfiles, la recuperación determinista sobre el catálogo completo cabe en el navegador y cumple el segundo de respuesta. Lo «semántico» vive en la interpretación del modelo y en el léxico, no en el índice.
+  - **RF-2.6.4 · Sin índice semántico ni vectorial.** El banco no los necesita y la plataforma no los incluye (§8.3): con decenas de perfiles, la recuperación determinista sobre el catálogo completo cabe en el navegador y cumple el segundo de respuesta. Lo «semántico» vive en la interpretación del modelo y en el léxico, no en el índice.
 ---
 
 ## EP-010 — El camino del cero

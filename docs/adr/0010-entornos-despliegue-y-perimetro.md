@@ -257,7 +257,7 @@ primer despliegue a producción; elección del monitor externo (R-24).
 - Drivers: [0000-drivers-y-asrs.md](0000-drivers-y-asrs.md) — CON-18, CON-19, CON-22, CON-6, QA-12,
   QA-13, CRN-9, CRN-17 (apoyo: QA-2, QA-3, QA-5, QA-8).
 - Sustituye a: [ADR-0007](0007-entornos-despliegue-y-perimetro.md).
-- PRD: §8 (seguridad, `noindex` RF-1.5), §10.3, **§8.3 y D-23 pendientes de reescribir en discovery**;
+- PRD: §8 (seguridad, `noindex` RF-1.5), §10.3, §8.3 y D-23 (reescritos en el PRD v4.12);
   `docs/01-prd/requisitos-tecnicos-hosting.md` queda como antecedente (describe la plataforma
   abandonada).
 - ADR relacionados: [0008](0008-plataforma-contenedores-y-stack.md), [0009](0009-trabajo-diferido-worker-y-correo.md),
