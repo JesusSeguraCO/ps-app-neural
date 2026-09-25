@@ -1,0 +1,43 @@
+/**
+ * Tokens de producto del Portal de Perfiles.
+ *
+ * El sistema Trycore define marca, texto, superficies y estado. Estas son las
+ * tintas derivadas que el producto necesita y el sistema no nombra: el teal y
+ * los verdes/ámbares oscurecidos hasta 4.5:1 sobre su propio fondo, y las dos
+ * superficies que distinguen lo verificado de lo declarado.
+ *
+ * Importar DESPUÉS de los tokens del sistema y antes de globals.css.
+ * Ningún componente debe escribir estos hex a mano: se consumen por utilidad
+ * Tailwind (ver tailwind.config.ts).
+ */
+:root {
+  /* Teal en contacto con texto, sobre superficie clara */
+  --tc-primary-ink: #00615E;            /* 6.6:1 sobre --tc-primary-surface */
+  --tc-primary-surface: #F2FAFA;        /* fondo de bloque verificado */
+  --tc-primary-surface-border: #9FD9D6;
+  --tc-primary-surface-ink: #1F3A38;    /* cuerpo dentro del bloque verificado */
+
+  /* Evidencia cumplida */
+  --tc-ok-ink: #1F4D2B;                 /* línea "✓ Banca · 8 años declarados" */
+  --tc-ok-mark: #15803D;                /* el glifo ✓ */
+  --tc-ok-badge-ink: #2F6B1E;           /* texto sobre --tc-green-bg */
+
+  /* Aviso */
+  --tc-warn-ink: #7A5600;               /* texto sobre --tc-amber-bg */
+  --tc-warn-ink-strong: #8A6100;        /* conteo "no está en el banco" sobre blanco */
+  --tc-warn-border: #E3D9A8;
+  --tc-warn-surface: #FEFCF3;
+
+  --tc-danger-ink: #8C2F2F;             /* texto sobre --tc-red-bg */
+
+  /* Superficies de la ficha */
+  --tc-surface-quiet: #F7FAFA;          /* cabecera del acordeón de validación */
+  --tc-surface-declared: #FCFCFD;       /* bloque declarado, tratamiento de bandas */
+
+  /* Tintas sobre navy */
+  --tc-navy-ink: #CFD8FF;               /* cuerpo sobre navy, 9.4:1 */
+  --tc-navy-ink-mute: #9FB0E8;          /* metadatos sobre navy, 5.4:1 */
+  --tc-teal-on-navy: #80FFF4;           /* overline sobre navy, 12.3:1 */
+
+  --tc-focus-ring: #0F2A6B;             /* outline de foco, no depende del color para leerse */
+}

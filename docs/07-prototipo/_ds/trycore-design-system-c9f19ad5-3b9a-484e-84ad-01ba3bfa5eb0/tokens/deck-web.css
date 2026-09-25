@@ -1,0 +1,156 @@
+/* ════════════════════════════════════════════════
+   Trycore · Deck web — capa de presentación autocontenida
+   ────────────────────────────────────────────────
+   Segundo formato de deck, distinto del de tokens/deck.css:
+
+     tokens/deck.css   → lienzo FIJO 1920×1080 sobre <deck-stage>.
+                         Se exporta a PDF y PPTX. Piso de 24px.
+     tokens/deck-web.css → un solo .html AUTOCONTENIDO, scroll-snap
+                         vertical, tema claro/oscuro, fluido con clamp().
+                         Se abre por doble clic y se publica como artefacto.
+
+   No se mezclan. Una pieza es de una capa o de la otra.
+
+   NOMBRES. La especificación del formato nombra los roles sin prefijo
+   (--bg, --ink, --accent…). Declararlos así en :root contaminaría todo
+   proyecto que consuma este sistema, así que aquí viajan como --tcd-*.
+   El documento del deck abre con un bloque de alias de una línea por rol:
+
+     :root{ --bg:var(--tcd-bg); --ink:var(--tcd-ink); … }
+
+   y a partir de ahí su CSS usa los nombres cortos de la especificación.
+
+   TEMA. El sistema publica dos juegos de valores registrados: claro en
+   `:root` y oscuro en `[data-theme="dark"]`. El tercer estado —responder
+   a la preferencia del sistema operativo sin JS— es comportamiento del
+   documento, no del sistema, y por eso no vive aquí: el deck lo activa
+   con un bloque de tres líneas que reenvía el atributo
+
+     @media (prefers-color-scheme: dark) {
+       :root:not([data-theme="light"]) { --bg:var(--tcd-bg-dark); … }
+     }
+
+   o, más simple y lo recomendado, fijando `data-theme` desde el
+   `<script>` inline del propio deck según `matchMedia`, que es lo que
+   ya hace el toggle. Ningún color se define solo dentro de una media
+   query: los dos temas están completos aquí.
+   ════════════════════════════════════════════════ */
+
+:root {
+  /* ── Paleta de marca (referencia cruda) ──
+     Anclada a la identidad 2026, no a los hex del motor de referencia:
+     la especificación nombra roles, y los valores los fija la marca. */
+  --tcd-navy:       #011955;   /* autoridad, cabecera de tabla, superficie oscura */
+  --tcd-navy-deep:  #000443;   /* extremo profundo del degradado navy */
+  --tcd-navy-soft:  #1851A0;   /* extremo claro del degradado navy */
+  --tcd-cyan:       #00CCCC;   /* teal Trycore · acento de marca */
+  --tcd-teal:       #1FE0D7;   /* teal claro · segunda órbita */
+  --tcd-blue:       #5797EF;   /* vía humana, tercer acento estructural */
+
+  /* ── Superficies · claro ── */
+  --tcd-bg:           #F4F7FB;
+  --tcd-panel:        #FFFFFF;
+  --tcd-panel-2:      #F8FAFF;
+  --tcd-panel-accent: #E8F6F7;
+
+  /* ── Tinta · claro ── */
+  --tcd-ink:    #011955;
+  --tcd-ink-2:  #2E3A5C;
+  --tcd-ink-3:  #67759B;
+
+  /* ── Línea · claro ── */
+  --tcd-line:   #DCE3F2;
+  --tcd-line-2: #EAEEF6;
+
+  /* ── Acento · claro ──
+     El teal de marca NO es el acento del tema claro: #00CCCC como letra
+     sobre blanco da 2,0:1. El tema claro usa el teal profundo del
+     sistema, que pasa AA con 4,9:1. Si cambia el teal de marca, hay que
+     recalcular este par. */
+  --tcd-accent:      #007F7A;
+  --tcd-accent-2:    #1FE0D7;
+  --tcd-accent-soft: rgba(0,204,204,.16);   /* @kind color */
+
+  /* ── Sobre navy (igual en ambos temas) ── */
+  --tcd-on-navy:   #FFFFFF;
+  --tcd-on-navy-2: #80FFF4;
+
+  /* ── Estado «por confirmar» y prioridad ──
+     Único color fuera de la paleta. Sin verde/rojo de semáforo. */
+  --tcd-amber:    #B26A00;
+  --tcd-amber-bg: rgba(178,106,0,.12);   /* @kind color */
+
+  /* ── Marcas del grupo · solo como punto de 9px o borde, nunca fondo ── */
+  --tcd-brand-oriuno:  #6E66C9;
+  --tcd-brand-docfly:  #EFB065;
+  --tcd-brand-trycore: #00CCCC;
+
+  /* ── Tipografía ──
+     Poppins estructura, Karla párrafo. Karla es la de cuerpo del sistema:
+     sustituye al Roboto del motor de referencia. Siempre con respaldo de
+     sistema; nunca por CDN en una pieza autocontenida. */
+  --tcd-sans: 'Poppins', 'Helvetica Neue', Arial, sans-serif;   /* @kind font */
+  --tcd-body: 'Karla', 'Helvetica Neue', Arial, sans-serif;   /* @kind font */
+
+  /* ── Elevación · tres niveles y ni uno más ── */
+  --tcd-shadow-sm: 0 1px 3px rgba(1,25,85,.08);   /* @kind other */
+  --tcd-shadow:    0 2px 6px rgba(1,25,85,.07), 0 18px 40px -18px rgba(1,25,85,.22);   /* @kind other */
+
+  /* ── Forma ── */
+  --tcd-radius:    12px;
+  --tcd-radius-sm: 8px;
+  --tcd-radius-pill: 99px;
+
+  /* ── Movimiento · una sola curva ── */
+  --tcd-ease: cubic-bezier(.22,.61,.36,1);   /* @kind other */
+
+  /* ── Degradado navy de tesela oscura ── */
+  --tcd-grad-navy: linear-gradient(150deg, #000443 0%, #011955 55%, #1851A0 100%);   /* @kind other */
+
+  /* ── Hex propios del ARCHIVO de logo ──
+     Ajenos a los tokens de UI: no se armonizan, no se corrigen, no se
+     mezclan. Están aquí para poder verificarlos, no para aplicarlos a
+     superficies. Coinciden con assets/symbol-trycore.svg. */
+  --tcd-logo-navy: #000F4D;
+  --tcd-logo-cyan: #00CCC2;
+
+  /* ── Paleta oscura, también disponible desde el tema claro ──
+     Permite al documento resolver la preferencia del sistema aliasando
+     estos valores, sin repetir hex dentro de una media query. */
+  --tcd-bg-dark:           #000A2E;
+  --tcd-panel-dark:        #011955;
+  --tcd-panel-2-dark:      #012160;
+  --tcd-panel-accent-dark: #01296E;
+  --tcd-ink-dark:    #FFFFFF;
+  --tcd-ink-2-dark:  #CFD8FF;
+  --tcd-ink-3-dark:  #9FBDF9;
+  --tcd-line-dark:   rgba(255,255,255,.15);   /* @kind color */
+  --tcd-line-2-dark: rgba(255,255,255,.08);   /* @kind color */
+  --tcd-accent-dark:      #00CCCC;
+  --tcd-accent-soft-dark: rgba(0,204,204,.18);   /* @kind color */
+  --tcd-amber-dark:    #EBA85A;
+  --tcd-amber-bg-dark: rgba(235,168,90,.16);   /* @kind color */
+  --tcd-shadow-sm-dark: 0 1px 3px rgba(0,0,0,.34);   /* @kind other */
+  --tcd-shadow-dark:    0 2px 6px rgba(0,0,0,.30), 0 18px 40px -18px rgba(0,0,0,.55);   /* @kind other */
+}
+
+/* ── Oscuro forzado por el toggle · el scope registrado ──
+   Misma grafía que colors.css y effects.css: un solo scope de tema en
+   todo el sistema, no dos. */
+[data-theme="dark"] {
+  --tcd-bg:           var(--tcd-bg-dark);
+  --tcd-panel:        var(--tcd-panel-dark);
+  --tcd-panel-2:      var(--tcd-panel-2-dark);
+  --tcd-panel-accent: var(--tcd-panel-accent-dark);
+  --tcd-ink:    var(--tcd-ink-dark);
+  --tcd-ink-2:  var(--tcd-ink-2-dark);
+  --tcd-ink-3:  var(--tcd-ink-3-dark);
+  --tcd-line:   var(--tcd-line-dark);
+  --tcd-line-2: var(--tcd-line-2-dark);
+  --tcd-accent:      var(--tcd-accent-dark);
+  --tcd-accent-soft: var(--tcd-accent-soft-dark);
+  --tcd-amber:    var(--tcd-amber-dark);
+  --tcd-amber-bg: var(--tcd-amber-bg-dark);
+  --tcd-shadow-sm: var(--tcd-shadow-sm-dark);
+  --tcd-shadow:    var(--tcd-shadow-dark);
+}

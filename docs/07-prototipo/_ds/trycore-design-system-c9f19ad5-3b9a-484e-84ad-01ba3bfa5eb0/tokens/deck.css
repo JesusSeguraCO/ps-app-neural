@@ -1,0 +1,120 @@
+/* ════════════════════════════════════════════════
+   Deck · presentaciones 1920×1080
+   Capa propia, y no un ajuste de la de documentos:
+   un deck se lee solo, a distancia, y su restricción
+   dura es que NADA puede desbordar el lienzo.
+   Estos tokens SOLO aplican dentro de un lienzo de
+   deck. En interfaz y en documentos manda el sistema
+   de producto (radio máximo 6pt/6px).
+   ════════════════════════════════════════════════ */
+:root {
+  /* ── Lienzo ── */
+  --tc-deck-w:            1920px;
+  --tc-deck-h:            1080px;
+  --tc-deck-pad-x:        96px;   /* margen lateral de página */
+  --tc-deck-pad-y:        72px;
+  --tc-deck-gap:          28px;   /* separación entre teselas */
+
+  /* ── Escala. 24px es el PISO de todo: cuerpo, etiqueta,
+        pie de figura, dato de tesela. Sin excepción. ── */
+  --tc-deck-fs-min:       24px;
+  --tc-deck-fs-body:      24px;
+  --tc-deck-fs-body-lg:   28px;
+  --tc-deck-fs-overline:  24px;
+  --tc-deck-fs-tile-t:    30px;   /* título de tesela */
+  --tc-deck-fs-close:     30px;   /* línea de cierre: 28–34 */
+  --tc-deck-fs-h1:        50px;   /* titular de página: 44–56 */
+  --tc-deck-fs-cover:     76px;   /* titular de portada */
+  --tc-deck-fs-figure:    64px;   /* cifra protagonista: 48–72 */
+  --tc-deck-fs-figure-sm: 44px;   /* cifra de tesela: 40–48 */
+
+  /* ── Interlineado. Con 24px de piso, 1.4 es el límite
+        práctico en cuerpo: más aire y la página no cierra. ── */
+  --tc-deck-lh-head:      1.12; /* @kind other */
+  --tc-deck-lh-body:      1.4;  /* @kind other */
+  --tc-deck-lh-tight:     1.25; /* @kind other */
+  --tc-deck-ls-overline:  2px;
+  --tc-deck-ls-figure:    -0.03em;
+  --tc-deck-ls-head:      -0.02em;
+
+  /* ── Forma. Contradice a propósito el tope de 6px del
+        sistema: en deck el radio amplio del board 2026 es
+        el que funciona, y queda acotado a esta capa. ── */
+  --tc-deck-r-tile:       18px;   /* tesela de contenido */
+  --tc-deck-r-panel:      22px;   /* panel o contenedor grande */
+  --tc-deck-r-inner:      12px;   /* pieza interna */
+  --tc-deck-r-chip:       999px;
+
+  /* ── Elevación: una sombra, dos intensidades ── */
+  --tc-deck-shadow:       0 10px 30px rgba(11,31,92,.08);
+  --tc-deck-shadow-panel: 0 12px 34px rgba(11,31,92,.09);
+
+  /* ── Superficies. Blanco, aqua o navy.
+        Una tesela navy por página COMO MÁXIMO, y es la que
+        carga el mensaje incómodo o la cifra dura. ── */
+  --tc-deck-canvas:       #F4F7FB;
+  --tc-deck-surface:      #FFFFFF;
+  --tc-deck-aqua:         #CDF1EC;
+  --tc-deck-navy:         #0B1F5C;
+
+  /* ── Tinta ── */
+  --tc-deck-ink:          #0B1F5C;
+  --tc-deck-body:         #2E3A5C;
+  --tc-deck-muted:        #67759B;  /* overline gris-azul del encabezado */
+  --tc-deck-accent:       #007F7A;  /* teal con texto: pasa AA */
+  --tc-deck-on-navy:      #FFFFFF;  /* SIEMPRE explícito sobre navy */
+  --tc-deck-on-navy-soft: #A9C7F5;
+
+  /* ── Diagramas ── */
+  --tc-deck-track:        linear-gradient(90deg, #00CCCC, #0B1F5C); /* @kind color */
+  --tc-deck-node-stroke:  #00A19A;
+  --tc-deck-lane-bg:      #F7FBFB;
+  --tc-deck-lane-border:  #DCE7EA;
+
+  /* ════════════════════════════════════════════
+     COMPOSICIÓN · la misma retícula del deck web, escalada
+     ────────────────────────────────────────────
+     El deck web compone sobre una columna de 1080px con cuerpo de
+     ~15px. Aquí la columna es de 1728px con cuerpo de 24px: mismo
+     sistema, factor ×1.6. Lo que se conserva es la ESTRUCTURA —ritmo
+     vertical, medida máxima en ch, tres niveles de elevación,
+     alternancia de layouts— no los píxeles.
+     ════════════════════════════════════════════ */
+
+  /* Columna de contenido: 1920 − 96×2. Nada a sangre salvo el fondo. */
+  --tc-deck-col:          1728px;
+  --tc-deck-col-narrow:   1180px;  /* slide de declaración o portada */
+
+  /* Retícula de 12 columnas con canaleta de 28px */
+  --tc-deck-grid:         repeat(12, 1fr); /* @kind other */
+  --tc-deck-gutter:       28px;
+
+  /* Ritmo vertical · eyebrow → título → lead → bloque → cierre */
+  --tc-deck-sp-eyebrow:   32px;   /* del eyebrow al título */
+  --tc-deck-sp-title:     28px;   /* del título al lead */
+  --tc-deck-sp-lead:      44px;   /* del lead al bloque principal */
+  --tc-deck-sp-block:     36px;   /* del bloque a la línea de cierre */
+  --tc-deck-sp-tight:     18px;   /* dentro de una tesela */
+
+  /* Medida máxima. Ningún párrafo cruza la página entera. */
+  --tc-deck-measure:      62ch;   /* lead y cuerpo de página */
+  --tc-deck-measure-h:    22ch;   /* titular de página */
+  --tc-deck-measure-decl: 16ch;   /* slide de declaración */
+
+  /* Elevación · tres niveles y ni uno más.
+     Nivel 1 es PLANO: superficie + borde, sin sombra. La estructura se
+     lee por línea, no por sombra — todo contenedor lleva su borde. */
+  --tc-deck-border:       1px solid #DCE3F2; /* @kind other */
+  --tc-deck-border-dark:  1px solid rgba(255,255,255,.16); /* @kind other */
+  --tc-deck-surface-flat: #F8FAFF;
+
+  /* Bento: 4 columnas sobre la retícula de 12 (spans de 3) */
+  --tc-deck-bento:        repeat(4, 1fr); /* @kind other */
+
+  /* Splits canónicos */
+  --tc-deck-split-3070:   30% 1fr;          /* @kind other */ /* argumento + diagrama */
+  --tc-deck-split-decis:  1.1fr 1fr 1.4fr;  /* @kind other */ /* tabla de decisión */
+
+  /* Movimiento · misma curva que el deck web */
+  --tc-deck-ease:         cubic-bezier(.22,.61,.36,1); /* @kind other */
+}
