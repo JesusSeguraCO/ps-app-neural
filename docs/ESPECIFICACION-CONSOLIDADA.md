@@ -1,11 +1,11 @@
 ---
 artefacto: especificacion-consolidada
 proyecto: portal-people-service
-version: 5.2
+version: 5.3
 fecha: 2026-09-25
 prd_version: 4.10
-epicas_version: 5.2
-backlog_version: 5.2
+epicas_version: 5.3
+backlog_version: 5.3
 historias_activas: 79
 historias_descartadas: 1
 fuente: generado con scripts/generar-especificacion-consolidada.py desde docs/01-prd, docs/03-backlog, docs/04-historias y docs/10-specs
@@ -25,7 +25,7 @@ uso: documento de construcción, organizado por épica
 5. **Parte V — Decisiones abiertas.** Lo que todavía puede cambiar y a quién hay que preguntarle.
 6. **Parte VI — Orden de construcción.**
 
-> **Artefactos hermanos, fuera de este documento.** El **mapa de historias** (`docs/02-user-story-map/`, v3.2) ordena el alcance por recorrido y release. La **priorización** (`docs/05-priorizacion/`) ordena las historias en una matriz valor/esfuerzo. Los **flujos de navegación** (`docs/06-flows/`, uno por épica, en Mermaid) diagraman cada épica con trazabilidad a sus criterios de aceptación. Las características verificadas del **hosting** viven en `docs/01-prd/requisitos-tecnicos-hosting.md` y el **prototipo** de referencia en `docs/07-prototipo/`.
+> **Artefactos hermanos, fuera de este documento.** El **mapa de historias** (`docs/02-user-story-map/`, v3.3) ordena el alcance por recorrido y release. La **priorización** (`docs/05-priorizacion/`) ordena las historias en una matriz valor/esfuerzo. Los **flujos de navegación** (`docs/06-flows/`, uno por épica, en Mermaid) diagraman cada épica con trazabilidad a sus criterios de aceptación. Las características verificadas del **hosting** viven en `docs/01-prd/requisitos-tecnicos-hosting.md` y el **prototipo** de referencia en `docs/07-prototipo/`.
 
 ---
 

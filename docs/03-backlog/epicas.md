@@ -3,10 +3,10 @@ artefacto: epicas
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
 prd_version: 4.10
-version: 5.2
-fecha: 2026-09-18
+version: 5.3
+fecha: 2026-09-25
 total_epicas: 11
-prd_version_alineada: 4.5
+prd_version_alineada: 4.10
 ---
 
 # Épicas — Portal de Perfiles People Service

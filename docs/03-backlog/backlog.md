@@ -1,10 +1,10 @@
 ---
 artefacto: backlog
 proyecto: portal-people-service
-version: 5.2
-fecha: 2026-09-22
-prd_version: 4.8
-epicas_version: 5.2
+version: 5.3
+fecha: 2026-09-25
+prd_version: 4.10
+epicas_version: 5.3
 historias_escritas: 79
 historias_descartadas: 1
 ---

@@ -2,11 +2,11 @@
 artefacto: user-story-map
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
-prd_version: 4.8
+prd_version: 4.10
 epicas_origen: docs/03-backlog/epicas.md
-epicas_version: 5.2
-version: 3.2
-fecha: 2026-09-22
+epicas_version: 5.3
+version: 3.3
+fecha: 2026-09-25
 historias_escritas: 79
 historias_descartadas: 1
 historias_anticipadas_sin_redactar: 13
