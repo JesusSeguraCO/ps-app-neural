@@ -1,11 +1,11 @@
 ---
 artefacto: especificacion-consolidada
 proyecto: portal-people-service
-version: 5.2
+version: 5.4
 fecha: 2026-09-25
-prd_version: 4.10
-epicas_version: 5.2
-backlog_version: 5.2
+prd_version: 4.11
+epicas_version: 5.4
+backlog_version: 5.4
 historias_activas: 79
 historias_descartadas: 1
 fuente: generado con scripts/generar-especificacion-consolidada.py desde docs/01-prd, docs/03-backlog, docs/04-historias y docs/10-specs
@@ -227,7 +227,8 @@ La v1 corre en el hosting compartido de Trycore (cPanel, paquete WP ULTIMATE V2)
 | **Servidor** | PHP 8.3 con `curl`, `openssl`, `session` y `pdo_mysql` | Es lo que el hosting ejecuta sin configuración adicional. Node no participa en la v1 |
 | **Persistencia** | MariaDB 10.6 | Inventario, enlaces, sesiones, auditoría, telemetría, cola de solicitudes |
 | **Catálogo para el cliente** | Lo entrega el servidor tras validar la sesión, desde una carpeta privada hermana de la raíz pública de `people.trycore.com` | El inventario nunca queda expuesto por una ruta abierta (§8, Seguridad) |
-| **Secretos** | Configuración PHP fuera de la carpeta pública | La llave de HubSpot y la del modelo no llegan nunca al navegador |
+| **Secretos** | Configuración PHP fuera de la carpeta pública | La llave de HubSpot y la de Gemini (`GEMINI_API_KEY`) no llegan nunca al navegador |
+| **Modelo de lenguaje** | Gemini por API REST, llamado con `curl` desde PHP, solo en RF-12.2.1 y RF-8.12.1 | La búsqueda no depende de él: el intérprete determinista (RF-2.6) funciona sin conexión al modelo |
 | **Acceso del cliente** | Enlace firmado + **lista nominal de correos invitados** + código al buzón, una vez por dispositivo | RF-1.2. Sin proveedor de identidad |
 | **Acceso al panel** | **Lista nominal** de correos `@trycore.com` con rol + código al buzón + sesión de una jornada | RF-8.1. Mecanismo distinto del del cliente a propósito |
 | **Correo saliente** | **SMTP autenticado** del buzón `notify@people.trycore.com` en el hosting, con MX, SPF y DKIM propios del subdominio. `trycore.com` sigue en Google Workspace, independiente. No se usa `sendmail` directo: en la prueba del 2026-09-25 no entregó, mientras el SMTP autenticado sí | El código de acceso es crítico: si cae en spam o se queda en el servidor, nadie entra |
@@ -249,6 +250,7 @@ La v1 corre en el hosting compartido de Trycore (cPanel, paquete WP ULTIMATE V2)
 
 | # | Decisión | Resolución | Fecha |
 |---|---|---|---|
+| **D-24** | Interpretación de la búsqueda y proveedor del modelo | **Algoritmo primero; Gemini acotado.** Con un banco de unas 30 personas, el emparejamiento (RF-13.8) y la interpretación de consultas cortas son deterministas (RF-2.6). **Gemini** entra solo para requerimientos pegados largos (RF-12.2.1) y para proponer equivalencias del léxico con aprobación humana (RF-8.12.1). *Credenciales:* en desarrollo, token personal y **solo datos ficticios** —las condiciones sin facturación permiten a Google usar el contenido—; en producción, llave de negocio con facturación. La llave vive solo del lado del servidor | 2026-09-25 |
 | **D-23** | Plataforma de ejecución de la v1 | **Hosting compartido de Trycore**: sitio estático, PHP 8.3, MariaDB y tareas programadas, sin Node ni proveedor de identidad (§8.3). Todo requisito se resuelve dentro de ese techo; lo que lo exceda es Fase 3 y exige salir del hosting. El servidor se migró a CloudLinux 8 el 2026-09-25, lo que cierra el riesgo de sistema operativo sin soporte (§10.3) | 2026-09-24 |
 | **D-16** | Viabilidad de persistir el Perfil Objetivo con acceso por enlace firmado | **Persistencia por dispositivo, no por cuenta.** La especificación queda en el navegador de quien la escribió. Resuelve el caso real —la misma persona que vuelve días después— y **elimina la implicación ISO 27000**, porque no se guarda del lado del servidor contra una identidad que el portal no puede verificar. Un enlace reenviado no arrastra especificación. Se reabre cuando exista autenticación real por usuario | 2026-09-21 |
 | **D-19** | Composiciones de referencia por tipo de proyecto | **Se construyen solo para los tres tipos de proyecto más frecuentes.** Delivery entrega la composición real de esos tres; fuera de ellos el portal calla en vez de aproximar. Acota la recopilación a una sesión de trabajo con Delivery y conserva la regla dura de RF-14.7.1: composición real o ninguna | 2026-09-21 |
@@ -1817,6 +1819,7 @@ Cubre RF-17 completo. Cierra el hueco entre «se envió la solicitud» y «algui
 - **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4).
   - **RF-8.11.1 · Formatos y límites (§8.3).** **El proyecto no opera con video.** La evidencia es un documento, una transcripción en texto o el enlace a un repositorio. El archivo se guarda **fuera de la carpeta pública**, con un máximo de 64 MB por archivo, y el borrador se genera a partir de ese texto.
 - **RF-8.12** **El léxico de búsqueda se administra desde el panel.** Términos del cliente, sinónimos y su equivalencia en rol, tecnología o sector. Si vive en el código, en seis meses está desactualizado. Las consultas sin coincidencia se ofrecen como candidatas a incorporar al léxico o a la agenda de reclutamiento.
+  - **RF-8.12.1 · El modelo propone, Talento Humano aprueba (D-24).** Periódicamente, Gemini revisa las consultas sin coincidencia (RF-2.6.3) y **propone** equivalencias nuevas para el léxico —«pagos en tiempo real» → Kafka, sector Banca—. Nada entra al léxico sin aprobación humana. Así el intérprete determinista mejora con el uso sin que cada búsqueda dependa del modelo. Al modelo solo viaja el texto de la consulta y la taxonomía, nunca datos de perfiles (RF-16.2).
 - **RF-8.13** **Pestaña de perfiles colocados**, con la cuenta, la fecha de inicio y la de vencimiento, ordenada por proximidad del vencimiento y destacando los que vencen dentro de 60 días.
   - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. **La sincronización es periódica, nunca en tiempo real** —tarea programada diaria o importación del archivo que el sistema de asignación exporte—, porque el hosting no sostiene conexiones permanentes con sistemas internos (§8.3).
   - **RF-8.13.2** **Un perfil colocado no se oculta: se ofrece para cuando queda libre.** Permanece *publicado* con su disponibilidad igual a la fecha de fin de la asignación. Ocultarlo esconde inventario que sí es vendible —un perfil que arranca en un mes es información útil para un cliente que planea el trimestre siguiente, y así se lo muestra el portal según RF-3.13— y con un banco de decenas, ocultar cuatro perfiles es caro. *Corrige la redacción anterior de este requisito, que forzaba el estado pausado.*
@@ -3866,6 +3869,7 @@ Cubre RF-7.3. Sin esto, el informe de EP-011 no puede existir.
 - **RF-12.2** El usuario puede **pegar un requerimiento completo** y el portal extrae los criterios como **chips editables**. *(M-02 · evidencia B)*
   - *En contra:* un requerimiento corporativo real trae cláusulas e historia del proyecto; puede producir diez chips donde importan tres, y limpiarlos es justo la fricción que queríamos evitar.
   - *Prueba previa obligatoria:* pegar cinco requerimientos reales de clientes actuales y contar cuántos chips sobran. Sin esa prueba, RF-12.2 no se construye.
+  - **RF-12.2.1 · Aquí sí entra el modelo (D-24).** Un requerimiento de varios párrafos trae cláusulas, contexto e historia; el intérprete determinista solo saca términos sueltos y no distingue qué es obligatorio. Para textos largos, **Gemini** extrae los criterios con salida estructurada contra la taxonomía, bajo el contrato de RF-16. Si Gemini falla o tarda, el portal aplica el intérprete determinista y lo dice. Las consultas cortas nunca pasan por el modelo.
 - **RF-12.3** **La interpretación es visible antes del resultado.** *(M-03 · evidencia A+B)*
   - *En contra:* para una consulta obvia, mostrarla es un paso de ruido.
   - *Resolución:* se muestra siempre que la confianza de la interpretación esté bajo umbral, y de forma compacta cuando esté por encima.
@@ -3927,7 +3931,7 @@ Cubre RF-7.3. Sin esto, el informe de EP-011 no puede existir.
 - **RF-16.3** **Separación entre la capa de especificación y la de recuperación.** El Perfil Objetivo tiene esquema versionado; la búsqueda vive tras una interfaz intercambiable. *(M-17)* Se hace porque el costo de no hacerlo es rehacer, no porque la expansión esté planeada: es una opción barata, no un compromiso.
 - **RF-16.4 · El Perfil Objetivo nace multi-rol.** El campo de rol es **una lista desde el primer día**, aunque el MVP solo use un elemento. Nacer como valor único obliga, el día que exista la ruta por reto (§14), a una migración de datos sobre solicitudes históricas. Nacer como lista cuesta cero. Mismo criterio que RF-16.3: barato ahora, caro después.
 
-- **RF-2.6** **Búsqueda en el lenguaje del cliente, no en el nuestro.** Un modelo de lenguaje traduce la instrucción del cliente a la taxonomía interna, con salida estructurada y bajo las restricciones de RF-16. Si la llamada falla, degrada a un **léxico controlado** que traduce cómo el cliente nombra lo que busca —"ingeniero de aplicaciones móviles"— a la taxonomía interna —rol *Desarrollador Móvil*, tecnologías *Flutter, React Native, Kotlin, Swift*—. Tolerante a acentos, plurales y errores de digitación.
+- **RF-2.6** **Búsqueda en el lenguaje del cliente, no en el nuestro.** Un **intérprete determinista propio** traduce la instrucción del cliente a la taxonomía interna: normaliza acentos, plurales y mayúsculas, tolera errores de digitación por distancia de edición, reconoce patrones de seniority, años, modalidad y ubicación, y aplica el **léxico controlado** del panel (RF-8.12), que traduce cómo el cliente nombra lo que busca —"ingeniero de aplicaciones móviles"— a la taxonomía —rol *Desarrollador Móvil*, tecnologías *Flutter, React Native, Kotlin, Swift*—. **No depende de ningún servicio externo:** funciona igual si Gemini no responde. *(D-24, 2026-09-25: con un banco de unas 30 personas, el emparejamiento y la interpretación de consultas cortas se resuelven con algoritmo; el modelo queda para los dos casos donde aporta, RF-12.2.1 y RF-8.12.1.)*
   - **RF-2.6.1** Los resultados se presentan en dos niveles: **coincidencias directas** y **relacionados**. Un buscador que devuelve cero ante un casi-acierto es peor que no tener buscador: el cliente concluye que no hay nada cuando sí hay algo cercano.
   - **RF-2.6.2** El portal **muestra cómo interpretó la consulta** —qué rol y qué tecnologías entendió— para que el usuario corrija en lugar de adivinar por qué salió lo que salió.
   - **RF-2.6.3** Toda consulta sin coincidencia directa se registra con su texto literal (RF-7.2). Con texto libre esta señal es mucho más rica que con facetas: revela con qué palabras piensa el cliente, no solo qué casilla marcó.
