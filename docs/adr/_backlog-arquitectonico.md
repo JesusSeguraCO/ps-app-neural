@@ -217,3 +217,18 @@ fuera de capa) · 0 VERIFICADO. CRN-2, 3, 11 y 12 pasaron a ABORDADO en la revis
 | 7 | 2026-09-25 | Entornos, despliegue y perímetro (CON-3, 15 · QA-12, 13 · CRN-17, 18) | ADR-0007: release por sha + symlink, CSP con hashes en CI, origen solo IPs de Cloudflare; verificaciones de hosting pendientes |
 | Evaluación ATAM-lite | 2026-09-25 | Refutar adversarialmente 0001–0007 | Hallazgos incorporados: hosts de un nivel; CSRF con cabecera + Origin; catálogo como proyección desde la BD; respuesta neutra con `finish_request` y mensaje único; bloqueo 5/15 min y 20/día; `accesos_log` separado; ciudad decidida en servidor; importación con GET_LOCK y 90 s; HMAC + ancla diaria; ETag tras sesión con `no-store`; Playwright ×4 con 300 perfiles; aviso por Gemini; `ps_solicitud_id` único; arrendamiento `locked_until`; dead man's switch; endpoint anónimo de eventos; despliegue atómico; una regla de Cloudflare. 40 riesgos abiertos y 12 trade-offs de negocio a la revisión única |
 | Cierre | 2026-09-25 | Revisión única del sponsor | ADRs 0001–0007 accepted; decisiones de negocio registradas; stack consolidado en .claude/config/stack-allowlist.json |
+
+## ⚠️ Replanteo de plataforma pendiente (2026-09-25)
+
+El sponsor cambió la plataforma **después** de aceptar los ADR 0001–0007. Decisiones tomadas:
+
+| Tema | Decisión |
+|---|---|
+| Plataforma | Contenedores **Docker** portables; destino inicial **DigitalOcean App Platform**. El hosting cPanel **se abandona** (sustituye a D-23) |
+| Backend | **TypeScript con Next.js** (servidor + rutas de API) y un **worker Node** para trabajo diferido |
+| Base de datos | **PostgreSQL administrado** (respaldos y PITR fuera del servidor) |
+| Correo | **Mailgun** como servicio transaccional (sustituye al SMTP de cPanel) |
+
+**Qué implica:** ADR-0001, ADR-0005 y ADR-0007 quedan para marcar `superseded` por ADR nuevos; ADR-0002, 0003, 0004 y 0006 se revisan (su diseño se conserva, cambia la implementación: PHP → TypeScript, MariaDB → PostgreSQL, cron → jobs/worker). Los riesgos atados al hosting (inodos, `.cpanel.yml`, ModSecurity, triggers, JetBackup, IP compartida, CSP del export) dejan de aplicar y se cierran al supersederse. En discovery hay que reescribir D-23 y §8.3 del PRD.
+
+**Siguiente paso:** re-correr `/build:architect` (iteración 8, incremental) sobre este cambio.
