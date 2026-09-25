@@ -13,6 +13,10 @@ add:
 
 # ADR 0004 — Búsqueda determinista, estado en la URL e interpretación con Gemini
 
+> **Enmienda de plataforma (iteración 8, 2026-09-25):** el diseño de esta ADR se conserva; el
+> servidor pasa de PHP a TypeScript y el cron al worker. Ver la sección «Enmienda de plataforma» al
+> final.
+
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
 > [0000-drivers-y-asrs.md](0000-drivers-y-asrs.md) y actualizar
@@ -349,3 +353,26 @@ arquitectónico.
   grep de secretos)
 - Stack a operacionalizar en `.claude/config/stack-allowlist.json`: `vitest`, `fast-check`,
   `@playwright/test`
+
+
+## Enmienda de plataforma (iteración 8, 2026-09-25)
+
+> Se conservan: recuperación en el cliente sobre el catálogo recortado, intérprete determinista propio,
+> estado solo en la URL con token de estado para URL largas, Gemini acotado tras un adaptador (sin
+> datos de perfiles, umbral de texto, timeout duro y vuelta al determinista, aviso previo al cliente),
+> propuestas de léxico con aprobación humana y el sondeo. Donde el texto anterior diga PHP, `curl`,
+> cron o `config.php`, rige esta tabla.
+
+| Mecanismo (texto anterior) | Implementación vigente |
+|----------------------------|------------------------|
+| `Adapters/Gemini` en PHP con `curl` y timeout 6 s | `packages/infra/gemini` con `fetch` a la API REST de Gemini y `AbortSignal.timeout(6000)`; salida validada con un esquema `zod` que refleja el JSON schema de salida estructurada. Solo lo importan Route Handlers y worker (lint impide importarlo desde código de cliente) |
+| `interface InterpreteLlm` en PHP | `interface InterpreteLlm { extraer(texto: string, taxonomia: Taxonomia): Promise<Criterios \| null> }` en `packages/dominio` |
+| `cron/proponer-lexico.php` semanal; cron diario de limpieza de tokens | Tareas `proponer_lexico` (semanal) y `limpiar_tokens` (diaria) del planificador del worker (ADR-0009) |
+| `bin/verificar-salida-gemini.php` por SSH | `worker verificar-salidas` ejecutado como job puntual de App Platform en staging (comprueba HubSpot, Gemini y Mailgun). **R-2** se reduce: App Platform tiene salida HTTPS abierta; queda verificar cuota y llave de producción |
+| `GEMINI_API_KEY` en `config.php` | Variable `SECRET` solo en los procesos que la usan (portal y worker) |
+| URL de 2 000 caracteres y POST del texto pegado frente a ModSecurity | Sin ModSecurity; el E2E en staging se mantiene contra el conjunto gestionado de Cloudflare y los límites de cabecera de App Platform |
+| Tablas en MariaDB (`lexico`, `propuestas_lexico`, `consultas_sin_coincidencia`, `estados_largos`, `llamadas_llm`) | Mismas tablas en el esquema `operacion` de PostgreSQL |
+
+**Veredictos que cambian en §5:** CRN-6 pasa a ⚠️ solo por cuota y coste de la llave de producción;
+QA-16 ⚠️ solo por el E2E de URL larga en staging. `@google/generative-ai` y `@google/genai` siguen
+fuera del stack: la llamada es `fetch` desde el servidor.

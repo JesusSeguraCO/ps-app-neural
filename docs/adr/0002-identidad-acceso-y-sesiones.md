@@ -13,6 +13,10 @@ add:
 
 # ADR 0002 — Identidad, acceso y sesiones
 
+> **Enmienda de plataforma (iteración 8, 2026-09-25):** el diseño de esta ADR se conserva; su
+> implementación pasa de PHP/MariaDB/cPanel a TypeScript/PostgreSQL/App Platform. Ver la sección
+> «Enmienda de plataforma» al final y [ADR-0008](0008-plataforma-contenedores-y-stack.md).
+
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
 > [0000-drivers-y-asrs.md](0000-drivers-y-asrs.md) y actualizar
@@ -326,3 +330,29 @@ retención de `accesos_log` (CRN-10).
 - Stack operacionalizado en: `.claude/config/stack-allowlist.json` — sin dependencias nuevas (PHP
   nativo: `random_bytes`, `random_int`, `hash_hmac`, `hash_equals`, sesiones,
   `fastcgi_finish_request` / `litespeed_finish_request`).
+
+
+## Enmienda de plataforma (iteración 8, 2026-09-25)
+
+> El cambio de plataforma (ADR-0008, 0009, 0010) conserva **todo el diseño** de esta ADR: token opaco en
+> el fragmento, apertura al verificar, código de un uso con HMAC, respuesta neutra, mensaje único al
+> verificar, limitación en tres capas, revalidación en cada petición, matriz rol × acción, cookies
+> `__Host-` por host, sesión de 30 días acotada al enlace y panel 12 h / 60 min. Cambia cómo se
+> implementa. Donde el texto anterior diga PHP, MariaDB, cron o `config.php`, rige esta tabla.
+
+| Mecanismo (texto anterior) | Implementación vigente | Efecto |
+|----------------------------|------------------------|--------|
+| Sesiones PHP nativas en ficheros por host, `session_regenerate_id`, `read_and_close` | Tabla `identidad.sesiones` (`id_hash` = SHA-256 de un identificador aleatorio de 32 bytes, `host`, `sujeto`, `creada`, `ultima_actividad`, `expira`); la cookie `__Host-ps` / `__Host-pp` lleva el identificador; se emite uno nuevo al autenticar y se borra la fila al cerrar sesión. Las lecturas no bloquean (no hay fichero de sesión) | Desaparece el problema de serialización que motivaba `read_and_close` |
+| Respuesta neutra cerrando con `fastcgi_finish_request()` / `litespeed_finish_request()`; código generado en la petición | En **ambas ramas** y en una sola transacción: misma lectura de `intentos` e invitado, `codigo_pedido` en `accesos_log` y **una fila en `trabajos`** de tipo `enviar_codigo` con `payload = {ref: invitado_id \| null, ambito}` (misma forma en las dos ramas) + `NOTIFY`; después `202` con cuerpo fijo. **El worker genera el código**, guarda su HMAC en `codigos_acceso` (invalidando el anterior) y lo envía por Mailgun; con `ref` nulo cierra sin efecto (`codigo_descartado`). Reintentos a 5/15/30 s con código nuevo en cada uno y `caducado` a los 10 min. Si el worker está caído (> 2 min sin ciclo), el Route Handler procesa el trabajo tras confirmar, en ambas ramas, y responde en un tiempo fijo de 2 s (ADR-0009) | Mismas escrituras en ambas ramas; el código nunca viaja en claro por la cola; sale en < 1 s. **Se cierra R-9** |
+| Cadena `Adapters/Http/Middleware*` de Slim | `middleware.ts` (borde, CSP, cabeceras) + envoltorios de Route Handler `conSesion`, `conCsrf`, `conAutorizacion`, `conLimite` compuestos en cada `route.ts` | La matriz rol × acción se prueba recorriendo `app/api/**/route.ts` del panel (V-2 de ADR-0008) |
+| Origen cerrado a rangos IP de Cloudflare con `.htaccess`; `CF-Connecting-IP` si `REMOTE_ADDR` es de Cloudflare | Cabecera secreta de borde `X-PS-Edge` (ADR-0010); `CF-Connecting-IP` solo se acepta con cabecera de borde válida | R-11 se sustituye por R-45 |
+| Secretos en `~/portal-config/config.php` | Variables `SECRET` de App Platform (`LINK_SIGNING_SECRET`, `OTP_PEPPER`, secreto del HMAC de correos), solo en los procesos que las usan | CON-6 se mantiene |
+| Primer administrador sembrado desde `config.php` | Semilla desde la variable `PANEL_ADMIN_INICIAL` en la migración inicial, ejecutada por el job `migrar` | — |
+| Purgas por cron (`intentos`, `codigos_acceso`, `accesos_log`, sesiones) | Tarea `purgar` del planificador del worker (ADR-0009) | — |
+| `random_bytes`, `random_int`, `hash_hmac`, `hash_equals` | `crypto.randomBytes`, `crypto.randomInt`, `crypto.createHmac`, `crypto.timingSafeEqual` (Node) | Sin dependencias nuevas |
+| ModSecurity puede bloquear los POST de acceso | No aplica (no hay ModSecurity); el conjunto gestionado de Cloudflare se prueba en el humo de staging | — |
+
+**Veredictos que cambian en §5:** QA-3 mantiene ⚠️ solo por los umbrales frente a NAT (R-13) y el
+bloqueo usable para negar acceso (R-10); CON-1 deja de aplicar (reemplazada por CON-18/19, ✅); CON-15
+pasa a CON-22 (⚠️ por V-1, V-2, V-9 de ADR-0010); QA-8 (entrega del código) ⚠️ solo por la colocación
+en bandeja (V-4 de ADR-0010).

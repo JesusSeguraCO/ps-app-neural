@@ -25,6 +25,11 @@ tags:
 > `01-prd/requisitos-tecnicos-hosting.md`) — de solo lectura. Este es un **documento vivo**: cada
 > re-corrida añade drivers nuevos que surjan de HUs/épicas nuevas.
 >
+> **Iteración 8 (2026-09-25):** el sponsor cambió la plataforma después de aceptar 0001–0007. Las
+> restricciones de hosting (CON-1, 2, 3, 5, 7, 15, 16) quedan marcadas como reemplazadas por CON-18..22,
+> que salen de esa decisión y **aún no están en el PRD** (D-23 y §8.3 describen cPanel hasta que
+> discovery los reescriba).
+>
 > Las medidas marcadas *a validar* las propone la capa de arquitectura porque el PRD no las fija; se
 > confirman en la revisión única o quedan como riesgo abierto.
 
@@ -267,13 +272,13 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 
 | ID | Restricción | Origen |
 |----|-------------|--------|
-| CON-1 | Hosting compartido cPanel: PHP 8.3 (`curl`, `openssl`, `session`, `pdo_mysql`), MariaDB 10.6, cron. Frontend estático compilado; **Node no corre en v1**. Sin websockets, colas, workers, procesos largos ni búsqueda vectorial | §8.3, D-23, hosting §2 |
-| CON-2 | Límites PHP: `max_execution_time` 180 s, `memory_limit` 512 MB, `upload_max_filesize`/`post_max_size` 64 MB | hosting §2 |
-| CON-3 | Despliegue Local → GitHub → *Update from Remote* → *Deploy* con `.cpanel.yml`; árbol del servidor limpio; **nunca `node_modules`** (inodos al 20 %) | §8.3, hosting §3–§4 |
+| CON-1 | ⛔ **Reemplazada en la iteración 8 por CON-18 y CON-19** (decisión del sponsor, 2026-09-25). Texto original: Hosting compartido cPanel: PHP 8.3 (`curl`, `openssl`, `session`, `pdo_mysql`), MariaDB 10.6, cron. Frontend estático compilado; **Node no corre en v1**. Sin websockets, colas, workers, procesos largos ni búsqueda vectorial | §8.3, D-23, hosting §2 |
+| CON-2 | ⛔ **Reemplazada en la iteración 8 por CON-18** (no hay límites de proceso PHP). Texto original: Límites PHP: `max_execution_time` 180 s, `memory_limit` 512 MB, `upload_max_filesize`/`post_max_size` 64 MB | hosting §2 |
+| CON-3 | ⛔ **Reemplazada en la iteración 8 por CON-18** (despliegue por imagen, ADR-0010). Texto original: Despliegue Local → GitHub → *Update from Remote* → *Deploy* con `.cpanel.yml`; árbol del servidor limpio; **nunca `node_modules`** (inodos al 20 %) | §8.3, hosting §3–§4 |
 | CON-4 | Acceso sin proveedor de identidad: cliente por lista nominal de invitados + código; panel por lista nominal `@trycore.com` + código + sesión ≤ 12 h / 60 min | D-4, D-22, RF-1.2, RF-8.1 |
-| CON-5 | Correo solo por SMTP autenticado de `notify@people.trycore.com`; `sendmail` prohibido; `trycore.com` sigue en Google Workspace | §8.3, hosting §7 |
-| CON-6 | Secretos solo en servidor, en configuración PHP fuera de la carpeta pública: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `SMTP_PASSWORD`, `LINK_SIGNING_SECRET`, secreto de códigos, credenciales de BD | §8.3 |
-| CON-7 | Llamadas externas solo con `curl`; nunca `file_get_contents` con URL del usuario | hosting §2 |
+| CON-5 | ⛔ **Reemplazada en la iteración 8 por CON-20**. Texto original: Correo solo por SMTP autenticado de `notify@people.trycore.com`; `sendmail` prohibido; `trycore.com` sigue en Google Workspace | §8.3, hosting §7 |
+| CON-6 | Secretos solo en servidor (desde la iteración 8: variables `SECRET` de App Platform, nunca en repositorio ni imagen; añade `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `SPACES_*`, `LATIDO_URL`; `SMTP_PASSWORD` desaparece). Texto original: en configuración PHP fuera de la carpeta pública: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `SMTP_PASSWORD`, `LINK_SIGNING_SECRET`, secreto de códigos, credenciales de BD | §8.3 |
+| CON-7 | ⛔ **Reemplazada en la iteración 8 por CON-21**. Texto original: Llamadas externas solo con `curl`; nunca `file_get_contents` con URL del usuario | hosting §2 |
 | CON-8 | Gemini solo en RF-12.2.1 y RF-8.12.1; recibe consulta y taxonomía, **nunca datos de perfiles**; no redacta sobre personas; desarrollo con token personal y solo datos ficticios | RF-16, D-24 |
 | CON-9 | El portal solo lee; la única escritura del inventario es el panel; catálogo solo tras sesión, como proyección desde la BD por la API autenticada; nunca API abierta | §8, §8.3 |
 | CON-10 | Privacidad: Ley 1581, lista negra B.4, sin foto/contacto/CV/tarifas, fecha de disponibilidad no sale del panel, ciudad solo en presencial/híbrido, `noindex` | §8, Anexo B, D-9, D-18, RF-1.5, RF-3.13 |
@@ -281,9 +286,14 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-12 | Móvil (M-1..M-8) y WCAG 2.1 AA (A-1..A-8) son definición de hecho por pantalla | §8.1, §8.2 |
 | CON-13 | Estado en la URL es requisito duro | RF-2.5 |
 | CON-14 | Decisiones irreversibles a preservar: interpretación separada de recuperación con esquema versionado; rol como lista; Perfil Objetivo por dispositivo | §13.7, RF-16.3, 16.4, D-16 |
-| CON-15 | Cloudflare delante (caché de estáticos, límite de peticiones en token y código); ModSecurity activo; listado de directorios desactivado | §8.3, hosting §5 |
-| CON-16 | Respaldo JetBackup en el mismo servidor, pérdida máxima 1 día (riesgo aceptado) | §8.3, §10.3 |
+| CON-15 | ⛔ **Reemplazada en la iteración 8 por CON-22** (ya no hay ModSecurity ni listado de directorios). Texto original: Cloudflare delante (caché de estáticos, límite de peticiones en token y código); ModSecurity activo; listado de directorios desactivado | §8.3, hosting §5 |
+| CON-16 | ⛔ **Reemplazada en la iteración 8 por CON-19** (respaldo y PITR de la BD administrada). Texto original: Respaldo JetBackup en el mismo servidor, pérdida máxima 1 día (riesgo aceptado) | §8.3, §10.3 |
 | CON-17 | Alcance completo del panel en el MVP | D-8 |
+| CON-18 | **Contenedores Docker portables**; destino inicial **DigitalOcean App Platform**. Backend TypeScript con **Next.js** (servidor + rutas de API) y un **worker Node** para trabajo diferido. El hosting cPanel se abandona | Decisión del sponsor 2026-09-25 (sustituye a D-23; **pendiente reflejar en PRD §8.3**) |
+| CON-19 | **PostgreSQL administrado** (respaldos y PITR fuera de los contenedores) | Decisión del sponsor 2026-09-25 (pendiente reflejar en PRD §8.3) |
+| CON-20 | Correo transaccional y boletín **solo por Mailgun** desde `notify@people.trycore.com`; `trycore.com` sigue en Google Workspace | Decisión del sponsor 2026-09-25 (sustituye a CON-5; pendiente reflejar en PRD §8.3) |
+| CON-21 | Llamadas externas **solo desde el servidor**, por adaptadores con timeout; nunca a URL aportadas por el usuario | Derivada de CON-7 y de la frontera de `build-config.json` (iteración 8) |
+| CON-22 | **Cloudflare delante** de los 4 hosts (proxy, caché de estáticos, límite de peticiones en el acceso) y el origen no alcanzable saltándose Cloudflare | Derivada de CON-15 (iteración 8) |
 
 ## 5. Concerns / preocupaciones del proyecto (CRN)
 
@@ -293,10 +303,10 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CRN-2 | El «canal de trabajo diario» de las notificaciones (RF-9.7.1) no está identificado, ni los destinatarios nominales de escalamiento | Integración saliente adicional sin definir; decisión de negocio |
 | CRN-3 | Falta el calendario hábil (horario, zona, festivos de Colombia, quién lo mantiene) | Tabla de calendario administrable; decisión de negocio sobre el horario |
 | CRN-4 | HU-105 dice que los reintentos se agotan y van a una bandeja de fallos; RF-9.6.1 dice que nunca se deja de reintentar | El diseño debe cumplir ambas (bandeja visible sin dejar de reintentar) |
-| CRN-5 | Medición del correo con SMTP propio: la apertura exige píxel (falla con Apple Mail Privacy Protection); rebotes exigen procesar el buzón; límite de envío no verificado | Estados «sin dato» explícitos; lectura de rebotes por IMAP o Return-Path |
+| CRN-5 | (Iteración 8: Mailgun entrega rebotes, quejas y aperturas por webhook firmado.) Medición del correo con SMTP propio: la apertura exige píxel (falla con Apple Mail Privacy Protection); rebotes exigen procesar el buzón; límite de envío no verificado | Estados «sin dato» explícitos; lectura de rebotes por IMAP o Return-Path |
 | CRN-6 | Salida HTTPS hacia `generativelanguage.googleapis.com` no verificada; cuotas y coste de la llave de producción desconocidos | Verificar en el servidor antes de EP-009; presupuesto de llamadas |
 | CRN-7 | Permisos de la private app de HubSpot, pipeline y propiedades dependen de Mercadeo y Comercial; correspondencia cuenta del portal ↔ empresa de HubSpot | La cuenta guarda el id de empresa y propietario de HubSpot |
-| CRN-8 | Si cae el crontab entero, la vigilancia de RF-9.6.2 cae con él | Vigilancia secundaria apoyada en el tráfico web o un monitor externo |
+| CRN-8 | (Iteración 8: el equivalente es la caída o el atasco del worker.) Si cae el crontab entero, la vigilancia de RF-9.6.2 cae con él | Vigilancia secundaria apoyada en el tráfico web o un monitor externo |
 | CRN-9 | Pérdida del servidor = pérdida de cola, auditoría, consentimientos y artefactos; la importación no puede reponer consentimientos | Riesgo aceptado; exportación periódica recomendada; declarar la consecuencia |
 | CRN-10 | Telemetría y notificaciones llevan datos personales; retención no definida (Ley 1581) | Política de retención propuesta y a validar |
 | CRN-11 | Motor del borrador de evidencia (HU-140) sin autorizar: D-24 no cubre RF-8.11 y el artefacto contiene datos personales | Decisión de negocio: ampliar D-24 con saneamiento, extracción determinista o diferir con acuerdo del equipo |
@@ -306,7 +316,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CRN-15 | Concurrencia: dos administradoras editando el mismo perfil | Control de concurrencia optimista |
 | CRN-16 | Números sin fijar: duración de la sesión del cliente, vigencia del enlace, vigencia del código, umbral de confianza de RF-12.3, límite de filas de importación | Valores propuestos por la arquitectura, a validar |
 | CRN-17 | Sin SLO de disponibilidad en el PRD; hosting compartido | Se declara como hueco, no como QA |
-| CRN-18 | ModSecurity puede bloquear POST legítimos (solicitud, requerimiento pegado, importación) | Pruebas con cargas reales y excepciones por regla |
+| CRN-18 | ⛔ **No aplica desde la iteración 8** (no hay ModSecurity). Texto original: ModSecurity puede bloquear POST legítimos (solicitud, requerimiento pegado, importación) | Pruebas con cargas reales y excepciones por regla |
 | CRN-19 | Hipótesis rival D-17: la entrada por instrucción debe poder retirarse sin tocar ficha, cero ni registro de demanda | Módulos separables |
 | CRN-20 | Agendamiento en el portal (HU-099) marcado v1.1 sin proveedor de calendario | Fuera de esta capa; la fecha de alineación debe llegar al negocio (RF-9.1.3) |
 
@@ -321,6 +331,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | **5** | Fase 9 · EP-005, EP-007, EP-011 | UC-7, 15, 16, 19 · QA-6, 7, 8, 13, 14, 22 · CON-5, 7 · CRN-1, 2, 3, 4, 5, 7, 8 | Integraciones y trabajo diferido | [0005](0005-integraciones-y-trabajo-diferido.md) |
 | **6** | Fase 8 · EP-008 | UC-17 · QA-21 · CRN-10 | Telemetría y atribución | [0006](0006-telemetria-y-atribucion.md) |
 | **7** | Transversal · salida a producción | CON-3, 15 · QA-12, 13 · CRN-17, 18 | Entornos, CI/CD, despliegue y perímetro | [0007](0007-entornos-despliegue-y-perimetro.md) |
+| **8** | Transversal · replanteo de plataforma (2026-09-25) | CON-18, 19, 20, 21, 22 · re-evaluación de UC-4, 5, 7, 15, 16, 19 · QA-1, 2, 4, 6, 7, 8, 12, 13, 14, 18, 19, 22 · CON-6, 9, 12, 13, 14 · CRN-1–5, 7–9, 17, 19 | Sistema completo sobre la nueva plataforma; enmiendas a 0002, 0003, 0004, 0006 | [0008](0008-plataforma-contenedores-y-stack.md), [0009](0009-trabajo-diferido-worker-y-correo.md), [0010](0010-entornos-despliegue-y-perimetro.md) |
 
 ## 7. Matriz de priorización (Importancia de negocio × Impacto arquitectónico)
 

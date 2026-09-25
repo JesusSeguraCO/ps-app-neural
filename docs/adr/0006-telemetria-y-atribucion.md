@@ -13,6 +13,9 @@ add:
 
 # ADR 0006 — Telemetría y atribución
 
+> **Enmienda de plataforma (iteración 8, 2026-09-25):** el diseño de esta ADR se conserva; la tabla de
+> eventos pasa a PostgreSQL y la retención al worker. Ver la sección «Enmienda de plataforma» al final.
+
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
 > [0000-drivers-y-asrs.md](0000-drivers-y-asrs.md) y actualizar
@@ -296,3 +299,23 @@ arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-0
   ModSecurity).
 - Stack operacionalizado en: `.claude/config/stack-allowlist.json` — esta ADR **no añade**
   dependencias; prohíbe SDKs de analítica de terceros en `apps/portal` y `apps/panel`.
+
+
+## Enmienda de plataforma (iteración 8, 2026-09-25)
+
+> Se conservan: emisión por lotes con `sendBeacon`/`keepalive`, endpoint anónimo acotado para el paso
+> de acceso, registro solo de inserción, informes como vistas con «sin dato» explícito, atribución al
+> último envío, sin SDK de analítica de terceros y la retención de 24 meses (decisión del sponsor).
+> Donde el texto anterior diga PHP, MariaDB o cron, rige esta tabla.
+
+| Mecanismo (texto anterior) | Implementación vigente |
+|----------------------------|------------------------|
+| Tabla `eventos` con partición lógica por columna `mes` en MariaDB | Tabla `operacion.eventos` con **particionado declarativo nativo** `PARTITION BY RANGE (fecha)` mensual; la retención de 24 meses es `DETACH` + `DROP` de la partición vencida, sin borrados fila a fila |
+| Vistas `v_embudo_cuenta`, `v_acierto_curaduria`, `v_filtros_usados`… en MariaDB | Mismas vistas en PostgreSQL, servidas por Route Handlers del panel (rol observador) |
+| Endpoints PHP `RegistrarEventos` y `RegistrarEventosAcceso` | Route Handlers `POST /api/v1/eventos` y `POST /api/v1/eventos/acceso` del portal con esquema `zod` por tipo |
+| Limitador de eventos en la aplicación (tabla MariaDB) | Tabla `limites` en PostgreSQL (ADR-0010); los eventos siguen fuera de la regla única de Cloudflare |
+| Cron `RetencionEventos` | Tarea `retencion_eventos` del planificador del worker (ADR-0009) |
+| Apertura de correo por píxel propio con SMTP del hosting (CRN-5) | Apertura por el seguimiento de Mailgun, recibida por webhook (ADR-0009), tratada como señal débil; la regla de «3 envíos sin abrir» sigue midiéndose por clic o entrada (T-10) |
+| ModSecurity puede bloquear los POST de eventos | No aplica |
+
+**Veredictos que cambian en §5:** CRN-5 ✅ (eventos de Mailgun firmados); el resto sin cambios.

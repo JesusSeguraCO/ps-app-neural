@@ -13,6 +13,10 @@ add:
 
 # ADR 0003 — Datos, persistencia, auditoría e importación
 
+> **Enmienda de plataforma (iteración 8, 2026-09-25):** el diseño de esta ADR se conserva; la
+> persistencia pasa de MariaDB a PostgreSQL 16 administrado y los crons al worker. Ver la sección
+> «Enmienda de plataforma» al final.
+
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
 > [0000-drivers-y-asrs.md](0000-drivers-y-asrs.md) y actualizar
@@ -386,3 +390,32 @@ QA-11, UC-14 y CON-2; las decisiones de negocio de UC-4 y QA-12 quedaron tomadas
   [ADR-0007](0007-entornos-despliegue-y-perimetro.md) (reglas de Cloudflare, respaldo y exportación).
 - Stack operacionalizado en: `.claude/config/stack-allowlist.json` — sin dependencias nuevas (PDO,
   `hash_hmac` nativo de PHP, runner de migraciones propio).
+
+
+## Enmienda de plataforma (iteración 8, 2026-09-25)
+
+> Se conservan: toda escritura por la unidad de trabajo, auditoría por campo en la misma transacción
+> con cadena HMAC y ancla diaria externa, versión global y ETag del catálogo tras sesión con
+> `private, no-store`, proyección sin lista negra B.4, importación en dos fases con foto previa y
+> reversión del último lote, sin borrado físico, colocados por la unidad de trabajo, concurrencia
+> optimista y la exportación semanal cifrada a Google Drive (decisión del sponsor). Donde el texto
+> anterior diga MariaDB, PDO, `GET_LOCK`, cron, JetBackup o carpeta privada, rige esta tabla.
+
+| Mecanismo (texto anterior) | Implementación vigente | Efecto |
+|----------------------------|------------------------|--------|
+| MariaDB 10.6 InnoDB, una BD con dos esquemas lógicos por prefijo | PostgreSQL 16 administrado con **esquemas reales** `identidad` y `operacion`; `pg` + Kysely; migraciones Kysely ejecutadas por el job `migrar` (ADR-0010) | Separación nativa y permisos por esquema |
+| Auditoría de solo inserción descansando en HMAC si el hosting no permite triggers | **Rol de aplicación sin `UPDATE`/`DELETE` sobre `operacion.auditoria`** + trigger `BEFORE UPDATE OR DELETE` que lanza excepción, **además** de la cadena HMAC y el ancla diaria. La clave HMAC (`AUDIT_HMAC_KEY`) solo la reciben panel y worker | **Se cierra R-1** si V-10 de ADR-0010 confirma los permisos; si no, queda la protección HMAC + ancla como antes |
+| `GET_LOCK('importacion', 0)` | `pg_try_advisory_xact_lock(hashtext('importacion'))` dentro de la transacción de aplicación | Se libera solo al terminar la transacción |
+| `aplicarPlan` síncrono con presupuesto de 90 s por el corte de 100 s de Cloudflare | `POST /importacion/lotes/{id}/aplicar` responde `202` y encola el trabajo `aplicar_importacion`; el worker aplica en **una** transacción sin techo de 100 s; el panel consulta `GET /importacion/lotes/{id}` hasta `aplicado`, `abortado` o `error`. La reversión sigue el mismo camino | **Se cierra R-18** (el corte de Cloudflare ya no aplica); el límite de filas se fija por memoria y tiempo medidos, no por el borde |
+| Reintento de la unidad de trabajo ante interbloqueo de MariaDB | Reintento hasta 3 veces ante `40P01` (interbloqueo) y `40001` (serialización) | R-19 sin cambios de fondo |
+| Filtro mínimo de ciudad en PHP (segunda implementación parcial) | El servidor importa **`packages/motor`** y decide la ciudad con el mismo motor que el navegador (regla T-9 sin cambios: ciudad solo si la necesidad es presencial o híbrida) | **Se cierra R-20** |
+| Evidencias (video, transcripción) en carpeta privada del hosting, límite `post_max_size` 64 MB | **DO Spaces** privado con URL prefirmadas de PUT y GET, solo para el panel (ADR-0010) | El tamaño deja de depender de PHP y de Cloudflare |
+| JetBackup diario en el mismo servidor | Respaldo diario automático + **PITR de 7 días** de la BD administrada; la exportación semanal a Drive se mantiene como copia fuera del proveedor | R-8: ventana ante pérdida de la BD = minutos; ante pérdida de cuenta o región = hasta 7 días (aceptado) |
+| Crons `verificar-auditoria`, `sincronizar-colocados`, `exportar-banco`, purgas | Tareas del planificador del worker (ADR-0009) | — |
+| `hash_hmac` nativo de PHP | `crypto.createHmac` de Node | Sin dependencias nuevas |
+| CON-2 (180 s, 512 MB, 64 MB) y CON-16 (JetBackup) | Reemplazadas por CON-18/CON-19 | — |
+
+**Veredictos que cambian en §5:** UC-14 pasa a ✅ con subida directa a Spaces (plan: test de URL
+prefirmada vencida y de acceso sin autorización → 403); QA-9 ⚠️ solo por el P95 de 200 filas sin
+medir en DO; QA-11 ⚠️ hasta V-10; QA-12 ⚠️ hasta ensayar la restauración (V-3 de ADR-0010); CON-2,
+CON-15 y CON-16 dejan de aplicar.

@@ -2,7 +2,8 @@
 id: 0005
 title: "Integraciones y trabajo diferido: HubSpot, correo, notificaciones y cron"
 date: 2026-09-25
-status: accepted
+status: superseded
+superseded_by: 0009
 authors:
   - setup-architecture (/build:architect)
 tags: [integraciones, hubspot, outbox, cron, correo, smtp, notificaciones, escalamiento, observabilidad]
@@ -12,6 +13,10 @@ add:
 ---
 
 # ADR 0005 — Integraciones y trabajo diferido: HubSpot, correo, notificaciones y cron
+
+> ⛔ **SUPERSEDED (iteración 8, 2026-09-25)** por [ADR-0009](0009-trabajo-diferido-worker-y-correo.md) tras el cambio de plataforma
+> (cPanel → Docker/DigitalOcean App Platform, Next.js TS, PostgreSQL, Mailgun). Se conserva como rastro;
+> no es criterio de construcción.
 
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a

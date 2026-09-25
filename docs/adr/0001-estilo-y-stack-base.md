@@ -2,7 +2,8 @@
 id: 0001
 title: "Estilo arquitectónico, stack y estructura del sistema"
 date: 2026-09-25
-status: accepted
+status: superseded
+superseded_by: 0008
 authors:
   - setup-architecture (/build:architect)
 tags: [estilo, stack, monorepo, estatico, php, mariadb]
@@ -12,6 +13,10 @@ add:
 ---
 
 # ADR 0001 — Estilo arquitectónico, stack y estructura del sistema
+
+> ⛔ **SUPERSEDED (iteración 8, 2026-09-25)** por [ADR-0008](0008-plataforma-contenedores-y-stack.md) tras el cambio de plataforma
+> (cPanel → Docker/DigitalOcean App Platform, Next.js TS, PostgreSQL, Mailgun). Se conserva como rastro;
+> no es criterio de construcción.
 
 ## 1. Objetivo de la iteración y drivers seleccionados (Pasos 2–3)
 

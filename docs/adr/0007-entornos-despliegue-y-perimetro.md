@@ -2,7 +2,8 @@
 id: 0007
 title: "Entornos, CI/CD, despliegue y seguridad perimetral"
 date: 2026-09-25
-status: accepted
+status: superseded
+superseded_by: 0010
 authors:
   - setup-architecture (/build:architect)
 tags: [entornos, ci-cd, despliegue, cpanel, cloudflare, seguridad-perimetral, respaldo, observabilidad]
@@ -12,6 +13,10 @@ add:
 ---
 
 # ADR 0007 — Entornos, CI/CD, despliegue y seguridad perimetral
+
+> ⛔ **SUPERSEDED (iteración 8, 2026-09-25)** por [ADR-0010](0010-entornos-despliegue-y-perimetro.md) tras el cambio de plataforma
+> (cPanel → Docker/DigitalOcean App Platform, Next.js TS, PostgreSQL, Mailgun). Se conserva como rastro;
+> no es criterio de construcción.
 
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
