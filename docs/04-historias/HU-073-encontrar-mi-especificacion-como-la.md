@@ -31,9 +31,9 @@ prd_version: 4.8
 **Entonces** arranco con una especificación en blanco
 **Y** el portal no me promete una recuperación que no puede cumplir
 
-### Edge case — enlace reenviado dentro de la empresa
+### Edge case — otro invitado del mismo enlace
 
-**Dado** que un colega abre el enlace que le reenvié,
+**Dado** que un colega invitado al mismo enlace entra al portal,
 **cuando** él entra al portal desde su propio dispositivo,
 **Entonces** arranca limpio y no ve la especificación que yo escribí
 **Y** eso es el comportamiento correcto, no una carencia

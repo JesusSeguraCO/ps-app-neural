@@ -42,7 +42,7 @@ prd_version: 4.8
 
 Cubre la segunda mitad de **RF-8.11** y **B.9.3** (carga asistida desde el artefacto).
 
-**Por qué es historia aparte desde el 2026-09-22.** La HU-131 original juntaba adjuntar y derivar en una sola historia de complejidad L con valor medio: el peor cuadrante del backlog. Guardar un archivo y derivar campos descriptivos de un video son trabajos de orden distinto. Dividirlas deja la mitad útil (HU-131) construible por una fracción del costo, y aísla la cara en una historia que se puede posponer sin perder nada.
+**Por qué es historia aparte desde el 2026-09-22.** La HU-131 original juntaba adjuntar y derivar en una sola historia de complejidad L con valor medio: el peor cuadrante del backlog. Guardar un archivo y derivar campos descriptivos de un documento son trabajos de orden distinto. Dividirlas deja la mitad útil (HU-131) construible por una fracción del costo, y aísla la cara en una historia que se puede posponer sin perder nada.
 
 **El borrador se revisa, siempre.** Es la misma restricción que **RF-16.1** impone al modelo del cliente: el sistema no afirma cosas sobre una persona real por la que Trycore responde contractualmente. Aquí el filtro es humano y explícito, y por eso el edge case es el que más importa de los tres.
 

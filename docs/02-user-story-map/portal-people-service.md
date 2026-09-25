@@ -61,7 +61,7 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 |---|---|---|---|---|
 | *EP-006* | *EP-006* | *EP-006* | *EP-006* | *EP-006* |
 | **━━━━━━━━━━ MVP ━━━━━━━━━━** | | | | |
-| HU-123 Entrar al panel con mi cuenta corporativa | HU-131 Adjuntar el artefacto de evidencia | HU-127 Registrar el consentimiento nominal | HU-132 Actualizar la disponibilidad en dos clics | HU-089 Crear valores de catálogo sin duplicar |
+| HU-123 Entrar al panel con mi correo corporativo | HU-131 Adjuntar el artefacto de evidencia | HU-127 Registrar el consentimiento nominal | HU-132 Actualizar la disponibilidad en dos clics | HU-089 Crear valores de catálogo sin duplicar |
 | HU-125 Crear un perfil eligiendo del catálogo | | HU-128 Ser bloqueada si publico sin consentimiento | HU-133 Pausar declarando el motivo | HU-139 Administrar el léxico de búsqueda |
 | HU-126 Editar un perfil publicado sin sorpresas | | HU-129 Previsualizar la ficha | HU-134 Corregir incoherencias estado/disponibilidad | |
 | HU-124 Consultar el banco sin poder modificarlo | | HU-130 Publicar sin esperar el reporte detallado | HU-136 Revisar la bandeja de vigencia | |

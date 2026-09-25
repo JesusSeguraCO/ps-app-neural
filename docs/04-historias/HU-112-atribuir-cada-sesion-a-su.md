@@ -29,12 +29,12 @@ prd_version: 4.0
 **cuando** se registra,
 **Entonces** queda como origen directo y no se atribuye a ningún envío
 
-### Edge case — enlace reenviado
+### Edge case — entra otro invitado del mismo enlace
 
-**Dado** que el enlace lo abre otra persona de la empresa,
+**Dado** que el enlace lo abre otra persona invitada al mismo enlace,
 **cuando** se registra,
 **Entonces** se atribuye al mismo envío
-**Y** se marca que la sesión no corresponde al contacto original
+**Y** queda registrado el correo invitado con el que entró, distinto del contacto principal
 
 
 ## Notas

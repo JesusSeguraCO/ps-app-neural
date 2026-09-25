@@ -1,0 +1,61 @@
+{
+  "context": {
+    "warning_pct": 35,
+    "critical_pct": 25,
+    "auto_checkpoint": false,
+    "stale_seconds": 60
+  },
+  "runtime": {
+    "mode": "runtime",
+    "stale_seconds": 900,
+    "context_refresh_s": 45
+  },
+  "boundaries": [
+    {
+      "id": "hubspot-api",
+      "name": "HubSpot API (CRM + correo curado)",
+      "source": "docs/01-prd/portal-people-service.md#rf-9--integración-con-hubspot",
+      "paths": [
+        "server/adapters/hubspot/**"
+      ],
+      "credential_env": "HUBSPOT_PRIVATE_APP_TOKEN",
+      "message_kinds": [
+        "create-deal",
+        "associate-contact-company",
+        "create-contact",
+        "timeline-note",
+        "notify-owner"
+      ],
+      "na": null,
+      "verified": []
+    },
+    {
+      "id": "llm-interpreter",
+      "name": "Modelo de lenguaje (interpretación consulta → taxonomía)",
+      "source": "docs/01-prd/portal-people-service.md#rf-16--contrato-del-modelo",
+      "paths": [
+        "server/adapters/llm/**"
+      ],
+      "credential_env": "LLM_API_KEY",
+      "message_kinds": [
+        "interpret-query"
+      ],
+      "na": null,
+      "verified": []
+    },
+    {
+      "id": "otp-mail",
+      "name": "Correo saliente: SMTP autenticado de notify@people.trycore.com (códigos de acceso)",
+      "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-hosting-compartido-de-trycore",
+      "paths": [
+        "server/adapters/mail/**"
+      ],
+      "credential_env": "SMTP_PASSWORD",
+      "message_kinds": [
+        "send-access-code"
+      ],
+      "na": null,
+      "verified": []
+    }
+  ]
+}

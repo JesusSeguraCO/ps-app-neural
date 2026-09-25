@@ -11,25 +11,25 @@ prd_version: 4.0
 
 # HU-097 — Identificarme cuando no soy quien recibió el correo
 
-**Como** arquitecto al que le reenviaron el enlace y que va a enviar la solicitud,
+**Como** arquitecto invitado al enlace que va a enviar la solicitud,
 **quiero** poner mis datos en lugar de los del contacto original,
-**para** que Trycore me busque a mí y no a quien me reenvió el correo.
+**para** que Trycore me busque a mí y no al contacto principal del envío.
 
 ## Criterios de aceptación
 
 ### Happy path
 
-**Dado** que llego al formulario desde un enlace reenviado,
+**Dado** que entré con mi correo invitado y no soy el contacto principal del envío,
 **cuando** diligencio mis datos,
-**Entonces** la solicitud viaja con mi nombre, cargo y correo
+**Entonces** la solicitud viaja con mi nombre, mi cargo y el correo con el que entré
 **Y** la cuenta sigue siendo la misma
 
-### Error — correo personal
+### Error — intento cambiar el correo
 
-**Dado** que escribo un correo que no es corporativo,
+**Dado** que en el formulario escribo un correo distinto del que verifiqué al entrar,
 **cuando** intento enviar,
-**Entonces** el portal me lo advierte
-**Y** puedo continuar si insisto, y queda registrado
+**Entonces** la solicitud usa el correo verificado
+**Y** el portal me explica que el correo es el de mi invitación
 
 ### Edge case — contacto desconocido en empresa conocida
 
@@ -41,7 +41,7 @@ prd_version: 4.0
 
 ## Notas
 
-Cubre RF-5.2, RF-5.6 y RF-9.2. El último escenario es consecuencia directa de que el enlace sea reenviable (D-4).
+Cubre RF-5.2, RF-5.6 y RF-9.2. Con acceso nominal (D-4 revisada el 2026-09-25) el correo de quien solicita siempre es uno invitado y verificado; el último escenario sigue vigente porque un invitado puede no existir aún en el CRM.
 
 ## Trazabilidad
 

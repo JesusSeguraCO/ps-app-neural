@@ -33,7 +33,7 @@ prd_version: 4.0
 
 ### Edge case — entra sin abrir
 
-**Dado** que alguien entra por un enlace reenviado,
+**Dado** que entra un invitado del enlace que no recibió el correo del envío,
 **cuando** se registra,
 **Entonces** la entrada se atribuye al envío aunque no haya apertura propia
 

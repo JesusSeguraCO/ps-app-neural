@@ -59,13 +59,14 @@ Un enlace generado hoy se abre dentro de días o semanas. En ese lapso un perfil
 |---|---|
 | **Al menos un perfil** | Obvio, pero hay que impedirlo |
 | **Una cuenta destinataria** | Un enlace sin cuenta no tiene contexto ni atribución posible |
+| **Correos invitados** | Solo esos correos reciben el código de acceso; un correo fuera de la lista no entra, aunque sea de la misma empresa (RF-1.2.7). Se propone el contacto del envío en el CRM; quien genera lo confirma o añade a otras personas |
 | **Una razón de la selección** | **Es lo que separa una curaduría de un catálogo.** Sin razón, el cliente recibe una lista |
 | **Todos los perfiles publicados** | No se puede enviar lo que no está publicado |
 | **Una vigencia** | Atada al ciclo del envío |
 
 ## 6. El enlace es un objeto con vida propia
 
-Cada enlace registra: token, cuenta, razón, perfiles incluidos, quién lo generó, cuándo, vigencia, aperturas y si fue revocado.
+Cada enlace registra: token, cuenta, correos invitados (y las invitaciones aprobadas después, RF-1.2.10), razón, perfiles incluidos, quién lo generó, cuándo, vigencia, aperturas y si fue revocado.
 
 **Sin ese registro, cuando un cliente diga «ustedes me mostraron a Fulano», nadie podría verificarlo.** Y sin las aperturas, el análisis de EP-011 —quién abrió, quién entró— no tiene de dónde salir.
 

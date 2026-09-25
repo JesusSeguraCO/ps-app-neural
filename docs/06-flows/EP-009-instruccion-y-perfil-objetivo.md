@@ -169,7 +169,7 @@ sequenceDiagram
   end
 
   %% HU-073
-  alt Un colega abre el enlace reenviado
+  alt Entra otro invitado del mismo enlace
     %% HU-073
     P-->>C: Arranca limpio, la especificación no viaja con el enlace
   end
@@ -195,7 +195,7 @@ sequenceDiagram
 | Degradación de la interpretación | HU-072 | AC-1 (happy) · AC-2 (error) |
 | Recuperar la especificación | HU-073 | AC-1 (happy) |
 | Navegador sin el dato | HU-073 | AC-2 (error) |
-| Enlace reenviado a otro dispositivo | HU-073 | AC-3 (edge) |
+| Otro invitado del mismo enlace | HU-073 | AC-3 (edge) |
 
 ## Notas
 

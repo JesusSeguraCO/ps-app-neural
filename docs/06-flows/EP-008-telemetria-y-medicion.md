@@ -23,7 +23,7 @@ flowchart TD
   %% HU-112
   Atrib -- no --> AtribNo[Sesión registrada como entrada directa, sin inventar cuenta]
   %% HU-112
-  AtribOK --> Reenvio[Enlace reenviado dentro de la empresa, misma cuenta y contacto distinto]
+  AtribOK --> Reenvio[Otro invitado del mismo enlace, misma cuenta y contacto distinto]
 
   Eventos --> Embudo
   Eventos --> Acierto
@@ -73,7 +73,7 @@ flowchart TD
 |---|---|---|
 | Atribución de sesión | HU-112 | AC-1 (happy) |
 | Entrada sin parámetros | HU-112 | AC-2 (error) |
-| Enlace reenviado | HU-112 | AC-3 (edge) |
+| Otro invitado del mismo enlace | HU-112 | AC-3 (edge) |
 | Embudo por cuenta | HU-108 | AC-1 (happy) |
 | Período sin actividad | HU-108 | AC-2 (error) |
 | Cuenta con muchas sesiones | HU-108 | AC-3 (edge) |

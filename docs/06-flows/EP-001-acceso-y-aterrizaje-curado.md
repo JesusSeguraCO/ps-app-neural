@@ -86,14 +86,14 @@ sequenceDiagram
   P-->>C: Restituye el conjunto curado con su razón
 
   %% HU-095
-  C->>P: Reenvía el enlace a un colega del mismo dominio
+  C->>P: Pide invitar a un colega
   %% HU-095
-  P-->>C: El colega verifica dominio y entra a la misma selección
+  P-->>C: Talento Humano aprueba y el colega entra con su correo y código
 
   %% HU-095
-  alt El enlace sale de la empresa
+  alt El enlace llega a alguien no invitado
     %% HU-095
-    P-->>C: La verificación de dominio corta el acceso externo
+    P-->>C: Un correo no invitado no recibe código ni ve perfiles
   end
 ```
 
@@ -111,12 +111,12 @@ sequenceDiagram
 | Enlace vencido o revocado | HU-092 | AC-1 (happy) · HU-144 AC-2 (error) |
 | Aterrizaje sin curaduría | HU-093 | AC-1 (happy) |
 | Ampliar y volver | HU-094 | AC-1 (happy) |
-| Reenvío interno | HU-095 | AC-1 (happy) |
-| Enlace fuera de la empresa | HU-095 | AC-3 (edge) |
+| Invitar a un colega | HU-095 | AC-1 (happy) |
+| Colega sin invitación | HU-095 | AC-2 (error) |
 
 ## Notas
 
-**El reenvío interno no es una fuga, es el mejor caso.** D-4 se revisó el 2026-09-16 precisamente para permitirlo: la verificación por dominio deja entrar a cualquiera de la empresa del cliente y corta el reenvío hacia afuera. Un código enviado solo al contacto original rompería el paso del líder técnico a su arquitecto.
+**El acceso es nominal (D-4 revisada el 2026-09-25).** Solo entran los correos invitados en el enlace. Reenviarlo no da acceso: la segunda opinión de un colega pasa por una invitación que aprueba Talento Humano (HU-095, RF-1.2.10). *Antes*, la verificación por dominio permitía el reenvío interno libre.
 
 **HU-122 se dividió el 2026-09-22.** Tenía seis escenarios y dos happy paths con **actores distintos** — Talento Humano generando el enlace y el cliente abriéndolo. Cuando los happy paths cambian de actor, el corte está ahí: lo que el cliente ve al abrir es ahora **HU-144**.
 

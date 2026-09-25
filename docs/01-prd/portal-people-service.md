@@ -3,10 +3,10 @@ artefacto: prd
 slug: portal-people-service
 producto: "Portal de Perfiles People Service (nombre de trabajo)"
 modo: para-agentes
-version: 4.8
+version: 4.10
 estado: borrador-para-vobo
 autor: Jesús Segura (Dirección de Mercadeo)
-fecha: 2026-09-21
+fecha: 2026-09-25
 linea_de_servicio: People Service
 ---
 
@@ -223,12 +223,18 @@ Ingreso autenticado al panel
 
 ### RF-1 · Acceso y sesión
 - **RF-1.1** El enlace del correo viaja con parámetros que identifican cuenta, contacto, conjunto curado y contexto del proyecto.
-- **RF-1.2 · Acceso del cliente: enlace firmado más verificación de correo corporativo.** Al abrir, el portal pide el correo; si el dominio corresponde a la cuenta del enlace, envía un código de un uso. Sin registro, sin contraseña, una vez por dispositivo.
+- **RF-1.2 · Acceso del cliente: enlace firmado más correo invitado.** Al abrir, el portal pide el correo; si está en la **lista de correos invitados del enlace** (RF-1.2.7), envía a ese buzón un código de un uso desde el correo saliente del portal (§8.3). Un correo que no está en la lista no entra, aunque sea de la misma empresa. Sin registro, sin contraseña, una vez por dispositivo. *(D-4 revisada el 2026-09-25.)*
   - **RF-1.2.1 · Por qué cambió respecto de la primera resolución.** D-4 se cerró sin código cuando los perfiles **no llevaban nombre**: lo que se filtraba era un banco anonimizado. Tras revertirse D-1, el enlace expone **la lista nominal del talento de Trycore con su trayectoria**. Cambió el contenido, así que cambió el cálculo del riesgo.
-  - **RF-1.2.2 · Por qué la verificación es por dominio y no un código al contacto original.** Un código enviado solo a quien recibió el correo **rompe el reenvío interno**, que es deseable: el líder técnico se lo pasa a su arquitecto. La verificación por dominio deja entrar a cualquiera de la empresa del cliente y corta el reenvío hacia afuera.
+  - ~~**RF-1.2.2 · Por qué la verificación es por dominio y no un código al contacto original.**~~ *Sustituido el 2026-09-25 por RF-1.2.11.* Un código enviado solo a quien recibió el correo **rompe el reenvío interno**, que es deseable: el líder técnico se lo pasa a su arquitecto. La verificación por dominio deja entrar a cualquiera de la empresa del cliente y corta el reenvío hacia afuera.
   - **RF-1.2.3 · Lo que no sirve.** Un código estático incluido en el mismo correo que el enlace: quien tiene el enlace tiene el código. Es fricción con ganancia nula.
   - **RF-1.2.4 · Beneficio adicional.** Hoy solo se sabe quién es el visitante si llega a enviar la solicitud. Con verificación al entrar se sabe desde el primer momento, que es lo que RF-7.3 y el informe del correo necesitan.
   - **RF-1.2.5** El mensaje de la puerta explica la razón —*los perfiles incluyen nombre y trayectoria de profesionales reales*—. Una fricción explicada construye marca; una fricción muda la destruye.
+  - **RF-1.2.6 · Sin proveedor de identidad.** El control completo —firma del enlace, lista de correos invitados, código, vigencia y revocación— lo resuelve el propio portal en el hosting (§8.3). No se instala ningún sistema de identidad externo (Keycloak, OAuth o similar).
+  - **RF-1.2.7 · Los correos invitados los declara quien genera el enlace.** Uno o varios por enlace. Por omisión se propone el contacto del envío en HubSpot; Talento Humano lo confirma o añade a otras personas de la cuenta. Cada invitado queda registrado con el enlace (RF-19.5).
+  - **RF-1.2.8 · Descartado: un código temporal generado por Talento Humano y enviado junto al enlace.** Es el caso de RF-1.2.3: quien tiene el correo tiene el enlace y el código, así que no aporta nada. El código que protege es el que llega **al buzón que la persona escribe**, porque prueba que lo controla.
+  - **RF-1.2.10 · Invitar a un colega.** Un invitado puede pedir desde el portal que se invite a otra persona, indicando su correo. La petición llega a Talento Humano, que la aprueba añadiendo ese correo al enlace, o la rechaza. **El acceso no se concede sin esa aprobación.** Así la segunda opinión del arquitecto sigue siendo posible, sin que el enlace sea una llave que abre a quien lo tenga.
+  - **RF-1.2.11 · Por qué lista nominal y no dominio** (decisión del sponsor, 2026-09-25). El portal muestra nombre y trayectoria de profesionales reales: cada persona que los ve debe estar invitada con nombre propio. Reenviar el enlace no da acceso; el colega entra por RF-1.2.10. *Costo aceptado:* el reenvío interno deja de ser inmediato y pasa a requerir una aprobación de Talento Humano.
+  - **RF-1.2.9** El intento de código tiene límite por enlace y por dirección —cinco intentos, luego espera— y el punto de entrada va detrás del límite de peticiones de Cloudflare (§8.3). Un código de seis dígitos sin límite se adivina.
 - **RF-1.3** Superado el control, el portal saluda por cuenta y muestra el conjunto curado del correo, sin pasos intermedios.
 - **RF-1.4** Acceso revocable y con vigencia configurable. Vencido → pantalla de renovación con contacto, nunca error crudo.
 - **RF-1.5** `noindex`, `nofollow` y exclusión de rastreadores en todo el portal.
@@ -237,7 +243,7 @@ Ingreso autenticado al panel
   - **RF-19.1 · El enlace lleva la lista de códigos, no filtros.** Una selección heterogénea —un gerente, un desarrollador y un QA— **no se puede expresar con ningún filtro**: cualquiera que incluya a los tres incluye a muchos más. Los filtros sirven para la ruta de descubrimiento; la curaduría es una lista.
   - **RF-19.2 · Reevaluación al abrir.** El portal resuelve el estado real de cada código en el momento de abrirse. **Nunca omite un perfil en silencio**: el que cambió aparece con su estado —colocado hasta tal fecha, pausado, fuera del banco—. Un hueco silencioso se lee como desorden; un cambio explicado se lee como control.
   - **RF-19.3 · Dueño: Talento Humano**, que es quien conoce la disponibilidad y administra el inventario. *Coordinación necesaria:* la razón de la selección requiere el contexto del proyecto, que lo tiene el ejecutivo comercial.
-  - **RF-19.4 · No se emite sin razón declarada.** Es lo que separa una curaduría de un catálogo. Tampoco sin cuenta destinataria, sin vigencia, ni con perfiles que no estén publicados.
+  - **RF-19.4 · No se emite sin razón declarada.** Es lo que separa una curaduría de un catálogo. Tampoco sin cuenta destinataria, sin **correos invitados** (RF-1.2.7), sin vigencia, ni con perfiles que no estén publicados.
   - **RF-19.5 · Cada enlace es un objeto con registro**: quién lo generó, para qué cuenta, qué contenía, aperturas y revocación. Sin ese registro, cuando un cliente diga «ustedes me mostraron a Fulano» nadie podría verificarlo.
   - **RF-19.6 · Revocable.** Un enlace revocado lleva a una pantalla que explica cómo pedir uno nuevo, no a un error.
   - **RF-19.7** Si la selección mezcla familias, **el Perfil Objetivo arranca vacío**: no hay rol común entre un gerente y un QA, y deducir uno sería inventar.
@@ -253,6 +259,7 @@ Ingreso autenticado al panel
   - **RF-2.6.1** Los resultados se presentan en dos niveles: **coincidencias directas** y **relacionados**. Un buscador que devuelve cero ante un casi-acierto es peor que no tener buscador: el cliente concluye que no hay nada cuando sí hay algo cercano.
   - **RF-2.6.2** El portal **muestra cómo interpretó la consulta** —qué rol y qué tecnologías entendió— para que el usuario corrija en lugar de adivinar por qué salió lo que salió.
   - **RF-2.6.3** Toda consulta sin coincidencia directa se registra con su texto literal (RF-7.2). Con texto libre esta señal es mucho más rica que con facetas: revela con qué palabras piensa el cliente, no solo qué casilla marcó.
+  - **RF-2.6.4 · Sin índice semántico ni vectorial.** El hosting no los soporta (§8.3) y el banco no los necesita: con decenas de perfiles, la recuperación determinista sobre el catálogo completo cabe en el navegador y cumple el segundo de respuesta. Lo «semántico» vive en la interpretación del modelo y en el léxico, no en el índice.
 - **RF-2.7** Ordenamiento: relevancia (default) · disponibilidad más próxima · seniority.
 - **RF-2.8** Estado sin resultados con salida activa (ver §6.4).
 - **RF-2.9** **Chips de acceso rápido**: segmentos de un clic que evitan armar filtros manualmente — disponibilidad inmediata, experiencia en el sector de la cuenta, recomendados para el último requerimiento. *(v1.1)*
@@ -281,7 +288,7 @@ Ingreso autenticado al panel
   - La declaración de condición de entrada del encabezado (RF-6.4) se mantiene: el sello la recuerda, no la reemplaza.
 - **RF-3.12** La ficha **distingue de forma explícita lo verificado por Trycore de lo autoreportado por el profesional**. Trayectoria, formación y stack son declarados por la persona; las validaciones de seguridad, técnica y DISC son ejecutadas por Trycore. La distinción se marca visualmente, no en letra pequeña: es la respuesta a la pregunta que hace todo comprador escéptico —¿esto lo comprobaron o me lo están contando?— y es el complemento honesto del bloque de validación.
 - **RF-3.11** El detalle de la validación vive en un **bloque expandible dentro de la ficha**, nunca en un tooltip —el hover no existe en móvil y el correo se abre mayoritariamente en móvil— y nunca en la tarjeta, donde repetido en cada resultado volvería a ser la insignia decorativa que RF-3.8 elimina.
-- **RF-3.10** La validación técnica se presenta con **estructura fija de cinco campos** (Anexo B.8), cualquiera sea la modalidad de prueba del rol. Nunca aparece vacía, nunca dice "no aplica" y nunca enlaza el artefacto crudo —repositorio, video, entregable— porque identifica al profesional y porque lo que Trycore vende es el dictamen, no el insumo.
+- **RF-3.10** La validación técnica se presenta con **estructura fija de cinco campos** (Anexo B.8), cualquiera sea la modalidad de prueba del rol. Nunca aparece vacía, nunca dice "no aplica" y nunca enlaza el artefacto crudo —repositorio, entregable— porque identifica al profesional y porque lo que Trycore vende es el dictamen, no el insumo.
 - **RF-3.9** La Experiencia Clave nunca se presenta como Grid Técnico. La experiencia es trayectoria del profesional; el Grid Técnico es validación ejecutada por Trycore. Mezclarlas vacía la dimensión más diferenciadora del estándar.
 - **RF-3.7** Ningún campo de la lista negra del Anexo B llega al portal, ni siquiera en forma resumida o parafraseada. El panel de administración no ofrece dónde escribirlos.
 - **RF-3.6** La calidez la carga la prosa de la trayectoria, escrita en voz humana. Prohibido el registro de inventario al describir experiencia: "unidad", "ítem", "disponible para asignación", "stock".
@@ -318,12 +325,13 @@ Ingreso autenticado al panel
 - **RF-7.4** Distinguir interacción con el conjunto curado frente a interacción por descubrimiento. Mide si la curaduría acierta.
 
 ### RF-8 · Panel de administración (Talento Humano)
-- **RF-8.1 · Acceso al panel: identidad corporativa** (D-22). No es el mismo mecanismo que el del cliente y no debe serlo: el cliente entra dos o tres veces al año y es externo; quien administra el panel entra cada semana, escribe datos y maneja información personal de profesionales.
-  - **RF-8.1.1 · Por qué identidad corporativa y no credenciales propias.** No hay contraseñas nuevas que administrar, el segundo factor se hereda de lo ya configurado, y —lo decisivo— **cuando alguien sale de la empresa el acceso muere con su cuenta**. Con credenciales propias del portal, la cuenta sobrevive a la salida y alguien tiene que acordarse de desactivarla.
+- **RF-8.1 · Acceso al panel: correo corporativo de Trycore con código de un uso** (D-22 revisada el 2026-09-24). Quien administra entra con su correo `@trycore.com`, recibe en él un código de un uso y abre una sesión de duración corta. **No se instala proveedor de identidad** (Keycloak, OAuth o similar): el hosting compartido no lo justifica y el correo corporativo ya resuelve lo que la identidad corporativa prometía. No es el mismo mecanismo que el del cliente y no debe serlo: el cliente entra dos o tres veces al año y es externo; quien administra el panel entra cada semana, escribe datos y maneja información personal de profesionales.
+  - **RF-8.1.1 · Por qué el buzón corporativo y no credenciales propias.** No hay contraseñas nuevas que administrar; **el segundo factor se hereda del buzón**, que ya lo tiene configurado; y —lo decisivo— **cuando alguien sale de la empresa su buzón muere y con él la posibilidad de recibir el código**. La sesión vigente caduca sola en horas, así que nadie tiene que acordarse de desactivar a nadie.
   - **RF-8.1.2 · Dos roles.** *Administrador de inventario* (Talento Humano): crea, edita, publica, importa, genera enlaces y administra catálogos. *Observador* (Mercadeo y Comercial): consulta inventario, enlaces, colocados, demanda y cobertura. No escribe nada.
-  - **RF-8.1.3 · Sin autenticación real no hay auditoría.** RF-8.9 exige registrar qué cambió, quién y cuándo. El «quién» solo existe si hay identidad.
+  - **RF-8.1.3 · Sin identidad no hay auditoría.** RF-8.9 exige registrar qué cambió, quién y cuándo. El «quién» es el correo corporativo verificado con el código.
   - **RF-8.1.4** El panel vive en una dirección distinta y **nunca es alcanzable desde el enlace del cliente**.
-  - *Pendiente con Tecnología:* proveedor de identidad y duración de la sesión antes de volver a pedir entrada.
+  - **RF-8.1.5 · Lista nominal de acceso.** Tener un correo `@trycore.com` no basta: el panel solo envía código a los correos inscritos en su lista, cada uno con su rol. Los administradores de inventario mantienen la lista desde el panel; el primer administrador se siembra en la configuración del servidor. A un correo no inscrito se le responde igual que a uno inscrito —«si tu correo tiene acceso, te llegó un código»—, para no revelar quién está en la lista.
+  - **RF-8.1.6 · Duración de la sesión: una jornada, doce horas como máximo**, y cierre por inactividad a los sesenta minutos. Es un panel que escribe datos personales: una sesión de semanas convierte un portátil olvidado en un acceso abierto.
 - **RF-8.2** Crear y editar perfiles con todos los atributos del modelo de datos.
 - **RF-8.3** Estados del perfil: **borrador · publicado · pausado · archivado**. "Eliminar" archiva; nunca hay borrado físico, para conservar trazabilidad de lo que se mostró en solicitudes pasadas.
 - **RF-8.4** Campo obligatorio de consentimiento registrado: un perfil no puede pasar a *publicado* sin él. Tras revertirse D-1, el consentimiento debe ser **nominal y explícito** —autoriza publicar nombre y primer apellido junto con la trayectoria y los clientes nombrados, ante cuentas cliente, de forma continua—. El consentimiento recogido para una publicación anonimizada **no cubre este uso** y debe recogerse de nuevo.
@@ -360,10 +368,11 @@ Ingreso autenticado al panel
   - **RF-8.14.3** El panel **señala las incoherencias en la propia fila**, con la acción que las corrige en un clic. Incoherencias de severidad alta impiden publicar; las medias se advierten sin bloquear.
   - **RF-8.14.4** **Una disponibilidad vencida y sin actualizar no se afirma.** Si la fecha ya pasó y el perfil lleva más de 30 días sin tocarse, el portal muestra **«Disponibilidad por confirmar»** en lugar de «Disponible ahora». Afirmar disponibilidad con base en un dato que nadie sostiene es la forma más silenciosa de perder credibilidad con una cuenta activa.
 - **RF-8.13** **Pestaña de perfiles colocados**, con la cuenta, la fecha de inicio y la de vencimiento, ordenada por proximidad del vencimiento y destacando los que vencen dentro de 60 días.
-  - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión.
+  - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. **La sincronización es periódica, nunca en tiempo real** —tarea programada diaria o importación del archivo que el sistema de asignación exporte—, porque el hosting no sostiene conexiones permanentes con sistemas internos (§8.3).
   - **RF-8.13.2** **Un perfil colocado no se oculta: se ofrece para cuando queda libre.** Permanece *publicado* con su disponibilidad igual a la fecha de fin de la asignación. Ocultarlo esconde inventario que sí es vendible —un perfil que arranca en un mes es información útil para un cliente que planea el trimestre siguiente, y así se lo muestra el portal según RF-3.13— y con un banco de decenas, ocultar cuatro perfiles es caro. *Corrige la redacción anterior de este requisito, que forzaba el estado pausado.*
   - **RF-8.13.3** Esta pestaña es el disparador operativo de la renovación anticipada (V2-2): convierte un dato administrativo en una lista de conversaciones comerciales con fecha.
-- **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —video, documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4).
+- **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4).
+  - **RF-8.11.1 · Formatos y límites (§8.3).** **El proyecto no opera con video.** La evidencia es un documento, una transcripción en texto o el enlace a un repositorio. El archivo se guarda **fuera de la carpeta pública**, con un máximo de 64 MB por archivo, y el borrador se genera a partir de ese texto.
 
 ### RF-9 · Integración con HubSpot
 - **RF-9.1** Al enviar la solicitud se crea un negocio en el **pipeline propio de la línea People Service** (D-6), en su etapa de entrada.
@@ -377,9 +386,11 @@ Ingreso autenticado al panel
 - **RF-9.7 · Notificación con escalamiento.** Con pipeline propio (D-6), el comercial no ve la solicitud por casualidad: la notificación es lo único que evita que exista y nadie la atienda.
   - **RF-9.7.1** Al enviarse una solicitud se notifica **al propietario de la cuenta y a Coordinación de Servicio**, por el canal de trabajo diario del equipo, no solo por correo.
   - **RF-9.7.2** La notificación trae lo necesario para decidir sin abrir el CRM: cuenta, quién solicita, perfiles o especificación, momento de incorporación y enlace al negocio.
-  - **RF-9.7.3 · Escalamiento.** Si nadie abre el negocio en **4 horas hábiles**, se reenvía a la dirección comercial. A las **24 horas hábiles** sin movimiento de etapa, se escala a Dirección General. Un punto único de falla sin escalamiento no es un mecanismo: es una esperanza.
+  - **RF-9.7.3 · Escalamiento.** Si nadie abre el negocio en **4 horas hábiles**, se reenvía a la dirección comercial. A las **24 horas hábiles** sin movimiento de etapa, se escala a Dirección General. Un punto único de falla sin escalamiento no es un mecanismo: es una esperanza. *Mecanismo:* una tarea programada cada quince minutos compara los plazos en horas hábiles contra el estado del negocio en HubSpot. Es lo que obliga a activar las tareas programadas del hosting desde la v1 (§8.3).
   - **RF-9.7.4** El tiempo entre la notificación y la primera apertura del negocio se registra. Es la métrica que dice si el mecanismo funciona, y sin ella el escalamiento se calibra a ciegas.
 - **RF-9.6** Si la creación falla, la solicitud no se pierde: cola de reintento y alerta al responsable. Ninguna solicitud puede quedar solo en el portal.
+  - **RF-9.6.1 · La cola es una tabla, no un servicio.** El hosting no admite colas de trabajo ni procesos permanentes (§8.3). La solicitud se guarda primero en la base de datos y después se envía a HubSpot. Si falla, queda marcada como pendiente y una tarea programada la reintenta cada cinco minutos con espera creciente. Al tercer fallo se avisa por correo al responsable, sin dejar de reintentar. Guardar antes de enviar es lo que garantiza que ninguna solicitud dependa de que HubSpot responda en ese segundo.
+  - **RF-9.6.2 · Vigilancia de la tarea.** Si la tarea de reintento o la de escalamiento lleva más del doble de su intervalo sin ejecutarse, se avisa por correo al responsable técnico. Una cola que nadie procesa es otra forma de que la solicitud se quede solo en el portal.
 
 ### RF-17 · Traspaso a Delivery
 El producto no termina cuando se envía la solicitud: termina cuando alguien del lado de Trycore la convierte en una sesión agendada. Hoy O3 mide los días hasta esa sesión sin que nadie tenga asignado provocarla.
@@ -485,6 +496,30 @@ Los ocho criterios se aplicaron el 2026-09-16. En móvil, el Perfil Objetivo se 
 
 ---
 
+### 8.3 Plataforma de ejecución: hosting compartido de Trycore
+
+La v1 corre en el hosting compartido de Trycore (cPanel, paquete WP ULTIMATE V2). Las características verificadas viven en `docs/01-prd/requisitos-tecnicos-hosting.md`. Esta sección fija qué implica para el producto; ninguna decisión técnica puede contradecirla sin cambiar de plataforma (D-23).
+
+| Aspecto | Decisión | Por qué |
+|---|---|---|
+| **Cara cliente** | Sitio estático compilado en local; al servidor solo sube el resultado del build | Nunca se sube `node_modules`: el límite de inodos del hosting ya va por el 20% |
+| **Servidor** | PHP 8.3 con `curl`, `openssl`, `session` y `pdo_mysql` | Es lo que el hosting ejecuta sin configuración adicional. Node no participa en la v1 |
+| **Persistencia** | MariaDB 10.6 | Inventario, enlaces, sesiones, auditoría, telemetría, cola de solicitudes |
+| **Catálogo para el cliente** | Lo entrega el servidor tras validar la sesión, desde una carpeta privada hermana de la raíz pública de `people.trycore.com` | El inventario nunca queda expuesto por una ruta abierta (§8, Seguridad) |
+| **Secretos** | Configuración PHP fuera de la carpeta pública | La llave de HubSpot y la del modelo no llegan nunca al navegador |
+| **Acceso del cliente** | Enlace firmado + **lista nominal de correos invitados** + código al buzón, una vez por dispositivo | RF-1.2. Sin proveedor de identidad |
+| **Acceso al panel** | **Lista nominal** de correos `@trycore.com` con rol + código al buzón + sesión de una jornada | RF-8.1. Mecanismo distinto del del cliente a propósito |
+| **Correo saliente** | **SMTP autenticado** del buzón `notify@people.trycore.com` en el hosting, con MX, SPF y DKIM propios del subdominio. `trycore.com` sigue en Google Workspace, independiente. No se usa `sendmail` directo: en la prueba del 2026-09-25 no entregó, mientras el SMTP autenticado sí | El código de acceso es crítico: si cae en spam o se queda en el servidor, nadie entra |
+| **Trabajo diferido** | Tareas programadas del hosting (cron), **activas desde la v1**: reintento cada 5 minutos, escalamiento cada 15, sincronización diaria. Dongee confirmó que frecuencia y número de tareas son personalizables (2026-09-25) | Reintento a HubSpot (RF-9.6.1), escalamiento (RF-9.7.3), sincronización de colocados (RF-8.13.1), vencimiento de enlaces. Corrige la nota del documento de hosting, que las dejaba para después de la v1 |
+| **Vigilancia de las tareas** | Cada tarea registra su última ejecución; si alguna lleva más del doble de su intervalo sin correr, se avisa por correo al responsable técnico | Todo el escalamiento depende de esas tareas. Sin vigilancia, una tarea caída es un fallo silencioso (RF-9.6.2) |
+| **Respaldo** | JetBackup 5 del hosting: copias diarias (unos 4 días) y semanales (unas 3 semanas), con base de datos y evidencia. La pérdida máxima aceptada es un día de datos. **JetBackup guarda las copias en el mismo servidor** (confirmado el 2026-09-25): no protege contra la pérdida del servidor. **Riesgo aceptado por el sponsor** (§10.3). Antes de producción, restauración de prueba | El servidor guarda datos nominales (Ley 1581) sobre un sistema operativo sin soporte (§10.3) |
+| **Protección perimetral** | Cloudflare delante del portal, con límite de peticiones en los puntos de token y código; listado de directorios desactivado; páginas 404 y 403 propias | Evita la prueba masiva de tokens y que un error genérico de Apache aparezca en un flujo que llegó por correo |
+| **Despliegue** | Local → GitHub → *Update from Remote* → *Deploy* en cPanel, con `.cpanel.yml` | No se editan archivos en el servidor: el despliegue falla con el árbol sucio |
+
+**Lo que el hosting no hace, y el producto no pide:** procesos de larga duración, websockets, colas de trabajo, búsqueda semántica o vectorial, sincronización en tiempo real. Donde un requisito sonaba a eso, se resolvió con tabla más tarea programada (RF-9.6.1, RF-9.7.3, RF-8.13.1) o con recuperación determinista en el navegador (RF-2.6.4).
+
+**ModSecurity** está activo y puede bloquear un POST legítimo. Es el primer sospechoso si el envío de la solicitud falla sin razón aparente.
+
 ## 9. Alcance y fases
 
 ### 9.1 Prototipo Low-Fi (entregable inmediato — objeto del VoBo)
@@ -573,8 +608,11 @@ Llevado a su extremo lógico, este producto es un marketplace, y los marketplace
 | **El autoservicio erosiona el paso consultivo** | Se pierde el diferencial de "no tomamos pedidos" | El flujo termina en solicitud, nunca en reserva. La confirmación reencuadra hacia la alineación |
 | **Exposición de datos personales sin consentimiento** | Riesgo legal y reputacional real | RF-8.4 lo hace imposible por diseño: sin consentimiento no hay publicación |
 | **El cliente contacta al profesional por fuera del portal** | Con nombre y trayectoria publicados, llegar a la persona toma un minuto. Choca con la restricción contractual de no integrar los perfiles a la planta del cliente y alimenta el riesgo de desintermediación de §9.4 | La mitigación es contractual antes que de producto: cláusula explícita en el acuerdo marco. En el producto: cero datos de contacto, sin fotografía, y la condición de vinculación visible en cada ficha |
-| **El enlace firmado circula fuera de la empresa del cliente** | Un tercero ve el banco anonimizado | Expiración corta atada al ciclo del correo, revocación inmediata, y nada de identidad ni tarifas expuestas. Riesgo aceptado conscientemente a cambio de cero fricción en una audiencia que ya es cliente |
+| **El enlace firmado circula fuera de la empresa del cliente** | Tras revertirse D-1, un tercero vería nombre, trayectoria y clientes nombrados de profesionales reales | Tener el enlace no basta: solo entra quien recibe el código en un correo invitado (RF-1.2, RF-1.2.7). Límite de intentos (RF-1.2.9), vigencia atada al ciclo del correo, revocación inmediata (RF-1.4) y ninguna tarifa expuesta (D-9). Riesgo residual: un invitado que muestra la pantalla a otra persona. Se acepta |
 | **Solicitud enviada que no llega al CRM** | Se pierde la oportunidad y el cliente cree que Trycore lo ignoró | RF-9.6: cola de reintento y alerta |
+| **Sistema operativo del hosting fuera de soporte** | *Cerrado el 2026-09-25.* El servidor corría CentOS 7, sin parches desde 2024; **se migró a CloudLinux 8** (servidor didac) antes de cargar datos reales de profesionales | Se mantienen: datos mínimos en servidor, secretos fuera de la carpeta pública, Cloudflare delante y antimalware del hosting |
+| **Pérdida del servidor con sus respaldos** | JetBackup guarda las copias en el mismo servidor. Si el servidor se pierde, se pierden el inventario, los consentimientos nominales, la auditoría y las solicitudes en cola | **Riesgo aceptado** por el sponsor el 2026-09-25. Las solicitudes ya enviadas a HubSpot sobreviven allí; el inventario se reconstruye desde la exportación del banco (RF-8.15.9) |
+| **El código de acceso cae en spam** | Nadie entra al portal, cliente ni panel, y el correo curado pierde su efecto | SPF, DKIM y DMARC en el dominio del portal antes del primer envío; prueba con buzones de cuentas reales; mensaje de la puerta que dice dónde buscar el código |
 
 ---
 
@@ -615,6 +653,7 @@ Llevado a su extremo lógico, este producto es un marketplace, y los marketplace
 
 | # | Decisión | Resolución | Fecha |
 |---|---|---|---|
+| **D-23** | Plataforma de ejecución de la v1 | **Hosting compartido de Trycore**: sitio estático, PHP 8.3, MariaDB y tareas programadas, sin Node ni proveedor de identidad (§8.3). Todo requisito se resuelve dentro de ese techo; lo que lo exceda es Fase 3 y exige salir del hosting. El servidor se migró a CloudLinux 8 el 2026-09-25, lo que cierra el riesgo de sistema operativo sin soporte (§10.3) | 2026-09-24 |
 | **D-16** | Viabilidad de persistir el Perfil Objetivo con acceso por enlace firmado | **Persistencia por dispositivo, no por cuenta.** La especificación queda en el navegador de quien la escribió. Resuelve el caso real —la misma persona que vuelve días después— y **elimina la implicación ISO 27000**, porque no se guarda del lado del servidor contra una identidad que el portal no puede verificar. Un enlace reenviado no arrastra especificación. Se reabre cuando exista autenticación real por usuario | 2026-09-21 |
 | **D-19** | Composiciones de referencia por tipo de proyecto | **Se construyen solo para los tres tipos de proyecto más frecuentes.** Delivery entrega la composición real de esos tres; fuera de ellos el portal calla en vez de aproximar. Acota la recopilación a una sesión de trabajo con Delivery y conserva la regla dura de RF-14.7.1: composición real o ninguna | 2026-09-21 |
 | **D-10** | Cómo se comunica la disponibilidad de perfiles no vinculados laboralmente | **El portal no comunica el vínculo laboral y publica un solo lenguaje de disponibilidad para todo el banco.** La ficha muestra resumen de experiencia e industrias, y la disponibilidad se expresa como **banda de arranque** —Inmediato, 1 semana, 2 semanas, 1 mes, Más de 1 mes— derivada de la fecha que el panel carga (RF-3.13). Resuelve la pregunta disolviéndola: si el portal no distingue vinculados de no vinculados, no necesita dos formas de comunicar su disponibilidad. *Consecuencias:* RF-3.3 deja de afirmar la relación laboral y conserva la barrera de contacto directo (RF-3.3.1, RF-3.3.2) | 2026-09-18 |
@@ -632,13 +671,13 @@ Llevado a su extremo lógico, este producto es un marketplace, y los marketplace
 | **D-13** | Dueño y cadencia del registro de demanda | **Talento Humano, revisión mensual.** Es quien actúa sobre el dato: el registro existe para decidir a quién sumar al banco. **Desbloquea RF-15 y HU-078** | 2026-09-15 |
 | **D-14** | Umbral de similitud del camino del cero | **Resuelta sin umbral numérico.** "Lo más cercano" = perfiles que fallan exactamente un criterio, indicando cuál | 2026-09-15 |
 | **D-15** | Ranking y ancla de tarjeta por logro cuantificado | **No procede.** El dato no existe en el banco entregado por Talento Humano, extraerlo tiene costo operativo recurrente y es autoreportado por naturaleza — incompatible con la jerarquía verificado/autoreportado del producto. Lo reemplazan las tres competencias del Sello Personal (RF-14.1) | 2026-09-14 |
-| **D-4** | Control de acceso del cliente | **Enlace firmado + verificación de correo corporativo con código.** Al abrir, se pide el correo; si el dominio corresponde a la cuenta, se envía un código de un uso. Una vez por dispositivo, sin registro ni contraseña. *Revisada el 2026-09-16: la resolución anterior era enlace firmado a secas* | 2026-09-16 |
-| **D-22** | Acceso al panel de administración | **Identidad corporativa.** Dos roles: administrador de inventario (Talento Humano, escribe) y observador (Mercadeo y Comercial, consulta). Sin credenciales propias del portal | 2026-09-16 |
+| **D-4** | Control de acceso del cliente | **Enlace firmado + lista nominal de correos invitados + código al buzón.** Talento Humano declara los correos invitados al generar el enlace; un correo fuera de la lista no entra, aunque sea de la misma empresa. Un invitado puede pedir acceso para un colega y Talento Humano lo aprueba (RF-1.2.10). Una vez por dispositivo, sin registro ni contraseña, sin proveedor de identidad. *Revisada el 2026-09-25 por el sponsor: la resolución anterior (2026-09-24) autorizaba dominios y permitía el reenvío interno; antes, el 2026-09-16, había pasado de enlace firmado a secas a enlace más código* | 2026-09-25 |
+| **D-22** | Acceso al panel de administración | **Correo `@trycore.com` inscrito en la lista nominal + código de un uso + sesión de una jornada.** Dos roles: administrador de inventario (Talento Humano, escribe) y observador (Mercadeo y Comercial, consulta). Sin credenciales propias del portal y **sin proveedor de identidad**. *Revisada el 2026-09-24 por decisión del sponsor: la resolución anterior era identidad corporativa, que exigía un proveedor de identidad que el hosting no justifica* | 2026-09-24 |
 | **D-1** | Identificación del perfil | **Nombre y primer apellido visibles**, con la capacidad como descriptor inmediato y el código al pie. Sin fotografía. *Revertida el 2026-09-10: la resolución previa era publicar sin nombre* | 2026-09-10 |
 
 > **Razón de la reversión de D-1.** Decisión de negocio de la Dirección de Mercadeo, alineada con el documento de especificaciones funcionales. Se aceptan de forma consciente sus dos consecuencias, ambas registradas: el consentimiento pasa a ser nominal y explícito (RF-8.4), y la reidentificación del profesional deja de ser un riesgo para volverse un hecho, con el efecto comercial descrito en §9.4 y en el riesgo de contacto directo de §10.3. Se mantiene sin fotografía: incluirla es una decisión distinta y no se tomó.
 
-> **Razón de D-4.** El reenvío interno del enlace no es una fuga: es el mejor caso, porque el CTO se lo pasa al PMO. Un código de un uso llega solo al contacto original y rompe eso, además de costar el salto móvil de salir del portal, abrir el correo y volver. Lo que queda expuesto —banco anonimizado, sin identidad ni tarifas— es información comercial sensible, no crítica. Se acepta el riesgo a cambio de fricción cero.
+> **Razón de D-4.** Tras revertirse D-1, el enlace muestra nombre, primer apellido, trayectoria y clientes nombrados de profesionales reales. Por eso el acceso es **nominal**: solo entran los correos invitados en el enlace, verificados con un código a su buzón (RF-1.2, RF-1.2.11). Reenviar el enlace no da acceso; la segunda opinión de un colega pasa por una invitación que aprueba Talento Humano (RF-1.2.10). *Historia de la decisión:* el 2026-09-16 se pasó de enlace firmado a secas a verificación por dominio, que permitía el reenvío interno; el 2026-09-25 el sponsor la endureció a lista nominal.
 
 ### 12.3 Decisiones abiertas
 
@@ -1133,9 +1172,9 @@ Cinco campos, siempre los mismos, con contenido propio de cada modalidad:
 
 ### B.8.4 El artefacto crudo no se publica
 
-Repositorios, videos de sustentación y entregables **no se enlazan desde el portal**, por tres razones:
+Repositorios, documentos de sustentación y entregables **no se enlazan desde el portal**, por tres razones:
 
-1. **Identifican al profesional.** Un repositorio cuelga de un usuario nombrado; un video muestra cara y voz. Publicarlos deroga D-1.
+1. **Identifican al profesional.** Un repositorio cuelga de un usuario nombrado y un entregable lleva su firma. Publicarlos deroga D-1.
 2. **El insumo no siempre favorece al candidato ante un comprador.** Una sustentación puede ser evidencia interna excelente y aun así incluir autocríticas, trabajo en curso o imprecisiones que restan ante alguien que llegó buscando certeza.
 3. **Lo que se vende es el dictamen, no el insumo.** El repositorio es del candidato; la evaluación es de Trycore, y es el diferencial.
 
@@ -1177,7 +1216,7 @@ El enunciado del reto, los entregables esperados y los criterios evaluados **son
 
 ### B.9.3 Carga asistida desde el artefacto
 
-Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: video de sustentación, documento, repositorio o transcripción de la llamada. El sistema propone un borrador de los campos descriptivos; la persona revisa y aprueba. El trabajo pasa de redactar a confirmar.
+Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: documento, repositorio o transcripción de la llamada. El proyecto no opera con video (RF-8.11.1). El sistema propone un borrador de los campos descriptivos; la persona revisa y aprueba. El trabajo pasa de redactar a confirmar.
 
 **Dos candados, porque aquí es donde el humo podría volver a entrar:**
 
@@ -1202,6 +1241,8 @@ Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: video 
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 0.1 | 2026-09-09 | Borrador inicial. Modo para-agentes |
+| 4.10 | 2026-09-25 | **D-4 revisada a acceso nominal:** solo entran los correos invitados en el enlace (RF-1.2, RF-1.2.7); reenviar el enlace no da acceso. Nuevo RF-1.2.10 (invitar a un colega, con aprobación de Talento Humano) y RF-1.2.11 (por qué lista y no dominio); RF-1.2.2 queda sustituido. RF-19.4, §8.3, §10.3 y la razón de D-4, actualizados |
+| 4.9 | 2026-09-24 | **Ajuste al hosting compartido.** Nueva **§8.3** y nueva **D-23**: la v1 corre en el hosting de Trycore (estático, PHP 8.3, MariaDB y tareas programadas). **D-4 revisada**: los dominios autorizados se declaran al generar el enlace (RF-1.2.7, RF-19.4) y se descarta el código generado por Talento Humano (RF-1.2.8); límite de intentos (RF-1.2.9). **D-22 revisada**: sin proveedor de identidad, el panel entra con correo `@trycore.com` inscrito, código de un uso y sesión de una jornada (RF-8.1, RF-8.1.5, RF-8.1.6). RF-9.6.1: la cola de reintento es una tabla más una tarea programada. RF-9.7.3: el escalamiento corre por tarea programada. RF-8.13.1: la sincronización de colocados es periódica. RF-8.11.1: el proyecto no opera con video; la evidencia es documento, transcripción o repositorio, de hasta 64 MB y fuera de la carpeta pública. RF-2.6.4: sin índice semántico. Dos riesgos nuevos en §10.3; el riesgo del enlace que circula y la razón de D-4 se actualizan a los datos nominales. §8.3 añade vigilancia de tareas (RF-9.6.2) y respaldo fuera del servidor |
 | 4.8 | 2026-09-21 | **D-16 cerrada en persistencia por dispositivo**: RF-13.4 reescrito con RF-13.4.1 a RF-13.4.4. La especificación vive en el navegador de quien la escribió, no en el servidor contra la cuenta — se elimina la implicación ISO 27000 y un enlace reenviado deja de arrastrar datos ajenos. **D-19 cerrada en los tres tipos más frecuentes**: nuevo RF-14.7.0. Fuera de esos tres el portal calla. **No quedan decisiones abiertas que bloqueen historias** |
 | 4.7 | 2026-09-18 | **D-10 cerrada**: el portal no comunica el vínculo laboral y publica un solo lenguaje de disponibilidad. Nuevo RF-3.13 — la disponibilidad se publica como banda de arranque derivada de la fecha del panel, que no sale del panel. RF-3.3 reescrito con RF-3.3.1 y RF-3.3.2: la ficha deja de afirmar la relación laboral y sostiene la representación comercial y la barrera de contacto. **D-18 revisada**: la ciudad del profesional se publica cuando la necesidad es Presencial 100% o Híbrido; nuevos RF-13.5.5.1 y RF-13.5.5.2 |
 | 4.6 | 2026-09-18 | **D-8 cerrada en CRUD completo**: el panel entra al MVP con todo el alcance, lo que desbloquea HU-086 y HU-087 y deja a la vista que el CRUD, la validación y el consentimiento no tienen historia escrita. **D-3 cerrada en 25 perfiles publicados** como condición de salida a producción. **D-5 sigue abierta con condición nueva**: Talento Humano condiciona el VoBo a ver primero la propuesta de ficha |

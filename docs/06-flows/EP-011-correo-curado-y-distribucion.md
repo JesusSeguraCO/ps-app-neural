@@ -81,7 +81,7 @@ sequenceDiagram
   %% HU-116
   alt Entra sin abrir
     %% HU-116
-    P-->>M: Registra la entrada igual, el enlace pudo llegar por reenvío
+    P-->>M: Registra la entrada igual, el invitado pudo no recibir el correo del envío
   end
 
   %% HU-117

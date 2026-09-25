@@ -41,7 +41,7 @@ prd_version: 4.0
 
 ## Notas
 
-Cubre RF-9.2. El último escenario importa porque el enlace es reenviable y quien solicita puede tener otro dominio.
+Cubre RF-9.2. El último escenario importa porque un invitado del enlace puede tener otro dominio, por ejemplo un consultor externo de la cuenta.
 
 ## Trazabilidad
 

@@ -50,7 +50,7 @@ Cuatro decisiones abiertas más una carga de datos. Son una sola conversación s
 
 **Qué se decide.** El alcance del panel que usará Talento Humano. *(Se decide junto con el CTO.)*
 
-**Por qué importa.** Todo el panel es un CRUD estándar salvo una cosa: la carga asistida, que lee el artefacto de evidencia —video, documento, repositorio o transcripción— y propone el borrador del bloque de validación. Eso tiene complejidad real de construcción. El resto no.
+**Por qué importa.** Todo el panel es un CRUD estándar salvo una cosa: la carga asistida, que lee el artefacto de evidencia —documento, repositorio o transcripción— y propone el borrador del bloque de validación. Eso tiene complejidad real de construcción. El resto no.
 
 **Lo que hay que traer.** Cuánto trabajo por perfil es sostenible sin la asistencia, sabiendo que el texto de cada modalidad de prueba ya viene escrito en el catálogo y que seleccionarla es un clic.
 

@@ -39,6 +39,13 @@ spec: docs/10-specs/enlaces-curados.md
 **cuando** intento generar,
 **Entonces** el sistema me lo indica y no emite el enlace
 
+### Edge case — correos invitados del enlace
+
+**Dado** que la cuenta tiene un contacto en el CRM y quiero invitar también a su arquitecto,
+**cuando** genero el enlace,
+**Entonces** el sistema me propone el correo del contacto y me deja añadir el del arquitecto
+**Y** no emite el enlace sin al menos un correo invitado
+
 ## Notas
 
 **Dividida el 2026-09-22.** La historia original tenía **seis escenarios** y dos happy paths con **actores distintos**: Talento Humano generando el enlace y el cliente abriéndolo. Cuando los happy paths cambian de actor, el corte natural está ahí. Lo que el cliente ve al abrir es ahora **HU-144**.
@@ -47,7 +54,7 @@ spec: docs/10-specs/enlaces-curados.md
 
 **Coordinación necesaria:** Talento Humano genera el enlace porque conoce la disponibilidad, pero la razón de la selección necesita el contexto del proyecto, que lo tiene el ejecutivo comercial. Sin ese insumo la razón se vuelve genérica y la curaduría deja de serlo.
 
-Cubre **RF-19.1**, **RF-19.3**, **RF-19.4**, **RF-19.5** y **RF-19.7**.
+Cubre **RF-19.1**, **RF-19.3**, **RF-19.4**, **RF-19.5**, **RF-19.7** y **RF-1.2.7**.
 
 ## Trazabilidad
 

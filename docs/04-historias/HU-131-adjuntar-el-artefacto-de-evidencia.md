@@ -12,7 +12,7 @@ prd_version: 4.8
 # HU-131 — Adjuntar el artefacto de evidencia tal como lo tengo
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** guardar el video, documento o repositorio de la validación en el formato en que existe,
+**quiero** guardar el documento, la transcripción o el repositorio de la validación en el formato en que existe,
 **para** que la evidencia de cada perfil viva en un solo sitio y no en la carpeta de quien hizo la prueba.
 
 ## Criterios de aceptación
@@ -42,7 +42,7 @@ prd_version: 4.8
 
 Cubre la primera mitad de **RF-8.11** y la prohibición de **B.8.4**.
 
-**El artefacto crudo no se publica, y es regla dura.** B.8.4 lo fija: a la ficha llega el reporte estructurado, no el video de la prueba. Publicar el crudo expondría material que el profesional no consintió y que ninguna cuenta necesita.
+**El artefacto crudo no se publica, y es regla dura.** B.8.4 lo fija: a la ficha llega el reporte estructurado, no el documento de la prueba. Publicar el crudo expondría material que el profesional no consintió y que ninguna cuenta necesita.
 
 **Esta historia vale sola.** Aunque nunca se construya la derivación asistida (HU-140), tener la evidencia guardada y asociada al perfil resuelve el problema de que hoy vive dispersa. Por eso se separó.
 

@@ -94,7 +94,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-120** | Comparar perfiles sin perder la lista | EP-003 | alta | M | prototipado | — |
 | **HU-121** | Comparar muchos perfiles por el mismo criterio | EP-002 | alta | M | prototipado | — |
 | **HU-122** | Generar un enlace con exactamente los perfiles que elegí | EP-001 | alta | S | prototipado | *Dividida el 22-sep en 122 + 144* |
-| **HU-123** | Entrar al panel con mi cuenta corporativa | EP-006 | alta | M | borrador | Proveedor de identidad por definir con Tecnología |
+| **HU-123** | Entrar al panel con mi correo corporativo | EP-006 | alta | M | borrador | Sin proveedor de identidad: correo inscrito + código (D-22 rev. 2026-09-24) |
 | **HU-124** | Consultar el banco sin poder modificarlo | EP-006 | media | S | borrador | Depende de HU-123 |
 | **HU-125** | Crear un perfil eligiendo del catálogo | EP-006 | alta | M | borrador | — |
 | **HU-126** | Editar un perfil publicado sin sorpresas | EP-006 | alta | M | borrador | — |
@@ -143,8 +143,9 @@ El backlog ya no espera a nadie. Lo que lo limita ahora es lo que no está escri
 | Decisión | Resolución |
 |---|---|
 | **D-1** Identificación del perfil | Nombre y primer apellido visibles, capacidad como descriptor, código al pie, sin fotografía |
-| **D-4** Control de acceso del cliente | Enlace firmado + verificación de correo corporativo con código, una vez por dispositivo |
-| **D-22** Acceso al panel | Identidad corporativa, con rol administrador y rol observador |
+| **D-4** Control de acceso del cliente | Enlace firmado + lista nominal de correos invitados + código al buzón, una vez por dispositivo, sin proveedor de identidad. Reenviar no da acceso; el colega se invita con aprobación de Talento Humano |
+| **D-22** Acceso al panel | Correo `@trycore.com` inscrito + código de un uso + sesión de una jornada, con rol administrador y rol observador; sin proveedor de identidad |
+| **D-23** Plataforma de la v1 | Hosting compartido de Trycore: estático + PHP 8.3 + MariaDB + tareas programadas (PRD §8.3) |
 | **D-18** Ubicación del profesional | Solo país publicado; la ciudad se carga y se cruza en la alineación |
 | **D-20** Vista de banco para el comercial | Diferida hasta que exista una necesidad observada |
 | **D-21** Etapas del pipeline de la línea | Las del pipeline comercial vigente, con entrada excluida del pronóstico |

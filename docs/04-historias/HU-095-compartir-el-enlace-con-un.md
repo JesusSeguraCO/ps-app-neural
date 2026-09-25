@@ -1,47 +1,47 @@
 ---
 id: HU-095
-titulo: "Compartir el enlace con un colega"
+titulo: "Pedir acceso para un colega"
 epica: EP-001
 prioridad: media
 complejidad: S
 estado: draft
 fase: cierre-de-huecos
-prd_version: 4.0
+prd_version: 4.10
 ---
 
-# HU-095 — Compartir el enlace con un colega
+# HU-095 — Pedir acceso para un colega
 
 **Como** líder de área que quiere una segunda opinión de su arquitecto,
-**quiero** reenviar el enlace y que mi colega vea lo mismo que yo,
+**quiero** pedir que inviten a mi colega y que vea lo mismo que yo,
 **para** decidir en equipo sin tener que explicarle todo por escrito.
 
 ## Criterios de aceptación
 
-### Happy path
+### Happy path — invitación aprobada
 
-**Dado** que reenvío el enlace a un colega de mi empresa,
-**cuando** él lo abre,
+**Dado** que pedí desde el portal que invitaran a mi colega y Talento Humano lo aprobó,
+**cuando** mi colega abre el enlace y verifica su correo con el código,
 **Entonces** ve la misma selección y el mismo contexto de cuenta
 **Y** puede explorar y sumar perfiles
 
-### Error — el colega envía la solicitud
+### Error — el colega abre el enlace sin estar invitado
 
-**Dado** que él llega al formulario,
-**cuando** lo diligencia,
-**Entonces** puede identificarse como quien solicita
-**Y** la solicitud viaja con sus datos y no con los míos
+**Dado** que le reenvié el enlace a mi colega sin pedir su invitación,
+**cuando** él escribe su correo en la puerta,
+**Entonces** no recibe código ni ve perfiles
+**Y** el portal le explica que el acceso es nominal y le ofrece pedir la invitación
 
-### Edge case — el enlace sale de la empresa
+### Edge case — Talento Humano rechaza la invitación
 
-**Dado** que el enlace llega a alguien ajeno a la cuenta,
-**cuando** lo abre,
-**Entonces** ve el banco anonimizado sin datos de contacto ni tarifas
-**Y** la sesión queda registrada como no correspondiente al contacto original
+**Dado** que pedí invitar a una persona y Talento Humano rechazó la petición,
+**cuando** vuelvo a entrar al portal,
+**Entonces** veo que la invitación no se aprobó y a quién consultar
+**Y** esa persona sigue sin acceso
 
 
 ## Notas
 
-Cubre RF-1.3 y RF-5.6. El reenvío interno es deseable y así se decidió en D-4; el último escenario es el riesgo aceptado de esa decisión.
+Cubre RF-1.2.10 y RF-1.2.11. **Reescrita el 2026-09-25** tras la revisión de D-4 a acceso nominal: antes la historia era «Compartir el enlace con un colega» y dependía del reenvío libre dentro de la empresa, que ya no da acceso. La necesidad —la segunda opinión del arquitecto— se conserva por invitación aprobada.
 
 ## Trazabilidad
 

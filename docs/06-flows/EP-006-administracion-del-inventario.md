@@ -19,14 +19,14 @@ sequenceDiagram
   participant M as Mercadeo
 
   %% HU-123
-  TH->>P: Entra con su identidad corporativa
+  TH->>P: Entra con su correo @trycore.com inscrito y el código de un uso
   %% HU-123
   P-->>TH: Reconoce el rol administrador y registra quién es
 
   %% HU-123
-  alt Cuenta corporativa desactivada
+  alt Buzón corporativo desactivado
     %% HU-123
-    P-->>TH: El acceso muere con la cuenta, sin desactivación aparte
+    P-->>TH: El código no llega y el acceso muere con el buzón, sin desactivación aparte
   end
 
   %% HU-124
@@ -325,7 +325,7 @@ sequenceDiagram
 
 | Paso | HU | AC |
 |---|---|---|
-| Entrar con identidad corporativa | HU-123 | AC-1 (happy) · AC-2 (error) |
+| Entrar con correo inscrito y código | HU-123 | AC-1 (happy) · AC-2 (error) |
 | Observador consulta sin escribir | HU-124 | AC-1 (happy) · AC-2 (error) |
 | Crear perfil desde catálogo | HU-125 | AC-1 (happy) · AC-2 (error) |
 | Exportar y plantilla | HU-088 | AC-1, AC-2 y AC-4 (happy) · AC-5 (edge) |
@@ -365,6 +365,6 @@ sequenceDiagram
 
 **Cuatro divisiones el 2026-09-22.** `METODOLOGIA.md` §4 usa el tope de cinco escenarios como detector de tamaño, y tres historias de esta épica lo excedían. HU-086 (8 AC) se partió en **HU-086** (pegar y previsualizar), **HU-141** (confirmar con el modo correcto) y **HU-142** (corregir lo que falló); HU-089 (6 AC) en **HU-089** (crear valores) y **HU-143** (retirar y fusionar). Las dos traían el corte propuesto en su propia tabla INVEST.
 
-**HU-131 se dividió el mismo día.** Juntaba guardar el artefacto y derivar campos de él en una sola historia L de valor medio. Guardar un archivo y leer un video son trabajos de orden distinto: la mitad útil quedó en HU-131 (M) y la cara en HU-140 (L), que se puede posponer entera.
+**HU-131 se dividió el mismo día.** Juntaba guardar el artefacto y derivar campos de él en una sola historia L de valor medio. Guardar un archivo y leerlo para derivar campos son trabajos de orden distinto: la mitad útil quedó en HU-131 (M) y la cara en HU-140 (L), que se puede posponer entera.
 
 **AC no diagramados:** los escenarios de severidad media de HU-134, los límites de HU-125 AC-3 y AC-4, HU-086 AC-6 a AC-8, HU-087 AC-2, HU-089 AC-4 y AC-6, y los edge cases de móvil y bandeja de HU-133. Viven en los AC de su historia; incluirlos aquí no añade recorrido.
