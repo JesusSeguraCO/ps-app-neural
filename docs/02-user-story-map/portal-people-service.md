@@ -2,11 +2,11 @@
 artefacto: user-story-map
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
-prd_version: 4.11
+prd_version: 4.13
 epicas_origen: docs/03-backlog/epicas.md
-epicas_version: 5.4
-version: 3.2
-fecha: 2026-09-22
+epicas_version: 5.5
+version: 3.3
+fecha: 2026-09-27
 historias_escritas: 79
 historias_descartadas: 1
 historias_anticipadas_sin_redactar: 13
@@ -59,9 +59,9 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 
 | A. Cargar el inventario | B. Registrar la validación | C. Publicar | D. Mantener | E. Gobernar catálogos |
 |---|---|---|---|---|
-| *EP-006* | *EP-006* | *EP-006* | *EP-006* | *EP-006* |
+| *EP-006 · EP-001* | *EP-006* | *EP-006* | *EP-006* | *EP-006* |
 | **━━━━━━━━━━ MVP ━━━━━━━━━━** | | | | |
-| HU-123 Entrar al panel con mi correo corporativo | HU-131 Adjuntar el artefacto de evidencia | HU-127 Registrar el consentimiento nominal | HU-132 Actualizar la disponibilidad en dos clics | HU-089 Crear valores de catálogo sin duplicar |
+| HU-123 Entrar al panel con mi correo corporativo · *EP-001* | HU-131 Adjuntar el artefacto de evidencia | HU-127 Registrar el consentimiento nominal | HU-132 Actualizar la disponibilidad en dos clics | HU-089 Crear valores de catálogo sin duplicar |
 | HU-125 Crear un perfil eligiendo del catálogo | | HU-128 Ser bloqueada si publico sin consentimiento | HU-133 Pausar declarando el motivo | HU-139 Administrar el léxico de búsqueda |
 | HU-126 Editar un perfil publicado sin sorpresas | | HU-129 Previsualizar la ficha | HU-134 Corregir incoherencias estado/disponibilidad | |
 | HU-124 Consultar el banco sin poder modificarlo | | HU-130 Publicar sin esperar el reporte detallado | HU-136 Revisar la bandeja de vigencia | |
@@ -74,9 +74,11 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 | HU-087 Deshacer una importación que salió mal | | | | |
 | HU-088 Descargar una plantilla o el banco para editarlo y devolverlo | | | | |
 | **━━━━━━━━━━ v2 ━━━━━━━━━━** | | | | |
-| | HU-140 Obtener un borrador de los campos desde el artefacto | | | |
+| | HU-140 Obtener un borrador de los campos desde el artefacto *(plantilla determinista sin IA, T-2)* | | | |
 
 > **Este backbone era el hueco grande del proyecto. Se cerró el 2026-09-21.** EP-006 declaraba RF-8 completo —46 líneas de requisitos— con solo 4 historias, todas de importación y catálogos. Se redactaron **HU-123 a HU-139** y la épica pasó de 4 a 21. El CRUD, la validación, el consentimiento, la publicación y el mantenimiento ya tienen backlog, y con ellos **O5, el objetivo habilitante**.
+
+> **HU-123 pertenece a EP-001 desde el 2026-09-27** (T-19, épicas v5.5). Sigue en este backbone porque su actor es Talento Humano, no el cliente, y la columna 1 del backbone 1 es la entrada del cliente. La construye EP-001 porque la caparazón necesita el login del panel para generar enlaces (HU-122, columna F del backbone 3).
 
 **D-8 cerró el 2026-09-18 en CRUD completo**, así que todo este backbone está comprometido para el MVP. La carga masiva (HU-086, HU-087, HU-088) queda en v1.1 por alcance y no por bloqueo: con **25 perfiles como umbral de producción (D-3)**, importar masivamente resuelve un problema que a esa escala todavía no aparece.
 
@@ -146,7 +148,7 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 
 | Historia | Antes bloqueada por | Estado |
 |---|---|---|
-| HU-073 Encontrar mi especificación como la dejé | ~~D-16~~ | **Libre desde el 2026-09-21.** Persistencia por dispositivo: vive en el navegador de quien especificó, sin implicación ISO 27000 |
+| HU-073 Encontrar mi especificación como la dejé | ~~D-16~~ | **Libre desde el 2026-09-21.** Persistencia por dispositivo: vive en el navegador de quien especificó. D-16 quedó acotada al Perfil Objetivo el 2026-09-25 (T-1); «Mi equipo» va al servidor por invitado |
 | HU-084 Ver la forma típica del trabajo | ~~D-19~~ | **Libre desde el 2026-09-21**, con dependencia de insumo: Delivery entrega la composición real de los tres tipos más frecuentes. No es decisión pendiente, es una reunión |
 | Historias sin redactar de EP-003 (ficha) | **D-5** — grado de detalle de la trayectoria. No las bloquea, define su calidad. Talento Humano condicionó el VoBo a ver primero la propuesta de ficha (2026-09-18), así que la ficha se propone antes de aprobarse | Talento Humano |
 
@@ -155,7 +157,7 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 ## Trazabilidad a épicas
 
 Backbone 1: col 1–2 → **EP-001** · col 3 → **EP-009** · col 4 → **EP-002** y **EP-010** · col 5 → **EP-003** · col 6 → **EP-004** · col 7 → **EP-005**.
-Backbone 2 → **EP-006**.
+Backbone 2 → **EP-006**, salvo HU-123 → **EP-001** (T-19).
 Backbone 3: col F → **EP-011** y EP-001 · col G → **EP-007** y EP-005 · col H → **EP-008**, EP-011 y EP-010.
 
 **Cobertura bidireccional:** las 11 épicas aparecen en al menos una columna; ninguna columna queda sin épica. Sin huérfanos.

@@ -62,7 +62,7 @@ Un enlace generado hoy se abre dentro de días o semanas. En ese lapso un perfil
 | **Correos invitados** | Solo esos correos reciben el código de acceso; un correo fuera de la lista no entra, aunque sea de la misma empresa (RF-1.2.7). Se propone el contacto del envío en el CRM; quien genera lo confirma o añade a otras personas |
 | **Una razón de la selección** | **Es lo que separa una curaduría de un catálogo.** Sin razón, el cliente recibe una lista |
 | **Todos los perfiles publicados** | No se puede enviar lo que no está publicado |
-| **Una vigencia** | Atada al ciclo del envío |
+| **Una vigencia** | 30 días por omisión, configurable al generar y revocable (RF-1.4, ADR-0002) |
 
 ## 6. El enlace es un objeto con vida propia
 
