@@ -12,21 +12,24 @@
   Trazabilidad: épica EP-006 · historias HU-125, HU-126, HU-127, HU-128, HU-130, HU-131 · registrada en ../manifest.json
   Estado de ESTE archivo (perfil-editor--familia-sin-modalidades): familia-sin-modalidades — al elegir un rol cuya familia no tiene modalidades de prueba, el panel advierte en el momento que ningún perfil de esa familia podrá publicarse y ofrece ir a registrarla (HU-125 error, HU-130 error).
   Origen: v2-adaptar (docs/07-prototipo/handoff/components/portal/editor-bio.tsx y validacion-tecnica.tsx).
-  Se conserva la composición formulario más lateral del v2 (vista previa «Así lo verá el cliente») y la
-  separación verificado / declarado; se adapta a EP-006: rol, tecnologías y sector salen del catálogo,
-  familia con sus modalidades de prueba, consentimiento nominal con alcance, Nivel 0 cuando no hay
-  reporte detallado, artefacto de evidencia interno y lista de condiciones de publicación con motivo.
+  Oficio v2 (2026-09-27, feedback del sponsor + hallazgos Krug): formulario alineado de una sola
+  superficie con secciones separadas por hairline (sin cajas tintadas dentro de cajas); verificado y
+  declarado distinguibles por su encabezado; microcopia reducida a las restricciones que evitan
+  errores; estado como punto + palabra en la cabecera; «Vista previa» en la cabecera (sustituye a la
+  miniatura lateral); barra de acciones fija con una sola primaria; lateral «Para publicar» que solo
+  lista lo que falta, con enlace al campo; confirmaciones por toast.
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Crear perfil · familia sin modalidades — prototipo</title>
+  <title>Nuevo perfil — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -34,300 +37,294 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
       .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
-      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
-      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
       .pp-btn--fantasma { color: var(--tc-text-b); }
       .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
       .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
       .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
-      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
       .pp-btn--bloque { width: 100%; }
-      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
-      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
       /* /PP:botones */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
     /* PP:panel */
       .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
-      .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
-      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
-      .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
-      .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
-      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
-      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
-      .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
-      .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
-      .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
-      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
-      .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
       .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
-      .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
-      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
-      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
       .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+      .pp-migas a:hover { color: var(--tc-text-h); }
       .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
-      .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
       @media (max-width: 1023px) {
         .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
         .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
-        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
-        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
-        .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
-        .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
       }
-      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
       /* /PP:panel */
-    /* PP:badges */
-      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
-      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
-      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
-      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
-      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
-      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
-      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-      /* /PP:badges */
-    /* PP:perfil */
-      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
-      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
-      .pp-perfil--en-equipo { border-color: var(--tc-primary); }
-      .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
-      .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
-      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
-      .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-      .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
-      .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
-      .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
-      .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
-      .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
-      .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
-      .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
-      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
-      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
-      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
-      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
-      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
-      .pp-criterio--cumple { color: var(--tc-ok-ink); }
-      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
-      .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
-      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
-      .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
-      .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
-      /* /PP:perfil */
+    /* PP:shell — copia de la barra lateral y la barra superior de admin-shell.html; en móvil el destino activo va justo tras la marca para que «estás aquí» se vea al cargar */
+    .pp-sidebar :focus-visible { outline-color: var(--tc-teal-on-navy); }
+    @media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }
+    /* /PP:shell */
+    /* PP:toast */
+      .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+      .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+      .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+      @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+      /* /PP:toast */
+    /* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
     /* PP:campos */
       .pp-form { display: grid; gap: var(--tc-sp-5); }
-      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
-      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
       .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
-      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
       .pp-input::placeholder { color: var(--tc-text-s); }
-      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
       .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
-      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
-      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
-      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
-      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
       /* /PP:campos */
     /* PP:select */
       .pp-select { position: relative; }
       .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
-      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
       /* /PP:select */
     /* PP:check */
       .pp-check { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-2) 0; cursor: pointer; }
-      .pp-check input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
-      .pp-check__texto { font-size:var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
-      .pp-check__ayuda { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-check input { width: 18px; height: 18px; flex: none; margin: var(--tc-sp-1) 0 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+      .pp-check__texto { font-size: var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-body); }
+      .pp-check__ayuda { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
       /* /PP:check */
-    /* PP:avisos */
-      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
-      .pp-aviso p { margin: 0; }
-      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
-      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
-      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
-      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
-      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
-      /* /PP:avisos */
     /* PP:hoja */
       .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
-      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(640px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow:var(--tc-sh-3); }
-      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-5) var(--tc-sp-6) var(--tc-sp-4); padding-right: var(--tc-sp-10); border-bottom: 1px solid var(--tc-border); }
-      .pp-hoja__cabecera h2 { margin: 0 var(--tc-sp-6) 0 0; font-size:var(--tc-fs-h2); }
-      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-3); right: var(--tc-sp-3); }
-      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-4); overflow: auto; padding: var(--tc-sp-6); }
-      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
-      .pp-datos { display: grid; gap: var(--tc-sp-3); margin: 0; }
-      .pp-datos__fila dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-datos__fila dd { margin: 0; font-size:var(--tc-fs-small); }
-      @media (max-width: 767px) { .pp-hoja__cabecera, .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-hoja__cabecera { padding-right: var(--tc-sp-10); } }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; margin: 0; }
+      .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+      .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+      .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+      .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+      @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
       /* /PP:hoja */
 
-    /* Composición propia de perfil-editor (prefijo pe-): solo layout, valores visuales con tokens. */
-    .pe-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
-    .pe-titulo h1 { margin: 0; }
-    .pe-avisos { display: grid; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-5); }
-    .pe-avisos .pp-aviso ul { margin: var(--tc-sp-2) 0 0; padding-left: var(--tc-sp-5); }
-    .pe-avisos .pp-aviso li + li { margin-top: var(--tc-sp-1); }
-    .pe-aviso-acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-3); }
-    .pe-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--tc-sp-5); align-items: start; }
-    .pe-form { padding: 0; overflow: hidden; }
-    .pe-seccion { display: grid; gap: var(--tc-sp-4); padding: var(--tc-sp-5) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
-    .pe-seccion:first-child { border-top: 0; }
-    .pe-seccion--marcada { background: var(--tc-red-bg); }
-    .pe-seccion__cabecera { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); }
-    .pe-seccion__titulo { margin: 0; font-size:var(--tc-fs-body); line-height: var(--tc-lh-h3); }
-    .pe-seccion__meta { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pe-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-4); }
-    .pe-form .pp-campo { align-content: start; }
-    .pe-tres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-4); }
-    .pe-familia { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-2); margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .pe-familia strong { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-    .pe-valores { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .pe-valor { display: inline-flex; align-items: center; gap: var(--tc-sp-1); min-height: 32px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
-    .pe-valor--nuevo { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
-    .pe-valor__quitar { position: relative; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
-    .pe-valor__quitar::after { content: ""; position: absolute; inset: -10px; }
-    .pe-bloque { display: grid; gap: var(--tc-sp-4); }
-    .pe-bloque .pp-bloque__rotulo { margin: 0; }
-    .pe-bloque__intro { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .pe-nivel0 { display: grid; gap: var(--tc-sp-1); padding: var(--tc-sp-3); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
-    .pe-nivel0 p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-h); }
-    .pe-nivel0 .pe-nota { color: var(--tc-text-m); }
-    .pe-adjunto { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-3); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
-    .pe-adjunto--error { border-color: var(--tc-red); background: var(--tc-red-bg); }
-    .pe-adjunto__icono { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-md); background: var(--tc-bg-subtle); color: var(--tc-text-b); }
-    .pe-adjunto__texto { flex: 1 1 200px; min-width: 0; }
-    .pe-adjunto__nombre { display: block; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-h); overflow-wrap: anywhere; }
-    .pe-adjunto__meta { display: block; margin-top: var(--tc-sp-1); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pe-adjunto--error .pe-adjunto__meta { color: var(--tc-danger-ink); }
-    .pe-formatos { margin: 0; padding: var(--tc-sp-3); border-radius:var(--tc-r-md); background: var(--tc-card); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .pe-formatos dt { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pe-formatos dd { margin: 0 0 var(--tc-sp-2); }
-    .pe-formatos dd:last-child { margin-bottom: 0; }
-    .pe-experiencia { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-3); border-radius:var(--tc-r-md); background: var(--tc-card); border: 1px solid var(--tc-border); }
-    .pe-experiencia__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-b); }
-    .pe-consent { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
-    .pe-consent--ok { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); }
-    .pe-consent--falta { border: 1px dashed var(--tc-border-s); background: var(--tc-surface-declared); }
-    .pe-consent--error { border-color: var(--tc-red); background: var(--tc-card); }
-    .pe-consent__estado { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin: 0; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pe-consent .pp-datos__fila dd { color: var(--tc-text-b); }
-    .pe-consent__alcance { display: grid; gap: 0; margin: 0; padding: 0; border: 0; min-width: 0; }
-    .pe-consent__alcance legend { padding: 0; margin-bottom: var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pe-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); background: var(--tc-surface-quiet); }
-    .pe-acciones__nota { flex: 1 1 220px; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pe-lateral { display: grid; gap: var(--tc-sp-4); position: sticky; top: var(--tc-sp-6); }
-    .pe-lateral h2 { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-body); }
-    .pe-lateral__sub { margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pe-checklist { display: grid; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .pe-check-item { display: flex; gap: var(--tc-sp-2); font-size:var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-b); }
-    .pe-check-item__marca { width: 16px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-    .pe-check-item--ok .pe-check-item__marca { color: var(--tc-ok-mark); }
-    .pe-check-item--falta .pe-check-item__marca { color: var(--tc-danger-ink); }
-    .pe-check-item--falta { color: var(--tc-text-h); }
-    .pe-check-item small { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pe-check-item--falta small { color: var(--tc-danger-ink); }
-    .pe-veredicto { margin: var(--tc-sp-3) 0 0; padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pe-previa .pp-perfil { box-shadow:none; padding: var(--tc-sp-4); }
-    .pe-nota { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pe-cambios { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); }
-    .pe-cambio { display: grid; gap: var(--tc-sp-1); padding: var(--tc-sp-3) var(--tc-sp-4); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-small); }
-    .pe-cambio:first-child { border-top: 0; }
-    .pe-cambio__campo { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pe-cambio__antes, .pe-cambio__despues { display: flex; gap: var(--tc-sp-2); margin: 0; color: var(--tc-text-b); }
-    .pe-cambio__antes { color: var(--tc-text-m); }
-    .pe-cambio__antes s { text-decoration: line-through; }
-    .pe-cambio__rotulo { flex: none; width: 56px; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); text-decoration: none; display: inline-block; }
-    .pe-internos { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    @media (max-width: 1180px) { .pe-rejilla { grid-template-columns: minmax(0, 1fr); } .pe-lateral { position: static; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); align-items: start; } }
+    /* Composición propia de perfil-editor (prefijo pe-): solo layout; valores visuales con tokens. */
+    .pe-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-2); }
+    .pe-sep { color: var(--tc-border-s); }
+    .pe-alerta { margin-bottom: var(--tc-sp-6); }
+    .pe-alerta ul { margin: var(--tc-sp-1) 0 0; padding-left: var(--tc-sp-4); }
+    .pe-alerta li + li { margin-top: var(--tc-sp-1); }
+    .pe-lienzo { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-8) var(--tc-sp-8) 0; }
+    .pe-lienzo .pp-form-fila { padding-top: var(--tc-sp-8); padding-bottom: var(--tc-sp-8); }
+    .pe-lienzo .pp-form-fila:first-child { padding-top: 0; }
+    .pe-lienzo .pp-form-fila:last-of-type { padding-bottom: 0; }
+    .pe-seccion-titulo { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); }
+    .pe-seccion-titulo .pp-icono { color: var(--pp-teal-ink); }
+    .pe-campos { display: grid; gap: var(--tc-sp-5); min-width: 0; }
+    .pe-campos .pp-campo { align-content: start; }
+    .pe-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-5) var(--tc-sp-4); }
+    .pe-valores { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+    .pe-valor { display: inline-flex; align-items: center; gap: var(--tc-sp-1); min-height: 28px; padding: 0 0 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pe-valor__quitar { position: relative; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--tc-r-sm); background: none; color: var(--tc-text-m); cursor: pointer; }
+    .pe-valor__quitar:hover { background: var(--pp-subtle-hover); color: var(--tc-text-h); }
+    .pe-valor__quitar::after { content: ""; position: absolute; inset: calc(var(--tc-sp-2) * -1); }
+    .pe-enunciado { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-h); }
+    .pe-acciones-campo { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pe-archivo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+    .pe-archivo--error { border-color: var(--tc-red); }
+    .pe-archivo__texto { flex: 1 1 180px; min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .pe-archivo__nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-h); }
+    .pe-archivo__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pe-archivo--error .pe-archivo__meta { color: var(--tc-danger-ink); }
+    .pe-archivo__acciones { display: flex; gap: var(--tc-sp-1); }
+    .pe-exps { margin: 0; padding: 0; list-style: none; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+    .pe-exps--error { border-color: var(--tc-red); }
+    .pe-exp { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-1) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); }
+    .pe-exp + .pe-exp { border-top: 1px solid var(--tc-border); }
+    .pe-exp__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .pe-exp__principal p { margin: 0; }
+    .pe-exp__titulo { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pe-exp__periodo { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pe-exp__texto { font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pe-exp__acciones { display: flex; gap: var(--tc-sp-1); }
+    .pe-exp--vacia { grid-template-columns: minmax(0, 1fr); }
+    .pe-contador { justify-self: end; }
+    .pe-consent-estado { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; }
+    .pe-alcance { display: grid; margin: 0; padding: 0; border: 0; min-width: 0; }
+    .pe-alcance legend { padding: 0; margin-bottom: var(--tc-sp-1); }
+    .pe-btn-peligro { color: var(--tc-danger-ink); }
+    .pe-btn-peligro:hover { border-color: var(--tc-red); background: var(--tc-red-bg); }
+    .pe-lateral { position: sticky; top: var(--tc-sp-8); display: grid; gap: var(--tc-sp-3); }
+    .pe-lateral .pp-seccion__cabecera { margin-bottom: 0; }
+    .pe-lateral p { margin: 0; }
+    .pe-faltas { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--tc-border); }
+    .pe-falta { display: grid; grid-template-columns: 6px minmax(0, 1fr); gap: 0 var(--tc-sp-3); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pe-falta::before { content: ""; width: 6px; height: 6px; margin-top: var(--tc-sp-2); border-radius: 50%; background: var(--tc-red); }
+    .pe-falta a { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); text-decoration: underline; text-decoration-color: var(--tc-border-s); text-underline-offset: 3px; }
+    .pe-falta a:hover { text-decoration-color: currentColor; }
+    .pe-falta .pp-meta { grid-column: 2; margin-top: var(--tc-sp-1); }
+    .pe-falta .pp-meta a { color: var(--tc-text-m); font-weight: var(--tc-fw-regular); }
+    .pe-cambios { display: grid; margin: 0; padding: 0; list-style: none; }
+    .pe-cambio { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-small); }
+    .pe-cambio:first-child { border-top: 0; padding-top: 0; }
+    .pe-cambio__campo { color: var(--tc-text-m); }
+    .pe-cambio__valores { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+    .pe-cambio__valores p { margin: 0; }
+    .pe-cambio__antes { color: var(--tc-text-m); text-decoration: line-through; text-decoration-color: var(--tc-text-s); }
+    .pe-cambio__despues { color: var(--tc-text-h); }
+    .pe-hoja-bloque { display: grid; gap: var(--tc-sp-3); }
+    .pe-hoja-bloque p { margin: 0; }
+    .pe-toast { bottom: calc(var(--tc-sp-10) * 2); }
+    @media (max-width: 1100px) { .pe-lateral { position: static; order: -1; } }
     @media (max-width: 767px) {
-      .pe-dos, .pe-tres { grid-template-columns: minmax(0, 1fr); }
-      .pe-seccion, .pe-acciones { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
-      .pe-acciones .pp-btn { flex: 1 1 100%; }
-      .pe-titulo h1 { font-size:var(--tc-fs-h2); }
+      .pe-lienzo { padding: var(--tc-sp-5) var(--tc-sp-4) 0; }
+      .pe-lienzo .pp-form-fila { padding-top: var(--tc-sp-6); padding-bottom: var(--tc-sp-6); }
+      .pe-dos { grid-template-columns: minmax(0, 1fr); }
+      .pe-valor { min-height: 32px; }
+      .pe-valor__quitar { width: 32px; height: 32px; }
+      .pe-falta a { display: inline-flex; align-items: center; min-height: 44px; margin: calc(var(--tc-sp-3) * -1) 0; }
+      .pe-cambio { grid-template-columns: minmax(0, 1fr); }
+      .pe-toast { bottom: calc(var(--tc-sp-10) * 3); }
     }
 
-
-    /* Marco del panel: navegación y sesión, idénticos a admin-shell */
-    .pe-sidebar-nav { display: flex; flex-direction: column; gap: var(--tc-sp-1); }
-    .pe-sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-4); min-width: 0; }
-    .pe-sesion__quien { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; line-height: var(--tc-lh-h3); }
-    .pe-sesion__correo { font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
-    .pe-sesion__vence { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    @media (max-width: 1023px) { .pe-sidebar-nav { flex-direction: row; gap: var(--tc-sp-1); } }
-    @media (max-width: 767px) {
-      .pp-panel__topbar { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
-      .pe-sesion { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
-      .pe-sesion__quien { align-items: flex-start; }
-    }
+    .pe-conds { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--tc-border); }
+    .pe-cond { display: grid; grid-template-columns: var(--tc-sp-4) minmax(0, 1fr); gap: 0 var(--tc-sp-2); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .pe-cond__texto { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+    .pe-cond--no .pe-cond__texto a { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); text-decoration: underline; text-decoration-color: var(--tc-border-s); text-underline-offset: 3px; }
+    .pe-cond--no .pe-cond__texto a:hover { text-decoration-color: currentColor; }
+    .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
   </style>
 </head>
 <body>
-  <!-- región: navegación / cabecera -->
   <div class="pp-panel">
-    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <!-- región: navegación (menú canónico del panel, igual que admin-shell) -->
+    <nav class="pp-sidebar" aria-label="Panel de People Service">
       <div class="pp-sidebar__marca">
         <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
-        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Panel del portal de perfiles</span></span>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Talento Humano</span></span>
       </div>
-
-      <div class="pe-sidebar-nav">
-        <p class="pp-sidebar__seccion">Banco de perfiles</p>
-        <a class="pp-sidelink" href="#contenido" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico<span class="pp-sidelink__conteo">3</span></a>
-
-        <p class="pp-sidebar__seccion">Clientes</p>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 8v6M22 11h-6"/></svg>Peticiones<span class="pp-sidelink__conteo">2</span></a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Colocados</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
-
-        <p class="pp-sidebar__seccion">Operación</p>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
-      </div>
-
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="inventario-perfiles.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+      <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="envios-curados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
       <div class="pp-sidebar__pie">
         <span class="pp-avatar" aria-hidden="true">KR</span>
-        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Administradora de inventario</span></span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
       </div>
     </nav>
 
     <div class="pp-panel__cuerpo">
+      <!-- región: topbar (migas + identidad de la sesión: correo de auditoría y límites, HU-123) -->
       <header class="pp-panel__topbar">
-        <ol class="pp-migas"><li>Banco de perfiles</li><li>Inventario</li><li aria-current="page">Nuevo perfil</li></ol>
-        <div class="pe-sesion">
-          <div class="pe-sesion__quien">
-            <span class="pe-sesion__correo pp-mono">karen.rodriguez@trycore.com</span>
-            <span class="pe-sesion__vence">Sesión abierta hasta las 6:40 p. m.</span>
-          </div>
-          <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#contenido">Cerrar sesión</a>
+        <ol class="pp-migas"><li><a href="inventario-perfiles.html">Inventario</a></li><li aria-current="page">Jorge Villamil</li></ol>
+        <div class="pp-panel__herramientas">
+          <span class="pp-meta">karen.rodriguez@trycore.com</span>
+          <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
         </div>
       </header>
 
@@ -335,149 +332,99 @@
       <main class="pp-panel__contenido" id="contenido">
         <div class="pp-encabezado">
           <div class="pp-encabezado__texto">
-            <div class="pe-titulo"><h1>Nuevo perfil</h1><span class="pp-badge pp-badge--no-publicado">Borrador · no visible en el portal</span></div>
-            <p>Jorge Villamil · <span class="pp-mono">PS-0244</span> · todo perfil nace en borrador; se publica cuando cumple sus condiciones.</p>
+            <h1 class="pp-encabezado__titulo">Jorge Villamil</h1>
+            <p class="pp-encabezado__meta pe-meta"><span class="pp-estado pp-estado--borrador">Borrador</span><span class="pe-sep">·</span><span class="pp-mono">PS-0244</span><span class="pe-sep">·</span>guardado a las 10:42 a. m.</p>
           </div>
+          <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--fantasma" href="vista-previa-ficha.html">Vista previa</a><button type="button" class="pp-btn pp-btn--contorno">Guardar borrador</button><button type="button" class="pp-btn pp-btn--primario" aria-disabled="true" aria-describedby="pe-condiciones">Publicar</button></div>
         </div>
-
-        <div class="pe-rejilla">
-
-      <form class="pp-tarjeta pe-form" action="#" aria-label="Datos del perfil PS-0244">
-        <section class="pe-seccion" aria-labelledby="pe-s-ident">
-          <div class="pe-seccion__cabecera"><h2 class="pe-seccion__titulo" id="pe-s-ident">Identidad</h2><p class="pe-seccion__meta">Solo nombre y primer apellido: nunca foto, contacto, CV ni tarifa.</p></div>
-          <div class="pe-tres">
-            <div class="pp-campo"><label class="pp-label" for="pe-nombre">Nombre</label><input class="pp-input" id="pe-nombre" type="text" value="Jorge"></div>
-            <div class="pp-campo"><label class="pp-label" for="pe-apellido">Primer apellido</label><input class="pp-input" id="pe-apellido" type="text" value="Villamil"></div>
-            <div class="pp-campo"><label class="pp-label" for="pe-codigo">Código</label><input class="pp-input pp-mono" id="pe-codigo" type="text" value="PS-0244" aria-describedby="pe-codigo-ayuda" readonly><p class="pp-ayuda" id="pe-codigo-ayuda">Lo asigna el sistema.</p></div>
-          </div>
-        </section>
-        <section class="pe-seccion" aria-labelledby="pe-s-rol">
-          <div class="pe-seccion__cabecera"><h2 class="pe-seccion__titulo" id="pe-s-rol">Rol, tecnologías y sector</h2><p class="pe-seccion__meta">Se eligen del catálogo, no se escriben libres.</p></div>
-          <div class="pp-campo"><label class="pp-label" for="pe-rol">Rol</label><div class="pp-select"><select class="pp-input" id="pe-rol" aria-describedby="pe-rol-ayuda"><option>Elige un rol del catálogo</option><option>Desarrolladora backend</option><option>Desarrollador backend</option><option>Analista QA automatización</option><option selected>Especialista en mainframe</option><option>Arquitecta de datos</option></select></div><p class="pp-ayuda" id="pe-rol-ayuda">Del catálogo. ¿No está? Escríbelo en el buscador: primero verás los parecidos y después podrás crear uno nuevo.</p><p class="pe-familia">Familia: <strong>Infraestructura legada</strong><span class="pp-badge pp-badge--archivado">0 modalidades de prueba</span></p><div class="pp-aviso pp-aviso--warn" role="alert" id="pe-rol-aviso"><span class="pp-aviso__icono" aria-hidden="true">!</span><div><p><span class="pp-aviso__titulo">Ningún perfil de la familia Infraestructura legada podrá publicarse</span>Esta familia no tiene ninguna modalidad de prueba registrada en el catálogo, y la publicación la exige para saber cómo se validó a la persona. Puedes seguir y guardar el borrador, pero no publicarlo.</p><div class="pe-aviso-acciones"><a class="pp-btn pp-btn--primario pp-btn--sm" href="#">Registrar modalidad de prueba</a><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Elegir otro rol</button></div></div></div></div>
-          
-            <div class="pp-campo">
-              <label class="pp-label" for="pe-tec">Tecnologías ancla</label>
-              <ul class="pe-valores" aria-label="Tecnologías elegidas"><li class="pe-valor">COBOL<button type="button" class="pe-valor__quitar" aria-label="Quitar COBOL"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pe-valor">JCL<button type="button" class="pe-valor__quitar" aria-label="Quitar JCL"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pe-valor">DB2<button type="button" class="pe-valor__quitar" aria-label="Quitar DB2"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
-              <input class="pp-input" id="pe-tec" type="text" placeholder="Busca en el catálogo: Java, React, Kafka…" aria-describedby="pe-tec-ayuda">
-              <p class="pp-ayuda" id="pe-tec-ayuda">Solo valores del catálogo. La tarjeta muestra las cinco primeras.</p>
-              
-            </div>
-          <div class="pe-tres">
-            <div class="pp-campo"><label class="pp-label" for="pe-sector">Sector</label><div class="pp-select"><select class="pp-input" id="pe-sector"><option>Elige un sector</option><option selected>Banca</option><option>Seguros</option><option>Retail</option><option>Salud</option><option>Telecomunicaciones</option></select></div></div>
-            <div class="pp-campo"><label class="pp-label" for="pe-ciudad">Ciudad</label><div class="pp-select"><select class="pp-input" id="pe-ciudad"><option>Elige la ciudad</option><option selected>Bogotá, Colombia</option><option>Medellín, Colombia</option><option>Cali, Colombia</option><option>Barranquilla, Colombia</option><option>Bucaramanga, Colombia</option></select></div></div>
-            <div class="pp-campo"><label class="pp-label" for="pe-modalidad">Modalidad de trabajo</label><div class="pp-select"><select class="pp-input" id="pe-modalidad"><option>Elige la modalidad</option><option>Remoto</option><option>Híbrido</option><option selected>Presencial</option></select></div></div>
-          </div>
-        </section>
-        <section class="pe-seccion" aria-labelledby="pe-s-dispo">
-          <div class="pe-seccion__cabecera"><h2 class="pe-seccion__titulo" id="pe-s-dispo">Disponibilidad</h2><p class="pe-seccion__meta">El estado del perfil está en la cabecera y cambia con Publicar o Pausar. El cliente ve solo la banda, nunca una fecha exacta.</p></div>
-          <div class="pe-dos">
-            <div class="pp-campo"><label class="pp-label" for="pe-disp">Disponibilidad</label><div class="pp-select"><select class="pp-input" id="pe-disp" aria-describedby="pe-disp-ayuda"><option selected>Disponible ahora</option><option>En 2 a 4 semanas</option><option>En 1 a 2 meses</option><option>Más de 2 meses</option><option>Elegir la fecha en que queda libre…</option></select></div><p class="pp-ayuda" id="pe-disp-ayuda">Se muestra como badge en la tarjeta y la ficha.</p></div>
-            <div class="pp-campo"><label class="pp-label" for="pe-disp-fecha">Fecha en que queda libre</label><input class="pp-input" id="pe-disp-fecha" type="date" disabled aria-describedby="pe-disp-fecha-ayuda"><p class="pp-ayuda" id="pe-disp-fecha-ayuda">Solo si eliges «Elegir la fecha en que queda libre…».</p></div>
-          </div>
-        </section>
-        <section class="pe-seccion" aria-labelledby="pe-s-verif">
-          <div class="pp-bloque pp-bloque--verificado pe-bloque">
-            <p class="pp-bloque__rotulo" id="pe-s-verif"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
-            <p class="pe-bloque__intro">Lo registra Talento Humano a partir de la validación. En la ficha aparece separado de lo que declara el profesional.</p>
-            <div class="pe-dos">
-              <div class="pp-campo"><label class="pp-label" for="pe-prueba">Modalidad de prueba aplicada</label><div class="pp-select"><select class="pp-input" id="pe-prueba" aria-describedby="pe-prueba-ayuda" disabled><option selected>Esta familia no tiene modalidades registradas</option></select></div><p class="pp-ayuda" id="pe-prueba-ayuda">Solo las modalidades registradas para la familia Infraestructura legada.</p></div>
-              <div class="pp-campo"><label class="pp-label" for="pe-evaluador">Evaluador</label><input class="pp-input" id="pe-evaluador" type="text" value="Andrés Salazar · arquitecto de Trycore"></div>
-            </div>
-            <div class="pe-dos">
-              <div class="pp-campo"><label class="pp-label" for="pe-fecha">Fecha de la validación</label><input class="pp-input" id="pe-fecha" type="text" value="16 de septiembre de 2026"></div>
-              <div class="pp-campo"><label class="pp-label" for="pe-resultado">Resultado</label><input class="pp-input" id="pe-resultado" type="text" value="Aprobada"></div>
-            </div>
-            
-            <div class="pe-nivel0">
-              <p><strong>Enunciado de Nivel 0:</strong> no disponible</p>
-              <p class="pe-nota">Se deriva de la modalidad de prueba de la familia. Sin modalidad no hay enunciado ni publicación.</p>
-            </div>
-            <div class="pp-campo">
-              <p class="pp-label">Artefacto de evidencia</p>
-              <p class="pp-ayuda"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11h12v10H6z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Solo interno: nunca se publica ni hay forma de llegar a él desde el portal. Al cliente llega el reporte estructurado.</p>
-              
-            <div class="pe-adjunto">
-              <span class="pe-adjunto__icono" aria-hidden="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11l-8 8a5 5 0 0 1-7-7l8-8a3.5 3.5 0 0 1 5 5l-8 8a2 2 0 0 1-3-3l7-7"/></svg></span>
-              <span class="pe-adjunto__texto"><span class="pe-adjunto__meta">Sin artefacto adjunto todavía.</span></span>
-              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Adjuntar artefacto</button>
-            </div>
-            </div>
-          </div>
-        </section>
-        <section class="pe-seccion" aria-labelledby="pe-s-decl">
-          <div class="pp-bloque pp-bloque--declarado pe-bloque">
-            <p class="pp-bloque__rotulo" id="pe-s-decl"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p>
-            <p class="pe-bloque__intro">Lo cuenta el profesional. En la ficha aparece bajo «Declarado por el profesional».</p>
-            <fieldset class="pe-consent__alcance">
-              <legend>Trayectoria</legend>
-              
-              <div class="pe-experiencia">
-                <div class="pe-experiencia__cabecera"><span>Experiencia 1</span><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Quitar</button></div>
-                <div class="pe-tres">
-                  <div class="pp-campo"><label class="pp-label" for="pe-exp-rol">Rol</label><input class="pp-input" id="pe-exp-rol" type="text" value="Backend senior"></div>
-                  <div class="pp-campo"><label class="pp-label" for="pe-exp-emp">Empresa</label><input class="pp-input" id="pe-exp-emp" type="text" value="Bancolombia"></div>
-                  <div class="pp-campo"><label class="pp-label" for="pe-exp-per">Periodo</label><input class="pp-input" id="pe-exp-per" type="text" value="2021 — 2026"></div>
-                </div>
-                <div class="pp-campo"><label class="pp-label" for="pe-exp-res">Qué hizo</label><textarea class="pp-input pp-input--area" id="pe-exp-res">Pagos inmediatos y conciliación en línea con Java, Spring Boot y Kafka para 4 millones de transacciones diarias.</textarea></div>
+        <div class="pp-con-lateral">
+          <form class="pp-form pp-form--alineado pe-lienzo" action="#" aria-label="Datos del perfil PS-0244">
+          <section class="pp-form-fila" aria-labelledby="pe-s-ident">
+            <div class="pp-form-fila__etiqueta"><h2 class="pe-seccion-titulo" id="pe-s-ident">Identidad</h2></div>
+            <div class="pp-form-fila__control"><div class="pe-campos">
+              <div class="pe-dos">
+                <div class="pp-campo"><label class="pp-label" for="pe-nombre">Nombre</label><input class="pp-input" id="pe-nombre" type="text" value="Jorge" autocomplete="off"></div>
+                <div class="pp-campo"><label class="pp-label" for="pe-apellido">Primer apellido</label><input class="pp-input" id="pe-apellido" type="text" value="Villamil" autocomplete="off"></div>
               </div>
-            </fieldset>
-            <div><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">+ Añadir experiencia</button></div>
-            <div class="pp-campo"><label class="pp-label" for="pe-aporte">Qué le interesa aportar</label><textarea class="pp-input pp-input--area" id="pe-aporte" aria-describedby="pe-aporte-ayuda">Diseñar integraciones que no se caen en cierre de mes y acompañar a equipos que migran a eventos.</textarea><p class="pp-ayuda" id="pe-aporte-ayuda">Dos o tres frases. 104 / 280 caracteres.</p></div>
-          </div>
-        </section>
-        <section class="pe-seccion" aria-labelledby="pe-s-consent">
-          <div class="pe-seccion__cabecera"><h2 class="pe-seccion__titulo" id="pe-s-consent">Consentimiento nominal</h2><p class="pe-seccion__meta">Obligatorio para publicar. Lo registra Talento Humano; la importación nunca lo concede.</p></div>
-          
-          <div class="pe-consent pe-consent--ok">
-            <p class="pe-consent__estado"><span class="pp-badge pp-badge--publicado">✓ Registrado</span>Consentimiento nominal y explícito</p>
-            <dl class="pp-datos">
-              <div class="pp-datos__fila"><dt>Ante quién y hasta cuándo</dt><dd>Cuentas cliente de Trycore · de forma continua, hasta que lo revoque</dd></div>
-              <div class="pp-datos__fila"><dt>Registrado por</dt><dd>Karen Rodríguez · 18 de septiembre de 2026, 3:12 p. m.</dd></div>
-            </dl>
-            <fieldset class="pe-consent__alcance">
-              <legend>Alcance autorizado</legend>
-              <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Nombre y primer apellido<span class="pp-check__ayuda">Jorge Villamil, tal como aparecerá en la tarjeta.</span></span></label>
-              <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Trayectoria</span></label>
-              <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Clientes nombrados<span class="pp-check__ayuda">Si no lo autoriza, la experiencia se muestra despersonalizada («Banco regional»).</span></span></label>
-            </fieldset>
-            <div><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Registrar revocación</button></div>
-          </div>
-        </section>
-        <div class="pe-acciones">
-          <p class="pe-acciones__nota">Se guarda como borrador aunque falten datos. Publicar se habilita cuando se cumplan las condiciones de la derecha.</p>
-          <button type="button" class="pp-btn pp-btn--contorno">Guardar borrador</button>
-          <a class="pp-btn pp-btn--fantasma" href="#">Vista previa</a>
-          <button type="button" class="pp-btn pp-btn--primario" aria-disabled="true" aria-describedby="pe-condiciones">Publicar</button>
-        </div>
-      </form>
+            </div></div>
+          </section>
+          <section class="pp-form-fila" aria-labelledby="pe-s-rol">
+            <div class="pp-form-fila__etiqueta"><h2 class="pe-seccion-titulo" id="pe-s-rol">Rol y tecnologías</h2><p class="pp-ayuda">Solo valores del catálogo.</p></div>
+            <div class="pp-form-fila__control"><div class="pe-campos">
+              <div class="pp-campo"><label class="pp-label" for="pe-rol">Rol</label><div class="pp-select"><select class="pp-input" id="pe-rol"><option>Elige un rol del catálogo</option><option>Desarrolladora backend</option><option>Desarrollador backend</option><option>Analista QA automatización</option><option selected>Especialista en mainframe</option><option>Arquitecta de datos</option></select></div><p class="pp-meta">Familia Infraestructura legada<span class="pe-sep"> · </span>0 modalidades de prueba</p><div class="pp-aviso pp-aviso--warn" role="alert"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Esta familia no tiene modalidades de prueba.</span>Sin una, ningún perfil de Infraestructura legada podrá publicarse.</p><a class="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="catalogos.html">Registrar modalidad</a></div></div>
+              <div class="pp-campo"><label class="pp-label" for="pe-tec">Tecnologías ancla</label><ul class="pe-valores" aria-label="Tecnologías elegidas"><li class="pe-valor">COBOL<button type="button" class="pe-valor__quitar" aria-label="Quitar COBOL"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pe-valor">JCL<button type="button" class="pe-valor__quitar" aria-label="Quitar JCL"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pe-valor">DB2<button type="button" class="pe-valor__quitar" aria-label="Quitar DB2"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul><input class="pp-input" id="pe-tec" type="text" placeholder="Buscar en el catálogo" autocomplete="off"></div>
+              <div class="pp-campo"><label class="pp-label" for="pe-sector">Sector</label><div class="pp-select"><select class="pp-input" id="pe-sector"><option>Elige un sector</option><option selected>Banca</option><option>Seguros</option><option>Retail</option><option>Salud</option><option>Telecomunicaciones</option></select></div></div>
+            </div></div>
+          </section>
+          <section class="pp-form-fila" aria-labelledby="pe-s-disp">
+            <div class="pp-form-fila__etiqueta"><h2 class="pe-seccion-titulo" id="pe-s-disp">Ubicación y disponibilidad</h2></div>
+            <div class="pp-form-fila__control"><div class="pe-campos">
+              <div class="pe-dos">
+                <div class="pp-campo"><label class="pp-label" for="pe-ciudad">Ciudad</label><div class="pp-select"><select class="pp-input" id="pe-ciudad"><option>Elige la ciudad</option><option selected>Bogotá, Colombia</option><option>Medellín, Colombia</option><option>Cali, Colombia</option><option>Barranquilla, Colombia</option><option>Bucaramanga, Colombia</option></select></div></div>
+                <div class="pp-campo"><label class="pp-label" for="pe-modalidad">Modalidad de trabajo</label><div class="pp-select"><select class="pp-input" id="pe-modalidad"><option>Elige la modalidad</option><option>Remoto</option><option>Híbrido</option><option selected>Presencial</option></select></div></div>
+              </div>
+              <div class="pe-dos">
+                <div class="pp-campo"><label class="pp-label" for="pe-disp">Disponibilidad</label><div class="pp-select"><select class="pp-input" id="pe-disp"><option>Elige la disponibilidad</option><option selected>Disponible ahora</option><option>En 2 a 4 semanas</option><option>En 1 a 2 meses</option><option>Más de 2 meses</option><option>Fecha concreta…</option></select></div></div>
+                <div class="pp-campo"><label class="pp-label" for="pe-disp-fecha">Fecha en que queda libre</label><input class="pp-input" id="pe-disp-fecha" type="date" disabled aria-describedby="pe-disp-fecha-ayuda"><p class="pp-ayuda" id="pe-disp-fecha-ayuda">Solo si eliges «Fecha concreta».</p></div>
+              </div>
+            </div></div>
+          </section>
+          <section class="pp-form-fila" aria-labelledby="pe-s-verif">
+            <div class="pp-form-fila__etiqueta"><h2 class="pe-seccion-titulo" id="pe-s-verif"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</h2></div>
+            <div class="pp-form-fila__control"><div class="pe-campos">
+              <div class="pp-campo"><label class="pp-label" for="pe-prueba">Modalidad de prueba aplicada</label><div class="pp-select"><select class="pp-input" id="pe-prueba" disabled><option selected>Sin modalidades para esta familia</option></select></div></div>
+              <div class="pp-campo"><label class="pp-label" for="pe-evaluador">Evaluador</label><input class="pp-input" id="pe-evaluador" type="text" value="" placeholder="Nombre y cargo"></div>
+              <div class="pe-dos">
+                <div class="pp-campo"><label class="pp-label" for="pe-fecha">Fecha de la validación</label><input class="pp-input" id="pe-fecha" type="date"></div>
+                <div class="pp-campo"><label class="pp-label" for="pe-resultado">Resultado</label><input class="pp-input" id="pe-resultado" type="text" value=""></div>
+              </div>
+              <div class="pp-campo"><p class="pp-label">Enunciado publicado</p><p class="pe-enunciado">No disponible: la familia no tiene modalidad de prueba.</p></div>
+              <div class="pp-campo"><p class="pp-label">Artefacto de evidencia</p><div class="pe-acciones-campo"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Adjuntar artefacto</button></div><p class="pp-ayuda">Solo interno. Nunca llega al portal.</p></div>
+            </div></div>
+          </section>
+          <section class="pp-form-fila" aria-labelledby="pe-s-decl">
+            <div class="pp-form-fila__etiqueta"><h2 class="pe-seccion-titulo" id="pe-s-decl">Declarado por el profesional</h2></div>
+            <div class="pp-form-fila__control"><div class="pe-campos">
+              <div class="pp-campo" id="pe-trayectoria"><p class="pp-label" id="pe-l-tray">Trayectoria</p><ul class="pe-exps" aria-labelledby="pe-l-tray">
+                <li class="pe-exp">
+                  <div class="pe-exp__principal"><p class="pe-exp__titulo">Especialista mainframe · Davivienda <span class="pe-exp__periodo">2012 — 2026</span></p><p class="pe-exp__texto">Mantenimiento de cartera y cierres de mes en COBOL, JCL y DB2.</p></div>
+                  <div class="pe-exp__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm" aria-label="Editar Especialista mainframe · Davivienda">Editar</button></div>
+                </li>
+              </ul>
+              <div class="pe-acciones-campo"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Añadir experiencia</button></div></div>
+              <div class="pp-campo"><label class="pp-label" for="pe-aporte">Qué le interesa aportar</label><textarea class="pp-input pp-input--area" id="pe-aporte" maxlength="280" aria-describedby="pe-aporte-cuenta">Sostener los cierres de mes mientras el banco migra cartera a la nube, y documentar lo que solo está en la cabeza del equipo.</textarea><p class="pp-meta pe-contador" id="pe-aporte-cuenta">125 / 280</p></div>
+            </div></div>
+          </section>
+          <section class="pp-form-fila" aria-labelledby="consentimiento">
+            <div class="pp-form-fila__etiqueta"><h2 class="pe-seccion-titulo" id="consentimiento">Consentimiento nominal</h2><p class="pp-ayuda">Obligatorio para publicar.</p></div>
+            <div class="pp-form-fila__control"><div class="pe-campos">
+              <p class="pe-consent-estado"><span class="pp-estado pp-estado--ok">Registrado</span><span class="pp-meta">Karen Rodríguez · 18 sep 2026, 3:12 p. m.</span></p>
+              <dl class="pp-datos">
+                <div class="pp-datos__fila"><dt>Ante quién</dt><dd>Cuentas cliente de Trycore</dd></div>
+                <div class="pp-datos__fila"><dt>Vigencia</dt><dd>Continua, hasta que lo revoque</dd></div>
+              </dl>
+              <fieldset class="pe-alcance">
+                <legend class="pp-label">Alcance autorizado</legend>
+                <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Nombre y primer apellido<span class="pp-check__ayuda">Jorge Villamil, tal como aparecerá en la tarjeta.</span></span></label>
+                <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Trayectoria</span></label>
+                <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Clientes nombrados<span class="pp-check__ayuda">Sin esta autorización la experiencia se muestra sin el nombre del cliente.</span></span></label>
+              </fieldset>
+              <div class="pe-acciones-campo"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pe-btn-peligro">Registrar revocación</button></div>
+            </div></div>
+          </section>
+          </form>
 
-      <!-- región: paneles secundarios / laterales -->
-          <div class="pe-lateral">
-        <section class="pp-tarjeta" aria-labelledby="pe-condiciones">
-          <h2 id="pe-condiciones">Para publicar</h2>
-          <p class="pe-lateral__sub">Se revisa cada vez que guardas.</p>
-          <ul class="pe-checklist"><li class="pe-check-item pe-check-item--ok"><span class="pe-check-item__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Consentimiento nominal registrado<small>Registrado el 18 sep 2026 por Karen Rodríguez</small></span></li><li class="pe-check-item pe-check-item--falta"><span class="pe-check-item__marca" aria-hidden="true">–</span><span><span class="pp-sr">Falta: </span>La familia del rol tiene modalidad de prueba<small>Infraestructura legada: 0 modalidades</small></span></li><li class="pe-check-item pe-check-item--ok"><span class="pe-check-item__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Atributos obligatorios completos<small>Todos completos</small></span></li><li class="pe-check-item pe-check-item--ok"><span class="pe-check-item__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Disponibilidad coherente con el estado<small>Borrador · Disponible ahora</small></span></li><li class="pe-check-item pe-check-item--ok"><span class="pe-check-item__marca" aria-hidden="true">i</span><span>Reporte detallado de validación<small>No es condición: sin él se publica con el enunciado de Nivel 0</small></span></li></ul>
-          <p class="pe-veredicto">Cumple 3 de 4 condiciones: aún no se puede publicar.</p>
-        </section>
-        <section class="pp-tarjeta pe-previa" aria-labelledby="pe-previa">
-          <h2 id="pe-previa">Así lo verá el cliente</h2>
-          <p class="pe-lateral__sub">Borrador: todavía no lo ve ninguna cuenta.</p>
-          <article class="pp-perfil" aria-label="Vista previa de la tarjeta">
-            <div class="pp-perfil__cabecera">
-              <div><h3 class="pp-perfil__rol">Especialista en mainframe</h3><p class="pp-perfil__nombre">Jorge Villamil</p></div>
-              <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
-            </div>
-            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">COBOL</li><li class="pp-tag">JCL</li><li class="pp-tag">DB2</li></ul>
-            <ul class="pp-perfil__meta"><li>Banca</li><li>Presencial</li><li>Bogotá, Colombia</li></ul>
-            <div class="pp-evidencia">
-              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo">Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span>Sin enunciado: la familia no tiene modalidad de prueba</span></li></ul></div>
-              <div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio"><span>Backend senior · Bancolombia (2021 — 2026)</span></li></ul></div>
-            </div>
-            <div class="pp-perfil__pie"><span class="pp-codigo-perfil">PS-0244</span></div>
-          </article>
-          <p class="pe-nota">El artefacto de evidencia nunca aparece en la ficha.</p>
-        </section>
-          </div>
+          <!-- región: condiciones de publicación (solo lo que falta) -->
+          <aside class="pe-lateral" aria-labelledby="pe-condiciones">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="pe-condiciones">Para publicar</h2></div>
+            <p class="pp-meta">Cumple 3 de 4 condiciones.</p>
+            <ul class="pe-conds">
+              <li class="pe-cond"><span class="pp-si" aria-hidden="true">✓</span><span class="pe-cond__texto">Consentimiento nominal<span class="pp-sr"> (cumple)</span></span></li>
+              <li class="pe-cond"><span class="pp-si" aria-hidden="true">✓</span><span class="pe-cond__texto">Trayectoria<span class="pp-sr"> (cumple)</span></span></li>
+              <li class="pe-cond"><span class="pp-si" aria-hidden="true">✓</span><span class="pe-cond__texto">Disponibilidad vigente<span class="pp-sr"> (cumple)</span></span></li>
+              <li class="pe-cond pe-cond--no"><span class="pp-no" aria-hidden="true">–</span><span class="pe-cond__texto"><a href="#pe-rol">Modalidad de prueba</a><span class="pp-sr"> (falta)</span><span class="pp-meta">Infraestructura legada no tiene ninguna.</span></span></li>
+            </ul>
+          </aside>
         </div>
       </main>
     </div>

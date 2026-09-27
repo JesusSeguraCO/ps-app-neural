@@ -10,27 +10,37 @@
   - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
     de pantalla en archivos propios (ficha-perfil--estado.html), no interacciones.
   Trazabilidad: épica EP-003 · historias HU-119, HU-120, HU-081 · registrada en ../manifest.json
-  Estado de ESTA pantalla: --movil — en un teléfono la ficha ocupa la pantalla completa y conserva la navegación entre
-  perfiles bajo la cabecera, siempre a la vista al abrir (HU-120, edge). Se muestra el primer perfil (1 de 8, Laura Méndez como en la tabla):
-  «Anterior» deshabilitado. En escritorio y tableta se enmarca a 390 px para revisarla igual.
-  Origen: v2-existe (docs/07-prototipo/handoff/components/portal/ficha-perfil.tsx y
-  validacion-tecnica.tsx). Tratamiento de lo verificado: bloque sobre la superficie teal
-  (--tc-primary-surface), lo declarado sobre --tc-surface-declared con borde discontinuo.
-  Fuera de la ficha por la lista negra B.4: foto, contacto, CV, tarifa, fecha exacta de
-  disponibilidad (solo banda), motivación o proyección, DISC detallado, certificaciones.
-  El acordeón de validación técnica es un elemento details nativo (sin JS), abierto por defecto.
+  Estado de ESTA pantalla: --movil — en un teléfono la ficha ocupa la pantalla completa: barra de recorrido (← posición →)
+  y «Cerrar» fija arriba, pie con la acción fijo abajo y el cuerpo con scroll propio, sin escalar el contenido
+  (HU-120, edge). Primer perfil (1 de 8, Laura Méndez): «Anterior» deshabilitado; recién sumada al equipo,
+  confirmada por toast. En escritorio y tableta se enmarca a 390 × 844 px para revisarla igual.
+  Oficio v2 (DESIGN.md › Oficio): CSS pp-* copiado literal de _patrones.html v2 (base, botones, estado, toast,
+  avisos, perfil, chips, hoja, topbar). Evidencia «Frente a tu búsqueda» como filas ✓/– por criterio, agrupadas
+  en Obligatorios / Deseables, con la fuente de cada dato a la derecha (escudo + «Verificado» en tinta teal,
+  «Declarado» apagado, «Sin dato» si no está registrado). Lo verificado va en un único bloque de tinte teal sin
+  borde (Sello Personal, validación técnica, inglés, referencias, formación, identidad, antecedentes); lo
+  declarado va sin caja. Disponibilidad como punto + texto; seniority, modalidad y ciudad como metadatos.
+  Confirmación de «Sumar al equipo» por toast encima del pie; la ficha no se cierra.
+  Recorrido: ← / → (aria-keyshortcuts ArrowLeft / ArrowRight) y Esc para cerrar, visibles como kbd en escritorio
+  y en el title de cada botón. La primera o la última flecha se deshabilita (disabled + aria-disabled).
+  Accesibilidad (se implementa en la app, no en el prototipo sin JS): role=dialog + aria-modal=true, foco
+  atrapado dentro de la hoja, foco inicial en «Cerrar», al cerrar el foco vuelve a la tarjeta de origen. El
+  anillo de foco que se ve en la captura (clase fp-foco) replica :focus-visible para revisarlo en estático.
+  Fuera de la ficha por la lista negra B.4: foto, contacto, CV, tarifa, fecha exacta de disponibilidad (solo
+  banda), motivación o proyección, DISC detallado, certificaciones. Sin porcentajes: «Cumple N de M».
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Ficha en el teléfono — prototipo</title>
+  <title>Ficha de Laura Méndez en el teléfono — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -38,258 +48,289 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
     .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
-    .pp-btn--contorno:hover { border-color: var(--tc-primary); }
-    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
     .pp-btn--fantasma { color: var(--tc-text-b); }
     .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
     .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
     .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-    .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
-    .pp-btn--icono { width: 44px; padding: 0; }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
     .pp-btn--bloque { width: 100%; }
-    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
-    @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
     /* /PP:botones */
-    /* PP:topbar */
-    .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
-    .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
-    .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
-    .pp-marca__sep { color: var(--tc-border-s); }
-    .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
-    .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
-    .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
-    .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
-    .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
-    .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
-    .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-    .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
-    .pp-equipo:hover { border-color: var(--tc-primary); }
-    .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
-    @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
-    @media (max-width: 767px) {
-      .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
-      .pp-equipo { order: 1; margin-left: auto; }
-      .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
-      .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
-      .pp-cuenta__meta { display: none; }
-    }
-    /* /PP:topbar */
-    /* PP:chips */
-    .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
-    .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
-    .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
-    .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
-    .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
-    .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
-    .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
-    .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
-    .pp-chip__quitar:hover { background: var(--pp-overlay); }
-    /* /PP:chips */
-    /* PP:badges */
-    .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
-    .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
-    .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
-    .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
-    .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
-    .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-    .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
-    .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-    /* /PP:badges */
-    /* PP:perfil */
-    .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
-    .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
-    .pp-perfil--en-equipo { border-color: var(--tc-primary); }
-    .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
-    .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-    .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
-    .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
-    .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-    .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
-    .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
-    .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
-    .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
-    .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
-    .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
-    .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
-    .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
-    .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
-    .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
-    .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
-    .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-    .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
-    .pp-criterio--cumple { color: var(--tc-ok-ink); }
-    .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
-    .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
-    .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
-    .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
-    .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
-    /* /PP:perfil */
+    /* PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
+    /* PP:toast */
+    .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+    .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+    @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+    /* /PP:toast */
     /* PP:avisos */
-    .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
-    .pp-aviso p { margin: 0; }
-    .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-    .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
-    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
-    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
-    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
-    .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+    .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+    .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+    .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-aviso__titulo::after { content: " "; }
+    .pp-aviso__accion { flex: none; align-self: center; }
+    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+    .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+    .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+    @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
     /* /PP:avisos */
     /* PP:hoja */
     .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
-    .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(640px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow:var(--tc-sh-3); }
-    .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-5) var(--tc-sp-6) var(--tc-sp-4); padding-right: var(--tc-sp-10); border-bottom: 1px solid var(--tc-border); }
-    .pp-hoja__cabecera h2 { margin: 0 var(--tc-sp-6) 0 0; font-size:var(--tc-fs-h2); }
-    .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-3); right: var(--tc-sp-3); }
-    .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-4); overflow: auto; padding: var(--tc-sp-6); }
-    .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
-    .pp-datos { display: grid; gap: var(--tc-sp-3); margin: 0; }
-    .pp-datos__fila dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pp-datos__fila dd { margin: 0; font-size:var(--tc-fs-small); }
-    @media (max-width: 767px) { .pp-hoja__cabecera, .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-hoja__cabecera { padding-right: var(--tc-sp-10); } }
+    .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+    .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+    .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+    .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+    .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .pp-datos { display: grid; margin: 0; }
+    .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+    .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+    .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+    .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
     /* /PP:hoja */
+    /* PP:perfil */
+    .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: var(--tc-sp-4); }
+    .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); transition: border-color var(--tc-dur) var(--tc-ease); }
+    .pp-perfil:hover { border-color: var(--tc-border-s); }
+    .pp-perfil--en-equipo, .pp-perfil--en-equipo:hover { border-color: var(--tc-primary-surface-border); }
+    .pp-perfil--cambio { background: var(--tc-surface-quiet); }
+    .pp-perfil--cambio .pp-perfil__rol, .pp-perfil--cambio .pp-perfil__nombre { color: var(--tc-text-m); }
+    .pp-perfil__estado { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .pp-perfil__estado::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-amber); }
+    .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); flex-wrap: wrap; }
+    .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+    .pp-perfil__cabecera .pp-badge, .pp-perfil__cabecera .pp-estado { margin-top: var(--tc-sp-1); }
+    .pp-perfil__rol { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); }
+    .pp-perfil__rol a { color: inherit; text-decoration: none; }
+    .pp-perfil__rol a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-perfil__nombre { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-perfil__tecnologias > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+    .pp-perfil__tecnologias .pp-tag { padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+    .pp-perfil__meta { display: flex; flex-wrap: wrap; margin: var(--tc-sp-1) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-perfil__meta > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); }
+    .pp-evidencia { display: grid; gap: var(--tc-sp-3); margin-top: var(--tc-sp-4); }
+    .pp-evidencia__conteo { margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .pp-bloque { padding: var(--tc-sp-3); border-radius: var(--tc-r-sm); }
+    .pp-bloque--verificado { background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
+    .pp-bloque--declarado { padding-top: 0; padding-bottom: 0; background: none; color: var(--tc-text-b); }
+    .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); }
+    .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+    .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); font-weight: var(--tc-fw-medium); }
+    .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+    .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-criterio--cumple { color: var(--tc-text-h); }
+    .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+    .pp-criterio--no { color: var(--tc-text-m); }
+    .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-s); }
+    .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: auto; padding-top: var(--tc-sp-5); }
+    .pp-codigo-perfil { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .pp-perfil__pie .pp-codigo-perfil { margin-left: auto; }
+    .pp-tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 var(--tc-sp-2); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    /* /PP:perfil */
   </style>
+
   <style>
-    /* ── Composición propia de ficha-perfil (prefijo fp-). Solo layout; todo valor visual es token. ──
-       En la app la hoja es position: fixed con scroll propio (PP:hoja). En el prototipo la escena la
-       pone en flujo sobre los resultados para que la captura de página completa muestre la ficha
-       entera; velo, ancho, cabecera, cuerpo y pie son los de PP:hoja sin cambios. */
-    .fp-escena { display: grid; min-height: 100vh; }
+    /* ── Composición propia de ficha-perfil (prefijo fp-). Solo layout y tipografía; todo valor visual es token. ──
+       En la app la hoja es position: fixed con scroll propio (PP:hoja). En el prototipo la escena la pone en flujo
+       sobre los resultados para que la captura de página completa muestre la ficha entera. El fondo no aporta altura
+       (absoluto y recortado): la página mide lo que mide la ficha. */
+    .fp-escena { position: relative; display: grid; min-height: 100vh; }
     .fp-escena > * { grid-area: 1 / 1; min-width: 0; }
     .fp-escena .pp-hoja-velo, .fp-escena .pp-hoja { position: relative; }
     .fp-escena .pp-hoja { justify-self: end; }
-    .fp-resultados { max-width: 1200px; padding: var(--tc-sp-6); }
-    .fp-resultados__titulo { font-size:var(--tc-fs-h2); margin: 0 0 var(--tc-sp-1); }
-    .fp-resultados__sub { margin: 0 0 var(--tc-sp-4); font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .fp-resultados .pp-chips { margin-bottom: var(--tc-sp-5); }
+    .fp-fondo { position: absolute; inset: 0; overflow: hidden; }
+    .fp-resultados { max-width: 1200px; padding: var(--tc-sp-8) var(--tc-sp-6); }
+    .fp-resultados .pp-chips { margin-bottom: var(--tc-sp-6); }
+    .fp-cercanos { margin-top: var(--tc-sp-10); }
+    .fp-ver { font-size: var(--tc-fs-small); }
+    .fp-falla { color: var(--tc-warn-ink); font-weight: var(--tc-fw-semibold); }
+    .pp-perfil.fp-abierta { border-color: var(--tc-text-s); }
 
-    .fp-nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
-    .fp-nav__pos { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .fp-resumen { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-3); }
+    /* Hoja: barra de recorrido (← posición →, Esc) encima de la cabecera */
+    .fp-ficha { font-variant-numeric: tabular-nums; }
+    .fp-barra { display: flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .fp-barra__pos { margin: 0 0 0 var(--tc-sp-2); min-width: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fp-barra__pos b { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .fp-barra__fin { display: flex; align-items: center; gap: var(--tc-sp-2); margin-left: auto; }
+    .fp-atajos { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-s); white-space: nowrap; }
+    .fp-foco { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
 
-    .fp-seccion { display: grid; gap: var(--tc-sp-2); min-width: 0; }
-    .fp-seccion__titulo { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); letter-spacing: 0; }
-    .fp-seccion__ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .fp-evidencia { display: grid; gap: var(--tc-sp-2); }
-    .fp-modo { font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; opacity: .85; }
+    /* Cabecera: rol, persona, disponibilidad como punto + texto, metadatos apagados */
+    .fp-ficha .pp-hoja__cabecera h2 { overflow-wrap: anywhere; }
+    .fp-ficha .pp-hoja__cabecera .fp-persona { margin-top: var(--tc-sp-1); font-size: var(--tc-fs-body); color: var(--tc-text-b); }
+    .fp-linea { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-4); margin-top: var(--tc-sp-3); }
+    .fp-linea .pp-badge { font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .fp-linea .pp-perfil__meta { margin: 0; }
 
-    .fp-datos-2 { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: var(--tc-sp-3) var(--tc-sp-5); }
-    .fp-sello { margin-top: var(--tc-sp-3); padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-primary-surface-border); }
-    .fp-sello__titulo { margin: 0 0 var(--tc-sp-2); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .fp-competencias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .fp-competencia { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-pill); background: var(--tc-card); color: var(--tc-primary-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
-    .fp-ausente { color: var(--tc-text-m); font-style: italic; }
+    /* Secciones del cuerpo: h3 + hairline, sin caja por sección */
+    .fp-seccion { min-width: 0; }
+    .fp-seccion + .fp-seccion { padding-top: var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .fp-seccion__titulo { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .fp-seccion__titulo--verificado { color: var(--tc-primary-ink); }
 
-    .fp-validacion { border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-lg); overflow: hidden; background: var(--tc-primary-surface); }
-    .fp-validacion summary { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-surface-quiet); cursor: pointer; list-style: none; }
-    .fp-validacion summary::-webkit-details-marker { display: none; }
-    .fp-validacion[open] summary { border-bottom: 1px solid var(--tc-primary-surface-border); }
-    .fp-validacion__origen { display: flex; align-items: center; gap: var(--tc-sp-1); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
-    .fp-validacion__titulo { display: block; margin-top: var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-body); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .fp-validacion__flecha { color: var(--tc-text-m); transition: transform var(--tc-dur) var(--tc-ease); }
-    .fp-validacion[open] .fp-validacion__flecha { transform: rotate(180deg); }
-    .fp-validacion dl { display: grid; grid-template-columns: minmax(120px, auto) 1fr; gap: var(--tc-sp-2) var(--tc-sp-5); margin: 0; padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-5); }
-    .fp-validacion dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
-    .fp-validacion dd { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-primary-surface-ink); }
+    /* Frente a tu búsqueda: una fila por criterio (✓/–), agrupada por modo */
+    .fp-grupo { margin: var(--tc-sp-4) 0 0; padding-bottom: var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .fp-grupo:first-of-type { margin-top: 0; }
+    .fp-criterios { margin: 0; padding: 0; list-style: none; }
+    .fp-criterio { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: var(--tc-sp-1) var(--tc-sp-3); align-items: baseline; padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .fp-criterio__marca { font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+    .fp-criterio--no .fp-criterio__marca { color: var(--tc-text-s); }
+    .fp-criterio__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .fp-criterio--no .fp-criterio__nombre { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .fp-criterio__dato { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .fp-fuente { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); white-space: nowrap; }
+    .fp-fuente--verificado { font-weight: var(--tc-fw-medium); color: var(--tc-primary-ink); }
+    .fp-seccion > .fp-criterios:last-of-type > .fp-criterio:last-child { border-bottom: 0; }
+    .fp-seccion .pp-aviso { margin-top: var(--tc-sp-4); }
 
-    .fp-trayectoria { display: grid; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .fp-trayectoria strong { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-    .fp-nota { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .fp-pie__estado { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-ok-badge-ink); }
-    .fp-pie__disp { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .fp-pie__espacio { flex: 1; }
+    /* Verificado (un solo tinte teal, significa algo) y declarado (sin caja) */
+    .fp-ficha .pp-bloque--verificado { padding: var(--tc-sp-4); }
+    .fp-sello { font-weight: var(--tc-fw-medium); }
+    .fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-bloque--verificado .fp-sub { color: var(--tc-primary-surface-ink); }
+    .fp-ausente { color: var(--tc-text-m); }
+    .fp-trayectoria { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
+    .fp-cargo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
 
-    /* Variante móvil: marco de teléfono (390 px) que se ve igual en cualquier viewport */
-    .fp-telefono { width: 100%; max-width: 390px; margin: 0 auto; }
-    .fp-telefono .pp-hoja { position: relative; width: 100%; }
-    .fp-telefono .pp-hoja__cabecera, .fp-telefono .pp-hoja__cuerpo, .fp-telefono .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
-    .fp-telefono .pp-hoja__cabecera { padding-right: var(--tc-sp-4); }
-    .fp-telefono .pp-hoja__cabecera h2 { margin-right: 0; }
-    .fp-telefono .fp-validacion dl { grid-template-columns: 1fr; gap: var(--tc-sp-1); }
-    .fp-telefono .fp-validacion dd { margin-bottom: var(--tc-sp-2); }
-    .fp-volver { display: flex; align-items: center; margin: 0 0 var(--tc-sp-3); margin-left: calc(-1 * var(--tc-sp-3)); }
-    .fp-barra__nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--tc-sp-2); width: 100%; }
-    .fp-barra__nav .pp-btn { width: 100%; }
+    /* Pie: primaria a la derecha; el toast confirma encima del pie sin cerrar la ficha */
+    .fp-pie { position: relative; background: var(--tc-card); }
+    .fp-pie .pp-toast { position: absolute; left: auto; right: var(--tc-sp-6); bottom: calc(100% + var(--tc-sp-3)); }
 
     @media (max-width: 767px) {
-      .fp-resultados { padding: var(--tc-sp-4); }
-      .fp-validacion dl { grid-template-columns: 1fr; gap: var(--tc-sp-1); }
-      .fp-validacion dd { margin-bottom: var(--tc-sp-2); }
-      .fp-pie__espacio { display: none; }
+      /* Teléfono: la ficha ocupa la pantalla (100dvh); barra (× y ← →) arriba y pie abajo siempre visibles; solo el cuerpo
+         hace scroll (como en la app). El contenido no se escala. */
+      .fp-fondo, .fp-escena .pp-hoja-velo { display: none; }
+      .fp-escena { min-height: 0; }
+      .fp-escena .pp-hoja { width: 100%; height: 100vh; height: 100dvh; border-left: 0; box-shadow: none; }
+      .fp-barra { padding: var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-4); }
+      .fp-barra__pos { margin-left: var(--tc-sp-1); }
+      .fp-atajos { display: none; }
+      .fp-pie .pp-btn { flex: 1; }
+      .fp-pie .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .fp-criterio { grid-template-columns: 16px minmax(0, 1fr); }
+      .fp-criterio .fp-fuente { grid-column: 2; }
+    }
+  </style>
+
+  <style>
+    /* ── Variante móvil: marco de teléfono de 390 × 844 en escritorio y tableta; pantalla completa en el teléfono.
+       La hoja llena el marco: barra arriba, pie abajo y el cuerpo con scroll propio (como en la app). ── */
+    body { background: var(--tc-bg-canvas); }
+    .fp-telefono { position: relative; width: 390px; height: 844px; margin: var(--tc-sp-8) auto; overflow: hidden; border: 1px solid var(--tc-border); border-radius: var(--tc-r-lg); box-shadow: var(--tc-sh-1); }
+    .fp-telefono .pp-hoja { position: absolute; width: 100%; border-left: 0; box-shadow: none; }
+    .fp-telefono .fp-barra { padding: var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-4); }
+    .fp-telefono .fp-atajos { display: none; }
+    .fp-telefono .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-4) var(--tc-sp-4); }
+    .fp-telefono .pp-hoja__cuerpo, .fp-telefono .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+    .fp-telefono .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+    .fp-telefono .fp-criterio { grid-template-columns: 16px minmax(0, 1fr); }
+    .fp-telefono .fp-criterio .fp-fuente { grid-column: 2; }
+    .fp-telefono .fp-pie .pp-btn { flex: 1; min-height: 44px; }
+    .fp-telefono .fp-barra .pp-btn { min-height: 44px; }
+    .fp-telefono .fp-barra .pp-btn--icono { width: 44px; }
+    .fp-telefono .fp-pie .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); max-width: none; }
+    .fp-telefono .fp-pie .pp-toast__accion { min-height: 44px; }
+    @media (max-width: 767px) {
+      .fp-telefono { width: 100%; height: 100vh; height: 100dvh; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
     }
   </style>
 </head>
 <body>
 <div class="fp-telefono">
-  <aside class="pp-hoja" role="dialog" aria-modal="true" aria-labelledby="fp-titulo" id="ficha">
-        <header class="pp-hoja__cabecera">
-          <div class="fp-volver">
-            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Volver a los resultados</button>
-          </div>
-          <h2 id="fp-titulo">Desarrolladora backend Java · 8 años en banca</h2>
-          <p>Laura Méndez · Medellín, Colombia · <span class="pp-mono">PS-0142</span></p>
-          <div class="fp-resumen"><span class="pp-badge pp-badge--disponible">Disponible ahora</span><span class="pp-badge pp-badge--banda">Híbrido</span><span class="pp-badge pp-badge--banda">Senior</span></div>
-          <nav class="fp-barra__nav fp-nav" aria-label="Navegación entre perfiles">
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-disabled="true" disabled><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Anterior</button>
-            <span class="fp-nav__pos">1 de 8</span>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Siguiente<svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+  <!-- región: panel lateral (ficha) -->
+  <aside class="pp-hoja fp-ficha" role="dialog" aria-modal="true" aria-labelledby="fp-titulo" id="ficha">
+        <div class="fp-barra">
+          <nav class="fp-barra__nav" aria-label="Recorrer perfiles" style="display: contents;">
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pp-btn--icono" aria-label="Perfil anterior" title="Perfil anterior (←)" aria-keyshortcuts="ArrowLeft" disabled aria-disabled="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pp-btn--icono" aria-label="Perfil siguiente" title="Perfil siguiente (→)" aria-keyshortcuts="ArrowRight"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <p class="fp-barra__pos" aria-live="polite"><b>1 de 8</b> · resultados</p>
           </nav>
+          <div class="fp-barra__fin">
+            <span class="fp-atajos" aria-hidden="true"><span class="pp-kbd">←</span><span class="pp-kbd">→</span> recorrer · <span class="pp-kbd">Esc</span> cerrar</span>
+            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--icono" aria-label="Cerrar la ficha" title="Cerrar (Esc)" aria-keyshortcuts="Escape"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+        </div>
+        <header class="pp-hoja__cabecera">
+          <h2 id="fp-titulo">Desarrolladora backend Java</h2>
+          <p class="fp-persona">Laura Méndez · 8 años de experiencia en banca</p>
+          <div class="fp-linea"><span class="pp-badge pp-badge--disponible">Disponible ahora</span><ul class="pp-perfil__meta" aria-label="Datos del perfil"><li>Senior</li><li>Híbrido</li><li>Medellín, Colombia</li><li class="pp-mono">PS-0142</li></ul></div>
         </header>
         <div class="pp-hoja__cuerpo">
           <section class="fp-seccion" aria-labelledby="fp-busqueda">
-            <h3 class="fp-seccion__titulo" id="fp-busqueda"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Frente a tu búsqueda</h3>
-            <p class="pp-evidencia__conteo">Cumple 4 de 4 criterios · los 2 obligatorios y los 2 deseables</p>
-            <div class="fp-evidencia"><div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Java <span class="fp-modo">obligatorio</span> · validado en prueba técnica de Java y Spring Boot</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Inglés B2 <span class="fp-modo">obligatorio</span> · entrevista conducida en inglés</span></li></ul></div><div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Sector banca <span class="fp-modo">deseable</span> · 8 años declarados en pagos inmediatos</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Kafka <span class="fp-modo">deseable</span> · 3 años declarados en mensajería de pagos</span></li></ul></div></div>
-            
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-busqueda">Frente a tu búsqueda</h3><span class="pp-evidencia__conteo">Cumple 4 de 4</span></div>
+            <p class="fp-grupo">Obligatorios</p>
+            <ul class="fp-criterios"><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Java</span><span class="fp-criterio__dato">Prueba técnica de Java y Spring Boot, aprobada</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Inglés B2</span><span class="fp-criterio__dato">Entrevista conducida en inglés</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li></ul>
+            <p class="fp-grupo">Deseables</p>
+            <ul class="fp-criterios"><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Sector banca</span><span class="fp-criterio__dato">8 años en pagos inmediatos</span></span><span class="fp-fuente">Declarado</span></li><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Kafka</span><span class="fp-criterio__dato">3 años en mensajería de pagos</span></span><span class="fp-fuente">Declarado</span></li></ul>
           </section>
           <section class="fp-seccion" aria-labelledby="fp-verificado">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo fp-seccion__titulo fp-seccion__titulo--verificado" id="fp-verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</h3></div>
             <div class="pp-bloque pp-bloque--verificado">
-              <h3 class="pp-bloque__rotulo" id="fp-verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Lo que verificamos</h3>
-              <dl class="pp-datos fp-datos-2"><div class="pp-datos__fila"><dt>Identidad</dt><dd>Identidad y documento verificados · agosto de 2026</dd></div><div class="pp-datos__fila"><dt>Seguridad y antecedentes</dt><dd>Estudio de seguridad sin hallazgos · vigente hasta febrero de 2027</dd></div><div class="pp-datos__fila"><dt>Formación</dt><dd>Título de Ingeniería de Sistemas verificado ante la institución</dd></div><div class="pp-datos__fila"><dt>Referencias laborales</dt><dd>2 referencias laborales contactadas</dd></div><div class="pp-datos__fila"><dt>Inglés</dt><dd>B2 · entrevista conducida en inglés</dd></div></dl>
-              <div class="fp-sello">
-                <p class="fp-sello__titulo">Sello Personal · tres competencias verificadas por Trycore</p>
-                <ul class="fp-competencias"><li class="fp-competencia"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Comunicación directa con negocio</li><li class="fp-competencia"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Rigor en la documentación</li><li class="fp-competencia"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Calma bajo presión</li></ul>
-              </div>
+              <dl class="pp-datos"><div class="pp-datos__fila"><dt>Sello Personal</dt><dd><span class="fp-sello">Comunicación directa con negocio · Rigor en la documentación · Calma bajo presión</span></dd></div><div class="pp-datos__fila"><dt>Validación técnica</dt><dd>Prueba backend Java · aprobada, nivel senior<span class="fp-sub">Célula de arquitectura de Trycore · 20 ago 2026</span><span class="fp-sub">Evaluó diseño de APIs, concurrencia, pruebas automatizadas y manejo de datos sensibles.</span></dd></div><div class="pp-datos__fila"><dt>Inglés</dt><dd>B2 · entrevista conducida en inglés</dd></div><div class="pp-datos__fila"><dt>Referencias</dt><dd>2 referencias laborales contactadas</dd></div><div class="pp-datos__fila"><dt>Formación</dt><dd>Ingeniería de Sistemas · título verificado ante la institución</dd></div><div class="pp-datos__fila"><dt>Identidad</dt><dd>Documento verificado · ago 2026</dd></div><div class="pp-datos__fila"><dt>Antecedentes</dt><dd>Estudio de seguridad sin hallazgos · vigente hasta feb 2027</dd></div></dl>
             </div>
           </section>
           <section class="fp-seccion" aria-labelledby="fp-declarado">
-            <div class="pp-bloque pp-bloque--declarado">
-              <h3 class="pp-bloque__rotulo" id="fp-declarado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Lo que declara la profesional</h3>
-              <dl class="pp-datos"><div class="pp-datos__fila"><dt>Trayectoria</dt><dd><ul class="fp-trayectoria"><li><strong>Desarrolladora backend</strong> · banco nacional (2021–2026): pagos inmediatos y conciliación diaria.</li><li><strong>Desarrolladora Java</strong> · aseguradora (2018–2021): integración de pólizas con canales digitales.</li></ul></dd></div><div class="pp-datos__fila"><dt>Stack de trabajo</dt><dd>Java 17, Spring Boot, Kafka, PostgreSQL, OpenShift</dd></div><div class="pp-datos__fila"><dt>Sectores</dt><dd>Banca · Seguros</dd></div><div class="pp-datos__fila"><dt>Modalidad</dt><dd>Híbrido · Medellín, Colombia</dd></div></dl>
-            </div>
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-declarado">Declarado por la profesional</h3></div>
+            <dl class="pp-datos"><div class="pp-datos__fila"><dt>Trayectoria</dt><dd><ul class="fp-trayectoria"><li><span class="fp-cargo">Desarrolladora backend</span><span class="fp-sub">Banco nacional · 2021–2026</span>Pagos inmediatos y conciliación diaria.</li><li><span class="fp-cargo">Desarrolladora Java</span><span class="fp-sub">Aseguradora · 2018–2021</span>Integración de pólizas con canales digitales.</li></ul></dd></div><div class="pp-datos__fila"><dt>Stack</dt><dd>Java 17 · Spring Boot · Kafka · PostgreSQL · OpenShift</dd></div><div class="pp-datos__fila"><dt>Sectores</dt><dd>Banca · Seguros</dd></div><div class="pp-datos__fila"><dt>Modalidad</dt><dd>Híbrido · Medellín, Colombia</dd></div></dl>
           </section>
-          <details class="fp-validacion" open>
-            <summary>
-              <span><span class="fp-validacion__origen"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Validación técnica</span><span class="fp-validacion__titulo">Prueba backend Java · aprobada</span></span>
-              <svg class="pp-icono fp-validacion__flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-            </summary>
-            <dl><dt>Prueba aplicada</dt><dd>Evaluación técnica backend Java · nivel senior</dd><dt>Evaluador</dt><dd>Célula de arquitectura de Trycore</dd><dt>Fecha</dt><dd>20 de agosto de 2026</dd><dt>Resultado</dt><dd>Aprobada · nivel senior</dd><dt>Alcance evaluado</dt><dd>Diseño de APIs, concurrencia, pruebas automatizadas y manejo de datos sensibles</dd></dl>
-          </details>
-          <p class="fp-nota">Referencia interna <span class="pp-mono">PS-0142</span>. Todos los perfiles que publicamos pasan por nuestro estándar Neural-Grid™. La ficha muestra solo lo registrado: lo que falta se dice, no se completa.</p>
         </div>
-        <footer class="pp-hoja__pie">
-          <button type="button" class="pp-btn pp-btn--contorno" aria-pressed="true">✓ En el equipo</button><span class="fp-pie__estado" role="status">Sumado a tu equipo · sigue revisando</span>
+        <footer class="pp-hoja__pie fp-pie">
+          <div class="pp-toast" role="status"><span class="pp-toast__marca" aria-hidden="true">✓</span><p class="pp-toast__texto">Laura Méndez está en tu equipo.</p><button type="button" class="pp-toast__accion">Deshacer</button></div>
+          <button type="button" class="pp-btn pp-btn--contorno fp-foco" aria-pressed="true" title="Quitar del equipo">En el equipo</button>
         </footer>
-      </aside>
+  </aside>
 </div>
 </body>
 </html>

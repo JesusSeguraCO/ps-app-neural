@@ -1,17 +1,31 @@
 <!doctype html>
 <!--
-  Prototipo de referencia — pantalla correo-boletin-curado--sin-proyecto (Correo del boletín curado, encuadre genérico)
+  Prototipo de referencia — pantalla correo-boletin-curado--sin-proyecto (Contenido curado del boletín, encuadre genérico)
   Reglas duras del artefacto (NO negociables):
   - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
     Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
   - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
     ../tokens.css. Cero valores mágicos fuera de tokens.
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
-  - ESTADOS: variante de HU-113 edge. No sabemos en qué trabaja la cuenta: el correo usa un
-    encuadre genérico (el mismo texto fijo que muestra envios-curados--sin-proyecto) y dice que es genérico; no inventa un
-    proyecto ni una razón a la medida. Misma composición que la base.
-  - Enlace propio por destinatario (HU-114): generado desde el envío con su cuenta y su
-    selección, vigencia atada al ciclo de la edición; el de ediciones anteriores ya no abre.
+  - ALCANCE (PRD v4.14, RF-18, decisión del sponsor 2026-09-27): el portal NO compone, programa ni
+    envía el boletín. Esta pantalla muestra el BLOQUE de contenido curado que genera el panel por
+    destinatario (RF-18.7: asunto sugerido, apertura con la razón, perfiles con capacidad,
+    competencias verificadas y disponibilidad, un solo enlace: el del destinatario) tal como queda
+    pegado en el correo que sale desde Gmail. La firma, el pie y la salida para dejar de recibir
+    los pone la herramienta de envío, no el portal.
+  - ESTA VARIANTE: HU-113 edge. No se sabe en qué trabaja la cuenta y alguien eligió de forma
+    explícita el encuadre genérico en el panel: el bloque lo dice, no inventa proyecto ni razón y
+    pide el contexto como respuesta al correo. Misma composición que la base.
+  - ESTADOS: base = bloque pegado en Gmail, cuenta con proyecto conocido: la razón se refiere a su
+    proyecto (HU-113 happy, HU-115 happy formato Gmail). Variantes:
+    correo-boletin-curado--sin-proyecto = encuadre genérico elegido de forma explícita; no inventa
+    proyecto ni razón (HU-113 edge). correo-boletin-curado--hubspot = el mismo bloque combinado en
+    HubSpot con el enlace de la tabla destinatario–enlace; HubSpot pone pie y baja (HU-115, RF-18.7).
+    Bloque desactualizado, selección sin razón, contacto excluido y enlace perdido se resuelven en
+    el panel antes de copiar (selecciones-curadas / contenido para copiar); ningún bloque sale en
+    esos casos, por eso no son variantes de este correo.
+  - Enlace propio por destinatario (HU-114): token opaco generado desde la edición, ligado a cuenta,
+    contacto y edición; vigencia atada al ciclo de la edición; reenviarlo no da acceso.
   - Sin porcentajes, foto, contacto, CV, tarifa ni fecha exacta: solo banda de disponibilidad.
   Trazabilidad: épica EP-011 · historias HU-113, HU-114, HU-115 · registrada en ../manifest.json
 -->
@@ -19,12 +33,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Correo del boletín curado · encuadre genérico — prototipo</title>
+  <title>Contenido curado del boletín · encuadre genérico — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -32,12 +47,22 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
 
     /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
@@ -46,108 +71,86 @@
     .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
     /* /PP:correo */
 
-    /* Composición propia (prefijo cr-): cabecera de bandeja que da contexto al revisor
-       (asunto, remitente, destinatario). No forma parte del cuerpo del correo. */
-    .cr-bandeja { max-width: 600px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-3) 0; }
-    .cr-bandeja__asunto { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-    .cr-bandeja__meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .cr-bandeja__meta dt { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
-    .cr-bandeja__meta dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-    .cr-boton { min-height: 44px; box-sizing: border-box; }
-    .cr-baja { display: inline-block; min-height: 44px; box-sizing: border-box; }
+    /* Composición propia (prefijo cr-). La cabecera de bandeja da contexto al revisor
+       (remitente, destinatario, asunto, qué pone el panel y qué la herramienta); no se implementa. */
+    body { margin: 0; background: var(--tc-bg-canvas); font-family: var(--tc-font-body); color: var(--tc-text-b); }
+    .cr-bandeja { max-width: 600px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-3) 0; }
+    .cr-bandeja__previa { margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cr-bandeja__meta { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-4); margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .cr-bandeja__meta dt { color: var(--tc-text-m); }
+    .cr-bandeja__meta dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cr-bandeja__asunto { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .cr-bandeja__dir { color: var(--tc-text-m); }
+    .cr-boton { display: inline-block; min-height: 44px; box-sizing: border-box; }
+    .cr-boton:focus-visible, .cr-url:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    .cr-url { overflow-wrap: anywhere; }
     @media (max-width: 480px) {
+      .cr-bandeja { padding: var(--tc-sp-6) var(--tc-sp-4) 0; }
+      .cr-bandeja__meta dd { white-space: normal; overflow-wrap: anywhere; }
+      .cr-fondo { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8) !important; }
       .cr-cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
       .cr-franja { padding-left: var(--tc-sp-5) !important; padding-right: var(--tc-sp-5) !important; }
-      .cr-perfil { padding: var(--tc-sp-4) !important; }
       .cr-boton { display: block !important; text-align: center; }
     }
   </style>
 </head>
 <body>
-  <!-- región: navegación / cabecera — contexto de bandeja para la revisión -->
+  <!-- región: navegación / cabecera — sobre del cliente de correo (contexto de la vista previa, no se implementa) -->
   <header class="cr-bandeja">
-    <p class="cr-bandeja__asunto">3 perfiles disponibles este mes en People Service · edición de octubre</p>
-    <dl class="cr-bandeja__meta">
-      <dt>De</dt><dd>People Service · Trycore &lt;portal@trycore.com&gt;</dd>
+    <p class="cr-bandeja__previa">Vista previa en Gmail · del panel: asunto, apertura, perfiles y enlace · de Gmail: la firma</p>
+    <dl class="cr-bandeja__meta" aria-label="Datos del mensaje">
+      <dt>De</dt><dd>Mariana Ospina <span class="cr-bandeja__dir">&lt;mospina@trycore.com&gt;</span></dd>
       <dt>Para</dt><dd>andrea.munoz@grupo-exito.com</dd>
-      <dt>Fecha</dt><dd>martes 6 de octubre de 2026, 8:00 a. m. (envío programado)</dd>
+      <dt>Asunto</dt><dd class="cr-bandeja__asunto">Tres perfiles disponibles este mes para Grupo Éxito</dd>
     </dl>
   </header>
 
-  <!-- región: contenido principal — cuerpo del correo (PP:correo) -->
+  <!-- región: contenido principal — cuerpo del correo: bloque del panel (PP:correo) + firma de Gmail -->
   <main>
     <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
-      <tr><td style="padding: var(--tc-sp-5) var(--tc-sp-3) var(--tc-sp-8);">
-        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); border-collapse: separate; overflow: hidden; font-family:var(--tc-font-body); color: var(--tc-text-b);">
-          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-navy); border-bottom: 3px solid var(--tc-primary);">
-            <span style="font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-bg-topbar);">trycore</span>
-            <span style="font-size:var(--tc-fs-small); color: var(--tc-navy-ink);">&nbsp;·&nbsp;Boletín de perfiles · octubre 2026</span>
+      <tr><td class="cr-fondo" style="padding: var(--tc-sp-6) var(--tc-sp-3) var(--tc-sp-10);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); border-collapse: separate; overflow: hidden; font-family: var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border);">
+            <span style="font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-text-h);">trycore</span>
+            <span style="font-size: var(--tc-fs-small); color: var(--tc-text-m);">&nbsp;/&nbsp;Portal de perfiles</span>
           </td></tr>
-          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size:var(--tc-fs-body); line-height: var(--tc-lh-body);">
-            <p style="margin: 0 0 var(--tc-sp-4); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Perfiles disponibles este mes</p>
-            <p style="margin: 0 0 var(--tc-sp-5);">Hola, Andrea. Todavía no sabemos en qué proyecto está trabajando tu equipo, así que esta edición no está armada a la medida.</p>
+          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-4); color: var(--tc-text-h);">Hola, Andrea. Tres perfiles del banco <strong style="font-weight: var(--tc-fw-semibold);">disponibles este mes</strong>.</p>
+            <p style="margin: 0 0 var(--tc-sp-6);"><strong style="font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Por qué estas personas.</strong> Aún no conocemos el proyecto en curso de tu equipo; son perfiles de retail y datos con disponibilidad cercana. Si nos cuentas en qué trabajan, respondiendo a este correo, la próxima selección irá a la medida.</p>
 
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); background: var(--tc-bg-subtle); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b);">
-                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m);">Por qué recibes estos perfiles</span>
-                Estos son perfiles de nuestro banco disponibles este mes. Si alguno encaja con lo que tu equipo está preparando, pide la alineación desde el portal.
+            <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums;">Disponibilidad al 6 de octubre de 2026</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; margin: 0 0 var(--tc-sp-6);">
+              <tr><td style="padding: var(--tc-sp-4) 0; border-top: 1px solid var(--tc-border);">
+                <p style="margin: 0; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); line-height: var(--tc-lh-h3);">Desarrolladora frontend React</p>
+                <p style="margin: var(--tc-sp-1) 0 var(--tc-sp-2); font-size: var(--tc-fs-small); color: var(--tc-text-m);">Valentina Rojas · <span style="font-family: var(--pp-mono); font-variant-numeric: tabular-nums;">PS-0121</span> · <span style="white-space: nowrap;"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--tc-green); vertical-align: middle;"></span>&nbsp;Disponible ahora</span></p>
+                <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-small); color: var(--tc-text-b);">React · TypeScript · Next.js · Accesibilidad</p>
+                <p style="margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-small); color: var(--tc-text-b);"><strong style="font-weight: var(--tc-fw-semibold); color: var(--tc-ok-ink);">✓ Verificado por Trycore:</strong> construyó el catálogo en línea de una cadena de retail con React y TypeScript.</p>
+                <p style="margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b);"><span style="font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Declarado por el profesional:</span> Storybook y pruebas visuales.</p>
+              </td></tr>
+              <tr><td style="padding: var(--tc-sp-4) 0; border-top: 1px solid var(--tc-border);">
+                <p style="margin: 0; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); line-height: var(--tc-lh-h3);">Analista de datos</p>
+                <p style="margin: var(--tc-sp-1) 0 var(--tc-sp-2); font-size: var(--tc-fs-small); color: var(--tc-text-m);">Tomás Herrera · <span style="font-family: var(--pp-mono); font-variant-numeric: tabular-nums;">PS-0164</span> · <span style="white-space: nowrap;"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--tc-text-s); vertical-align: middle;"></span>&nbsp;Disponible en 2 a 4 semanas</span></p>
+                <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-small); color: var(--tc-text-b);">Power BI · SQL · Python · dbt</p>
+                <p style="margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-small); color: var(--tc-text-b);"><strong style="font-weight: var(--tc-fw-semibold); color: var(--tc-ok-ink);">✓ Verificado por Trycore:</strong> montó los tableros de ventas diarias de una distribuidora nacional.</p>
+                <p style="margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b);"><span style="font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Declarado por el profesional:</span> certificación de Databricks en curso.</p>
+              </td></tr>
+              <tr><td style="padding: var(--tc-sp-4) 0; border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border);">
+                <p style="margin: 0; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); line-height: var(--tc-lh-h3);">Desarrollador móvil Flutter</p>
+                <p style="margin: var(--tc-sp-1) 0 var(--tc-sp-2); font-size: var(--tc-fs-small); color: var(--tc-text-m);">Mateo Salazar · <span style="font-family: var(--pp-mono); font-variant-numeric: tabular-nums;">PS-0133</span> · <span style="white-space: nowrap;"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--tc-green); vertical-align: middle;"></span>&nbsp;Disponible ahora</span></p>
+                <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-small); color: var(--tc-text-b);">Flutter · Dart · Firebase · iOS y Android</p>
+                <p style="margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-small); color: var(--tc-text-b);"><strong style="font-weight: var(--tc-fw-semibold); color: var(--tc-ok-ink);">✓ Verificado por Trycore:</strong> publicó la app de fidelización de una cadena de droguerías.</p>
+                <p style="margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b);"><span style="font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Declarado por el profesional:</span> pagos dentro de la app.</p>
               </td></tr>
             </table>
 
-            <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">Disponibilidad al 6 de octubre de 2026. Lo verificado por Trycore va en verde; lo que declara el profesional, aparte.</p>
-
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td class="cr-perfil" style="padding: var(--tc-sp-4) var(--tc-sp-5);">
-                <p style="margin: 0 0 var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Desarrolladora frontend React</p>
-                <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Valentina Rojas <span style="font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">&nbsp;·&nbsp;PS-0121</span></p>
-                <p style="margin: 0 0 var(--tc-sp-3);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-green-bg); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-ok-badge-ink);">Disponible ahora</span></p>
-                <p style="margin: 0 0 var(--tc-sp-3); line-height: var(--tc-lh-tight);"><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">React</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">TypeScript</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Next.js</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Accesibilidad</span></p>
-                <p style="margin: 0 0 var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink);"><strong style="color: var(--tc-primary-ink);">✓ Verificado por Trycore:</strong> construyó el catálogo en línea de una cadena de retail con React y TypeScript (entrevista técnica y proyecto revisado).</p>
-                <p style="margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-b);"><strong style="color: var(--tc-text-m);">Declarado por el profesional:</strong> experiencia con Storybook y pruebas visuales.</p>
-              </td></tr>
-            </table>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td class="cr-perfil" style="padding: var(--tc-sp-4) var(--tc-sp-5);">
-                <p style="margin: 0 0 var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Analista de datos</p>
-                <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Tomás Herrera <span style="font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">&nbsp;·&nbsp;PS-0164</span></p>
-                <p style="margin: 0 0 var(--tc-sp-3);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-text-m);">Disponible en 2 a 4 semanas</span></p>
-                <p style="margin: 0 0 var(--tc-sp-3); line-height: var(--tc-lh-tight);"><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Power BI</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">SQL</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Python</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">dbt</span></p>
-                <p style="margin: 0 0 var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink);"><strong style="color: var(--tc-primary-ink);">✓ Verificado por Trycore:</strong> montó los tableros de ventas diarias de una distribuidora nacional con Power BI y SQL.</p>
-                <p style="margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-b);"><strong style="color: var(--tc-text-m);">Declarado por el profesional:</strong> certificación de Databricks en curso.</p>
-              </td></tr>
-            </table>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td class="cr-perfil" style="padding: var(--tc-sp-4) var(--tc-sp-5);">
-                <p style="margin: 0 0 var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Desarrollador móvil Flutter</p>
-                <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Mateo Salazar <span style="font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">&nbsp;·&nbsp;PS-0133</span></p>
-                <p style="margin: 0 0 var(--tc-sp-3);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-green-bg); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-ok-badge-ink);">Disponible ahora</span></p>
-                <p style="margin: 0 0 var(--tc-sp-3); line-height: var(--tc-lh-tight);"><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Flutter</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Dart</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Firebase</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">iOS y Android</span></p>
-                <p style="margin: 0 0 var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink);"><strong style="color: var(--tc-primary-ink);">✓ Verificado por Trycore:</strong> publicó la app de fidelización de una cadena de droguerías en iOS y Android con Flutter.</p>
-                <p style="margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-b);"><strong style="color: var(--tc-text-m);">Declarado por el profesional:</strong> experiencia con pagos dentro de la app.</p>
-              </td></tr>
-            </table>
-
-            <p style="margin: var(--tc-sp-2) 0 var(--tc-sp-5); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Al entrar verás el estado de hoy de cada perfil. Si alguno cambió después de este correo (por ejemplo, ya fue colocado en otro proyecto), sigue en la lista con su estado; no desaparece.</p>
-
-            <p style="margin: 0 0 var(--tc-sp-5); padding: var(--tc-sp-3) var(--tc-sp-4); border-left: 3px solid var(--tc-primary); background: var(--tc-bg-subtle); font-size:var(--tc-fs-small); color: var(--tc-text-b);">¿Tienes un proyecto en camino? Responde este correo con dos líneas sobre él y la próxima edición irá pensada para tu equipo.</p>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-primary-surface-ink);">
-                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-primary-ink);">Tu enlace a esta edición</span>
-                Abre la selección de <strong>Grupo Éxito</strong>. Vale mientras dure esta edición, hasta el <strong>31 de octubre de 2026</strong>; los enlaces de boletines anteriores ya no abren perfiles.<br>
-                Es personal: solo funciona con <strong>andrea.munoz@grupo-exito.com</strong>. Al abrirlo te enviaremos un código a este buzón.
-              </td></tr>
-            </table>
-
-            <p style="margin: 0 0 var(--tc-sp-5);"><a class="pp-correo__boton cr-boton" href="#abrir" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-primary-strong); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-bg-topbar); text-decoration: none;">Ver la selección y armar mi equipo</a></p>
-
-            <p style="margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">Si el botón no funciona, copia esta dirección en tu navegador:</p>
-            <p style="margin: 0 0 var(--tc-sp-6); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-bg-subtle); border-radius:var(--tc-r-sm); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-h); overflow-wrap: anywhere; word-break: break-all;">portal.trycore.com/b/2610/Hm3sZq9Wc4yT1nEd</p>
-
-            <p style="margin: 0; padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-small); color: var(--tc-text-m);">No reenvíes este correo: el enlace no le da acceso a nadie más. Si alguien de tu equipo necesita ver la selección, pídele a tu contacto en Trycore que lo invite.</p>
+            <p style="margin: 0 0 var(--tc-sp-3);"><a class="pp-correo__boton cr-boton" href="#abrir" style="padding: var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-primary-strong); border-radius: var(--tc-r-md); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); text-decoration: none;">Ver los perfiles y armar mi equipo</a></p>
+            <p style="margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-small); color: var(--tc-text-m);">Solo funciona con <strong style="font-weight: var(--tc-fw-semibold); color: var(--tc-text-b);">andrea.munoz@grupo-exito.com</strong>; tus colegas necesitan su propia invitación. Vale hasta el 3 de noviembre y al abrirlo te enviamos un código a este buzón.</p>
+            <p style="margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m);">¿No abre el botón? <a class="cr-url" href="#abrir" style="font-family: var(--pp-mono); color: var(--pp-teal-ink);">portal.trycore.com/c/Hm3sZq9Wc4yT1nEd</a></p>
           </td></tr>
-          <tr><td class="pp-correo__pie cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-bg-subtle); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
-            People Service · Trycore · Bogotá, Colombia. Recibes este boletín mensual porque tu empresa trabaja con Trycore. Edición <span style="font-family:var(--pp-mono);">BOL-2610</span>. Si te das de baja, no te enviaremos más ediciones.<br>
-            <a class="cr-baja" href="#baja" style="padding: var(--tc-sp-3) 0; color: var(--pp-teal-ink); text-decoration: underline; font-weight: var(--tc-fw-medium);">Dejar de recibir el boletín</a>
+          <!-- Firma: la pone Gmail (herramienta de envío), no el panel -->
+          <tr><td class="cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+            <span style="font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Mariana Ospina</span><br>
+            Mercadeo · People Service, Trycore
           </td></tr>
         </table>
       </td></tr>

@@ -2,10 +2,10 @@
 artefacto: user-story-map
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
-prd_version: 4.13
+prd_version: 4.14
 epicas_origen: docs/03-backlog/epicas.md
 epicas_version: 5.5
-version: 3.3
+version: 3.4
 fecha: 2026-09-27
 historias_escritas: 79
 historias_descartadas: 1
@@ -93,15 +93,17 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 | *EP-011 · EP-001* | *EP-007 · EP-005* | *EP-008 · EP-011 · EP-010* |
 | **━━━━━━━━━━ MVP ━━━━━━━━━━** | | |
 | HU-113 Armar la selección de perfiles de una cuenta | HU-101 Recibir la solicitud con contexto suficiente para preparar la sesión | HU-112 Atribuir cada sesión a su envío de correo |
-| HU-114 Generar el enlace de cada contacto sin construirlo a mano | HU-102 Recibir la oportunidad en mi pipeline | HU-116 Ver quién abrió y quién entró |
+| HU-114 Generar el enlace de cada destinatario sin construirlo a mano | HU-102 Recibir la oportunidad en mi pipeline | HU-116 Ver quién entró por su enlace |
 | HU-122 Generar un enlace con los perfiles que elegí | HU-103 Enterarme de una solicitud sin tener que vigilar el pipeline | HU-109 Ver si la curaduría acierta |
-| HU-115 Programar y enviar el boletín | HU-104 Que no se me duplique la empresa en el CRM | HU-078 Saber qué están pidiendo las cuentas y no tenemos |
+| HU-115 Copiar el contenido curado para enviarlo desde Gmail o HubSpot | HU-104 Que no se me duplique la empresa en el CRM | HU-078 Saber qué están pidiendo las cuentas y no tenemos |
 | | HU-105 Recuperar una solicitud cuya integración falló | HU-110 Ver qué pidieron las cuentas y no teníamos ⚠ *duplicada de HU-078* |
 | | HU-106 Distinguir lo que entra por el portal de lo que entra por gestión | |
 | | HU-107 Registrar cuándo se agendó la alineación | |
 | **━━━━━━━━━━ v1.1 ━━━━━━━━━━** | | |
-| HU-117 Reaccionar a una cuenta que nunca abre | | HU-108 Ver el embudo de cada cuenta |
+| HU-117 Reaccionar a una cuenta que no entra | | HU-108 Ver el embudo de cada cuenta |
 | | | HU-111 Comparar la ruta de instrucción con la de filtros |
+
+**La columna F no envía el boletín** (decisión del sponsor del 2026-09-27, PRD v4.14, RF-18). El panel arma la selección curada (HU-113), genera el enlace de cada destinatario con un token opaco (HU-114) y entrega un bloque de contenido listo para copiar en Gmail o HubSpot, donde se redacta, programa y envía el correo; quien envía registra la salida en el panel (HU-115). La columna H mide entradas por el enlace, verificación y solicitud, no aperturas (HU-116), y la regla de HU-117 pasa a «tres envíos con salida registrada sin entrada». Mailgun queda solo para códigos de acceso y avisos internos. No es un recorte de alcance: redacción, programación, envío, bajas y apertura pasan a la herramienta de envío.
 
 **HU-101 y HU-107 cierran RF-17**, el traspaso a Delivery. Sin ellas O3 —días entre solicitud y sesión agendada— no se puede medir, porque al usar las etapas del pipeline comercial vigente (D-21) la alineación no tiene etapa propia y la propiedad de fecha es el único registro del tramo.
 

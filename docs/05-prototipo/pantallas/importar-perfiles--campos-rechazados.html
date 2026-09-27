@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Prototipo de referencia — pantalla importar-perfiles--campos-rechazados
+  Prototipo de referencia — pantalla importar-perfiles
   Reglas duras del artefacto (NO negociables):
   - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
     Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
@@ -10,25 +10,30 @@
   - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
     de pantalla en archivos propios (importar-perfiles con sufijo de estado), no interacciones.
   Trazabilidad: épica EP-006 · historias HU-086, HU-088, HU-141, HU-142, HU-087 · registrada en ../manifest.json
-  Origen: v2-adaptar (ImportarPerfiles del panel de Talento Humano del v2: soltar CSV, revisar
-  fila a fila, resultado). Cambia por las HU actuales: pegar celdas de hoja de cálculo como camino
-  principal con emparejamiento de columnas y plantilla guardada (HU-086), modo de importación
-  explícito y fusión campo a campo con [vaciar] (HU-141), vista previa en tarjetas colapsadas por
-  grupo con solo los campos que cambian (HU-086), plantilla de muestra y exportación en hoja de
-  cálculo o JSON con campos internos marcados (HU-088), descarga de solo las filas con error
-  (HU-142) y reversión de la última importación (HU-087). Nunca publica ni concede consentimiento.
-  Esta vista: error y edge HU-141: consentimiento/publicado rechazados con aviso; modo solo actualizar omite códigos inexistentes con motivo.
+  Origen: v2-adaptar (ImportarPerfiles del panel de Talento Humano del v2). Cambia por las HU:
+  pegar celdas con emparejamiento de columnas y plantilla guardada (HU-086), modo explícito y
+  fusión campo a campo con [vaciar] (HU-141), vista previa agrupada con solo los campos que cambian
+  (HU-086), plantilla de muestra y exportación en hoja de cálculo o JSON con campos internos
+  marcados (HU-088), descarga de solo las filas con error (HU-142) y reversión de la última
+  importación (HU-087). Nunca publica ni concede consentimiento.
+  Oficio v2 (2026-09-27, feedback del sponsor + hallazgos Krug): un solo esquema de pasos (sin
+  numeración interna «1 · Origen»); sin panel lateral de instrucciones (exportar pasa a la cabecera,
+  la plantilla es un enlace, las reglas de celda aparecen en la vista previa cuando ocurren); estado
+  como punto + texto solo en las excepciones; modo como radio group compacto; filas densas en vez
+  de tarjetas por grupo; resultado con toast; primaria a la derecha.
+  Esta vista: error y edge HU-141: consentimiento/publicado rechazados y avisados en la fila; modo solo actualizar omite códigos inexistentes con motivo.
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campos rechazados en la importación — prototipo</title>
+  <title>Vista previa · campos rechazados — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -36,483 +41,540 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
     .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
-    .pp-btn--contorno:hover { border-color: var(--tc-primary); }
-    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
     .pp-btn--fantasma { color: var(--tc-text-b); }
     .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
     .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
     .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-    .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
-    .pp-btn--icono { width: 44px; padding: 0; }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
     .pp-btn--bloque { width: 100%; }
-    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
-    @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
     /* /PP:botones */
+    /* PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
     /* PP:panel */
     .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
-    .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
-    .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
-    .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
-    .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
-    .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
-    .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
-    .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
-    .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
-    .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
-    .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
-    .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+    .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+    .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+    .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+    .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+    .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+    .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+    .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+    .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+    .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+    .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
     .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
-    .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+    .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
-    .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
-    .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
     .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+    .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+    .pp-migas a:hover { color: var(--tc-text-h); }
     .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
-    .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+    .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
     @media (max-width: 1023px) {
-    .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-    .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
-    .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
-    .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
-    .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
-    .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+      .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+      .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+      .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+      .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+      .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
     }
-    @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+    @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
     /* /PP:panel */
-    /* PP:chips */
-    .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
-    .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
-    .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
-    .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
-    .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
-    .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
-    .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
-    .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
-    .pp-chip__quitar:hover { background: var(--pp-overlay); }
-    /* /PP:chips */
-    /* PP:badges */
-    .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
-    .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
-    .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
-    .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
-    .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
-    .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-    .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
-    .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-    /* /PP:badges */
+    /* PP:shell — copia de la barra lateral y la barra superior de admin-shell.html; en móvil el destino activo va justo tras la marca para que «estás aquí» se vea al cargar */
+    .pp-sidebar :focus-visible { outline-color: var(--tc-teal-on-navy); }
+    @media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }
+    /* /PP:shell */
+    /* PP:filas */
+    .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+    .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+    .pp-fila:hover { background: var(--tc-surface-quiet); }
+    .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+    .pp-fila--enlace { cursor: pointer; }
+    .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .pp-fila__principal > p { margin: 0; }
+    .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .pp-fila__titulo a { color: inherit; text-decoration: none; }
+    .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+    .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+    .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+    .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+    .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+    @media (max-width: 767px) {
+      .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+      .pp-fila__acciones { justify-content: flex-end; }
+      .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+    }
+    /* /PP:filas */
+    /* PP:toast */
+    .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+    .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+    @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+    /* /PP:toast */
+    /* PP:avisos */
+    .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+    .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+    .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-aviso__titulo::after { content: " "; }
+    .pp-aviso__accion { flex: none; align-self: center; }
+    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+    .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+    .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+    @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+    /* /PP:avisos */
+    /* PP:tabla */
+    .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .pp-barra .pp-pestanas { border-bottom: 0; }
+    .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+    .pp-buscador { position: relative; width: min(300px, 100%); }
+    .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+    .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+    .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+    .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+    .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+    .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+    .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+    .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+    .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+    .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+    .pp-tabla th.pp-tabla__acciones { text-align: right; }
+    .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+    @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+    /* /PP:tabla */
     /* PP:campos */
     .pp-form { display: grid; gap: var(--tc-sp-5); }
-    .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
-    .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
     .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
-    .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
     .pp-input::placeholder { color: var(--tc-text-s); }
-    .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+    .pp-input:hover { border-color: var(--tc-text-s); }
+    .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
     .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
-    .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
-    .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
-    .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
-    @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+    .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+    .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+    .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+    .pp-form--alineado { gap: 0; }
+    .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+    .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+    .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:campos */
     /* PP:select */
     .pp-select { position: relative; }
     .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
-    .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+    .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
     /* /PP:select */
     /* PP:check */
     .pp-check { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-2) 0; cursor: pointer; }
-    .pp-check input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
-    .pp-check__texto { font-size:var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
-    .pp-check__ayuda { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-check input { width: 18px; height: 18px; flex: none; margin: var(--tc-sp-1) 0 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+    .pp-check__texto { font-size: var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-body); }
+    .pp-check__ayuda { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
     /* /PP:check */
-    /* PP:tabla */
-    .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
-    .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
-    .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
-    .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
-    .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
-    .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
-    .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
-    .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
-    .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
-    .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
-    /* /PP:tabla */
-    /* PP:avisos */
-    .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
-    .pp-aviso p { margin: 0; }
-    .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-    .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
-    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
-    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
-    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
-    .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
-    /* /PP:avisos */
 
-    /* Marco del panel: navegación y sesión, idénticos a admin-shell */
-    .ip-sidebar-nav { display: flex; flex-direction: column; gap: var(--tc-sp-1); }
-    .ip-sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-4); min-width: 0; }
-    .ip-sesion__quien { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; line-height: var(--tc-lh-h3); }
-    .ip-sesion__correo { font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
-    .ip-sesion__vence { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    @media (max-width: 1023px) { .ip-sidebar-nav { flex-direction: row; gap: var(--tc-sp-1); } }
-    @media (max-width: 767px) {
-      .pp-panel__topbar { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
-      .ip-sesion { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
-      .ip-sesion__quien { align-items: flex-start; }
-    }
-  </style>
-  <style>
-    /* Estilos propios de esta pantalla (prefijo ip-): SOLO composición/layout. */
-    .ip-pasos { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-6); padding: 0; list-style: none; overflow-x: auto; }
-    .ip-paso { display: flex; flex: 1 1 0; align-items: center; gap: var(--tc-sp-2); min-width: 0; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 3px solid var(--tc-border); font-size:var(--tc-fs-small); color: var(--tc-text-m); white-space: nowrap; }
-    .ip-paso__n { display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); }
-    .ip-paso--hecho { border-top-color: var(--tc-primary); color: var(--tc-text-b); }
-    .ip-paso--hecho .ip-paso__n { border-color: var(--tc-primary); color: var(--pp-teal-ink); }
-    .ip-paso[aria-current="step"] { border-top-color: var(--tc-navy); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-    .ip-paso[aria-current="step"] .ip-paso__n { border-color: var(--tc-navy); background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    /* Estilos propios de esta pantalla (prefijo ip-): SOLO composición. */
+    .ip-ancho { max-width: 1040px; }
+    .ip-cifra { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .ip-codigo { padding: 0 var(--tc-sp-1); border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-h); }
 
-    .ip-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--tc-sp-6); align-items: start; }
-    .ip-pila { display: grid; gap: var(--tc-sp-6); min-width: 0; }
-    .ip-pila--sm { gap: var(--tc-sp-4); }
-    .ip-pila > *, .ip-rejilla > * { min-width: 0; }
-    .ip-tarjeta-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
-    .ip-tarjeta-cab h2 { margin: 0; font-size:var(--tc-fs-h3); }
-    .ip-tarjeta-cab p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .ip-paso-rotulo { margin: 0 0 var(--tc-sp-1); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* Pasos del asistente: un solo esquema de numeración en toda la pantalla */
+    .ip-pasos { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); margin: 0 0 var(--tc-sp-5); padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .ip-paso { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .ip-paso + .ip-paso::before { content: ""; width: var(--tc-sp-6); height: 1px; margin-right: var(--tc-sp-1); background: var(--tc-border-s); }
+    .ip-paso__n { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none; border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
+    .ip-paso[aria-current="step"] { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .ip-paso[aria-current="step"] .ip-paso__n { border-color: var(--tc-text-h); background: var(--tc-text-h); color: var(--tc-card); }
+    .ip-paso--hecho .ip-paso__n { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--pp-teal-ink); }
+    .ip-paso a { color: inherit; text-decoration: none; }
+    .ip-paso a:hover { color: var(--tc-text-h); text-decoration: underline; text-underline-offset: 3px; }
 
-    .ip-pegado { font-family:var(--pp-mono); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); white-space: pre; overflow: auto; tab-size: 14; min-height: 176px; }
-    .ip-deteccion { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin: var(--tc-sp-3) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .ip-deteccion strong { color: var(--tc-text-h); }
+    /* Menú de exportación (details, sin JS) */
+    .ip-menu { position: relative; }
+    .ip-menu > summary { list-style: none; }
+    .ip-menu > summary::-webkit-details-marker { display: none; }
+    .ip-menu > summary::after { content: ""; width: 6px; height: 6px; margin-left: var(--tc-sp-1); border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); }
+    .ip-menu__panel { position: absolute; right: 0; top: calc(100% + var(--tc-sp-1)); z-index: 20; width: 300px; padding: var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-3); }
+    .ip-menu__item { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); color: var(--tc-text-h); text-decoration: none; }
+    .ip-menu__item:hover { background: var(--tc-bg-subtle); }
+    .ip-menu__nota { margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
 
-    .ip-modos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: var(--tc-sp-3); margin: 0; padding: 0; border: 0; }
-    .ip-modos legend { margin-bottom: var(--tc-sp-3); padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .ip-modo { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); cursor: pointer; }
-    .ip-modo input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--tc-primary-strong); }
-    .ip-modo:has(input:checked) { border-color: var(--tc-primary); background: var(--tc-accent); }
-    .ip-modo__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
-    .ip-modo__ayuda { display: block; margin-top: var(--tc-sp-1); font-size:var(--tc-fs-caption); color: var(--tc-text-m); line-height: var(--tc-lh-h3); }
-
+    /* Paso 1 */
+    .ip-seccion-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .ip-pegado { min-height: 176px; font-family: var(--pp-mono); white-space: pre; overflow: auto; tab-size: 8; }
+    .ip-bajo-campo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .ip-bajo-campo > span { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-2); }
+    .ip-copiar { display: inline; }
+    .ip-copiar > summary { display: inline; cursor: pointer; list-style: none; }
+    .ip-copiar > summary::-webkit-details-marker { display: none; }
+    .ip-copiar[open] { display: block; width: 100%; }
+    .ip-copiar textarea { display: block; min-height: 112px; margin-top: var(--tc-sp-2); font-family: var(--pp-mono); white-space: pre; overflow: auto; }
     .ip-mapa { max-height: none; }
-    .ip-mapa .pp-tabla { min-width: 620px; }
-    .ip-mapa .pp-tabla td, .ip-mapa .pp-tabla th { vertical-align: middle; }
-    .ip-mapa .pp-select { min-width: 200px; }
-    .ip-mapa .pp-input { min-height: 40px; font-size:var(--tc-fs-small); }
-    .ip-estado { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .ip-estado--ok { color: var(--tc-ok-badge-ink); }
-    .ip-estado--tuyo { color: var(--pp-teal-ink); font-weight: var(--tc-fw-medium); }
-    .ip-estado--bloqueado { color: var(--tc-danger-ink); }
-    .ip-plantilla { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--tc-sp-3) var(--tc-sp-4); align-items: end; margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); }
-    .ip-plantilla .pp-check { padding: 0; align-items: center; }
+    .ip-mapa .pp-tabla th[scope="row"] { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-h); white-space: nowrap; }
+    .ip-mapa .pp-select { width: 240px; }
+    .ip-mapa .pp-tabla tbody th, .ip-mapa .pp-tabla tbody td { padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); }
+    .ip-plantilla .pp-check { align-items: center; }
+    .ip-plantilla .pp-check input { margin: 0; }
+    .ip-ejemplo { color: var(--tc-text-m); }
+    .ip-plantilla { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-3); }
+    .ip-plantilla .pp-input { width: 280px; max-width: 100%; }
+    .ip-modos { margin: 0; padding: 0; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .ip-modo { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: baseline; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-3) var(--tc-sp-4); cursor: pointer; transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .ip-modo + .ip-modo { border-top: 1px solid var(--tc-border); }
+    .ip-modo:hover { background: var(--tc-surface-quiet); }
+    .ip-modo:has(input:checked) { background: var(--tc-primary-surface); }
+    .ip-modo input { width: 16px; height: 16px; margin: 0; accent-color: var(--tc-primary-strong); transform: translateY(2px); }
+    .ip-modo__texto { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-3); font-size: var(--tc-fs-small); }
+    .ip-modo__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ip-modo__ayuda { color: var(--tc-text-m); }
 
-    .ip-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3); }
-    .ip-acciones__nota { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    /* Pie del paso: texto a la izquierda, acciones (primaria al final) a la derecha */
+    .ip-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-6); margin-top: var(--tc-sp-8); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    .ip-pie__texto { flex: 1 1 360px; margin: 0; max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .ip-pie__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); margin-left: auto; }
+    .ip-pie .pp-error { margin-top: var(--tc-sp-1); }
 
-    .ip-lateral h2 { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-h3); }
-    .ip-lateral h3 { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-small); }
-    .ip-lateral p { font-size:var(--tc-fs-small); }
-    .ip-seccion + .ip-seccion { margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); }
-    .ip-dos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--tc-sp-2); }
-    .ip-formato { display: grid; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .ip-formato code { padding: 0 var(--tc-sp-1); border-radius:var(--tc-r-sm); background: var(--tc-bg-subtle); color: var(--tc-text-h); }
-    .ip-copiar summary { display: flex; align-items: center; min-height: 44px; font-size:var(--tc-fs-small); cursor: pointer; }
-    .ip-copiar textarea { margin-top: var(--tc-sp-2); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); white-space: pre; overflow: auto; min-height: 120px; }
+    /* Vista previa: resumen por grupo (anclas) */
+    .ip-resumen { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-6); margin: 0 0 var(--tc-sp-8); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); list-style: none; }
+    .ip-resumen a, .ip-resumen__nolink { display: inline-flex; align-items: baseline; gap: var(--tc-sp-2); min-height: 36px; padding-top: var(--tc-sp-1); font-size: var(--tc-fs-small); color: var(--tc-text-m); text-decoration: none; }
+    .ip-resumen a:hover .ip-resumen__l { color: var(--tc-text-h); text-decoration: underline; text-underline-offset: 3px; }
+    .ip-resumen__n { font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .ip-resumen__n--cero { color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+    .ip-resumen__n--error { color: var(--tc-danger-ink); }
+    .ip-grupo-n { margin-left: var(--tc-sp-2); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
 
-    .ip-conteos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--tc-sp-3); margin: 0 0 var(--tc-sp-6); padding: 0; list-style: none; }
-    .ip-conteo { display: grid; gap: var(--tc-sp-1); min-height: 44px; padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-top: 3px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); box-shadow:var(--tc-sh-1); color: var(--tc-text-b); text-decoration: none; }
-    .ip-conteo__n { font-family:var(--pp-mono); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); line-height: var(--tc-lh-tight); color: var(--tc-text-h); }
-    .ip-conteo__l { font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-    .ip-conteo--nuevo { border-top-color: var(--tc-green); }
-    .ip-conteo--act { border-top-color: var(--tc-info-fg); }
-    .ip-conteo--arch { border-top-color: var(--tc-text-m); }
-    .ip-conteo--omit { border-top-color: var(--tc-amber); }
-    .ip-conteo--error { border-top-color: var(--tc-red); }
-    .ip-conteo--error .ip-conteo__n { color: var(--tc-danger-ink); }
-    .ip-conteo--cero { opacity: .6; }
-
-    .ip-grupo { display: grid; gap: var(--tc-sp-3); }
-    .ip-grupo__cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-2) var(--tc-sp-3); }
-    .ip-grupo__cab h2 { margin: 0; font-size:var(--tc-fs-h3); }
-    .ip-grupo__cab p { flex-basis: 100%; margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .ip-grupo__n { font-family:var(--pp-mono); font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .ip-filas { display: grid; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-    .ip-fila { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: start; border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
-    .ip-fila--error { border-color: var(--tc-red); border-left-width: 3px; }
-    .ip-fila--aviso { border-color: var(--tc-warn-border); border-left: 3px solid var(--tc-amber); }
-    .ip-fila--excluida { background: var(--tc-bg-subtle); box-shadow:none; }
-    .ip-fila--excluida .ip-fila__nombre, .ip-fila--excluida .ip-fila__codigo { color: var(--tc-text-m); text-decoration: line-through; }
-    .ip-fila__incluir { display: grid; place-items: center; width: 44px; height: 52px; cursor: pointer; }
-    .ip-fila__incluir input { width: 20px; height: 20px; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+    /* Lista de filas de la importación (checkbox + detalle plegable) */
+    .ip-lista { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .ip-fila { display: grid; grid-template-columns: 44px minmax(0, 1fr); transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .ip-fila + .ip-fila { border-top: 1px solid var(--tc-border); }
+    .ip-fila:hover { background: var(--tc-surface-quiet); }
+    .ip-fila--marcada, .ip-fila--marcada:hover { background: var(--tc-red-bg); }
+    .ip-fila__incluir { display: grid; place-items: center; align-self: start; width: 44px; height: 48px; cursor: pointer; }
+    .ip-fila__incluir input { width: 16px; height: 16px; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
     .ip-fila__det { min-width: 0; }
-    .ip-fila__resumen { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); min-height: 52px; padding: var(--tc-sp-2) var(--tc-sp-4) var(--tc-sp-2) 0; cursor: pointer; list-style: none; }
+    .ip-fila__resumen { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto 12px; align-items: center; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-4) var(--tc-sp-2) 0; cursor: pointer; list-style: none; }
     .ip-fila__resumen::-webkit-details-marker { display: none; }
-    .ip-fila__resumen::after { content: ""; width: 8px; height: 8px; margin-left: auto; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: rotate(45deg); flex: none; }
-    .ip-fila__det[open] > .ip-fila__resumen::after { transform: rotate(225deg); }
-    .ip-fila__codigo { font-family:var(--pp-mono); font-size:var(--tc-fs-small); color: var(--tc-text-h); }
-    .ip-fila__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .ip-fila__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .ip-fila__cuerpo { display: grid; gap: var(--tc-sp-3); padding: 0 var(--tc-sp-4) var(--tc-sp-4) 0; }
-    .ip-mas { justify-self: start; }
+    .ip-fila__resumen::after { content: ""; justify-self: center; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-s); border-bottom: 1.5px solid var(--tc-text-s); transform: rotate(-45deg); transition: transform var(--tc-dur-fast) var(--tc-ease); }
+    .ip-fila__det[open] > .ip-fila__resumen::after { transform: rotate(45deg); }
+    .ip-fila__resumen--fija { cursor: default; }
+    .ip-fila__resumen--fija::after { visibility: hidden; }
+    .ip-fila__codigo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .ip-fila__principal { display: flex; align-items: baseline; gap: var(--tc-sp-2); min-width: 0; font-size: var(--tc-fs-small); }
+    .ip-fila__nombre { flex: none; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ip-fila__rol { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--tc-text-m); }
+    .ip-fila__meta { display: inline-flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .ip-fila--excluida .ip-fila__nombre, .ip-fila--excluida .ip-fila__rol, .ip-fila--excluida .ip-fila__codigo { color: var(--tc-text-s); }
+    .ip-fila__cuerpo { padding: 0 var(--tc-sp-4) var(--tc-sp-4) calc(var(--tc-sp-10) * 2 + var(--tc-sp-2)); }
+    .ip-cambios { display: grid; gap: var(--tc-sp-2); margin: 0; font-size: var(--tc-fs-small); }
+    .ip-cambio { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--tc-sp-3); }
+    .ip-cambio dt { color: var(--tc-text-m); }
+    .ip-cambio dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-2); margin: 0; min-width: 0; color: var(--tc-text-h); }
+    .ip-antes { color: var(--tc-text-m); text-decoration: line-through; text-decoration-color: var(--tc-border-s); }
+    .ip-flecha { color: var(--tc-text-s); }
+    .ip-vacio { color: var(--tc-text-m); font-style: italic; }
+    .ip-nuevo { padding: 0 var(--tc-sp-1); border-radius: var(--tc-r-sm); background: var(--tc-warn-surface); color: var(--tc-warn-ink); font-weight: var(--tc-fw-medium); }
+    .ip-nota { margin: var(--tc-sp-3) 0 0; max-width: 72ch; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .ip-motivo { margin: 0; max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-h); }
+    .ip-cruda { margin: var(--tc-sp-2) 0 0; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); overflow-wrap: anywhere; }
+    .ip-mas { margin-top: var(--tc-sp-2); }
+    .ip-grupo-vacio { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
 
-    .ip-cambios { display: grid; gap: var(--tc-sp-2); margin: 0; }
-    .ip-cambio { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--tc-sp-3); padding-top: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
-    .ip-cambio dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .ip-cambio dd { margin: 0; min-width: 0; font-size:var(--tc-fs-small); }
-    .ip-cambio__antes { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-sm); background: var(--tc-bg-subtle); color: var(--tc-text-m); text-decoration: line-through; }
-    .ip-cambio__flecha { color: var(--tc-text-m); }
-    .ip-cambio__despues { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-2); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-sm); color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
-    .ip-cambio__vacio { font-style: italic; font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
-    .ip-intactos { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .ip-cruda { margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); border-radius:var(--tc-r-sm); background: var(--tc-bg-subtle); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-h); white-space: pre-wrap; overflow-wrap: anywhere; }
-    .ip-motivo { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-danger-ink); font-weight: var(--tc-fw-medium); }
-    .ip-motivo--omit { color: var(--tc-warn-ink); }
+    /* Resultado y reversión */
+    .ip-sig { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .ip-sig + .ip-sig { border-top: 1px solid var(--tc-border); }
+    .ip-sig__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ip-sig__texto { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .ip-efecto { display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: baseline; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+    .ip-efecto + .ip-efecto { border-top: 1px solid var(--tc-border); }
+    .ip-efecto__n { font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; text-align: right; }
+    .ip-efecto p { margin: 0; }
+    .ip-efecto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ip-manual { padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .ip-manual + .ip-manual { border-top: 1px solid var(--tc-border); }
+    .ip-manual__cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-small); }
+    .ip-manual .ip-cambio { grid-template-columns: 120px minmax(0, 1fr); }
+    .ip-eleccion { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-6); margin: var(--tc-sp-2) 0 0; padding: 0; border: 0; }
+    .ip-eleccion .pp-check { min-height: 44px; align-items: center; }
+    .ip-eleccion .pp-check input { margin: 0; }
+    .ip-tabla-hist .pp-tabla { min-width: 880px; }
+    .ip-tabla-hist .pp-tabla th, .ip-tabla-hist .pp-tabla td { white-space: nowrap; }
+    .ip-aviso-sep { margin-bottom: var(--tc-sp-6); }
+    .ip-tabla-hist .pp-tabla td.ip-resultado { white-space: normal; }
+    .ip-tabla-hist .pp-tabla td.pp-tabla__acciones .pp-btn + .pp-btn { margin-left: var(--tc-sp-1); }
+    .ip-toast-accion { display: inline-flex; align-items: center; }
+    .ip-aviso-lista { margin: var(--tc-sp-2) 0 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
+    .ip-aviso-lista li { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-2); }
+    .ip-bloque + .ip-bloque { margin-top: var(--tc-sp-6); }
 
-    .ip-confirmar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--tc-sp-4) var(--tc-sp-6); align-items: center; margin-top: var(--tc-sp-6); border-color: var(--tc-border-s); box-shadow:var(--tc-sh-3); }
-    .ip-confirmar h2 { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-h3); }
-    .ip-confirmar p { margin: 0; font-size:var(--tc-fs-small); }
-    .ip-confirmar .ip-acciones { justify-content: flex-end; }
-    .ip-cifras { font-family:var(--pp-mono); color: var(--tc-text-h); }
-
-    .ip-historial { display: grid; margin: 0; padding: 0; list-style: none; }
-    .ip-imp { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: var(--tc-sp-2) var(--tc-sp-4); align-items: center; padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
-    .ip-imp:first-child { border-top: 0; padding-top: 0; }
-    .ip-imp[aria-current="true"] { margin: 0 calc(-1 * var(--tc-sp-3)); padding: var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-warn-surface); }
-    .ip-imp__archivo { display: block; font-family:var(--pp-mono); font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
-    .ip-imp__cuando { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .ip-imp__dato { font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .ip-imp__accion { display: flex; justify-content: flex-end; }
-    .ip-imp__nota { font-size:var(--tc-fs-caption); color: var(--tc-text-m); text-align: right; max-width: 22ch; }
-
-    .ip-efectos { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
-    .ip-efecto { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--tc-sp-3); align-items: baseline; }
-    .ip-efecto__n { font-family:var(--pp-mono); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); color: var(--tc-text-h); text-align: right; line-height: var(--tc-lh-tight); }
-    .ip-efecto p { margin: 0; font-size:var(--tc-fs-small); }
-    .ip-efecto strong { color: var(--tc-text-h); }
-    .ip-manual { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-4); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
-    .ip-manual__cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); }
-    .ip-manual__cab p { flex-basis: 100%; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .ip-eleccion { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: var(--tc-sp-2); margin: 0; padding: 0; border: 0; }
-    .ip-eleccion legend { margin-bottom: var(--tc-sp-2); padding: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .ip-lista-despues { display: grid; gap: var(--tc-sp-2); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
-    .ip-lista-despues li { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-3); align-items: baseline; }
-
-    @media (max-width: 1279px) { .ip-rejilla { grid-template-columns: minmax(0, 1fr); } .ip-conteos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 767px) {
-      .ip-paso__t { display: none; }
-      .ip-paso[aria-current="step"] .ip-paso__t { display: inline; }
-      .ip-paso { flex: none; }
-      .ip-paso[aria-current="step"] { flex: 1 1 auto; }
-      .ip-conteos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .ip-cambio { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-      .ip-cambio dt { grid-column: 1 / -1; }
-      .ip-confirmar { grid-template-columns: minmax(0, 1fr); }
-      .ip-confirmar .ip-acciones { justify-content: stretch; }
-      .ip-confirmar .ip-acciones .pp-btn { flex: 1 1 100%; }
-      .ip-imp { grid-template-columns: minmax(0, 1fr); }
-      .ip-imp__accion { justify-content: flex-start; }
-      .ip-imp__nota { text-align: left; max-width: none; }
-      .ip-plantilla { grid-template-columns: minmax(0, 1fr); }
-      .ip-efecto { grid-template-columns: 48px minmax(0, 1fr); }
+    @media (min-width: 768px) {
+      .ip-pegado { font-size: var(--tc-fs-small); }
+      .ip-copiar textarea { font-size: var(--tc-fs-caption); }
+      .ip-mapa .pp-input, .ip-plantilla .pp-input { min-height: 36px; font-size: var(--tc-fs-small); }
     }
+    @media (max-width: 767px) {
+      .ip-paso:not([aria-current]) .ip-paso__t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .ip-paso + .ip-paso::before { width: var(--tc-sp-4); }
+      .ip-menu__panel { width: min(300px, calc(100vw - 32px)); }
+      .ip-pie__acciones { width: 100%; }
+      .ip-fila__resumen { grid-template-columns: minmax(0, 1fr) 12px; grid-template-areas: "cod chev" "pri chev" "met chev"; gap: var(--tc-sp-1) var(--tc-sp-3); padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
+      .ip-fila__resumen::after { grid-area: chev; }
+      .ip-fila__codigo { grid-area: cod; }
+      .ip-fila__principal { grid-area: pri; flex-wrap: wrap; }
+      .ip-fila__rol { white-space: normal; }
+      .ip-fila__meta { grid-area: met; white-space: normal; flex-wrap: wrap; }
+      .ip-fila__cuerpo { padding-left: 0; }
+      .ip-cambio, .ip-manual .ip-cambio { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .ip-sig { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+      .ip-sig .pp-btn { justify-self: end; }
+      .ip-efecto { padding: var(--tc-sp-3) var(--tc-sp-4); grid-template-columns: 36px minmax(0, 1fr); }
+      .ip-manual { padding: var(--tc-sp-4); }
+    }
+
   </style>
 </head>
 <body>
   <div class="pp-panel">
-    <!-- región: navegación / cabecera -->
-    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <!-- región: navegación (sidebar navy, patrón PP:panel; «estás aquí» = fondo sutil + peso) -->
+    <nav class="pp-sidebar" aria-label="Panel de People Service">
       <div class="pp-sidebar__marca">
         <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
-        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Panel del portal de perfiles</span></span>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Talento Humano</span></span>
       </div>
-
-      <div class="ip-sidebar-nav">
-        <p class="pp-sidebar__seccion">Banco de perfiles</p>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
-        <a class="pp-sidelink" href="#contenido" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico<span class="pp-sidelink__conteo">3</span></a>
-
-        <p class="pp-sidebar__seccion">Clientes</p>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 8v6M22 11h-6"/></svg>Peticiones<span class="pp-sidelink__conteo">2</span></a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Colocados</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
-
-        <p class="pp-sidebar__seccion">Operación</p>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
-        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
-      </div>
-
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="importar-perfiles.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+      <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="envios-curados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
       <div class="pp-sidebar__pie">
         <span class="pp-avatar" aria-hidden="true">KR</span>
-        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Administradora de inventario</span></span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
       </div>
     </nav>
 
     <div class="pp-panel__cuerpo">
+      <!-- región: topbar (migas + sesión) -->
       <header class="pp-panel__topbar">
-        <ol class="pp-migas"><li>Banco de perfiles</li><li aria-current="page">Importar perfiles</li></ol>
-        <div class="ip-sesion">
-          <div class="ip-sesion__quien">
-            <span class="ip-sesion__correo pp-mono">karen.rodriguez@trycore.com</span>
-            <span class="ip-sesion__vence">Sesión abierta hasta las 6:40 p. m.</span>
-          </div>
-          <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#contenido">Cerrar sesión</a>
+        <ol class="pp-migas"><li><a href="inventario-perfiles.html">Banco de perfiles</a></li><li><a href="importar-perfiles.html">Importar perfiles</a></li><li aria-current="page">Vista previa</li></ol>
+        <div class="pp-panel__herramientas">
+          <span class="pp-meta">karen.rodriguez@trycore.com</span>
+          <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
         </div>
       </header>
 
       <!-- región: contenido principal -->
       <main class="pp-panel__contenido" id="contenido">
-        <ol class="ip-pasos" aria-label="Pasos de la importación">
-          <li class="ip-paso ip-paso--hecho"><span class="ip-paso__n" aria-hidden="true">✓</span><span class="ip-paso__t">Pegar y emparejar</span><span class="pp-sr"> (hecho)</span></li>
-          <li class="ip-paso" aria-current="step"><span class="ip-paso__n" aria-hidden="true">2</span><span class="ip-paso__t">Revisar y confirmar</span></li>
-          <li class="ip-paso"><span class="ip-paso__n" aria-hidden="true">3</span><span class="ip-paso__t">Resultado</span></li>
-        </ol>
-        <div class="pp-encabezado">
-          <div class="pp-encabezado__texto">
-            <h1>Vista previa de la importación</h1>
-            <p><span class="pp-mono">disponibilidad-septiembre</span> · 60 filas pegadas · modo <strong>solo actualizar</strong> · plantilla «Disponibilidad mensual».</p>
+        <div class="ip-ancho">
+          <ol class="ip-pasos" aria-label="Pasos de la importación">
+            <li class="ip-paso ip-paso--hecho"><span class="ip-paso__n" aria-hidden="true">✓</span><span class="ip-paso__t"><a href="importar-perfiles.html">Pegar y emparejar</a></span><span class="pp-sr"> (hecho)</span></li>
+            <li class="ip-paso" aria-current="step"><span class="ip-paso__n" aria-hidden="true">2</span><span class="ip-paso__t">Revisar y confirmar</span></li>
+            <li class="ip-paso"><span class="ip-paso__n" aria-hidden="true">3</span><span class="ip-paso__t">Resultado</span></li>
+          </ol>
+          <div class="pp-encabezado">
+            <div class="pp-encabezado__texto">
+              <h1 class="pp-encabezado__titulo">Vista previa</h1>
+              <p class="pp-encabezado__meta"><span class="pp-mono">disponibilidad-septiembre</span> · 60 filas · Solo actualizar · Nada ha cambiado todavía en el banco</p>
+            </div>
+            <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno" href="importar-perfiles.html">Cambiar modo o columnas</a></div>
           </div>
-          <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno pp-btn--sm" href="importar-perfiles--revertir-no-ultima.html">Historial de importaciones</a><a class="pp-btn pp-btn--contorno pp-btn--sm" href="importar-perfiles.html">Cambiar modo o columnas</a></div>
+          <div class="pp-aviso pp-aviso--warn ip-bloque" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">2 filas intentan conceder consentimiento o publicar.</span>Rechazamos esos campos; el resto de cada fila se importa. Ningún perfil queda publicado por esta importación.</p></div>
+          <div class="ip-bloque">
+          <ul class="ip-resumen" aria-label="Filas por grupo">
+            <li><a href="#g-act"><span class="ip-resumen__n">38</span><span class="ip-resumen__l">actualizados</span></a></li>
+            <li><span class="ip-resumen__nolink"><span class="ip-resumen__n ip-resumen__n--cero">0</span><span class="ip-resumen__l">nuevos</span></span></li>
+            <li><a href="#g-arch"><span class="ip-resumen__n">2</span><span class="ip-resumen__l">archivados</span></a></li>
+            <li><a href="#g-error"><span class="ip-resumen__n ip-resumen__n--error">3</span><span class="ip-resumen__l">con error</span></a></li>
+            <li><a href="#g-sin"><span class="ip-resumen__n">13</span><span class="ip-resumen__l">sin cambios</span></a></li>
+            <li><a href="#g-omit"><span class="ip-resumen__n">4</span><span class="ip-resumen__l">omitidos</span></a></li>
+          </ul>
+          </div>
+          <section class="pp-seccion" id="g-act" aria-labelledby="g-act-t">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="g-act-t">Actualizados<span class="ip-grupo-n">38</span></h2><span class="ip-seccion-meta">Solo los campos que cambian</span></div>
+            <ul class="ip-lista">
+              <li class="ip-fila">
+                <label class="ip-fila__incluir"><input type="checkbox" checked><span class="pp-sr">Incluir PS-0239 en la importación</span></label>
+                <details class="ip-fila__det" open>
+                  <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0239</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Daniela Pardo</span><span class="ip-fila__rol">Desarrolladora full stack</span></span><span class="ip-fila__meta"><span>1 campo cambia · 2 rechazados</span><span>fila 21</span></span></summary>
+                  <div class="ip-fila__cuerpo">
+                    <dl class="ip-cambios">
+                      <div class="ip-cambio"><dt>Disponibilidad</dt><dd><span class="ip-antes"><span class="pp-sr">Antes: </span>En 2 a 4 semanas</span><span class="ip-flecha" aria-hidden="true">→</span><span><span class="pp-sr">Después: </span>En 1 a 2 meses</span></dd></div>
+                      <div class="ip-cambio"><dt>Consentimiento</dt><dd><span class="ip-antes">sí</span><span class="pp-meta">rechazado</span></dd></div>
+                      <div class="ip-cambio"><dt>Estado</dt><dd><span class="ip-antes">publicado</span><span class="pp-meta">rechazado</span></dd></div>
+                    </dl>
+                    <p class="ip-nota">El perfil sigue no publicado hasta que alguien registre el consentimiento en su ficha. Las celdas vacías de sectores, ciudad y modalidad no cambian nada.</p>
+                  </div>
+                </details>
+              </li>
+              <li class="ip-fila">
+                <label class="ip-fila__incluir"><input type="checkbox" checked><span class="pp-sr">Incluir PS-0115 en la importación</span></label>
+                <details class="ip-fila__det" open>
+                  <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0115</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Felipe Arango</span><span class="ip-fila__rol">Desarrollador backend</span></span><span class="ip-fila__meta"><span>2 campos cambian · 1 rechazado</span><span>fila 26</span></span></summary>
+                  <div class="ip-fila__cuerpo">
+                    <dl class="ip-cambios">
+                      <div class="ip-cambio"><dt>Sectores</dt><dd><span class="ip-antes"><span class="pp-sr">Antes: </span>Banca</span><span class="ip-flecha" aria-hidden="true">→</span><span><span class="pp-sr">Después: </span>Banca; Seguros</span></dd></div>
+                      <div class="ip-cambio"><dt>Motivo de pausa (interno)</dt><dd><span class="ip-antes"><span class="pp-sr">Antes: </span>Vacaciones</span><span class="ip-flecha" aria-hidden="true">→</span><span><span class="pp-sr">Después: </span><span class="ip-vacio">Vacío</span> <span class="pp-meta">la celda dice <code class="ip-codigo">[vaciar]</code></span></span></dd></div>
+                      <div class="ip-cambio"><dt>Consentimiento</dt><dd><span class="ip-antes">sí</span><span class="pp-meta">rechazado</span></dd></div>
+                    </dl>
+                  </div>
+                </details>
+              </li>
+              <li class="ip-fila">
+                <label class="ip-fila__incluir"><input type="checkbox" checked><span class="pp-sr">Incluir PS-0142 en la importación</span></label>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0142</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Laura Méndez</span><span class="ip-fila__rol">Desarrolladora backend</span></span><span class="ip-fila__meta">3 campos<span>fila 2</span></span></summary>
+                  <div class="ip-fila__cuerpo">
+                    <dl class="ip-cambios">
+                      <div class="ip-cambio"><dt>Disponibilidad</dt><dd><span class="ip-antes"><span class="pp-sr">Antes: </span>En 2 a 4 semanas</span><span class="ip-flecha" aria-hidden="true">→</span><span><span class="pp-sr">Después: </span>Disponible ahora</span></dd></div>
+                      <div class="ip-cambio"><dt>Ciudad</dt><dd><span class="ip-antes"><span class="pp-sr">Antes: </span>Medellín</span><span class="ip-flecha" aria-hidden="true">→</span><span><span class="pp-sr">Después: </span>Bogotá</span></dd></div>
+                      <div class="ip-cambio"><dt>Tecnologías</dt><dd><span class="ip-antes"><span class="pp-sr">Antes: </span>Java; Spring Boot</span><span class="ip-flecha" aria-hidden="true">→</span><span><span class="pp-sr">Después: </span>Java; Spring Boot; Kafka</span></dd></div>
+                    </dl>
+                  </div>
+                </details>
+              </li>
+            </ul>
+            <a class="pp-btn pp-btn--fantasma pp-btn--sm ip-mas" href="#g-act">Mostrar los 35 restantes</a>
+          </section>
+          <section class="pp-seccion" id="g-omit" aria-labelledby="g-omit-t">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="g-omit-t">Omitidos<span class="ip-grupo-n">4</span></h2><span class="ip-seccion-meta">No existen en el banco; en solo actualizar no se crean</span></div>
+            <ul class="ip-lista">
+              <li class="ip-fila">
+                <span class="ip-fila__incluir" aria-hidden="true"></span>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen ip-fila__resumen--fija"><span class="ip-fila__codigo">PS-0412</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Mateo Cárdenas</span><span class="ip-fila__rol">Analista QA</span></span><span class="ip-fila__meta"><span>fila 41</span></span></summary>
+                </details>
+              </li>
+              <li class="ip-fila">
+                <span class="ip-fila__incluir" aria-hidden="true"></span>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen ip-fila__resumen--fija"><span class="ip-fila__codigo">PS-0413</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Sara Villamizar</span><span class="ip-fila__rol">Desarrolladora frontend</span></span><span class="ip-fila__meta"><span>fila 42</span></span></summary>
+                </details>
+              </li>
+              <li class="ip-fila">
+                <span class="ip-fila__incluir" aria-hidden="true"></span>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen ip-fila__resumen--fija"><span class="ip-fila__codigo">PS-0241</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Daniel Ruiz</span><span class="ip-fila__rol">Ingeniero de datos</span></span><span class="ip-fila__meta"><span>fila 48</span></span></summary>
+                </details>
+              </li>
+            </ul>
+            <a class="pp-btn pp-btn--fantasma pp-btn--sm ip-mas" href="#g-omit">Mostrar el restante</a>
+          </section>
+          <section class="pp-seccion" id="g-error" aria-labelledby="g-error-t">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="g-error-t">Con error<span class="ip-grupo-n">3</span></h2><span class="ip-seccion-meta">No se importan</span></div>
+            <ul class="ip-lista">
+              <li class="ip-fila">
+                <span class="ip-fila__incluir" aria-hidden="true"></span>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0311</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Tatiana Salazar</span><span class="ip-fila__rol">Desarrolladora móvil</span></span><span class="ip-fila__meta"><span class="pp-estado pp-estado--danger">Banda no válida</span><span>fila 17</span></span></summary>
+                  <div class="ip-fila__cuerpo">
+                    <p class="ip-motivo">«Pronto» no es una banda de disponibilidad. Usa Disponible ahora, En 2 a 4 semanas, En 1 a 2 meses o Más de 2 meses.</p>
+                  </div>
+                </details>
+              </li>
+              <li class="ip-fila">
+                <span class="ip-fila__incluir" aria-hidden="true"></span>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen"><span class="ip-fila__codigo">—</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Esteban Quiroga</span><span class="ip-fila__rol">Analista de datos</span></span><span class="ip-fila__meta"><span class="pp-estado pp-estado--danger">Falta el código</span><span>fila 29</span></span></summary>
+                  <div class="ip-fila__cuerpo">
+                    <p class="ip-motivo">Sin código no sabemos a qué perfil corresponde la fila.</p>
+                  </div>
+                </details>
+              </li>
+              <li class="ip-fila">
+                <span class="ip-fila__incluir" aria-hidden="true"></span>
+                <details class="ip-fila__det">
+                  <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0270</span><span class="ip-fila__principal"><span class="ip-fila__nombre">Paula Cifuentes</span><span class="ip-fila__rol">Scrum master</span></span><span class="ip-fila__meta"><span class="pp-estado pp-estado--danger">Años no numéricos</span><span>fila 44</span></span></summary>
+                  <div class="ip-fila__cuerpo">
+                    <p class="ip-motivo">«ocho» en años de experiencia debe ser un número. Escribe 8.</p>
+                  </div>
+                </details>
+              </li>
+            </ul>
+          </section>
+          <div class="ip-pie">
+            <div class="ip-pie__texto"><p style="margin: 0;">Se actualizarán <span class="ip-cifra">38</span> y se archivarán <span class="ip-cifra">2</span>. Se omiten <span class="ip-cifra">4</span> códigos inexistentes y quedan fuera <span class="ip-cifra">3</span> con error. <span class="ip-cifra">0</span> perfiles quedan publicados.</p></div>
+            <div class="ip-pie__acciones"><a class="pp-btn pp-btn--fantasma" href="importar-perfiles.html">Volver a pegar</a><a class="pp-btn pp-btn--primario" href="importar-perfiles--filas-con-error.html">Importar 40 perfiles</a></div>
+          </div>
         </div>
-        <div class="pp-aviso pp-aviso--warn" role="status" style="margin-bottom: var(--tc-sp-6);"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">2 filas intentan conceder consentimiento o publicar</span>Rechazamos esos campos y avisamos en cada tarjeta. El resto de cada fila se importa con normalidad. Ningún perfil quedará publicado por efecto de esta importación.</p></div>
-        <ul class="ip-conteos" aria-label="Resultado de la vista previa por grupo">
-          <li><a class="ip-conteo ip-conteo--nuevo ip-conteo--cero" href="#g-nuevos"><span class="ip-conteo__n">0</span><span class="ip-conteo__l">Nuevos · entran en borrador</span></a></li>
-          <li><a class="ip-conteo ip-conteo--act" href="#g-act"><span class="ip-conteo__n">38</span><span class="ip-conteo__l">Actualizados</span></a></li>
-          <li><a class="ip-conteo ip-conteo--arch" href="#g-arch"><span class="ip-conteo__n">2</span><span class="ip-conteo__l">Archivados</span></a></li>
-          <li><a class="ip-conteo ip-conteo--sin" href="#g-sin"><span class="ip-conteo__n">13</span><span class="ip-conteo__l">Sin cambios</span></a></li>
-          <li><a class="ip-conteo ip-conteo--omit" href="#g-omit"><span class="ip-conteo__n">4</span><span class="ip-conteo__l">Omitidos</span></a></li>
-          <li><a class="ip-conteo ip-conteo--error" href="#g-error"><span class="ip-conteo__n">3</span><span class="ip-conteo__l">Con error</span></a></li>
-        </ul>
-        <div class="ip-pila">
-            <section class="ip-grupo" id="g-act" aria-labelledby="g-act-t">
-              <div class="ip-grupo__cab"><h2 id="g-act-t">Actualizados</h2><span class="ip-grupo__n">38</span><p>Solo cambian los campos que traes. Celda vacía: no se toca. [vaciar]: se vacía.</p></div>
-              <ul class="ip-filas">
-                <li class="ip-fila ip-fila--aviso">
-                  <label class="ip-fila__incluir"><input type="checkbox" checked><span class="pp-sr">Incluir PS-0239 en la importación</span></label>
-                  <details class="ip-fila__det" open>
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0239</span><span class="ip-fila__nombre">Daniela Pardo</span><span class="pp-badge pp-badge--por-confirmar">2 campos rechazados</span><span class="ip-fila__meta">Desarrolladora full stack · 1 campo cambia · fila <span class="pp-mono">21</span></span></summary>
-                    <div class="ip-fila__cuerpo">
-                      <div class="pp-aviso pp-aviso--warn" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Rechazamos «consentimiento: sí» y «estado: publicado»</span>Una importación no puede conceder consentimiento ni publicar. El resto de la fila se importa con normalidad; el perfil sigue <strong>no publicado</strong> hasta que alguien registre el consentimiento en su ficha.</p></div>
-                      <dl class="ip-cambios">
-                      <div class="ip-cambio"><dt>Disponibilidad</dt><dd class="ip-cambio__antes"><span class="pp-sr">Antes: </span>Más de 2 meses</dd><dd class="ip-cambio__flecha" aria-hidden="true">→</dd><dd class="ip-cambio__despues"><span class="pp-sr">Después: </span>En 1 a 2 meses</dd></div>
-                      </dl>
-                      <p class="ip-intactos">Las celdas vacías de sectores, ciudad y modalidad no tocan nada: esos campos quedan como están.</p>
-                    </div>
-                  </details>
-                </li>
-                <li class="ip-fila ip-fila--aviso">
-                  <label class="ip-fila__incluir"><input type="checkbox" checked><span class="pp-sr">Incluir PS-0115 en la importación</span></label>
-                  <details class="ip-fila__det" open>
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0115</span><span class="ip-fila__nombre">Felipe Arango</span><span class="pp-badge pp-badge--por-confirmar">1 campo rechazado</span><span class="ip-fila__meta">Desarrollador backend · 2 campos cambian · fila <span class="pp-mono">26</span></span></summary>
-                    <div class="ip-fila__cuerpo">
-                      <div class="pp-aviso pp-aviso--warn" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Rechazamos «consentimiento: sí»</span>El consentimiento solo se registra en la ficha, con el documento firmado a la vista.</p></div>
-                      <dl class="ip-cambios">
-                      <div class="ip-cambio"><dt>Sectores</dt><dd class="ip-cambio__antes"><span class="pp-sr">Antes: </span>Banca</dd><dd class="ip-cambio__flecha" aria-hidden="true">→</dd><dd class="ip-cambio__despues"><span class="pp-sr">Después: </span>Banca; Seguros</dd></div>
-                      <div class="ip-cambio"><dt>Motivo de pausa (interno)</dt><dd class="ip-cambio__antes"><span class="pp-sr">Antes: </span>Vacaciones</dd><dd class="ip-cambio__flecha" aria-hidden="true">→</dd><dd class="ip-cambio__despues"><span class="pp-sr">Después: </span><span class="ip-cambio__vacio">Vacío · marcado con [vaciar]</span></dd></div>
-                      </dl>
-                      <p class="ip-intactos">Solo se vacía el motivo de pausa porque la celda dice [vaciar]. Las celdas vacías dejan intactos los demás campos.</p>
-                    </div>
-                  </details>
-                </li>
-                <li class="ip-fila">
-                  <label class="ip-fila__incluir"><input type="checkbox" checked><span class="pp-sr">Incluir PS-0142 en la importación</span></label>
-                  <details class="ip-fila__det">
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0142</span><span class="ip-fila__nombre">Laura Méndez</span><span class="ip-fila__meta">Desarrolladora backend · 3 campos cambian · fila <span class="pp-mono">2</span></span></summary>
-                  </details>
-                </li>
-              </ul>
-              <a class="pp-btn pp-btn--fantasma pp-btn--sm ip-mas" href="#g-act">Mostrar los 35 restantes</a>
-            </section>
-            <section class="ip-grupo" id="g-omit" aria-labelledby="g-omit-t">
-              <div class="ip-grupo__cab"><h2 id="g-omit-t">Omitidos</h2><span class="ip-grupo__n">4</span><p>Códigos que no existen. Con el modo solo actualizar se omiten en lugar de crear un perfil.</p></div>
-              <ul class="ip-filas">
-                <li class="ip-fila">
-                  <label class="ip-fila__incluir"><input type="checkbox"><span class="pp-sr">Incluir PS-0412 en la importación</span></label>
-                  <details class="ip-fila__det" open>
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0412</span><span class="ip-fila__nombre">Mateo Cárdenas</span><span class="ip-fila__meta">Omitido por el modo · fila <span class="pp-mono">41</span></span></summary>
-                    <div class="ip-fila__cuerpo">
-                      <p class="ip-motivo ip-motivo--omit"><span aria-hidden="true">! </span>PS-0412 no existe en el banco. En modo solo actualizar no se crean perfiles.</p>
-                    </div>
-                  </details>
-                </li>
-                <li class="ip-fila">
-                  <label class="ip-fila__incluir"><input type="checkbox"><span class="pp-sr">Incluir PS-0413 en la importación</span></label>
-                  <details class="ip-fila__det" open>
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0413</span><span class="ip-fila__nombre">Sara Villamizar</span><span class="ip-fila__meta">Omitido por el modo · fila <span class="pp-mono">42</span></span></summary>
-                    <div class="ip-fila__cuerpo">
-                      <p class="ip-motivo ip-motivo--omit"><span aria-hidden="true">! </span>PS-0413 no existe en el banco. En modo solo actualizar no se crean perfiles.</p>
-                    </div>
-                  </details>
-                </li>
-                <li class="ip-fila">
-                  <label class="ip-fila__incluir"><input type="checkbox"><span class="pp-sr">Incluir PS-0241 en la importación</span></label>
-                  <details class="ip-fila__det" open>
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0241</span><span class="ip-fila__nombre">Daniel Ruiz</span><span class="ip-fila__meta">Omitido por el modo · fila <span class="pp-mono">48</span></span></summary>
-                    <div class="ip-fila__cuerpo">
-                      <p class="ip-motivo ip-motivo--omit"><span aria-hidden="true">! </span>PS-0241 no existe en el banco. En modo solo actualizar no se crean perfiles.</p>
-                    </div>
-                  </details>
-                </li>
-              </ul>
-              <a class="pp-btn pp-btn--fantasma pp-btn--sm ip-mas" href="#g-omit">Mostrar el restante</a>
-            </section>
-            <section class="ip-grupo" id="g-error" aria-labelledby="g-error-t">
-              <div class="ip-grupo__cab"><h2 id="g-error-t">Con error</h2><span class="ip-grupo__n">3</span><p>No se importan. Van desmarcadas.</p></div>
-              <ul class="ip-filas">
-                <li class="ip-fila ip-fila--error">
-                  <label class="ip-fila__incluir"><input type="checkbox"><span class="pp-sr">Incluir PS-0311 en la importación</span></label>
-                  <details class="ip-fila__det">
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0311</span><span class="ip-fila__nombre">Tatiana Salazar</span><span class="ip-fila__meta">Error · banda de disponibilidad no válida · fila <span class="pp-mono">17</span></span></summary>
-                  </details>
-                </li>
-                <li class="ip-fila ip-fila--error">
-                  <label class="ip-fila__incluir"><input type="checkbox"><span class="pp-sr">Incluir Sin código en la importación</span></label>
-                  <details class="ip-fila__det">
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">Sin código</span><span class="ip-fila__nombre">Esteban Quiroga</span><span class="ip-fila__meta">Error · falta el código · fila <span class="pp-mono">29</span></span></summary>
-                  </details>
-                </li>
-                <li class="ip-fila ip-fila--error">
-                  <label class="ip-fila__incluir"><input type="checkbox"><span class="pp-sr">Incluir PS-0270 en la importación</span></label>
-                  <details class="ip-fila__det">
-                    <summary class="ip-fila__resumen"><span class="ip-fila__codigo">PS-0270</span><span class="ip-fila__nombre">Paula Cifuentes</span><span class="ip-fila__meta">Error · años no numéricos · fila <span class="pp-mono">44</span></span></summary>
-                  </details>
-                </li>
-              </ul>
-            </section>
-        </div>
-        <section class="pp-tarjeta ip-confirmar" aria-labelledby="t-confirmar">
-          <div>
-            <h2 id="t-confirmar">Confirmar la importación</h2>
-            <p>Se actualizarán <span class="ip-cifras">38</span> y se archivarán <span class="ip-cifras">2</span>. No se crea ningún perfil. Se omiten <span class="ip-cifras">4</span> códigos inexistentes y quedan fuera <span class="ip-cifras">3</span> con error. <strong>0 perfiles quedan publicados por esta importación.</strong></p>
-            
-          </div>
-          <div class="ip-acciones">
-            <a class="pp-btn pp-btn--contorno" href="importar-perfiles.html">Volver a pegar</a>
-            <a class="pp-btn pp-btn--primario" href="importar-perfiles--filas-con-error.html">Importar 40 perfiles</a>
-          </div>
-        </section>
-
       </main>
     </div>
   </div>

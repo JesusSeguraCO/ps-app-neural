@@ -84,11 +84,11 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-110** | Ver qué filtros usan realmente los clientes | EP-008 | alta | S | borrador | *Reescrita el 22-sep: antes duplicaba HU-078* |
 | **HU-111** | Comparar la ruta de instrucción con la de filtros | EP-008 | media | M | borrador | — |
 | **HU-112** | Atribuir cada sesión a su envío de correo | EP-008 | alta | S | borrador | — |
-| **HU-113** | Armar la selección de perfiles de una cuenta | EP-011 | alta | M | borrador | — |
-| **HU-114** | Generar el enlace de cada contacto sin construirlo a mano | EP-011 | alta | S | borrador | — |
-| **HU-115** | Programar y enviar el boletín | EP-011 | alta | M | borrador | — |
-| **HU-116** | Ver quién abrió y quién entró | EP-011 | alta | S | borrador | — |
-| **HU-117** | Reaccionar a una cuenta que nunca abre | EP-011 | media | S | borrador | — |
+| **HU-113** | Armar la selección de perfiles de una cuenta | EP-011 | alta | M | borrador | *Ajustada el 2026-09-27 (PRD v4.14): contenido para copiar, aviso de perfil repetido* |
+| **HU-114** | Generar el enlace de cada destinatario sin construirlo a mano | EP-011 | alta | S | borrador | *Ajustada el 2026-09-27 (PRD v4.14): token por destinatario, regenerar si se pierde* |
+| **HU-115** | Copiar el contenido curado para enviarlo desde Gmail o HubSpot | EP-011 | alta | M | borrador | *Reescrita el 2026-09-27 (PRD v4.14, decisión del sponsor): sustituye a «Programar y enviar el boletín»; el envío pasa a Gmail o HubSpot* |
+| **HU-116** | Ver quién entró por su enlace | EP-011 | alta | S | borrador | *Reescrita el 2026-09-27 (PRD v4.14): la apertura la mide la herramienta de envío, no el portal* |
+| **HU-117** | Reaccionar a una cuenta que no entra | EP-011 | media | S | borrador | *Ajustada el 2026-09-27 (PRD v4.14): tres envíos con salida registrada sin entrar* |
 | **HU-118** | Distinguir lo que no puedo negociar de lo que sería bueno tener | EP-009 | alta | M | prototipado | — |
 | **HU-119** | Saber por qué coincide cada perfil y por qué no | EP-003 | alta | S | prototipado | — |
 | **HU-120** | Comparar perfiles sin perder la lista | EP-003 | alta | M | prototipado | — |

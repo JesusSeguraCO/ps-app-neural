@@ -12,6 +12,9 @@
   Estado de esta pantalla: variante · confirmación con plazo de 10 días hábiles y la especificación completa que viajó (HU-077 happy path). Es también lo que ve la persona si falla la creación en el CRM: la solicitud entra en cola de reintento y se alerta al responsable interno, sin cambiar este mensaje (HU-077 error)
   Origen: v2-existe (Portal de Perfiles v2, data-screen-label «Resultados», bloque «Camino del cero» con «Pídenos este perfil a medida»; misma cuenta, instrucción y Perfil objetivo que cero-resultados, del que es el paso siguiente).
   Trazabilidad: épica EP-010 · historias HU-077 · registrada en ../manifest.json
+  Oficio v2 (2026-09-27): mismo esqueleto que cero-resultados (búsqueda de una línea con «Leímos»,
+  Perfil objetivo con Obligatorio/Deseable como única fuente, lista de filas con divide-y); este archivo
+  solo se diferencia en el bloque del formulario. Verificado y declarado en dos líneas, sin caja.
 -->
 <html lang="es">
 <head>
@@ -21,11 +24,11 @@
   <title>Solicitud a medida enviada — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
-    /* Estilos propios de esta pantalla: SOLO composición/layout.
-       Valores visuales (color, fuente, spacing, radio, sombra) → var(--token). */
+    /* Bloques PP copiados literalmente de ../_patrones.html (v2) */
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -33,365 +36,329 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
-      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
-      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
-      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
-      .pp-btn--fantasma { color: var(--tc-text-b); }
-      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
-      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
-      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
-      .pp-btn--icono { width: 44px; padding: 0; }
-      .pp-btn--bloque { width: 100%; }
-      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
-      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
-      /* /PP:botones */
-    /* PP:topbar */
-      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
-      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
-      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
-      .pp-marca__sep { color: var(--tc-border-s); }
-      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
-      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
-      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
-      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
-      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
-      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
-      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
-      .pp-equipo:hover { border-color: var(--tc-primary); }
-      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
-      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
-      @media (max-width: 767px) {
-        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
-        .pp-equipo { order: 1; margin-left: auto; }
-        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
-        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
-        .pp-cuenta__meta { display: none; }
-      }
-      /* /PP:topbar */
-    /* PP:chips */
-      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
-      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
-      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
-      .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
-      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
-      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
-      .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
-      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
-      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
-      .pp-chip__quitar:hover { background: var(--pp-overlay); }
-      /* /PP:chips */
-    /* PP:badges */
-      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
-      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
-      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
-      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
-      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
-      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
-      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-      /* /PP:badges */
-    /* PP:perfil */
-      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
-      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
-      .pp-perfil--en-equipo { border-color: var(--tc-primary); }
-      .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
-      .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
-      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
-      .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-      .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
-      .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
-      .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
-      .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
-      .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
-      .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
-      .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
-      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
-      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
-      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
-      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
-      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
-      .pp-criterio--cumple { color: var(--tc-ok-ink); }
-      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
-      .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
-      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
-      .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
-      .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
-      /* /PP:perfil */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+    /* /PP:botones */
+    /* PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
     /* PP:campos */
-      .pp-form { display: grid; gap: var(--tc-sp-5); }
-      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
-      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
-      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
-      .pp-input::placeholder { color: var(--tc-text-s); }
-      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
-      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
-      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
-      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
-      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
-      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
-      /* /PP:campos */
-    /* PP:avisos */
-      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
-      .pp-aviso p { margin: 0; }
-      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
-      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
-      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
-      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
-      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
-      /* /PP:avisos */
-
-    /* ── Estilos propios de resultados: solo composición (prefijo rs-) ── */
-    .rs-main { max-width: 1400px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-8) var(--tc-sp-10); }
-    .rs-hero { padding: var(--tc-sp-8) var(--tc-sp-6) var(--tc-sp-6); background: var(--pp-hero); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
-    .rs-hero__centro { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .rs-orbe { display: grid; place-items: center; width: 44px; height: 44px; border-radius:var(--tc-r-pill); background: var(--tc-grad-brand); box-shadow:var(--tc-glow-brand); color: var(--tc-bg-topbar); }
-    .rs-hero h1 { margin: var(--tc-sp-3) 0 0; letter-spacing: var(--tc-ls-heading); }
-    .rs-hero__sub { margin: var(--tc-sp-1) 0 0; color: var(--tc-text-m); }
-    .rs-cmd { width: 100%; margin-top: var(--tc-sp-5); text-align: left; background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-lg); box-shadow:var(--pp-cmd-shadow); }
-    .rs-cmd__campo { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-1); color: var(--pp-teal-ink); }
-    .rs-cmd__campo .pp-icono { margin-top: var(--tc-sp-1); }
-    .rs-cmd textarea { flex: 1; min-width: 0; display: block; resize: none; padding: 0; border: 0; background: transparent; font-family:var(--tc-font-body); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-body); color: var(--tc-text-h); caret-color: var(--tc-primary); }
-    .rs-cmd textarea::placeholder { color: var(--tc-text-s); }
-    .rs-cmd textarea:focus { outline: 2px solid var(--tc-focus-ring); outline-offset: var(--tc-sp-2); border-radius:var(--tc-r-sm); }
-    .rs-cmd__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); }
-    .rs-ambito { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); box-shadow:var(--tc-sh-1); font-family:var(--tc-font-body); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); cursor: pointer; white-space: nowrap; }
-    .rs-cmd__acciones { display: flex; align-items: center; gap: var(--tc-sp-3); }
-    .rs-atajo { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); white-space: nowrap; }
-    .rs-kbd { padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border-s); border-bottom-width: 2px; border-radius:var(--tc-r-sm); font-family:var(--pp-mono); font-size:var(--tc-fs-badge); color: var(--tc-text-m); }
-    .rs-nota { margin: var(--tc-sp-3) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .rs-rapidos { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--tc-sp-2); margin: var(--tc-sp-4) 0 0; padding: 0; list-style: none; }
-    .rs-rapidos .pp-btn { border-radius:var(--tc-r-pill); }
-
-    /* Capas: lo que dijo la instrucción vs. los filtros añadidos encima (HU-074) */
-    .rs-capas { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: var(--tc-sp-4); margin-top: var(--tc-sp-5); }
-    .rs-capa { min-width: 0; padding: var(--tc-sp-4) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
-    .rs-capa--filtros { background: var(--tc-bg-subtle); border-style: dashed; border-color: var(--tc-border-s); box-shadow:none; }
-    .rs-capa--cero { border-color: var(--tc-warn-border); }
-    .rs-capa__rotulo { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
-    .rs-capa--filtros .rs-capa__rotulo { color: var(--tc-text-h); }
-    .rs-capa__lectura { margin: var(--tc-sp-2) 0 var(--tc-sp-3); max-width: 72ch; color: var(--tc-text-b); }
-    .rs-capa__ayuda { margin: var(--tc-sp-2) 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .rs-capa__pie { margin: var(--tc-sp-3) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-
-    /* Cuerpo: perfil objetivo (facetas) + resultados */
-    .rs-cuerpo { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--tc-sp-6); align-items: start; margin-top: var(--tc-sp-6); }
-    .rs-objetivo { position: sticky; top: 88px; min-width: 0; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
-    .rs-objetivo__cabecera { padding: var(--tc-sp-5) var(--tc-sp-5) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
-    .rs-objetivo__cabecera h2 { margin: 0; font-size:var(--tc-fs-h3); }
-    .rs-objetivo__cabecera > p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .rs-conteo { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--tc-sp-2); margin: var(--tc-sp-3) 0 0; padding: var(--tc-sp-2) var(--tc-sp-3); border-radius:var(--tc-r-md); background: var(--tc-accent); font-size:var(--tc-fs-caption); color: var(--pp-navy-ink); }
-    .rs-conteo__cifra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); font-variant-numeric: tabular-nums; }
-    .rs-ajustar { display: none; }
-    .rs-campos { margin: 0; padding: 0; list-style: none; }
-    .rs-campo { padding: var(--tc-sp-3) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
-    .rs-campo__fila { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); }
-    .rs-campo__etiqueta { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-width: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .rs-campo__etiqueta .pp-icono { color: var(--tc-text-m); }
-    .rs-modo { display: inline-flex; flex: none; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); overflow: hidden; }
-    .rs-modo button { min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; background: var(--tc-card); font-family:var(--tc-font-body); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); cursor: pointer; }
-    .rs-modo button + button { border-left: 1px solid var(--tc-border-s); }
-    .rs-modo .rs-modo__obl[aria-pressed="true"] { background: var(--tc-navy); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
-    .rs-modo .rs-modo__des[aria-pressed="true"] { background: var(--tc-accent); color: var(--tc-primary-ink); font-weight: var(--tc-fw-semibold); }
-    .rs-valor { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); width: 100%; min-height: 40px; margin-top: var(--tc-sp-2); padding: 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); color: var(--tc-text-h); text-align: left; cursor: pointer; }
-    .rs-valor--vacio { color: var(--tc-text-m); }
-    .rs-valor__texto { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--tc-sp-2); min-width: 0; }
-    .rs-origen { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-badge); color: var(--tc-text-m); }
-    .rs-objetivo__pie { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-5); }
-
-    .rs-res { min-width: 0; }
-    .rs-res__cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
-    .rs-res__cabecera h2 { margin: 0; }
-    .rs-res__sub { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .rs-res__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); }
-    .rs-vista { display: inline-flex; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); overflow: hidden; background: var(--tc-card); }
-    .rs-vista button { min-height: 36px; padding: 0 var(--tc-sp-4); border: 0; background: var(--tc-card); font-family:var(--tc-font-body); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); cursor: pointer; }
-    .rs-vista button + button { border-left: 1px solid var(--tc-border-s); }
-    .rs-vista button[aria-pressed="true"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-    .pp-rejilla-perfiles > li { display: flex; flex-direction: column; min-width: 0; }
-    .pp-rejilla-perfiles > li > * { flex: 1; }
-
-    .rs-opciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .rs-opciones .pp-btn { border-radius:var(--tc-r-pill); }
-    /* Cero: instrucción sin ningún término reconocible (EP-010) */
-    .rs-cero { padding: var(--tc-sp-8) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); text-align: center; }
-    .rs-cero__icono { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto var(--tc-sp-4); border-radius:var(--tc-r-md); background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-    .rs-cero h2 { margin: 0; font-size:var(--tc-fs-h3); }
-    .rs-cero > p { max-width: 56ch; margin: var(--tc-sp-2) auto 0; color: var(--tc-text-b); }
-    .rs-medida { max-width: 560px; margin: var(--tc-sp-6) auto 0; padding: var(--tc-sp-5); background: var(--tc-bg-canvas); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); text-align: left; }
-    .rs-medida h3 { margin: 0; font-size:var(--tc-fs-body); }
-    .rs-medida > p { margin: var(--tc-sp-1) 0 var(--tc-sp-4); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .rs-medida__grupo { margin: 0 0 var(--tc-sp-4); padding: 0; border: 0; min-width: 0; }
-    .rs-medida__grupo .pp-label { margin-bottom: var(--tc-sp-2); }
-    .rs-medida__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
-    .rs-medida__nota { margin: var(--tc-sp-3) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-
-    @media (max-width: 1100px) {
-      .rs-cuerpo { grid-template-columns: minmax(0, 1fr); }
-      .rs-objetivo { position: static; }
-      .rs-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .rs-campo:nth-child(odd) { border-right: 1px solid var(--tc-border); }
-    }
-    @media (max-width: 900px) { .rs-capas { grid-template-columns: minmax(0, 1fr); } }
-    @media (max-width: 767px) {
-      .rs-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-10); }
-      .rs-hero { padding: var(--tc-sp-6) var(--tc-sp-4) var(--tc-sp-5); }
-      .rs-hero h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
-      .rs-cmd__campo { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-1); }
-      .rs-atajo { display: none; }
-      .rs-ambito, .rs-modo button, .rs-vista button, .rs-valor { min-height: 44px; }
-      .rs-capa { padding: var(--tc-sp-4); }
-      .rs-objetivo__cuerpo { display: none; }
-      .rs-ajustar { display: flex; margin-top: var(--tc-sp-3); }
-      .rs-res__acciones { width: 100%; }
-      .rs-res__acciones .rs-vista { margin-left: auto; }
-      .rs-cero { padding: var(--tc-sp-6) var(--tc-sp-4); }
-      .rs-medida { padding: var(--tc-sp-4); }
-      .rs-medida__acciones .pp-btn { width: 100%; }
-      .rs-pregunta { padding: var(--tc-sp-4); }
-    }
-
-    /* PP:tabla */
-      .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
-      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
-      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
-      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
-      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
-      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
-      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
-      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
-      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
-      .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
-      /* /PP:tabla */
+    .pp-form { display: grid; gap: var(--tc-sp-5); }
+    .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .pp-input::placeholder { color: var(--tc-text-s); }
+    .pp-input:hover { border-color: var(--tc-text-s); }
+    .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+    .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+    .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+    .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+    .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+    .pp-form--alineado { gap: 0; }
+    .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+    .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+    .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:campos */
     /* PP:select */
-      .pp-select { position: relative; }
-      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
-      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
-      /* /PP:select */
-
-    /* ── Estilos propios del camino del cero (prefijo cr-): solo composición ── */
-    .cr-reto-campo { padding: var(--tc-sp-4) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); background: var(--tc-surface-quiet); }
-    .cr-cero { text-align: left; }
-    .cr-cero__cabeza { text-align: center; }
-    .cr-espec { max-width: 640px; margin: var(--tc-sp-6) auto 0; display: grid; gap: var(--tc-sp-4); text-align: left; }
-    .cr-espec__rotulo { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .cr-espec__ayuda { margin: var(--tc-sp-2) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .cr-reto { margin: 0; padding: var(--tc-sp-3) var(--tc-sp-4); border-left: 3px solid var(--tc-primary); border-radius:var(--tc-r-md); background: var(--tc-accent); color: var(--tc-text-h); }
-    .cr-reto--vacio { border-left-color: var(--tc-border-s); background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-    .cr-reto__texto { margin: 0; font-size:var(--tc-fs-body); }
-    .cr-reto__pie { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .cr-cero .rs-medida { max-width: 640px; }
-    .cr-plazo { display: inline-flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-4); padding: var(--tc-sp-1) var(--tc-sp-3); border-radius:var(--tc-r-pill); background: var(--tc-card); border: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .cr-plazo .pp-mono { font-weight: var(--tc-fw-semibold); }
-
-    .cr-seccion { margin-top: var(--tc-sp-8); }
-    .cr-seccion__cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
-    .cr-seccion__cabecera h2 { margin: 0; font-size:var(--tc-fs-h3); }
-    .cr-seccion__cabecera p { margin: var(--tc-sp-1) 0 0; max-width: 70ch; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .cr-limite { margin: var(--tc-sp-4) 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .cr-falla { display: inline-flex; align-self: flex-start; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3); border-radius:var(--tc-r-pill); background: var(--tc-amber-bg); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink); }
-    .cr-aporta { margin: var(--tc-sp-3) 0 0; padding: var(--tc-sp-2) var(--tc-sp-3); border-radius:var(--tc-r-md); background: var(--tc-accent); font-size:var(--tc-fs-caption); color: var(--tc-text-h); }
-    .cr-aporta strong { color: var(--tc-primary-ink); }
-
-    /* Por filtro: la instrucción sí tiene perfiles, el filtro los excluye */
-    .rs-capa.cr-capa--culpable { border: 1px solid var(--tc-warn-border); border-left-width: 3px; border-left-color: var(--tc-amber); background: var(--tc-warn-surface); }
-    .cr-capa__impacto { margin: var(--tc-sp-3) 0 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink); }
-    .cr-origen { max-width: 640px; margin: var(--tc-sp-6) auto 0; padding: 0; list-style: none; display: grid; gap: var(--tc-sp-2); text-align: left; }
-    .cr-origen__fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
-    .cr-origen__fila--culpable { border-color: var(--tc-warn-border); background: var(--tc-warn-surface); }
-    .cr-origen__que { display: grid; gap: var(--tc-sp-1); min-width: 0; font-size:var(--tc-fs-small); color: var(--tc-text-h); }
-    .cr-origen__que small { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .cr-origen__cifra { font-family:var(--pp-mono); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
-    .cr-origen__fila--culpable .cr-origen__cifra { color: var(--tc-warn-ink); }
-    .cr-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--tc-sp-2); margin-top: var(--tc-sp-6); }
-    .cr-secundario { max-width: 640px; margin: var(--tc-sp-5) auto 0; padding-top: var(--tc-sp-4); border-top: 1px dashed var(--tc-border); font-size:var(--tc-fs-small); color: var(--tc-text-m); text-align: center; }
-    .cr-secundario p { margin: 0 0 var(--tc-sp-2); }
-
-    /* Obligatorio que vacía: qué pasaría al aflojar cada uno */
-    .cr-relajar { max-width: 640px; margin: var(--tc-sp-6) auto 0; padding: 0; list-style: none; display: grid; gap: var(--tc-sp-2); text-align: left; }
-    .cr-relajar__fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
-    .cr-relajar__fila--reciente { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); }
-    .cr-relajar__que { display: grid; gap: var(--tc-sp-1); min-width: 0; }
-    .cr-relajar__que .pp-chips { gap: var(--tc-sp-1); }
-    .cr-relajar__efecto { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .cr-relajar__efecto .pp-mono { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .rs-aviso { margin-bottom: var(--tc-sp-4); }
-    .cr-falla-celda { color: var(--tc-warn-ink); font-weight: var(--tc-fw-semibold); white-space: nowrap; }
-    .cr-cero .rs-medida--compacta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); }
-    .rs-medida--compacta h3, .rs-medida--compacta p { margin: 0; }
-    .rs-medida--compacta p { font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-
-    /* Vaga: el formulario pide los mínimos y conserva lo escrito */
-    .cr-minimos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-4); margin: 0 0 var(--tc-sp-4); }
-    .rs-valor.cr-valor--falta { border-color: var(--tc-red); }
-    .cr-falta { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
-    .cr-sin-cercanos { max-width: 640px; margin: var(--tc-sp-5) auto 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); text-align: center; }
-
+    .pp-select { position: relative; }
+    .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+    .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+    /* /PP:select */
+    /* PP:filas */
+    .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+    .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+    .pp-fila:hover { background: var(--tc-surface-quiet); }
+    .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+    .pp-fila--enlace { cursor: pointer; }
+    .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .pp-fila__principal > p { margin: 0; }
+    .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .pp-fila__titulo a { color: inherit; text-decoration: none; }
+    .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+    .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+    .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+    .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+    .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
     @media (max-width: 767px) {
-      .cr-reto-campo { padding: var(--tc-sp-4); }
-      .cr-relajar__fila { grid-template-columns: minmax(0, 1fr); }
-      .cr-relajar__fila .pp-btn, .cr-acciones .pp-btn { width: 100%; }
-      .cr-minimos { grid-template-columns: minmax(0, 1fr); }
-      .cr-cero .rs-medida--compacta .pp-btn { width: 100%; }
+    .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+    .pp-fila__acciones { justify-content: flex-end; }
+    .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+    }
+    /* /PP:filas */
+    /* PP:tabla */
+    .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .pp-barra .pp-pestanas { border-bottom: 0; }
+    .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+    .pp-buscador { position: relative; width: min(300px, 100%); }
+    .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+    .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+    .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+    .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+    .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+    .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+    .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+    .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+    .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+    .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+    .pp-tabla th.pp-tabla__acciones { text-align: right; }
+    .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+    @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+    /* /PP:tabla */
+    /* PP:topbar */
+    .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+    .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+    .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+    .pp-marca__sep { color: var(--tc-border-s); }
+    .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+    .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+    .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+    .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
+    .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+    .pp-equipo:hover { background: var(--tc-bg-subtle); }
+    .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
+    @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+    @media (max-width: 767px) {
+    .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+    .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
+    .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+    .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+    .pp-navlink { min-height: 44px; }
+    .pp-cuenta__meta { display: none; }
+    }
+    /* /PP:topbar */
+
+    /* ── Composición propia del camino del cero (prefijos rs- y cr-): solo layout ── */
+    body { background: var(--tc-bg-canvas); color: var(--tc-text-b); -webkit-font-smoothing: antialiased; }
+    p { margin: 0; }
+    .rs-main { max-width: 1320px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-6) var(--tc-sp-10); }
+
+    /* Barra de instrucción compacta: una línea (igual que resultados) */
+    .rs-busca { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-1) var(--tc-sp-1) var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); box-shadow: var(--pp-cmd-shadow); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .rs-busca:focus-within { border-color: var(--tc-primary); box-shadow: var(--pp-cmd-shadow), var(--tc-sh-focus); }
+    .rs-ambito { position: relative; display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-6) 0 var(--tc-sp-2); border: 0; border-right: 1px solid var(--tc-border); border-radius: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; cursor: pointer; }
+    .rs-ambito::after { content: ""; position: absolute; right: var(--tc-sp-3); top: 50%; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); }
+    .rs-ambito:hover { color: var(--tc-text-h); }
+    .rs-busca__campo { position: relative; display: flex; align-items: center; gap: var(--tc-sp-2); min-width: 0; color: var(--tc-text-s); }
+    .rs-busca__input { flex: 1; min-width: 0; min-height: 40px; padding: 0 var(--tc-sp-8) 0 0; border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-body); color: var(--tc-text-h); text-overflow: ellipsis; }
+    .rs-busca__input::placeholder { color: var(--tc-text-s); }
+    .rs-busca__input:focus, .rs-busca__input:focus-visible { outline: none; }
+    .rs-busca__atajo { position: absolute; right: var(--tc-sp-1); top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .rs-lectura { max-width: 96ch; margin-top: var(--tc-sp-3); padding: 0 var(--tc-sp-1); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .rs-lectura strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+
+    /* Encabezado del cero: titular a la izquierda, metadatos con «·» */
+    .rs-cabecera { margin-top: var(--tc-sp-8); }
+    .rs-cabecera .pp-encabezado__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .rs-cabecera .pp-encabezado__meta > * + *::before { content: "·"; margin-right: var(--tc-sp-3); color: var(--tc-text-s); }
+    .rs-cabecera .pp-encabezado__acciones { align-items: center; }
+
+    /* Control segmentado obligatorio/deseable y respuestas */
+    .rs-seg { display: inline-flex; flex: none; border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .rs-seg > * { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 var(--tc-sp-3); border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background var(--tc-dur-fast) var(--tc-ease), color var(--tc-dur-fast) var(--tc-ease); }
+    .rs-seg > * + * { border-left: 1px solid var(--tc-border); }
+    .rs-seg > :hover { background: var(--tc-surface-quiet); color: var(--tc-text-h); }
+    .rs-seg > [aria-pressed="true"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .rs-seg > .rs-seg__obl[aria-pressed="true"] { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .rs-seg > .rs-seg__des[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .rs-seg--sm > * { padding: 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); }
+
+    /* Cuerpo: Perfil objetivo (única fuente editable) + el cero */
+    .rs-cuerpo { display: grid; grid-template-columns: 264px minmax(0, 1fr); gap: var(--tc-sp-8); align-items: start; }
+    .rs-obj { position: sticky; top: 84px; min-width: 0; }
+    .rs-obj__abrir { display: none; }
+    .rs-obj__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); }
+    .rs-obj__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .rs-reto { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .rs-reto .pp-input--area { min-height: 88px; font-size: var(--tc-fs-small); }
+    .rs-facetas { margin: 0; padding: 0; list-style: none; }
+    .rs-faceta { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .rs-faceta__fila { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 32px; }
+    .rs-faceta__etiqueta { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .rs-faceta__origen { display: block; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .rs-faceta--vacia .rs-faceta__etiqueta { color: var(--tc-text-m); font-weight: var(--tc-fw-regular); }
+    .rs-valor { position: relative; display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--tc-sp-8) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); color: var(--tc-text-h); text-align: left; cursor: pointer; transition: border-color var(--tc-dur) var(--tc-ease); }
+    .rs-valor:hover { border-color: var(--tc-text-s); }
+    .rs-valor::after { content: ""; position: absolute; right: var(--tc-sp-3); top: 50%; width: 5px; height: 5px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); }
+    .rs-valor span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rs-faceta--vacia { grid-template-columns: 96px minmax(0, 1fr); align-items: center; }
+    .rs-faceta--vacia .rs-valor { color: var(--tc-text-s); box-shadow: none; }
+    .rs-obj__pie { padding-top: var(--tc-sp-4); }
+    .rs-res { min-width: 0; }
+
+    /* Pedir a medida: un formulario, una primaria a la derecha */
+    .cr-medida { padding: var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+    .cr-medida__cabecera { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-4); }
+    .cr-medida__cabecera h2 { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .cr-medida .pp-form { margin-top: var(--tc-sp-5); }
+    .cr-medida fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+    .cr-medida legend { margin-bottom: var(--tc-sp-2); }
+    .cr-opciones { display: flex; flex-wrap: wrap; }
+    .cr-dos .pp-campo { align-content: start; }
+    .cr-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-4); }
+    .cr-medida__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    .cr-medida__pie .pp-btn { margin-left: auto; }
+
+    /* Secciones de perfiles en filas densas */
+    .cr-seccion { margin-top: var(--tc-sp-10); }
+    .cr-seccion .pp-seccion__cabecera { flex-wrap: wrap; }
+    .cr-seccion__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .cr-fila__titulo-sub { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .cr-marco { position: relative; }
+    .cr-codigo { font-weight: var(--tc-fw-regular); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .cr-falla { font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink); }
+    .cr-evid { display: grid; justify-items: start; gap: var(--tc-sp-1); margin-top: var(--tc-sp-1); }
+    .cr-evid__grupo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .cr-evid__grupo--verificado { color: var(--tc-text-h); }
+    .cr-evid__rotulo { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .cr-evid__grupo--verificado .cr-evid__rotulo { font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
+    .cr-evid__grupo > li { display: inline-flex; align-items: baseline; gap: var(--tc-sp-1); }
+    .cr-no-cumple { color: var(--tc-text-m); }
+    .cr-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .cr-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+    .cr-fila__acciones { flex-direction: column; align-items: flex-end; gap: var(--tc-sp-3); }
+    .cr-recomendada { background: var(--tc-surface-quiet); }
+    .cr-falta { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); text-decoration: none; }
+    .cr-falta:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .cr-faceta--falta .rs-faceta__fila { min-height: 32px; }
+    .cr-aviso { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-6); padding: var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-green-bg); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .cr-aviso--info { background: var(--tc-info-bg); }
+    .cr-aviso p { margin: 0; min-width: 0; }
+    .cr-aviso strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .cr-enviado { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-6); margin-top: var(--tc-sp-3); }
+    .cr-detalle { flex: 1 1 320px; min-width: 0; }
+    .cr-detalle > summary { display: inline-flex; align-items: center; min-height: 36px; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--pp-teal-ink); cursor: pointer; list-style: none; }
+    .cr-detalle > summary::-webkit-details-marker { display: none; }
+    .cr-detalle > summary::after { content: ""; display: inline-block; margin-left: var(--tc-sp-2); width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform var(--tc-dur-fast) var(--tc-ease); }
+    .cr-detalle[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+    .cr-detalle > summary:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .cr-dl { display: grid; grid-template-columns: 128px minmax(0, 1fr); max-width: 760px; margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .cr-dl dt, .cr-dl dd { margin: 0; padding: var(--tc-sp-2) 0; border-top: 1px solid var(--tc-border); }
+    .cr-dl dt { padding-right: var(--tc-sp-4); color: var(--tc-text-m); }
+    .cr-dl dd { color: var(--tc-text-h); }
+    .cr-mas { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+
+    /* Aflojar un obligatorio / de dónde sale el cero */
+    .cr-lista { margin-top: 0; }
+    .cr-lista .pp-fila { align-items: center; }
+    .cr-cifra { font-size: var(--tc-fs-small); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+    .cr-cifra--culpable { color: var(--tc-text-m); }
+    .cr-cifra--culpable::before { background: var(--tc-amber); }
+    .cr-alterna { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cr-alterna strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .cr-falla-celda { font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink); white-space: nowrap; }
+    .cr-tabla-nombre { font-weight: var(--tc-fw-medium); }
+
+    @media (max-width: 1023px) {
+      .rs-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-4); }
+      .rs-obj { position: static; }
+      .rs-obj__abrir { display: flex; justify-content: space-between; }
+      .rs-obj__cabecera, .rs-obj__cuerpo { display: none; }
+    }
+    @media (max-width: 767px) {
+      .rs-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
+      .rs-busca { grid-template-columns: minmax(0, 1fr) auto; padding: var(--tc-sp-1); }
+      .rs-busca__campo { grid-column: 1 / -1; order: -1; padding: 0 var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); }
+      .rs-busca__input { min-height: 44px; font-size: var(--tc-fs-h3); padding-right: 0; }
+      .rs-busca__atajo { display: none; }
+      .rs-ambito { min-height: 44px; border-right: 0; }
+      .rs-cabecera { margin-top: var(--tc-sp-6); }
+      .rs-cabecera .pp-encabezado__meta { flex-direction: column; gap: var(--tc-sp-1); }
+      .rs-cabecera .pp-encabezado__meta > * + *::before { content: none; }
+      .rs-cabecera .pp-encabezado__acciones, .rs-cabecera .pp-encabezado__acciones .pp-btn { width: 100%; }
+      .rs-seg > * { min-height: 44px; }
+      .cr-opciones { width: 100%; }
+      .cr-opciones > * { flex: 1 1 50%; }
+      .cr-opciones > :nth-child(3) { border-left: 0; }
+      .cr-opciones > :nth-child(n+3) { border-top: 1px solid var(--tc-border); }
+      .cr-medida { padding: var(--tc-sp-5) var(--tc-sp-4); }
+      .cr-dos { grid-template-columns: minmax(0, 1fr); }
+      .cr-medida__pie .pp-btn { width: 100%; }
+      .cr-fila__acciones { flex-direction: row; justify-content: space-between; align-items: center; }
+      .cr-lista .pp-fila__acciones .pp-btn--primario, .cr-alterna .pp-btn { width: 100%; }
+      .cr-alterna { justify-content: space-between; }
+      .cr-enviado > .pp-btn { width: 100%; }
+      .cr-dl { grid-template-columns: minmax(0, 1fr); }
+      .cr-dl dd { padding-top: 0; border-top: 0; }
+      .cr-detalle > summary { min-height: 44px; }
+      .cr-seccion { margin-top: var(--tc-sp-8); }
     }
 
-
-    /* ── Solicitud a medida (prefijo sm-): resumen que viaja, confirmación y solicitud en curso (HU-077) ── */
-    .sm-spec { margin: 0 0 var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-4); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); }
-    .sm-spec__titulo { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); }
-    .sm-spec dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--tc-sp-2) var(--tc-sp-4); margin: 0; font-size:var(--tc-fs-caption); }
-    .sm-spec dt { font-family:var(--tc-font-heading); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .sm-spec dd { margin: 0; min-width: 0; color: var(--tc-text-b); }
-    .sm-spec .pp-chips { gap: var(--tc-sp-1); }
-    .sm-plazo { font-family:var(--pp-mono); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .sm-recibida { display: flex; gap: var(--tc-sp-4); align-items: flex-start; max-width: 640px; margin: var(--tc-sp-6) auto 0; padding: var(--tc-sp-5); background: var(--tc-accent); border: 1px solid var(--tc-primary); border-radius:var(--tc-r-lg); text-align: left; }
-    .sm-recibida__marca { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-teal-fill); color: var(--tc-bg-topbar); }
-    .sm-recibida__cuerpo { min-width: 0; flex: 1; }
-    .sm-recibida h3 { margin: 0; font-size:var(--tc-fs-body); }
-    .sm-recibida__texto { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .sm-pasos { display: grid; gap: var(--tc-sp-2); margin: var(--tc-sp-4) 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .sm-pasos li { display: flex; gap: var(--tc-sp-2); align-items: flex-start; }
-    .sm-pasos__n { display: grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius:var(--tc-r-pill); background: var(--tc-card); border: 1px solid var(--tc-primary-surface-border); font-family:var(--pp-mono); font-size:var(--tc-fs-badge); color: var(--tc-primary-ink); }
-    .sm-acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .rs-medida .pp-aviso { margin: 0 0 var(--tc-sp-4); }
-    @media (max-width: 767px) {
-      .sm-recibida { flex-direction: column; gap: var(--tc-sp-3); padding: var(--tc-sp-4); }
-      .sm-spec dl { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
-      .sm-spec dd + dt { margin-top: var(--tc-sp-2); }
-      .sm-acciones .pp-btn { width: 100%; }
-    }
+    .cr-seccion--pegada { margin-top: var(--tc-sp-4); }
   </style>
 </head>
 <body>
   <!-- región: navegación / cabecera -->
   <header class="pp-topbar">
-    <a class="pp-marca" href="inicio-busqueda.html" aria-label="Trycore · Portal de perfiles">
+    <a class="pp-marca" href="app-shell.html" aria-label="Trycore · Portal de perfiles">
       <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
       <span class="pp-marca__palabra">trycore</span>
       <span class="pp-marca__sep" aria-hidden="true">/</span>
@@ -399,10 +366,10 @@
     </a>
     <div class="pp-cuenta">
       <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
-      <p class="pp-cuenta__meta">Acceso válido hasta el 24 de octubre de 2026</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
     </div>
     <nav class="pp-topbar__nav" aria-label="Portal">
-      <a class="pp-navlink" href="aterrizaje-curado.html">Selección para ti</a>
+      <a class="pp-navlink" href="app-shell.html">Selección para ti</a>
       <a class="pp-navlink" href="inicio-busqueda.html" aria-current="page">Buscar</a>
     </nav>
     <a class="pp-equipo" href="mi-equipo.html">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">2</span><span class="pp-sr">2 perfiles en el equipo</span></a>
@@ -410,253 +377,148 @@
 
   <!-- región: contenido principal -->
   <main class="rs-main" id="contenido">
-    <section class="rs-hero" aria-labelledby="rs-h1">
-      <div class="rs-hero__centro">
-        <span class="rs-orbe" aria-hidden="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span>
-        <h1 id="rs-h1">Buenos días, Mauricio</h1>
-        <p class="rs-hero__sub">Cuéntanos qué talento necesitas y lo encontramos por ti.</p>
-        <form class="rs-cmd" action="#">
-          <div class="rs-cmd__campo">
-            <svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
-            <label for="instruccion" class="pp-sr">Describe el talento que necesitas</label>
-            <textarea id="instruccion" rows="2" aria-describedby="rs-atajo" placeholder="Ej.: necesito un ingeniero de aplicaciones móviles para banca">arquitecto de pagos inmediatos senior con ISO 20022 para que el equipo del banco opere el nuevo motor de pagos</textarea>
-          </div>
-          <div class="rs-cmd__pie">
-            <button type="button" class="rs-ambito" aria-label="Buscar en: todo el banco de People Service. Cambiar el ámbito"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>Todo el banco<svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-            <div class="rs-cmd__acciones">
-              <p class="rs-atajo" id="rs-atajo"><kbd class="rs-kbd">Enter</kbd>para buscar</p>
-              <button type="submit" class="pp-btn pp-btn--cta"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Buscar</button>
-            </div>
-          </div>
-        </form>
-        <p class="rs-nota">Buscar no compromete a ningún profesional: solo abre una conversación con nosotros.</p>
+    <form class="rs-busca" action="#" role="search">
+      <button type="button" class="rs-ambito" aria-label="Buscar en todo el banco. Cambiar dónde buscar">Todo el banco</button>
+      <div class="rs-busca__campo">
+        <svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <label for="instruccion" class="pp-sr">Qué talento necesitas</label>
+        <input class="rs-busca__input" id="instruccion" type="search" name="q" autocomplete="off" placeholder="Ej.: desarrollador backend Java con experiencia en banca" value="Arquitecto de pagos inmediatos senior con ISO 20022 para que el equipo del banco opere el nuevo motor de pagos">
+        <span class="rs-busca__atajo pp-kbd" aria-hidden="true">/</span>
       </div>
-    </section>
-    <div class="rs-capas">
-      <section class="rs-capa" aria-labelledby="rs-lectura-t">
-        <p class="rs-capa__rotulo" id="rs-lectura-t"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>Así entendimos tu instrucción</p>
-        <p class="rs-capa__lectura">Buscas a alguien que diseñe la arquitectura de pagos inmediatos, senior y con ISO 20022; si puede ser, con experiencia en banca y en modalidad híbrida.</p>
-        <ul class="pp-chips" aria-label="Criterios que salieron de tu instrucción"><li class="pp-chip pp-chip--obligatorio"><span>Rol ·</span><span class="pp-chip__valor">Arquitectura de pagos</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar rol: Arquitectura de pagos"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--obligatorio"><span>Seniority ·</span><span class="pp-chip__valor">Senior</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar seniority: Senior"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--obligatorio"><span>Tecnologías ·</span><span class="pp-chip__valor">ISO 20022</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar tecnologías: ISO 20022"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable"><span>Sector ·</span><span class="pp-chip__valor">Banca</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar sector: Banca"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable"><span>Modalidad ·</span><span class="pp-chip__valor">Híbrido</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar modalidad: Híbrido"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
-        <p class="rs-capa__pie">Si no es lo que querías decir, quita un criterio o ajústalo en «Perfil objetivo».</p>
-      </section>
-      <section class="rs-capa rs-capa--filtros" aria-labelledby="rs-filtros-t">
-        <p class="rs-capa__rotulo" id="rs-filtros-t"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>Filtros que añadiste encima</p>
-        <p class="rs-capa__ayuda">Ninguno. El cero sale de los criterios de tu instrucción.</p>
-      </section>
+      <button type="submit" class="pp-btn pp-btn--primario">Buscar</button>
+    </form>
+    <p class="rs-lectura" aria-label="Cómo leímos tu instrucción"><strong>Leímos:</strong> arquitectura de pagos, senior, ISO 20022; banca e híbrido si se puede.</p>
+
+    <div class="pp-encabezado rs-cabecera">
+      <div class="pp-encabezado__texto">
+        <h1 class="pp-encabezado__titulo" id="rs-h1">Ningún perfil cumple los 3 obligatorios</h1>
+        <p class="pp-encabezado__meta"><span>Arquitectura de pagos + Senior + ISO 20022 a la vez</span><span><a class="pp-enlace" href="#cercanos">4 fallan uno solo</a></span></p>
+      </div>
     </div>
 
     <div class="rs-cuerpo">
-      <!-- región: panel lateral — Perfil objetivo, completo y editable (HU-075); el reto va primero (HU-083) -->
-      <aside class="rs-objetivo" aria-labelledby="rs-objetivo-t">
-        <div class="rs-objetivo__cabecera">
-          <h2 id="rs-objetivo-t">Perfil objetivo</h2>
-          <p>Obligatorio reduce el conjunto. Deseable lo ordena y se cuenta en la evidencia de cada tarjeta.</p>
-          <p class="rs-conteo" aria-live="polite"><span class="rs-conteo__cifra pp-mono">0</span> perfiles cumplen lo obligatorio</p>
-          <button type="button" class="pp-btn pp-btn--contorno pp-btn--bloque rs-ajustar" aria-expanded="false">Ajustar criterios · 3 obligatorios, 2 deseables<svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <!-- región: Perfil objetivo — completo y editable, única fuente de la especificación (HU-075); el reto va primero (HU-083) -->
+      <aside class="rs-obj" aria-labelledby="rs-obj-t">
+        <button type="button" class="pp-btn pp-btn--contorno pp-btn--bloque rs-obj__abrir" aria-expanded="false">Perfil objetivo<span class="pp-meta">3 obligatorios · 2 deseables</span></button>
+        <div class="rs-obj__cabecera">
+          <h2 class="rs-obj__titulo" id="rs-obj-t">Perfil objetivo</h2>
+          <span class="pp-meta" aria-live="polite"><span class="pp-mono">0</span> perfiles</span>
         </div>
-        <div class="rs-objetivo__cuerpo">
-          <div class="pp-campo cr-reto-campo">
-            <label class="pp-label" for="rs-apertura">¿Qué tiene que quedar funcionando cuando el proyecto termine? <span class="pp-label__opcional">(opcional)</span></label>
-            <textarea class="pp-input pp-input--area" id="rs-apertura" aria-describedby="rs-apertura-ayuda" placeholder="Ej.: el equipo interno del banco operando el motor de pagos sin acompañamiento">El equipo interno del banco operando el nuevo motor de pagos inmediatos sin acompañamiento externo</textarea>
-            <p class="pp-ayuda" id="rs-apertura-ayuda">No filtra perfiles. Viaja con la solicitud y orienta la conversación.</p>
+        <div class="rs-obj__cuerpo">
+          <div class="pp-campo rs-reto">
+            <label class="pp-label" for="rs-apertura">¿Qué debe quedar funcionando al terminar? <span class="pp-label__opcional">(opcional, no filtra)</span></label>
+            <textarea class="pp-input pp-input--area" id="rs-apertura" placeholder="Ej.: el equipo del banco operando el motor de pagos">El equipo interno del banco operando el nuevo motor de pagos inmediatos sin acompañamiento externo</textarea>
           </div>
-          <ul class="rs-campos">
-        <li class="rs-campo">
-          <div class="rs-campo__fila">
-            <span class="rs-campo__etiqueta"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rol</span>
-            <span class="rs-modo" role="group" aria-label="Modo del criterio rol"><button type="button" class="rs-modo__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-modo__des" aria-pressed="false">Deseable</button></span>
-          </div>
-          <button type="button" class="rs-valor" aria-expanded="false"><span class="rs-valor__texto">Arquitectura de pagos</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        </li>
-        <li class="rs-campo">
-          <div class="rs-campo__fila">
-            <span class="rs-campo__etiqueta"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg>Tecnologías</span>
-            <span class="rs-modo" role="group" aria-label="Modo del criterio tecnologías"><button type="button" class="rs-modo__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-modo__des" aria-pressed="false">Deseable</button></span>
-          </div>
-          <button type="button" class="rs-valor" aria-expanded="false"><span class="rs-valor__texto">ISO 20022</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        </li>
-        <li class="rs-campo">
-          <div class="rs-campo__fila">
-            <span class="rs-campo__etiqueta"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V14M10 20V9M16 20V4"/></svg>Seniority</span>
-            <span class="rs-modo" role="group" aria-label="Modo del criterio seniority"><button type="button" class="rs-modo__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-modo__des" aria-pressed="false">Deseable</button></span>
-          </div>
-          <button type="button" class="rs-valor" aria-expanded="false"><span class="rs-valor__texto">Senior</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        </li>
-        <li class="rs-campo">
-          <div class="rs-campo__fila">
-            <span class="rs-campo__etiqueta"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg>Sector</span>
-            <span class="rs-modo" role="group" aria-label="Modo del criterio sector"><button type="button" class="rs-modo__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-modo__des" aria-pressed="true">Deseable</button></span>
-          </div>
-          <button type="button" class="rs-valor" aria-expanded="false"><span class="rs-valor__texto">Banca</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        </li>
-        <li class="rs-campo">
-          <div class="rs-campo__fila">
-            <span class="rs-campo__etiqueta"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Modalidad</span>
-            <span class="rs-modo" role="group" aria-label="Modo del criterio modalidad"><button type="button" class="rs-modo__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-modo__des" aria-pressed="true">Deseable</button></span>
-          </div>
-          <button type="button" class="rs-valor" aria-expanded="false"><span class="rs-valor__texto">Híbrido</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        </li>
-        <li class="rs-campo">
-          <div class="rs-campo__fila">
-            <span class="rs-campo__etiqueta"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Ubicación</span>
-            <span class="rs-modo" role="group" aria-label="Modo del criterio ubicación"><button type="button" class="rs-modo__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-modo__des" aria-pressed="true">Deseable</button></span>
-          </div>
-          <button type="button" class="rs-valor rs-valor--vacio" aria-expanded="false"><span class="rs-valor__texto">Sin definir</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        </li>
+          <ul class="rs-facetas">
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-rol">Rol</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Rol: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-rol v-rol"><span id="v-rol">Arquitectura de pagos</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-seniority">Seniority</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Seniority: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-seniority v-seniority"><span id="v-seniority">Senior</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-tecnologias">Tecnologías</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Tecnologías: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-tecnologias v-tecnologias"><span id="v-tecnologias">ISO 20022</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-sector">Sector</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Sector: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-sector v-sector"><span id="v-sector">Banca</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-modalidad">Modalidad</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Modalidad: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-modalidad v-modalidad"><span id="v-modalidad">Híbrido</span></button>
+            </li>
+            <li class="rs-faceta rs-faceta--vacia">
+              <div class="rs-faceta__fila"><span class="rs-faceta__etiqueta" id="f-ubicacion">Ubicación</span></div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-ubicacion v-ubicacion"><span id="v-ubicacion">Cualquiera</span></button>
+            </li>
           </ul>
-          <div class="rs-objetivo__pie">
-            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--bloque">Quitar todos los criterios</button>
-          </div>
+          <div class="rs-obj__pie"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Quitar todos los criterios</button></div>
         </div>
       </aside>
 
-      <!-- región: resultados — el camino del cero -->
-      <section class="rs-res" aria-labelledby="rs-res-t">
-        <div class="rs-cero cr-cero" aria-labelledby="rs-res-t">
-          <div class="cr-cero__cabeza">
-            <div class="rs-cero__icono" aria-hidden="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8.5 8.5l5 5M13.5 8.5l-5 5"/></svg></div>
-            <h2 id="rs-res-t">Ningún perfil cumple los 3 criterios obligatorios a la vez</h2>
-            <p>Hoy no tenemos en el banco un perfil de arquitectura de pagos senior con ISO 20022. Tu especificación queda tal como la escribiste: puedes ajustarla o pedirnos el perfil a medida.</p>
-          </div>
-          <div class="cr-espec" aria-label="Tu especificación">
-            <div>
-              <p class="cr-espec__rotulo">Tu reto</p>
-              <blockquote class="cr-reto"><p class="cr-reto__texto">«El equipo interno del banco operando el nuevo motor de pagos inmediatos sin acompañamiento externo»</p><p class="cr-reto__pie">Viaja con la solicitud. Puedes editarlo en «Perfil objetivo».</p></blockquote>
-            </div>
-            <div>
-              <p class="cr-espec__rotulo">Obligatorios · cada perfil debe cumplirlos todos</p>
-              <ul class="pp-chips" aria-label="Criterios obligatorios"><li class="pp-chip pp-chip--obligatorio"><span>Rol ·</span><span class="pp-chip__valor">Arquitectura de pagos</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar rol: Arquitectura de pagos"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--obligatorio"><span>Seniority ·</span><span class="pp-chip__valor">Senior</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar seniority: Senior"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--obligatorio"><span>Tecnologías ·</span><span class="pp-chip__valor">ISO 20022</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar tecnologías: ISO 20022"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
-              <p class="cr-espec__ayuda">Quita un obligatorio y vuelve a mirar, o pídenos el perfil tal como está.</p>
-            </div>
-            <div>
-              <p class="cr-espec__rotulo">Deseables · ordenan, no descartan</p>
-              <ul class="pp-chips" aria-label="Criterios deseables"><li class="pp-chip pp-chip--deseable"><span>Sector ·</span><span class="pp-chip__valor">Banca</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar sector: Banca"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable"><span>Modalidad ·</span><span class="pp-chip__valor">Híbrido</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar modalidad: Híbrido"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
-            </div>
-          </div>
-          <div class="sm-recibida" role="status" aria-labelledby="sm-recibida-t">
-            <span class="sm-recibida__marca" aria-hidden="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
-            <div class="sm-recibida__cuerpo">
-              <h3 id="sm-recibida-t">Recibimos tu solicitud <span class="pp-mono">SM-0047</span></h3>
-              <p class="sm-recibida__texto">Te respondemos con perfiles candidatos en <span class="sm-plazo">10</span> días hábiles, a más tardar el <strong>viernes 9 de octubre de 2026</strong>. Quedó registrada: no tienes que volver a enviarla.</p>
-              <ol class="sm-pasos" aria-label="Qué pasa ahora">
-                <li><span class="sm-pasos__n" aria-hidden="true">1</span><span>Nuestro equipo de People Service revisa tu especificación y busca fuera del banco.</span></li>
-                <li><span class="sm-pasos__n" aria-hidden="true">2</span><span>Te presentamos una terna con la evidencia de cada perfil, criterio por criterio.</span></li>
-                <li><span class="sm-pasos__n" aria-hidden="true">3</span><span>Tú decides si alguno pasa a tu equipo. Nada de esto compromete a nadie.</span></li>
-              </ol>
-            <div class="sm-spec">
-              <p class="sm-spec__titulo">Lo que enviamos a nuestro equipo</p>
-              <dl>
-                <dt>Tu instrucción</dt><dd>«arquitecto de pagos inmediatos senior con ISO 20022 para que el equipo del banco opere el nuevo motor de pagos»</dd>
-                <dt>Obligatorios</dt><dd><ul class="pp-chips" aria-label="Criterios obligatorios"><li class="pp-chip pp-chip--obligatorio"><span>Rol ·</span><span class="pp-chip__valor">Arquitectura de pagos</span></li><li class="pp-chip pp-chip--obligatorio"><span>Seniority ·</span><span class="pp-chip__valor">Senior</span></li><li class="pp-chip pp-chip--obligatorio"><span>Tecnologías ·</span><span class="pp-chip__valor">ISO 20022</span></li></ul></dd>
-                <dt>Deseables</dt><dd><ul class="pp-chips" aria-label="Criterios deseables"><li class="pp-chip pp-chip--deseable"><span>Sector ·</span><span class="pp-chip__valor">Banca</span></li><li class="pp-chip pp-chip--deseable"><span>Modalidad ·</span><span class="pp-chip__valor">Híbrido</span></li></ul></dd>
-                <dt>Tu reto</dt><dd>El equipo interno del banco operando el nuevo motor de pagos inmediatos sin acompañamiento externo.</dd><dt>Inicio</dt><dd>En 2 a 4 semanas</dd><dt>Tu nota</dt><dd>Debe conocer normativa de la Superintendencia Financiera.</dd>
-              </dl>
-            </div>
-              <div class="sm-acciones">
-                <a class="pp-btn pp-btn--contorno" href="inicio-busqueda.html">Seguir buscando</a>
-                <a class="pp-btn pp-btn--fantasma" href="mi-equipo.html">Ver mi equipo</a>
-              </div>
-            </div>
-          </div>
+      <!-- región: pedir el perfil a medida (lo único que cambia respecto de cero-resultados) -->
+      <section class="rs-res" aria-labelledby="rs-h1">
+        <div class="cr-aviso" role="status">
+          <p><strong>Recibimos tu solicitud <span class="pp-mono">SM-0047</span></strong> · te respondemos a más tardar el viernes <span class="pp-mono">9</span> oct</p>
+        </div>
+        <div class="cr-enviado">
+          <details class="cr-detalle">
+            <summary>Ver lo enviado</summary>
+            <dl class="cr-dl"><dt>Tu búsqueda</dt><dd>«Arquitecto de pagos inmediatos senior con ISO 20022 para que el equipo del banco opere el nuevo motor de pagos»</dd><dt>Obligatorios</dt><dd>Rol: Arquitectura de pagos · Seniority: Senior · Tecnologías: ISO 20022</dd><dt>Deseables</dt><dd>Sector: Banca · Modalidad: Híbrido</dd><dt>Reto</dt><dd>El equipo interno del banco operando el nuevo motor de pagos inmediatos sin acompañamiento externo</dd><dt>Inicio</dt><dd>En 2 a 4 semanas</dd><dt>Tu nota</dt><dd>Debe conocer la normativa de la Superintendencia Financiera</dd></dl>
+          </details>
+          <a class="pp-btn pp-btn--contorno" href="inicio-busqueda.html">Hacer otra búsqueda</a>
         </div>
 
-        <section class="cr-seccion" aria-labelledby="cr-cercanos-t">
-          <div class="cr-seccion__cabecera">
+        <section class="cr-seccion" id="cercanos" aria-labelledby="cr-cercanos-t">
+          <div class="pp-seccion__cabecera">
             <div>
-              <h2 id="cr-cercanos-t">Lo más cercano · aproximaciones</h2>
-              <p>Perfiles que fallan exactamente un criterio obligatorio. Te decimos cuál y en qué sí se parecen a lo que pediste.</p>
+              <h2 class="pp-seccion__titulo" id="cr-cercanos-t">Mientras tanto, lo más cercano</h2>
+              <p class="cr-seccion__meta">Fallan exactamente un obligatorio. Primero quien cumple más deseables.</p>
             </div>
           </div>
-          <ul class="pp-rejilla-perfiles pp-lista">
-        <li><article class="pp-perfil" aria-labelledby="cr-ps-0142">
-          <p class="cr-falla"><span aria-hidden="true">!</span>Falla un obligatorio: Rol</p>
-          <div class="pp-perfil__cabecera">
-            <div>
-              <h3 class="pp-perfil__rol" id="cr-ps-0142">Desarrolladora backend Java</h3>
-              <p class="pp-perfil__nombre">Laura Méndez</p>
+          <ul class="pp-filas" aria-label="Perfiles que fallan un solo obligatorio">
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><a href="ficha-perfil.html">Desarrolladora backend Java</a> <span class="cr-fila__titulo-sub">Laura Méndez</span> <span class="cr-codigo">PS-0142</span></p>
+              <p class="pp-fila__meta"><span class="cr-falla">Falla Rol</span> · Cumple 2 de 3 obligatorios · 2 de 2 deseables</p>
+              <div class="cr-evid">
+                <ul class="cr-evid__grupo cr-evid__grupo--verificado" aria-label="Verificado por Trycore"><li class="cr-evid__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Senior</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>ISO 20022</li></ul>
+                <ul class="cr-evid__grupo" aria-label="Declarado por la profesional"><li class="cr-evid__rotulo">Declarado por la profesional</li><li class="cr-no-cumple"><span class="cr-no" aria-hidden="true">–</span><span class="pp-sr">No cumple: </span>Rol: desarrollo backend</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Banca</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Híbrido</li></ul>
+              </div>
             </div>
-            <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
-          </div>
-          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Java</li><li class="pp-tag">Spring Boot</li><li class="pp-tag">ISO 20022</li><li class="pp-tag">Kafka</li></ul>
-          <ul class="pp-perfil__meta"><li>Banca</li><li>Híbrido</li><li>Medellín, Colombia</li></ul>
-          <p class="cr-aporta"><strong>Aporta a tu reto:</strong> acompañó la transferencia del motor de conciliación al equipo interno de una entidad financiera.</p>
-          <div class="pp-evidencia">
-            <p class="pp-evidencia__conteo">Cumple 2 de 3 obligatorios · 2 de 2 deseables</p>
-            <div class="pp-bloque pp-bloque--verificado">
-              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
-              <ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Senior · validado en prueba técnica</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>ISO 20022 · mensajería de pagos revisada en la prueba</span></li></ul>
+            <div class="pp-fila__acciones cr-fila__acciones">
+              <span class="pp-estado pp-estado--ok">Disponible ahora</span>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false" aria-label="Sumar a Laura Méndez al equipo">Sumar al equipo</button>
             </div>
-            <div class="pp-bloque pp-bloque--declarado">
-              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p>
-              <ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Rol declarado: desarrollo backend (se pide arquitectura de pagos)</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 8 años declarados</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Híbrido</span></li></ul>
+          </li>
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><a href="ficha-perfil.html">Arquitecta de soluciones de pagos</a> <span class="cr-fila__titulo-sub">Carolina Vélez</span> <span class="cr-codigo">PS-0284</span></p>
+              <p class="pp-fila__meta"><span class="cr-falla">Falla Tecnologías</span> · Cumple 2 de 3 obligatorios · 2 de 2 deseables</p>
+              <div class="cr-evid">
+                <ul class="cr-evid__grupo cr-evid__grupo--verificado" aria-label="Verificado por Trycore"><li class="cr-evid__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Arquitectura de pagos</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Senior</li></ul>
+                <ul class="cr-evid__grupo" aria-label="Declarado por la profesional"><li class="cr-evid__rotulo">Declarado por la profesional</li><li class="cr-no-cumple"><span class="cr-no" aria-hidden="true">–</span><span class="pp-sr">No cumple: </span>Tecnologías: ISO 8583</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Banca</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Híbrido</li></ul>
+              </div>
             </div>
-          </div>
-          <div class="pp-perfil__pie">
-            <a class="pp-btn pp-btn--primario pp-btn--sm" href="ficha-perfil.html">Ver ficha</a>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
-            <span class="pp-codigo-perfil">PS-0142</span>
-          </div>
-        </article></li>
-        <li><article class="pp-perfil" aria-labelledby="cr-ps-0284">
-          <p class="cr-falla"><span aria-hidden="true">!</span>Falla un obligatorio: Tecnologías</p>
-          <div class="pp-perfil__cabecera">
-            <div>
-              <h3 class="pp-perfil__rol" id="cr-ps-0284">Arquitecta de soluciones de pagos</h3>
-              <p class="pp-perfil__nombre">Carolina Vélez</p>
+            <div class="pp-fila__acciones cr-fila__acciones">
+              <span class="pp-estado pp-estado--neutro">En 2 a 4 semanas</span>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false" aria-label="Sumar a Carolina Vélez al equipo">Sumar al equipo</button>
             </div>
-            <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
-          </div>
-          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">ISO 8583</li><li class="pp-tag">Java</li><li class="pp-tag">AWS</li></ul>
-          <ul class="pp-perfil__meta"><li>Banca</li><li>Híbrido</li><li>Bogotá, Colombia</li></ul>
-          <p class="cr-aporta"><strong>Aporta a tu reto:</strong> diseñó la operación de un canal de pagos con tarjeta y lo entregó al equipo interno del banco.</p>
-          <div class="pp-evidencia">
-            <p class="pp-evidencia__conteo">Cumple 2 de 3 obligatorios · 2 de 2 deseables</p>
-            <div class="pp-bloque pp-bloque--verificado">
-              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
-              <ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Arquitectura de pagos · validado en entrevista técnica</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Senior · 12 años, validado en entrevista técnica</span></li></ul>
+          </li>
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><a href="ficha-perfil.html">Líder técnico Java</a> <span class="cr-fila__titulo-sub">Santiago Herrera</span> <span class="cr-codigo">PS-0061</span></p>
+              <p class="pp-fila__meta"><span class="cr-falla">Falla Rol</span> · Cumple 2 de 3 obligatorios · 1 de 2 deseables</p>
+              <div class="cr-evid">
+                <ul class="cr-evid__grupo cr-evid__grupo--verificado" aria-label="Verificado por Trycore"><li class="cr-evid__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Senior</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>ISO 20022</li></ul>
+                <ul class="cr-evid__grupo" aria-label="Declarado por el profesional"><li class="cr-evid__rotulo">Declarado por el profesional</li><li class="cr-no-cumple"><span class="cr-no" aria-hidden="true">–</span><span class="pp-sr">No cumple: </span>Rol: liderazgo técnico</li><li><span class="cr-si" aria-hidden="true">✓</span><span class="pp-sr">Cumple: </span>Banca</li><li class="cr-no-cumple"><span class="cr-no" aria-hidden="true">–</span><span class="pp-sr">No cumple: </span>Modalidad: remoto</li></ul>
+              </div>
             </div>
-            <div class="pp-bloque pp-bloque--declarado">
-              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p>
-              <ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Declara ISO 8583, no ISO 20022 (se pide ISO 20022)</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 7 años declarados</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Híbrido</span></li></ul>
+            <div class="pp-fila__acciones cr-fila__acciones">
+              <span class="pp-estado pp-estado--neutro">En 2 a 4 semanas</span>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false" aria-label="Sumar a Santiago Herrera al equipo">Sumar al equipo</button>
             </div>
-          </div>
-          <div class="pp-perfil__pie">
-            <a class="pp-btn pp-btn--primario pp-btn--sm" href="ficha-perfil.html">Ver ficha</a>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
-            <span class="pp-codigo-perfil">PS-0284</span>
-          </div>
-        </article></li>
-        <li><article class="pp-perfil" aria-labelledby="cr-ps-0061">
-          <p class="cr-falla"><span aria-hidden="true">!</span>Falla un obligatorio: Rol</p>
-          <div class="pp-perfil__cabecera">
-            <div>
-              <h3 class="pp-perfil__rol" id="cr-ps-0061">Líder técnico Java</h3>
-              <p class="pp-perfil__nombre">Santiago Herrera</p>
-            </div>
-            <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
-          </div>
-          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Java</li><li class="pp-tag">ISO 20022</li><li class="pp-tag">Arquitectura de microservicios</li></ul>
-          <ul class="pp-perfil__meta"><li>Banca · Pagos</li><li>Remoto</li><li>Bogotá, Colombia</li></ul>
-          <p class="cr-aporta"><strong>Aporta a tu reto:</strong> formó a dos equipos internos para operar una plataforma de pagos en tiempo real.</p>
-          <div class="pp-evidencia">
-            <p class="pp-evidencia__conteo">Cumple 2 de 3 obligatorios · 1 de 2 deseables</p>
-            <div class="pp-bloque pp-bloque--verificado">
-              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
-              <ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Senior · 11 años, validado en entrevista técnica</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>ISO 20022 · validado en entrevista técnica</span></li></ul>
-            </div>
-            <div class="pp-bloque pp-bloque--declarado">
-              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por el profesional</p>
-              <ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Rol declarado: liderazgo técnico (se pide arquitectura de pagos)</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 6 años declarados</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Trabaja remoto (se prefiere híbrido)</span></li></ul>
-            </div>
-          </div>
-          <div class="pp-perfil__pie">
-            <a class="pp-btn pp-btn--primario pp-btn--sm" href="ficha-perfil.html">Ver ficha</a>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
-            <span class="pp-codigo-perfil">PS-0061</span>
-          </div>
-        </article></li>
+          </li>
           </ul>
-          <p class="cr-limite">Mostramos los 3 más cercanos de 4, ordenados por cuántos deseables cumplen.<a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido">Ver el otro</a></p>
+          <div class="cr-mas"><span><span class="pp-mono">3</span> de <span class="pp-mono">4</span></span><a class="pp-btn pp-btn--contorno pp-btn--sm" href="cero-resultados--cercanos.html">Ver el otro</a></div>
         </section>
       </section>
     </div>

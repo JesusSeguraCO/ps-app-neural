@@ -48,12 +48,12 @@
 | 38 | cero-resultados | El cero con la especificación a la vista | EP-010 | 075, 076, 118, 083 | v2-existe | --por-filtro, --cercanos, --obligatorio-vaciante, --vaga |
 | 39 | solicitud-a-medida | Pedir el perfil que no existe | EP-010 | 077 | v2-existe | --enviada, --ya-existente |
 | 40 | demanda-no-cubierta | Registro de demanda (panel) | EP-010 | 078, 085 | nueva | --vacia |
-| 41 | envios-curados | Selección y enlaces por contacto | EP-011 | 113, 114 | nueva | --perfil-cambio, --sin-proyecto, --contacto-sin-cuenta |
-| 42 | programar-envio | Programar el boletín | EP-011 | 115 | nueva | --bloqueado, --excluidas |
-| 43 | seguimiento-envios | Quién abrió y quién entró | EP-011 | 116, 117 | nueva | --sin-dato-apertura, --cuenta-escalada, --entregabilidad |
-| 44 | correo-boletin-curado | Correo del boletín curado | EP-011 | 113, 114, 115 | nueva | --sin-proyecto |
+| 41 | selecciones-curadas | Selección curada y enlaces por destinatario | EP-011 | 113, 114 | nueva | --destinatario-sin-cuenta, --enlace-perdido, --perfil-cambio, --perfil-repetido, --sin-proyecto |
+| 42 | enlaces-y-contenido | Enlaces y contenido listo para Gmail/HubSpot | EP-011 | 115 | nueva | --cadencia-vencida, --contacto-sin-cuenta, --desactualizado, --enlace-no-visible, --excluidos, --salida-registrada, --sin-razon |
+| 43 | seguimiento-envios | Quién entró por su enlace | EP-011 | 116, 117 | nueva | --cuenta-escalada, --entregabilidad, --sin-salida-registrada |
+| 44 | correo-boletin-curado | Vista previa del bloque curado (se envía desde Gmail o HubSpot) | EP-011 | 113, 114, 115 | nueva | --hubspot, --sin-proyecto |
 
-**Totales:** 44 pantallas base (12 v2-existe · 12 v2-adaptar · 20 nuevas) · 103 variantes de estado (98 iniciales + 3 añadidas en la generación + 2 por el crítico de completitud: HU-073 y HU-103).
+**Totales:** 44 pantallas base · 116 variantes de estado (rediseño con oficio del 2026-09-27; EP-011 rehecha: el boletín se arma y envía desde Gmail o HubSpot, el portal entrega selección curada y enlaces por destinatario).
 
 **Historias sin interfaz del portal** (comportamiento de backend/CRM, verificadas en sus slices, no en el prototipo): HU-102, HU-104, HU-106, HU-107 (EP-007). HU-079 descartada.
 

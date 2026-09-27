@@ -31,6 +31,19 @@ add:
 > la visita por la función `completar_visita` (el `UPDATE` directo exigía `SELECT`); las vistas `v_*`
 > son de `ps_eventos_dueno`; y el endpoint anónimo `POST /api/v1/eventos/acceso` se retira: el token
 > solo viaja a `POST /acceso/enlace`, que escribe `enlace_abierto` (rige ADR-0002, H9).
+>
+> **Decisión de negocio 2026-09-27 (sponsor, PRD v4.14 RF-18):** el boletín se confecciona y envía desde
+> Gmail o HubSpot; el portal entrega la selección curada, el enlace por destinatario y el bloque para
+> copiar. Consecuencias en esta ADR: (1) `envio_id` identifica la **edición curada** del panel
+> (`ediciones_curadas`, ADR-0009), no un envío hecho por el portal; (2) **la apertura del correo no la
+> mide el portal**: se retira la apertura por el seguimiento de Mailgun recibida por webhook (fila de la
+> enmienda de plataforma, retirada el 2026-09-27) y el informe muestra «no la mide el portal», nunca
+> cero; (3) la regla de tres envíos (RF-18.6) se mide por **entradas** (`enlace_abierto` /
+> `verificacion_ok`) sobre ediciones con **salida registrada**; (4) nueva función
+> `telemetria.entradas_por_envio(envio_ids uuid[])`, `SECURITY DEFINER` de `ps_eventos_dueno`, que
+> devuelve solo conteos por (`envio_id`, `contacto_id`, tipo) sin filas de evento; `EXECUTE` para
+> `ps_worker` (tarea `evaluar_correo_curado`) y `ps_panel` (seguimiento de HU-116). No es un recorte:
+> la apertura pasa a HubSpot por decisión del sponsor.
 
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
@@ -56,7 +69,8 @@ add:
 - **Drivers abordados:**
   - Funcionales: UC-17 (telemetría con atribución: RF-7.1–RF-7.4, RF-2.6.3, RF-18.6; EP-008 ·
     HU-108–112). Apoyo: UC-1 (el paso de acceso genera los primeros eventos del embudo) y UC-16 (la
-    entrada al portal alimenta la medición del correo curado y la regla de tres envíos).
+    entrada al portal por el enlace de cada destinatario es la medida del correo curado y de la regla
+    de tres envíos; la apertura queda en la herramienta de envío, decisión de negocio 2026-09-27).
   - Atributos de calidad: QA-21 (100 % de solicitudes vinculadas a cuenta, contacto, sesión,
     conjunto curado y correo de origen; ≥ 99 % de sesiones por enlace atribuidas a un envío
     *a validar*; pérdida de eventos ≤ 1 % *a validar*). Se apoya en QA-5 (0 datos de perfil fuera
@@ -255,7 +269,7 @@ externa de analítica.
 | QA-13 · retención vigilada | ✅ | `RetencionEventos` registra cada corrida en `tareas_ejecucion` y entra en la alerta de 2× su intervalo (ADR-0005). Plan: test con reloj simulado sobre eventos de 11, 13 y 25 meses | Si la tarea deja de correr, la retención se incumple en silencio hasta que salte la alerta (≤ 48 h) |
 | CON-3 · sin dependencias de runtime | ✅ | Sin SDK de analítica ni paquetes nuevos; `stack-allowlist.json` prohíbe SDKs de terceros en `apps/portal` y `apps/panel`. Plan: el hook `stack-guard.sh` y el gate `stack_arch` lo comprueban | — |
 | CRN-10 · retención y datos personales | ⚠️ | Retención de 24 meses aceptada por el sponsor (2026-09-25), seudónimo a los 12, con mecanismo técnico | Falta reflejarla en el texto del aviso de privacidad |
-| CRN-5 · medición del correo sin píxel fiable | ⚠️ | La entrada al portal y el clic se miden en primera parte y sirven de señal fiable; la apertura por píxel queda como `sin_dato` cuando no llega | La regla «3 envíos sin abrir» (RF-18.6) pasa a medirse por clic o entrada, lo que cambia su significado (ver §6) |
+| CRN-5 · medición del correo sin píxel fiable | ✅ | La entrada por el enlace del destinatario y la verificación se miden en primera parte; **la apertura no la mide el portal** (el boletín sale por Gmail o HubSpot, decisión de negocio 2026-09-27) y el informe lo dice en lugar de mostrar cero | La regla «3 envíos sin abrir» (RF-18.6) pasa a «3 envíos con salida registrada sin entrada»; depende de que alguien registre la salida en el panel (ADR-0009) |
 
 **Drivers no resueltos en esta iteración:** la
 regla de atribución heredada y su ventana (QA-21), la tolerancia de pérdida (QA-21), el límite de
@@ -294,6 +308,9 @@ arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-0
     el aviso de privacidad.
   - **Regla «3 envíos sin abrir» (RF-18.6): por clic o entrada, no por apertura.** El píxel no es
     fiable con SMTP propio; se acepta que una cuenta que lee sin hacer clic cuente como «sin abrir».
+    *Ratificada el 2026-09-27 (decisión de negocio, PRD v4.14): el portal ya no envía el boletín, así que
+    la regla es «tres envíos con salida registrada sin entrada» y la apertura, si interesa, se lee en
+    HubSpot.*
 - **Trade-offs de negocio abiertos (decide Mercadeo con el responsable de datos):**
   - **Atribución heredada del último envío** y su ventana (propuesta de 90 días): define cuánto
     crédito recibe el correo curado en los informes.
@@ -343,10 +360,10 @@ arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-0
 | Endpoints PHP `RegistrarEventos` y `RegistrarEventosAcceso` | Route Handlers `POST /api/v1/eventos` y `POST /api/v1/eventos/acceso` del portal con esquema `zod` por tipo (*el segundo se retira en la consolidación, 2.ª pasada: ver «Revisión adversarial», fila del endpoint anónimo*) |
 | Limitador de eventos en la aplicación (tabla MariaDB) | Tabla `limites` en PostgreSQL (ADR-0010); los eventos siguen fuera de la regla única de Cloudflare |
 | Cron `RetencionEventos` | Tarea `retencion_eventos` del planificador del worker (ADR-0009) |
-| Apertura de correo por píxel propio con SMTP del hosting (CRN-5) | Apertura por el seguimiento de Mailgun, recibida por webhook (ADR-0009), tratada como señal débil; la regla de «3 envíos sin abrir» sigue midiéndose por clic o entrada (T-10) |
+| Apertura de correo por píxel propio con SMTP del hosting (CRN-5) | ~~Apertura por el seguimiento de Mailgun, recibida por webhook (ADR-0009), tratada como señal débil~~ **Retirada el 2026-09-27 (decisión de negocio, RF-18):** el boletín sale por Gmail o HubSpot y el portal no mide la apertura; la regla de tres envíos se mide por entrada sobre ediciones con salida registrada (T-10) |
 | ModSecurity puede bloquear los POST de eventos | No aplica |
 
-**Veredictos que cambian en §5:** CRN-5 ✅ (eventos de Mailgun firmados); el resto sin cambios.
+**Veredictos que cambian en §5:** CRN-5 ✅ (eventos de Mailgun firmados; *desde el 2026-09-27, porque el portal ya no mide la apertura del boletín: solo entradas*); el resto sin cambios.
 
 ### Revisión adversarial (2026-09-26)
 

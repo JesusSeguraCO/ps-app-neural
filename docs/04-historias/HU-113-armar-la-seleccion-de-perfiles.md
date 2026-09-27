@@ -6,12 +6,14 @@ prioridad: alta
 complejidad: M
 estado: draft
 fase: cierre-de-huecos
-prd_version: 4.0
+prd_version: 4.14
 ---
 
 # HU-113 — Armar la selección de perfiles de una cuenta
 
-**Como** responsable de la distribución en Mercadeo,
+> **Decisión de negocio 2026-09-27 (sponsor):** el boletín se confecciona y envía desde Gmail o HubSpot; el portal entrega la selección curada, el enlace de cada destinatario y el bloque de contenido para copiar (PRD v4.14, RF-18).
+
+**Como** responsable de la distribución en Mercadeo o Talento Humano,
 **quiero** elegir desde el panel los perfiles que le voy a proponer a una cuenta, viendo su disponibilidad real,
 **para** no proponer gente que ya no está disponible cuando el cliente abra el correo.
 
@@ -19,33 +21,39 @@ prd_version: 4.0
 
 ### Happy path
 
-**Dado** que voy a armar el envío de una cuenta,
+**Dado** que preparo la edición curada de una cuenta,
 **cuando** abro la selección,
 **Entonces** veo el inventario publicado con su disponibilidad en ese momento
 **Y** elijo perfiles y escribo la razón de la selección referida al proyecto de la cuenta
 
-### Error — un perfil seleccionado cambia antes del envío
+### Error — un perfil seleccionado cambia antes de generar el contenido
 
-**Dado** que el perfil se pausa después de que lo elegí,
-**cuando** voy a enviar,
-**Entonces** el sistema me lo advierte antes de enviar
+**Dado** que un perfil se pausa o deja de estar publicado después de que lo elegí,
+**cuando** voy a generar los enlaces y el bloque para copiar,
+**Entonces** el panel me lo advierte antes de generarlos
 **Y** puedo reemplazarlo o quitarlo
 
 ### Edge case — la cuenta no tiene proyecto conocido
 
-**Dado** que no sabemos en qué está trabajando,
+**Dado** que no sabemos en qué está trabajando la cuenta,
 **cuando** armo la selección,
-**Entonces** no se inventa una razón
-**Y** la selección se envía con un encuadre genérico o no se envía
+**Entonces** el panel no inventa una razón
+**Y** la edición queda en borrador hasta que el ejecutivo aporte el contexto o yo elija de forma explícita un encuadre genérico
 
+### Edge case — perfil ya propuesto sin reacción
+
+**Dado** que un perfil ya se propuso a esta cuenta en una edición anterior y nadie entró a verlo,
+**cuando** lo vuelvo a elegir,
+**Entonces** el panel me avisa que se repite sin reacción
+**Y** puedo mantenerlo con conocimiento o cambiarlo
 
 ## Notas
 
-Cubre RF-18.1, RF-18.3 y RF-18.4. **La selección se arma contra el inventario del momento**, no contra una hoja aparte que se degrada entre que se arma y que el cliente abre.
+Cubre RF-18.1, RF-18.3 y RF-18.4. **La selección se arma contra el inventario del momento**, no contra una hoja aparte que se degrada entre que se arma y que el cliente abre. El cuarto escenario viene del riesgo «la selección se repite entre envíos» de la spec; «sin reacción» se mide por entradas al portal (RF-18.6), porque la apertura no la mide el portal.
 
 ## Trazabilidad
 
-Épica madre: **EP-011** · PRD v4.0
+Épica madre: **EP-011** · PRD v4.14 · spec `docs/10-specs/correo-curado.md`
 
 ## INVEST
 

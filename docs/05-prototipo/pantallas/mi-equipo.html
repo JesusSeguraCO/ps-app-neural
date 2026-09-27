@@ -15,7 +15,11 @@
   «Inicio más temprano posible» pasa a banda de arranque del equipo completo, sin fecha exacta;
   se añaden la observación de composición (HU-080) y la forma de referencia (HU-084), ambas
   informativas, sin perfiles propuestos ni botones de añadir.
-  Estado de este archivo: base: tres perfiles (dos de desarrollo, uno de arquitectura) y la observación informativa de que ningún perfil cubre pruebas (HU-080 happy path; el envío no añade fricción y la observación queda registrada para la sesión de alineación).
+  Estado de este archivo: base: tres perfiles (backend, QA, arquitectura de datos: el mismo trío que viaja a la solicitud) y la observación informativa de que ningún perfil cubre DevOps, con el mismo panel ✓/– que la forma de referencia (HU-080 happy path; el envío no añade fricción).
+  Oficio v2 (2026-09-27): lista densa con filas de 1 px en vez de tarjetas; disponibilidad como
+  punto + banda; fila entera abre la ficha y «Quitar» discreto; resumen como línea de metadatos
+  bajo el título; sin párrafo introductorio, sin caja «Quién ve este equipo» ni eyebrows; «Mi
+  equipo» marcado como página actual (fondo sutil + peso).
 -->
 <html lang="es">
 <head>
@@ -26,7 +30,8 @@
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -34,164 +39,168 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
       .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
-      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
-      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
       .pp-btn--fantasma { color: var(--tc-text-b); }
       .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
       .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
       .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
-      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
       .pp-btn--bloque { width: 100%; }
-      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
-      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
       /* /PP:botones */
     /* PP:topbar */
-      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
       .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
-      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
       .pp-marca__sep { color: var(--tc-border-s); }
-      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+      .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
       .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
       .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
-      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
       .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
-      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
       .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
       .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
-      .pp-equipo:hover { border-color: var(--tc-primary); }
-      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+      .pp-equipo:hover { background: var(--tc-bg-subtle); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
       @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
       @media (max-width: 767px) {
         .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
-        .pp-equipo { order: 1; margin-left: auto; }
+        .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
         .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
-        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+        .pp-navlink { min-height: 44px; }
         .pp-cuenta__meta { display: none; }
       }
       /* /PP:topbar */
-    /* PP:badges */
-      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
-      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
-      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
-      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
-      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
-      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
-      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-      /* /PP:badges */
-    /* PP:avisos */
-      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
-      .pp-aviso p { margin: 0; }
-      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
-      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
-      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
-      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
-      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
-      /* /PP:avisos */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+    /* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
     /* PP:vacio */
-      .pp-vacio { padding: var(--tc-sp-10) var(--tc-sp-6); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-lg); background: var(--tc-card); text-align: center; }
-      .pp-vacio--atencion { border-color: var(--tc-warn-border); background: var(--tc-warn-surface); }
-      .pp-vacio__icono { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto var(--tc-sp-4); border-radius:var(--tc-r-pill); background: var(--tc-accent); color: var(--pp-teal-ink); }
-      .pp-vacio h2 { font-size:var(--tc-fs-h3); }
-      .pp-vacio p { max-width: 52ch; margin: 0 auto var(--tc-sp-5); color: var(--tc-text-b); }
-      .pp-vacio__acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--tc-sp-2); }
-      @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-4); } }
+      .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+      .pp-filas .pp-vacio, .pp-tabla-marco .pp-vacio { border: 0; border-radius: 0; }
+      .pp-vacio--atencion { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-vacio h2, .pp-vacio h3 { margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+      .pp-vacio p { max-width: 56ch; margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-vacio__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
+      @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-6) var(--tc-sp-4); } }
       /* /PP:vacio */
 
     /* ── Composición propia de mi-equipo (prefijo me-, solo layout sobre tokens) ── */
+    /* Estás aquí: «Mi equipo» activo con el mismo lenguaje que pp-navlink (fondo sutil + peso), sin borde ni sombra */
+    .pp-equipo[aria-current="page"] { background: var(--tc-bg-subtle); border-color: transparent; box-shadow: none; }
+    .pp-equipo[aria-current="page"] .pp-equipo__conteo { background: var(--tc-card); color: var(--tc-text-h); }
     .me-main { max-width: 1120px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-6) var(--tc-sp-10); }
-    .pp-encabezado__texto .me-guardado { display: flex; align-items: flex-start; gap: var(--tc-sp-2); margin-top: var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .pp-encabezado__texto .me-guardado strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-b); overflow-wrap: anywhere; }
-    .me-resumen { display: grid; grid-template-columns: minmax(0, .6fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: var(--tc-sp-4); margin: 0 0 var(--tc-sp-8); padding: 0; list-style: none; }
-    .me-dato { min-width: 0; padding: var(--tc-sp-4) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
-    .me-dato__rotulo { margin: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
-    .me-dato__cifra { margin: var(--tc-sp-1) 0 0; font-family:var(--pp-mono); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); line-height: var(--tc-lh-h2); color: var(--pp-navy-ink); }
-    .me-dato__texto { margin: var(--tc-sp-2) 0 0; font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-    .me-dato__banda { margin: var(--tc-sp-2) 0 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--pp-navy-ink); }
-    .me-dato__nota { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .me-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto 1fr; grid-template-areas: "lista lateral" "acciones lateral"; gap: var(--tc-sp-6); align-items: start; }
-    .me-rejilla > .me-lista { grid-area: lista; min-width: 0; }
-    .me-rejilla > .me-acciones { grid-area: acciones; }
-    .me-rejilla > .me-lateral { grid-area: lateral; }
-    .me-rejilla--vacio { grid-template-areas: "lista lateral"; grid-template-rows: auto; }
-    .me-seccion__cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); }
-    .me-seccion__cab h2 { margin: 0; font-size:var(--tc-fs-h3); }
-    .me-seccion__conteo { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .me-filas { display: grid; gap: var(--tc-sp-3); }
-    .me-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-4) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
-    .me-fila__quien { min-width: 0; }
-    .me-fila__rol { margin: 0; font-size:var(--tc-fs-body); line-height: var(--tc-lh-h3); }
-    .me-fila__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .me-fila__estado { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-3); }
-    .me-fila__codigo { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .me-fila__acciones { display: flex; gap: var(--tc-sp-2); }
-    .me-quitar { color: var(--tc-danger-ink); }
-    .me-quitar:hover { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-    .me-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
-    .me-acciones__nota { flex: 1 1 260px; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .me-lateral { display: grid; gap: var(--tc-sp-4); min-width: 0; }
-    /* Observación de composición (HU-080): informativa, sin llamados a la acción */
-    .me-observacion { padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
-    .me-observacion__rotulo, .me-ref__rotulo { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-info-fg); }
-    .me-observacion h2, .me-ref h2 { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-    .me-observacion p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .me-composicion { display: grid; gap: var(--tc-sp-2); margin: var(--tc-sp-4) 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); }
-    .me-composicion li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); padding-bottom: var(--tc-sp-2); border-bottom: 1px dashed var(--tc-border); }
-    .me-composicion li:last-child { padding-bottom: 0; border-bottom: 0; }
-    .me-composicion__num { font-family:var(--pp-mono); color: var(--tc-text-h); }
-    .me-composicion__falta { color: var(--tc-text-m); }
-    .me-registro { margin-top: var(--tc-sp-4) !important; padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption) !important; color: var(--tc-text-m) !important; }
-    /* Forma de referencia (HU-084): dato de proyectos entregados = verificado por Trycore */
-    .me-ref { padding: var(--tc-sp-5); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-lg); color: var(--tc-primary-surface-ink); }
-    .me-ref .me-ref__rotulo { color: var(--tc-primary-ink); }
+    .me-vacio { max-width: 740px; }
+    .me-meta-linea { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-2); }
+    .me-meta-linea strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .me-correo { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .me-sep { color: var(--tc-text-s); }
+    /* Filas del equipo: la fila entera abre la ficha (enlace estirado); «Quitar» queda por encima */
+    .me-fila { position: relative; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+    .me-fila__enlace::after { content: ""; position: absolute; inset: 0; }
+    .me-fila__enlace:focus-visible { outline: none; }
+    .me-fila:has(.me-fila__enlace:focus-visible) { outline: 2px solid var(--tc-focus-ring); outline-offset: -2px; }
+    .me-fila:hover .me-fila__enlace { text-decoration: underline; text-underline-offset: 3px; }
+    .me-fila__lado { display: grid; grid-template-columns: 136px auto; align-items: center; gap: var(--tc-sp-4); }
+    .me-quitar { position: relative; z-index: 1; color: var(--tc-text-m); }
+    .me-quitar:hover, .me-quitar:focus-visible { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+    .me-codigo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    /* Columna lateral: tipografía y hairlines, sin tarjeta */
+    .me-lateral { display: grid; gap: var(--tc-sp-8); min-width: 0; }
+    .me-bloque h2 { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); }
+    .me-bloque__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    /* Forma de referencia (HU-084): dato de proyectos entregados = verificado → tinte teal sin borde */
+    .me-ref { padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-5); border-radius: var(--tc-r-md); background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
     .me-ref__cab { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2); }
-    .me-ref__cab .pp-btn { margin: calc(var(--tc-sp-3) * -1) calc(var(--tc-sp-3) * -1) 0 0; }
-    .me-ref p { margin: 0; font-size:var(--tc-fs-small); }
-    .me-ref__fuente { margin-top: var(--tc-sp-1) !important; font-size:var(--tc-fs-caption) !important; color: var(--tc-text-b); }
-    .me-capacidades { display: grid; gap: var(--tc-sp-2); margin: var(--tc-sp-4) 0; padding: var(--tc-sp-3) var(--tc-sp-4); list-style: none; background: var(--tc-card); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); }
-    .me-cap { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-small); line-height: var(--tc-lh-h3); }
-    .me-cap__marca { width: 14px; flex: none; font-weight: var(--tc-fw-bold); }
-    .me-cap--si { color: var(--tc-ok-ink); }
+    .me-ref__cab .pp-btn { margin: calc(var(--tc-sp-1) * -1) calc(var(--tc-sp-2) * -1) 0 0; color: var(--tc-primary-surface-ink); }
+    .me-ref .me-bloque__meta { color: var(--tc-primary-surface-ink); }
+    .me-caps { margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; border-top: 1px solid var(--tc-primary-surface-border); }
+    .me-cap { display: grid; grid-template-columns: var(--tc-sp-4) minmax(0, 1fr); gap: var(--tc-sp-2); padding: var(--tc-sp-2) 0; border-bottom: 1px solid var(--tc-primary-surface-border); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .me-cap__marca { font-weight: var(--tc-fw-bold); }
+    .me-cap--si { color: var(--tc-text-h); }
     .me-cap--si .me-cap__marca { color: var(--tc-ok-mark); }
     .me-cap--no, .me-cap--no .me-cap__marca { color: var(--tc-text-m); }
-    .me-cap__quien { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .me-ref__cierre { padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-primary-surface-border); font-size:var(--tc-fs-caption) !important; color: var(--tc-text-b); }
-    /* Quién ve este equipo (HU-095 / T-1) */
-    .me-privado { padding: var(--tc-sp-4) var(--tc-sp-5); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-lg); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-    .me-privado h2 { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-small); }
-    .me-privado li { display: flex; gap: var(--tc-sp-2); }
-    .me-privado li + li { margin-top: var(--tc-sp-2); }
-    .me-privado__si { flex: none; width: 16px; color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
-    .me-privado__no { flex: none; width: 16px; color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
-    @media (max-width: 1023px) { .me-rejilla, .me-rejilla--vacio { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "lista" "lateral" "acciones"; } }
+    .me-cap__quien { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .me-ref__cierre { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-primary-surface-ink); }
     @media (max-width: 767px) {
-      .me-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
-      .pp-encabezado h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
-      .me-resumen { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-6); }
-      .me-dato { padding: var(--tc-sp-3) var(--tc-sp-4); }
-      .me-resumen { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .me-dato--ancho { grid-column: 1 / -1; }
-      .me-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
-      .me-fila__estado { justify-content: flex-start; }
-      .me-fila__acciones .pp-btn { flex: 1; }
-      .me-acciones .pp-btn { width: 100%; }
+      .me-main { padding: var(--tc-sp-5) var(--tc-sp-4) var(--tc-sp-10); }
+      .me-meta-linea { flex-direction: column; }
+      .me-sep { display: none; }
+      .pp-encabezado__acciones { width: 100%; }
+      .pp-encabezado__acciones .pp-btn { flex: 1 1 0; }
+      .me-fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); padding-right: var(--tc-sp-2); }
+      .me-fila__lado { grid-template-columns: minmax(0, 1fr) auto; }
+      .pp-vacio__acciones .pp-btn { flex: 1 1 0; }
     }
 
   </style>
@@ -207,114 +216,79 @@
     </a>
     <div class="pp-cuenta">
       <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
-      <p class="pp-cuenta__meta">Acceso válido hasta el 24 de octubre de 2026</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
     </div>
     <nav class="pp-topbar__nav" aria-label="Portal">
       <a class="pp-navlink" href="aterrizaje-curado.html">Selección para ti</a>
       <a class="pp-navlink" href="inicio-busqueda.html">Buscar</a>
+      <a class="pp-navlink" href="invitar-colega.html">Invitar a un colega</a>
     </nav>
-    <a class="pp-equipo" href="mi-equipo.html" aria-current="page">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">3 perfiles en el equipo</span></a>
+    <a class="pp-equipo" href="mi-equipo.html" aria-current="page">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">, 3 perfiles en el equipo</span></a>
   </header>
 
   <!-- región: contenido principal -->
   <main class="me-main">
     <div class="pp-encabezado">
       <div class="pp-encabezado__texto">
-        <h1>Mi equipo</h1>
-        <p>Armar un equipo aquí no reserva ni compromete a nadie. Cuando nos lo envíes, empezamos la conversación contigo.</p>
-        <p class="me-guardado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/><path d="M9.5 13.5l2 2 3.5-3.5"/></svg><span>Guardado con tu correo <strong>andres.rojas@bancolombia.com.co</strong> · lo recuperas en cualquier dispositivo</span></p>
+        <h1 class="pp-encabezado__titulo">Mi equipo</h1>
+        <p class="pp-encabezado__meta me-meta-linea"><span>Arranque del equipo completo en <strong>4 a 6 semanas</strong></span><span class="me-sep" aria-hidden="true">·</span><span>Desarrollo backend, QA, Arquitectura de datos</span></p>
+        <p class="pp-encabezado__meta me-meta-linea"><span class="me-correo">Guardado en andres.rojas@bancolombia.com.co</span><span class="me-sep" aria-hidden="true">·</span><span>Solo tú lo ves</span></p>
+      </div>
+      <div class="pp-encabezado__acciones">
+        <a class="pp-btn pp-btn--contorno" href="inicio-busqueda.html">Buscar más perfiles</a>
+        <a class="pp-btn pp-btn--primario" href="solicitud-equipo.html">Continuar a la solicitud</a>
       </div>
     </div>
-    <ul class="me-resumen" aria-label="Resumen del equipo">
-      <li class="me-dato">
-        <p class="me-dato__rotulo">Perfiles</p>
-        <p class="me-dato__cifra">3</p>
-      </li>
-      <li class="me-dato">
-        <p class="me-dato__rotulo">Arranque del equipo completo</p>
-        <p class="me-dato__banda">En 2 a 4 semanas</p>
-        <p class="me-dato__nota">Banda estimada según el perfil que más tarda. Sin fecha exacta.</p>
-      </li>
-      <li class="me-dato me-dato--ancho">
-        <p class="me-dato__rotulo">Roles cubiertos</p>
-        <p class="me-dato__texto">Desarrollo backend · Arquitectura</p>
-      </li>
-    </ul>
-    <div class="me-rejilla">
-        <section class="me-lista" aria-labelledby="me-lista-titulo">
-          <div class="me-seccion__cab">
-            <h2 id="me-lista-titulo">Perfiles seleccionados</h2>
-            <span class="me-seccion__conteo"><span class="pp-mono">3</span> en tu equipo</span>
-          </div>
-          <ul class="pp-lista me-filas" aria-label="Perfiles en tu equipo" style="margin-top: var(--tc-sp-3);">
-            <li class="me-fila">
-              <div class="me-fila__quien">
-                <h3 class="me-fila__rol">Desarrolladora backend Java</h3>
-                <p class="me-fila__nombre">Laura Méndez · Medellín · híbrido</p>
+    <div class="pp-con-lateral">
+      <section class="pp-filas" aria-labelledby="me-lista-titulo">
+        <div class="pp-filas__cabecera"><h2 class="pp-filas__titulo" id="me-lista-titulo">Perfiles seleccionados</h2><span class="pp-meta">3</span></div>
+        <ul class="pp-lista">
+            <li class="pp-fila me-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo"><a class="me-fila__enlace" href="ficha-perfil.html">Desarrolladora backend Java</a> <span class="me-codigo pp-mono">PS-0142</span></p>
+                <p class="pp-fila__meta">Laura Méndez · Medellín · híbrido</p>
               </div>
-              <div class="me-fila__estado">
+              <div class="me-fila__lado">
                 <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
-                <span class="me-fila__codigo pp-mono">PS-0142</span>
-              </div>
-              <div class="me-fila__acciones">
-                <a class="pp-btn pp-btn--contorno pp-btn--sm" href="ficha-perfil.html">Ver ficha</a>
                 <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm me-quitar" aria-label="Quitar a Laura Méndez del equipo">Quitar</button>
               </div>
             </li>
-            <li class="me-fila">
-              <div class="me-fila__quien">
-                <h3 class="me-fila__rol">Desarrollador backend Java</h3>
-                <p class="me-fila__nombre">Julián Ospina · Bogotá · remoto</p>
+            <li class="pp-fila me-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo"><a class="me-fila__enlace" href="ficha-perfil.html">Analista QA automatización</a> <span class="me-codigo pp-mono">PS-0217</span></p>
+                <p class="pp-fila__meta">Andrés Castaño · Bogotá · remoto</p>
               </div>
-              <div class="me-fila__estado">
-                <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
-                <span class="me-fila__codigo pp-mono">PS-0187</span>
-              </div>
-              <div class="me-fila__acciones">
-                <a class="pp-btn pp-btn--contorno pp-btn--sm" href="ficha-perfil.html">Ver ficha</a>
-                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm me-quitar" aria-label="Quitar a Julián Ospina del equipo">Quitar</button>
+              <div class="me-fila__lado">
+                <span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span>
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm me-quitar" aria-label="Quitar a Andrés Castaño del equipo">Quitar</button>
               </div>
             </li>
-            <li class="me-fila">
-              <div class="me-fila__quien">
-                <h3 class="me-fila__rol">Arquitecto de soluciones</h3>
-                <p class="me-fila__nombre">Santiago Herrera · Medellín · híbrido</p>
+            <li class="pp-fila me-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo"><a class="me-fila__enlace" href="ficha-perfil.html">Arquitecta de datos</a> <span class="me-codigo pp-mono">PS-0098</span></p>
+                <p class="pp-fila__meta">Catalina Rojas · Medellín · híbrido</p>
               </div>
-              <div class="me-fila__estado">
-                <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
-                <span class="me-fila__codigo pp-mono">PS-0061</span>
-              </div>
-              <div class="me-fila__acciones">
-                <a class="pp-btn pp-btn--contorno pp-btn--sm" href="ficha-perfil.html">Ver ficha</a>
-                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm me-quitar" aria-label="Quitar a Santiago Herrera del equipo">Quitar</button>
+              <div class="me-fila__lado">
+                <span class="pp-badge pp-badge--banda">En 4 a 6 semanas</span>
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm me-quitar" aria-label="Quitar a Catalina Rojas del equipo">Quitar</button>
               </div>
             </li>
-          </ul>
-        </section>
-        <div class="me-acciones">
-          <a class="pp-btn pp-btn--primario" href="solicitud-equipo.html">Continuar a la solicitud de equipo</a>
-          <a class="pp-btn pp-btn--contorno" href="inicio-busqueda.html">Seguir buscando perfiles</a>
-          <p class="me-acciones__nota">Envías el equipo tal como está. Nada queda reservado hasta la conversación con Trycore.</p>
-        </div>
+        </ul>
+      </section>
 
       <!-- región: panel lateral -->
       <aside class="me-lateral" aria-label="Sobre tu equipo">
-        <section class="me-observacion" aria-labelledby="me-obs-titulo">
-          <p class="me-observacion__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Composición de tu equipo</p>
-          <h2 id="me-obs-titulo">Tu equipo no incluye pruebas</h2>
-          <p>Llevas perfiles de desarrollo y de arquitectura. Ningún perfil cubre pruebas de software (QA).</p>
-          <ul class="me-composicion" aria-label="Composición actual">
-            <li><span>Desarrollo backend</span><span class="me-composicion__num">2</span></li>
-            <li><span>Arquitectura</span><span class="me-composicion__num">1</span></li>
-            <li><span>Pruebas (QA)</span><span class="me-composicion__falta">ninguno</span></li>
-          </ul>
-          <p class="me-registro">Si envías el equipo así, esta observación viaja con tu solicitud como contexto para la sesión de alineación. No cambia nada del envío.</p>
-        </section>
-        <section class="me-privado" aria-labelledby="me-privado-titulo">
-          <h2 id="me-privado-titulo">Quién ve este equipo</h2>
-          <ul class="pp-lista">
-            <li><span class="me-privado__si" aria-hidden="true">✓</span><span>Solo tú. Viaja completo en tu solicitud.</span></li>
-            <li><span class="me-privado__no" aria-hidden="true">–</span><span>Los colegas invitados a esta cuenta no lo ven: cada uno arma el suyo con la misma selección.</span></li>
+        <section class="me-bloque me-ref" aria-labelledby="me-ref-titulo">
+          <div class="me-ref__cab">
+            <h2 id="me-ref-titulo">Tu selección cubre 3 de 4 capacidades</h2>
+            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Ocultar la observación en esta sesión"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+          <p class="me-bloque__meta">Capacidades habituales en proyectos de este tipo</p>
+          <ul class="me-caps" aria-label="Capacidades de este tipo de proyecto">
+            <li class="me-cap me-cap--si"><span class="me-cap__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cubierta: </span>Desarrollo backend<span class="me-cap__quien">Laura Méndez</span></span></li>
+            <li class="me-cap me-cap--si"><span class="me-cap__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cubierta: </span>Pruebas automatizadas (QA)<span class="me-cap__quien">Andrés Castaño</span></span></li>
+            <li class="me-cap me-cap--si"><span class="me-cap__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cubierta: </span>Arquitectura de datos<span class="me-cap__quien">Catalina Rojas</span></span></li>
+            <li class="me-cap me-cap--no"><span class="me-cap__marca" aria-hidden="true">–</span><span><span class="pp-sr">Sin cubrir: </span>DevOps e integración continua</span></li>
           </ul>
         </section>
       </aside>

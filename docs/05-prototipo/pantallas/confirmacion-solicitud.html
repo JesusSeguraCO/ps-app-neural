@@ -10,11 +10,16 @@
   - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
     de pantalla en archivos propios (confirmacion-solicitud con sufijo de estado), no interacciones.
   Trazabilidad: épica EP-005 · historias HU-098 · registrada en ../manifest.json
-  Origen: v2-existe (data-screen-label «Confirmación» del v2): insignia «Solicitud recibida»,
-  titular con el número, aclaración de que no se reserva a nadie, pasos numerados y las dos
-  acciones «Agendar la conversación» y «Volver al portal». Se concreta lo que exige HU-098:
+  Origen: v2-existe (data-screen-label «Confirmación» del v2). Se concreta lo que exige HU-098:
   el paso siguiente es la sesión de alineación con Delivery, el plazo de 10 días hábiles con su
   hora de inicio y su vencimiento, y un resumen de lo enviado.
+  Oficio v2 (2026-09-27, DESIGN.md › Oficio + hallazgos Krug): sin píldora «Solicitud recibida»
+  (el H1 lo dice; el número pasa a metadato mono); pasos en filas con hairline, el actual marcado
+  solo por peso y color; plazo como cifra + metadato, sin eyebrow; un solo nombre para el acto
+  («sesión de alineación») y una sola responsable (Eida Tinjacá, Coordinación de Servicio), igual
+  que en Agendar y en los correos; destino explícito «Ir a Selección para ti»; perfiles enviados
+  en filas con banda como punto + texto y el contexto plegado en un disclosure; «Mi equipo» ya no
+  muestra el conteo sino «enviado», para que nadie dude si debe volver a enviarlo.
   Estado de este archivo: base (HU-098 happy path). También representa el AC de error: si la
   creación del negocio en HubSpot falla, el cliente ve exactamente esta misma confirmación; la
   solicitud entra en la cola de reintento y el aviso interno sale por correo (pantalla
@@ -28,9 +33,10 @@
   <title>Confirmación de la solicitud — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
-/* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -38,164 +44,165 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
       .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
-      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
-      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
       .pp-btn--fantasma { color: var(--tc-text-b); }
       .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
       .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
       .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
-      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
       .pp-btn--bloque { width: 100%; }
-      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
-      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
       /* /PP:botones */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+    /* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
     /* PP:topbar */
-      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
       .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
-      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
       .pp-marca__sep { color: var(--tc-border-s); }
-      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+      .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
       .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
       .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
-      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
       .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
-      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
       .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
       .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
-      .pp-equipo:hover { border-color: var(--tc-primary); }
-      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+      .pp-equipo:hover { background: var(--tc-bg-subtle); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
       @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
       @media (max-width: 767px) {
         .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
-        .pp-equipo { order: 1; margin-left: auto; }
+        .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
         .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
-        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+        .pp-navlink { min-height: 44px; }
         .pp-cuenta__meta { display: none; }
       }
       /* /PP:topbar */
-    /* PP:badges */
-      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
-      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
-      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
-      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
-      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
-      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
-      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
-      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
-      /* /PP:badges */
-    /* PP:perfil */
-      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
-      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
-      .pp-perfil--en-equipo { border-color: var(--tc-primary); }
-      .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
-      .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
-      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
-      .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-      .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
-      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
-      .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
-      .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
-      .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
-      .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
-      .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
-      .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
-      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
-      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
-      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
-      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
-      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
-      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
-      .pp-criterio--cumple { color: var(--tc-ok-ink); }
-      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
-      .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
-      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
-      .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
-      .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
-      /* /PP:perfil */
   </style>
   <style>
     /* Estilos propios de esta pantalla (prefijo cf-): SOLO composición/layout.
        Valores visuales (color, fuente, spacing, radio, sombra) → var(--token). */
-    .cf-main { max-width: 760px; margin: 0 auto; padding: var(--tc-sp-10) var(--tc-sp-6) var(--tc-sp-10); }
-    .cf-insignia { display: inline-flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-4); border-radius:var(--tc-r-pill); background: var(--tc-accent); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
-    .cf-insignia .pp-icono { color: var(--tc-primary-strong); stroke-width: 2.2; }
-    .cf-titulo { margin: var(--tc-sp-4) 0 0; font-size:var(--tc-fs-h1); line-height: var(--tc-lh-h1); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); }
-    .cf-titulo .pp-mono { font-weight: var(--tc-fw-semibold); white-space: nowrap; }
-    .cf-intro { margin: var(--tc-sp-3) 0 0; max-width: 66ch; color: var(--tc-text-b); }
+    .cf-main { max-width: 720px; margin: 0 auto; padding: var(--tc-sp-10) var(--tc-sp-6); }
 
-    /* Plazo: dato de servicio de Trycore → superficie de lo verificado */
-    .cf-plazo { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--tc-sp-4) var(--tc-sp-6); margin-top: var(--tc-sp-8); padding: var(--tc-sp-5) var(--tc-sp-6); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-lg); background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
-    .cf-plazo__rotulo { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-primary-ink); }
-    .cf-plazo__cifra { margin: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-h1); line-height: var(--tc-lh-h1); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); white-space: nowrap; }
-    .cf-plazo__fechas { display: grid; gap: var(--tc-sp-2); margin: 0; padding-left: var(--tc-sp-6); border-left: 1px solid var(--tc-primary-surface-border); }
-    .cf-plazo__fechas div { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; gap: var(--tc-sp-3); }
-    .cf-plazo__fechas dt { font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
-    .cf-plazo__fechas dd { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-h); }
-    .cf-plazo__nota { grid-column: 1 / -1; margin: 0; padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-primary-surface-border); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .cf-cabecera__meta { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
 
-    /* Pasos numerados (v2) */
-    .cf-subtitulo { margin: var(--tc-sp-8) 0 var(--tc-sp-4); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-    .cf-pasos { display: flex; flex-direction: column; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
-    .cf-paso { display: flex; gap: var(--tc-sp-4); padding: var(--tc-sp-4) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); }
-    .cf-paso--siguiente { border-color: var(--tc-primary); box-shadow:var(--tc-sh-2); }
-    .cf-paso__n { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-bold); }
-    .cf-paso__texto { min-width: 0; }
-    .cf-paso__titulo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-2); margin: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
-    .cf-paso__detalle { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-    .cf-paso__ahora { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-accent); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-primary-ink); }
+    .cf-plazo { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-4); margin-top: var(--tc-sp-8); padding: var(--tc-sp-5) 0 0; border-top: 1px solid var(--tc-border); }
+    .cf-plazo__cifra { margin: 0; font-size: var(--tc-fs-body); color: var(--tc-text-b); }
+    .cf-plazo__cifra strong { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .cf-plazo__meta { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
 
-    .cf-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3); margin-top: var(--tc-sp-6); }
-    .cf-acciones__nota { flex: 1 1 240px; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cf-seccion { margin-top: var(--tc-sp-10); }
+    .cf-pasos .pp-fila { grid-template-columns: 20px minmax(0, 1fr); gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .cf-pasos .pp-fila:hover { background: none; }
+    .cf-paso__n { font-family: var(--pp-mono); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .cf-paso--despues .pp-fila__titulo { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .cf-paso--actual .cf-paso__n { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
 
-    /* Resumen de lo enviado */
-    .cf-resumen { margin-top: var(--tc-sp-8); }
-    .cf-resumen__cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
-    .cf-resumen__cab h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-    .cf-resumen__num { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
-    .cf-rotulo { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); }
-    .cf-equipo { display: grid; margin: 0 0 var(--tc-sp-5); padding: 0; list-style: none; }
-    .cf-miembro { display: grid; grid-template-columns: minmax(0, 1fr) auto 72px; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
-    .cf-miembro:first-child { border-top: 0; padding-top: 0; }
-    .cf-miembro__rol { margin: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
-    .cf-miembro__nombre { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
-    .cf-miembro__banda { justify-self: end; }
-    .cf-miembro .pp-codigo-perfil { margin-left: 0; text-align: right; }
-    .cf-contexto { display: grid; grid-template-columns: minmax(160px, auto) minmax(0, 1fr); gap: var(--tc-sp-2) var(--tc-sp-6); margin: 0; padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); }
-    .cf-contexto dt { padding-top: var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
-    .cf-contexto dd { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); overflow-wrap: anywhere; }
-    
+    .cf-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
+    .cf-acciones__nota { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); text-align: right; }
+
+    .cf-miembro { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+    .cf-miembro:hover { background: none; }
+    .pp-fila__codigo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+
+    .cf-detalle { margin-top: var(--tc-sp-3); }
+    .cf-detalle summary { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-2); margin-left: calc(-1 * var(--tc-sp-2)); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); cursor: pointer; list-style: none; }
+    .cf-detalle summary::-webkit-details-marker { display: none; }
+    .cf-detalle summary::before { content: "›"; display: inline-block; width: var(--tc-sp-2); color: var(--tc-text-s); transition: transform var(--tc-dur-fast) var(--tc-ease); }
+    .cf-detalle[open] summary::before { transform: rotate(90deg); }
+    .cf-detalle summary:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .cf-detalle summary:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    .cf-contexto { display: grid; margin: var(--tc-sp-3) 0 0; }
+    .cf-contexto div { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+    .cf-contexto div:first-child { border-top: 0; padding-top: 0; }
+    .cf-contexto dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cf-contexto dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+
+    .pp-btn:focus-visible, .pp-navlink:focus-visible, .pp-equipo:focus-visible, .pp-marca:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+
     @media (max-width: 767px) {
-      .cf-main { padding: var(--tc-sp-6) var(--tc-sp-4) var(--tc-sp-10); }
-      .cf-titulo { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
-      .cf-plazo { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-5); }
-      .cf-plazo__fechas { padding-left: 0; padding-top: var(--tc-sp-4); border-left: 0; border-top: 1px solid var(--tc-primary-surface-border); }
-      .cf-plazo__fechas div { grid-template-columns: minmax(0, 1fr); gap: 0; }
-      .cf-paso { padding: var(--tc-sp-4); gap: var(--tc-sp-3); }
+      .cf-main { padding: var(--tc-sp-8) var(--tc-sp-4) var(--tc-sp-10); }
+      .cf-plazo { flex-direction: column; gap: var(--tc-sp-1); }
+      .cf-pasos .pp-fila { grid-template-columns: 20px minmax(0, 1fr); }
+      .cf-acciones { flex-direction: column-reverse; align-items: stretch; }
       .cf-acciones .pp-btn { width: 100%; }
+      .cf-acciones__nota { text-align: left; }
       .cf-miembro { grid-template-columns: minmax(0, 1fr) auto; }
-      .cf-miembro__texto { grid-column: 1 / -1; }
-      .cf-miembro__banda { justify-self: start; }
-      .cf-contexto { grid-template-columns: minmax(0, 1fr); gap: 0; }
-      .cf-contexto dd { margin-bottom: var(--tc-sp-3); }
+      .cf-miembro .pp-fila__principal { grid-column: 1 / -1; }
+      .cf-detalle summary { min-height: 44px; }
+      .cf-contexto div { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
     }
   </style>
 </head>
@@ -210,108 +217,98 @@
     </a>
     <div class="pp-cuenta">
       <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
-      <p class="pp-cuenta__meta">Acceso válido hasta el 24 de octubre de 2026</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
     </div>
     <nav class="pp-topbar__nav" aria-label="Portal">
       <a class="pp-navlink" href="aterrizaje-curado.html">Selección para ti</a>
       <a class="pp-navlink" href="inicio-busqueda.html">Buscar</a>
+      <a class="pp-navlink" href="invitar-colega.html">Invitar a un colega</a>
     </nav>
-    <a class="pp-equipo" href="mi-equipo.html">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">3 perfiles en el equipo</span></a>
+    <a class="pp-equipo" href="mi-equipo.html">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">, 3 perfiles, enviados en la solicitud SOL-2026-0318</span></a>
   </header>
 
   <!-- región: contenido principal -->
   <main class="cf-main" data-screen-label="Confirmación">
-    <p class="cf-insignia" role="status"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Solicitud recibida</p>
-    <h1 class="cf-titulo">Recibimos tu solicitud con el número <span class="pp-mono">SOL-2026-0318</span></h1>
-    <p class="cf-intro">Con esto empieza la conversación. No reservamos ni comprometimos a ninguno de los profesionales que elegiste: su disponibilidad la confirmamos contigo.</p>
+    <header class="cf-cabecera">
+      <h1 class="pp-encabezado__titulo">Solicitud recibida</h1>
+      <p class="cf-cabecera__meta"><span class="pp-mono">SOL-2026-0318</span> · 28 sep 2026, 10:42&nbsp;a.&nbsp;m. · No reservamos a ningún profesional hasta confirmarlo contigo</p>
+    </header>
 
-    <section class="cf-plazo" aria-labelledby="cf-plazo-rotulo">
-      <div>
-        <p class="cf-plazo__rotulo" id="cf-plazo-rotulo">Te respondemos en</p>
-        <p class="cf-plazo__cifra">10 días hábiles</p>
-      </div>
-      <dl class="cf-plazo__fechas">
-        <div><dt>Corre desde</dt><dd>Lunes 28 de septiembre de 2026, 10:42&nbsp;a.&nbsp;m.</dd></div>
-        <div><dt>Vence</dt><dd>Martes 13 de octubre de 2026</dd></div>
-      </dl>
-      <p class="cf-plazo__nota">Contamos días hábiles en Colombia: sin fines de semana ni festivos. El lunes 12 de octubre es festivo, por eso el plazo termina el martes.</p>
+    <section class="cf-plazo" aria-label="Plazo de respuesta">
+      <p class="cf-plazo__cifra">Te respondemos en <strong>10 días hábiles</strong></p>
+      <p class="cf-plazo__meta">desde lun 28 sep, 10:42&nbsp;a.&nbsp;m. · vence mar 13&nbsp;oct (festivo el&nbsp;12)</p>
     </section>
 
-    <h2 class="cf-subtitulo">Qué pasa ahora</h2>
-    <ol class="cf-pasos">
-      <li class="cf-paso cf-paso--siguiente">
-        <span class="cf-paso__n" aria-hidden="true">1</span>
-        <div class="cf-paso__texto">
-          <p class="cf-paso__titulo">Sesión de alineación con Delivery <span class="cf-paso__ahora">Paso siguiente</span></p>
-          <p class="cf-paso__detalle">Eida Tinjacá, de Coordinación de Servicio, revisa contigo el alcance, la modalidad y el arranque. Es por videollamada; elige el horario que te quede bien.</p>
-        </div>
-      </li>
-      <li class="cf-paso">
-        <span class="cf-paso__n" aria-hidden="true">2</span>
-        <div class="cf-paso__texto">
-          <p class="cf-paso__titulo">Confirmamos la disponibilidad de cada profesional</p>
-          <p class="cf-paso__detalle">Hablamos con Laura, Andrés y Catalina antes de proponerte nada. Si alguno ya no está, te lo decimos y te sugerimos un perfil equivalente.</p>
-        </div>
-      </li>
-      <li class="cf-paso">
-        <span class="cf-paso__n" aria-hidden="true">3</span>
-        <div class="cf-paso__texto">
-          <p class="cf-paso__titulo">Recibes la propuesta del equipo</p>
-          <p class="cf-paso__detalle">Por correo, a más tardar el martes 13 de octubre. Incluye quién puede arrancar y en qué banda de tiempo.</p>
-        </div>
-      </li>
-    </ol>
-
-    <div class="cf-acciones">
-      <a class="pp-btn pp-btn--primario" href="agendar-alineacion.html">Agendar la conversación</a>
-      <a class="pp-btn pp-btn--contorno" href="aterrizaje-curado.html">Volver al portal</a>
-      <p class="cf-acciones__nota">Si prefieres no agendar ahora, tu solicitud sigue vigente: Eida te escribe para coordinar la sesión.</p>
-    </div>
-
-    <section class="cf-resumen pp-tarjeta" aria-labelledby="cf-resumen-titulo">
-      <div class="cf-resumen__cab">
-        <h2 id="cf-resumen-titulo">Lo que nos enviaste</h2>
-        <span class="cf-resumen__num">Solicitud <span class="pp-mono">SOL-2026-0318</span></span>
+    <section class="cf-seccion" aria-labelledby="cf-pasos-titulo">
+      <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="cf-pasos-titulo">Qué pasa ahora</h2></div>
+      <ol class="pp-filas cf-pasos">
+        <li class="pp-fila cf-paso--actual" aria-current="step">
+          <span class="cf-paso__n" aria-hidden="true">1</span>
+          <div class="pp-fila__principal">
+            <p class="pp-fila__titulo">Sesión de alineación con Eida Tinjacá</p>
+            <p class="pp-fila__meta">Coordinación de Servicio · videollamada de 30 min sobre alcance, modalidad y arranque</p>
+          </div>
+        </li>
+        <li class="pp-fila cf-paso--despues">
+          <span class="cf-paso__n" aria-hidden="true">2</span>
+          <div class="pp-fila__principal">
+            <p class="pp-fila__titulo">Confirmamos la disponibilidad de cada profesional</p>
+            <p class="pp-fila__meta">Si alguno ya no está, te proponemos un perfil equivalente</p>
+          </div>
+        </li>
+        <li class="pp-fila cf-paso--despues">
+          <span class="cf-paso__n" aria-hidden="true">3</span>
+          <div class="pp-fila__principal">
+            <p class="pp-fila__titulo">Recibes la propuesta del equipo por correo</p>
+            <p class="pp-fila__meta">A más tardar el mar 13 oct</p>
+          </div>
+        </li>
+      </ol>
+      <div class="cf-acciones">
+        <a class="pp-btn pp-btn--contorno" href="aterrizaje-curado.html">Ir a Selección para ti</a>
+        <a class="pp-btn pp-btn--primario" href="agendar-alineacion.html">Agendar la sesión de alineación</a>
       </div>
-      <p class="cf-rotulo">El equipo <span class="pp-mono">(3)</span></p>
-      <ul class="cf-equipo" aria-label="Perfiles enviados">
-        <li class="cf-miembro">
-          <div class="cf-miembro__texto">
-            <p class="cf-miembro__rol">Desarrolladora backend Java</p>
-            <p class="cf-miembro__nombre">Laura Méndez</p>
+      <p class="cf-acciones__nota">Si no agendas ahora, Eida te escribe para acordar la fecha.</p>
+    </section>
+
+    <section class="cf-seccion" aria-labelledby="cf-enviado-titulo">
+      <div class="pp-seccion__cabecera">
+        <h2 class="pp-seccion__titulo" id="cf-enviado-titulo">Lo que enviaste</h2>
+        <span class="pp-meta">3 perfiles</span>
+      </div>
+      <ul class="pp-filas">
+        <li class="pp-fila cf-miembro">
+          <div class="pp-fila__principal">
+            <p class="pp-fila__titulo">Desarrolladora backend Java <span class="pp-fila__codigo pp-mono">PS-0142</span></p>
+            <p class="pp-fila__meta">Laura Méndez · Medellín · híbrido</p>
           </div>
-          <span class="cf-miembro__banda pp-badge pp-badge--disponible">Disponible ahora</span>
-          <span class="pp-codigo-perfil">PS-0142</span>
+          <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
         </li>
-        <li class="cf-miembro">
-          <div class="cf-miembro__texto">
-            <p class="cf-miembro__rol">Analista QA automatización</p>
-            <p class="cf-miembro__nombre">Andrés Castaño</p>
+        <li class="pp-fila cf-miembro">
+          <div class="pp-fila__principal">
+            <p class="pp-fila__titulo">Analista QA automatización <span class="pp-fila__codigo pp-mono">PS-0217</span></p>
+            <p class="pp-fila__meta">Andrés Castaño · Bogotá · remoto</p>
           </div>
-          <span class="cf-miembro__banda pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
-          <span class="pp-codigo-perfil">PS-0217</span>
+          <span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span>
         </li>
-        <li class="cf-miembro">
-          <div class="cf-miembro__texto">
-            <p class="cf-miembro__rol">Arquitecta de datos</p>
-            <p class="cf-miembro__nombre">Catalina Rojas</p>
+        <li class="pp-fila cf-miembro">
+          <div class="pp-fila__principal">
+            <p class="pp-fila__titulo">Arquitecta de datos <span class="pp-fila__codigo pp-mono">PS-0098</span></p>
+            <p class="pp-fila__meta">Catalina Rojas · Medellín · híbrido</p>
           </div>
-          <span class="cf-miembro__banda pp-badge pp-badge--banda">Disponible en 4 a 6 semanas</span>
-          <span class="pp-codigo-perfil">PS-0098</span>
+          <span class="pp-badge pp-badge--banda">En 4 a 6 semanas</span>
         </li>
       </ul>
-      <dl class="cf-contexto">
-        <dt>Proyecto</dt>
-        <dd>Modernización de pagos inmediatos</dd>
-        <dt>Qué necesitan resolver</dt>
-        <dd>Migrar el motor de pagos inmediatos a una arquitectura por eventos, con pruebas automatizadas de regresión, antes del cierre contable de marzo.</dd>
-        <dt>Inicio que buscan</dt>
-        <dd>Noviembre de 2026 · 6 meses</dd>
-        <dt>Modalidad</dt>
-        <dd>Híbrido · Medellín, dos días en oficina</dd>
-        <dt>Quién envía</dt>
-        <dd>Andrés Rojas · Arquitecto de soluciones</dd>
-      </dl>
+      <details class="cf-detalle">
+        <summary>Ver el contexto del proyecto</summary>
+        <dl class="cf-contexto">
+          <div><dt>Proyecto</dt><dd>Modernización de pagos inmediatos</dd></div>
+          <div><dt>Qué necesitan resolver</dt><dd>Migrar el motor de pagos inmediatos a una arquitectura por eventos, con pruebas automatizadas de regresión, antes del cierre contable de marzo.</dd></div>
+          <div><dt>Inicio que buscan</dt><dd>Noviembre de 2026 · 6 meses</dd></div>
+          <div><dt>Modalidad</dt><dd>Híbrido · Medellín, dos días en oficina</dd></div>
+          <div><dt>Quién envía</dt><dd>Andrés Rojas · Arquitecto de soluciones</dd></div>
+        </dl>
+      </details>
     </section>
   </main>
 </body>

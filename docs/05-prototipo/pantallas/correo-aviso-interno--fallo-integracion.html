@@ -16,6 +16,11 @@
   - Correo interno: destinatarios @trycore.com. Del profesional solo nombre + primer apellido,
     código y banda de disponibilidad; nunca foto, contacto, CV, tarifa ni fecha exacta.
   - VARIANTE fallo-integracion: HU-105 (cola de reintento, confirmación al cliente igual, alerta nominal, bandeja de fallos y reintento sin duplicar).
+  - OFICIO v2 (2026-09-27, feedback del sponsor): cabecera blanca con hairline (sin franja navy
+    ni filo teal); el estado es la primera línea del cuerpo (punto + texto), sin banda a todo el
+    ancho; datos en filas etiqueta/valor sin numeración ni eyebrows; perfiles como filas de texto
+    (sin píldoras, que los clientes de correo pintan mal); una sola línea de explicación bajo los
+    botones; el escalamiento en una línea tintada; pie en texto apagado sin relleno.
   Trazabilidad: épica EP-005 (y EP-007, EP-011) · historias HU-101, HU-105, HU-117 · registrada en ../manifest.json
 -->
 <html lang="es">
@@ -27,7 +32,8 @@
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
     .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-lista { list-style: none; margin: 0; padding: 0; }
     .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .pp-icono--sm { width: 14px; height: 14px; }
@@ -35,12 +41,22 @@
     .pp-simbolo__base { fill: var(--tc-logo-dark); }
     .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
     .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
-    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
-    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
-    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
-    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
 
     /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
@@ -49,91 +65,73 @@
     .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
     /* /PP:correo */
 
-    /* Composición propia (prefijo cr-): cabecera de bandeja que da contexto al revisor
-       (asunto, remitente, destinatario) y filas de datos que se apilan en móvil. */
-    .cr-bandeja { max-width: 600px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-3) 0; }
-    .cr-bandeja__asunto { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-    .cr-bandeja__meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
-    .cr-bandeja__meta dt { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
-    .cr-bandeja__meta dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-    .cr-boton-sec:hover { background: var(--tc-bg-subtle); }
+    /* Composición propia (prefijo cr-): contexto de bandeja para quien revisa el prototipo
+       (asunto, remitente, destinatario) y filas que se apilan en móvil. */
+    .cr-bandeja { max-width: 600px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-3) 0; }
+    .cr-bandeja__asunto { margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+    .cr-bandeja__meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .cr-bandeja__meta dt { color: var(--tc-text-s); }
+    .cr-bandeja__meta dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cr-nw { white-space: nowrap; }
+    .cr-boton-sec:hover { background: var(--tc-surface-quiet); border-color: var(--tc-text-s) !important; }
+    .cr-boton:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
     @media (max-width: 480px) {
       .cr-cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
       .cr-franja { padding-left: var(--tc-sp-5) !important; padding-right: var(--tc-sp-5) !important; }
-      .cr-boton { display: block !important; text-align: center; box-sizing: border-box; min-height: 44px; }
+      .cr-acciones, .cr-acciones tbody, .cr-acciones tr { display: block; width: 100%; }
       .cr-acciones td { display: block; width: 100% !important; padding: 0 0 var(--tc-sp-2) !important; }
+      .cr-boton { display: block !important; box-sizing: border-box; min-height: 44px; text-align: center; }
       .cr-dato td { display: block; width: 100% !important; }
       .cr-dato td:first-child { padding-bottom: 0 !important; }
       .cr-dato td + td { border-top: 0 !important; padding-top: var(--tc-sp-1) !important; }
-      .cr-acciones { width: 100%; }
-      .cr-hist th:nth-child(2), .cr-hist td:nth-child(2) { display: none; }
     }
   </style>
 </head>
 <body>
-  <!-- región: navegación / cabecera — contexto de bandeja para la revisión -->
+  <!-- región: cabecera — contexto de bandeja para la revisión -->
   <header class="cr-bandeja">
-    <p class="cr-bandeja__asunto">Acción necesaria: la solicitud SOL-2026-0318 no llegó a HubSpot</p>
+    <h1 class="cr-bandeja__asunto">Acción necesaria: la solicitud <span class="cr-nw">SOL‑2026‑0318</span> no llegó a HubSpot</h1>
     <dl class="cr-bandeja__meta">
       <dt>De</dt><dd>Portal de perfiles · Trycore &lt;avisos@trycore.com&gt;</dd>
-      <dt>Para</dt><dd>jonathan.rincon@trycore.com (responsable de la operación)</dd>
-      <dt>Fecha</dt><dd>28 de septiembre de 2026, 11:02 a. m.</dd>
+      <dt>Para</dt><dd>jonathan.rincon@trycore.com</dd>
+      <dt>Fecha</dt><dd>28 sep 2026, 11:02 a. m.</dd>
     </dl>
   </header>
 
   <!-- región: contenido principal — cuerpo del correo (PP:correo) -->
   <main>
     <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
-      <tr><td style="padding: var(--tc-sp-5) var(--tc-sp-3) var(--tc-sp-8);">
-        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); border-collapse: separate; overflow: hidden; font-family:var(--tc-font-body); color: var(--tc-text-b);">
-          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-navy); border-bottom: 3px solid var(--tc-primary);">
-            <span style="font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-bg-topbar);">trycore</span>
-            <span style="font-size:var(--tc-fs-small); color: var(--tc-navy-ink);">&nbsp;·&nbsp;Portal de perfiles · aviso interno</span>
+      <tr><td style="padding: var(--tc-sp-5) var(--tc-sp-3) var(--tc-sp-10);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); border-collapse: separate; overflow: hidden; font-family: var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border);">
+            <span style="font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-text-h);">trycore</span>
+            <span style="font-size: var(--tc-fs-small); color: var(--tc-text-m);">&nbsp;/&nbsp;Portal de perfiles</span>
           </td></tr>
-          <tr><td class="cr-franja" style="padding: var(--tc-sp-3) var(--tc-sp-8); background: var(--tc-red-bg); border-bottom: 1px solid var(--tc-red); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-danger-ink);">3 intentos fallidos · reintento automático en curso</td></tr>
-          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size:var(--tc-fs-body); line-height: var(--tc-lh-body);">
-            <p style="margin: 0 0 var(--tc-sp-3); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Una solicitud no ha llegado a HubSpot</p>
-            <p style="margin: 0 0 var(--tc-sp-5);">Hola, Jonathan. La solicitud de Bancolombia está guardada en el portal, pero HubSpot no confirmó el negocio en tres intentos. Seguimos reintentando; te avisamos porque ya no es un fallo pasajero.</p>
-
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-primary-surface-ink);">
-                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase;">Lo que sí está bien</span>
-                El cliente recibió su confirmación a las 10:42 a. m. y no ve ningún error.<br>La solicitud está completa en el portal: no se ha perdido nada.
-              </td></tr>
+          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m); font-variant-numeric: tabular-nums;"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; margin-right: var(--tc-sp-2); border-radius: 50%; background: var(--tc-red); vertical-align: middle;"></span>3 intentos fallidos · reintento automático en curso</p>
+            <p style="margin: 0 0 var(--tc-sp-3); font-family: var(--tc-font-heading); font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h);">Una solicitud no ha llegado a HubSpot</p>
+            <p style="margin: 0 0 var(--tc-sp-4);">Hola, Jonathan. HubSpot no confirmó el negocio de Bancolombia en tres intentos. Ya no parece un fallo pasajero.</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); background: var(--tc-green-bg); border: 1px solid var(--tc-green-bg); border-radius: var(--tc-r-md); border-collapse: separate;"><tr><td style="padding: var(--tc-sp-3) var(--tc-sp-4); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-ok-ink); font-variant-numeric: tabular-nums;">El cliente recibió su confirmación a las <span class="cr-nw">10:42 a. m.</span> y la solicitud está completa en el portal.</td></tr></table>
+            <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Intentos</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); border-collapse: collapse; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); border-bottom: 1px solid var(--tc-border);">
+              <tr><td width="1%" align="left" style="padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--tc-text-m);"><span class="cr-nw">10:42 a. m.</span></td><td align="left" style="padding: var(--tc-sp-3) 0 var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; color: var(--tc-text-h);"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; margin-right: var(--tc-sp-2); border-radius: 50%; background: var(--tc-red); vertical-align: middle;"></span>Sin respuesta en 30 s</td></tr>
+              <tr><td width="1%" align="left" style="padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--tc-text-m);"><span class="cr-nw">10:47 a. m.</span></td><td align="left" style="padding: var(--tc-sp-3) 0 var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; color: var(--tc-text-h);"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; margin-right: var(--tc-sp-2); border-radius: 50%; background: var(--tc-red); vertical-align: middle;"></span>HubSpot respondió 503 · servicio no disponible</td></tr>
+              <tr><td width="1%" align="left" style="padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--tc-text-m);"><span class="cr-nw">11:02 a. m.</span></td><td align="left" style="padding: var(--tc-sp-3) 0 var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; color: var(--tc-text-h);"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; margin-right: var(--tc-sp-2); border-radius: 50%; background: var(--tc-red); vertical-align: middle;"></span>HubSpot respondió 503 · servicio no disponible</td></tr>
+              <tr><td width="1%" align="left" style="padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--tc-text-m);"><span class="cr-nw">11:57 a. m.</span></td><td align="left" style="padding: var(--tc-sp-3) 0 var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; text-align: left; font-variant-numeric: tabular-nums; color: var(--tc-text-h);"><span aria-hidden="true" style="display: inline-block; width: 6px; height: 6px; margin-right: var(--tc-sp-2); border: 1.5px solid var(--tc-text-s); border-radius: 50%; box-sizing: border-box; vertical-align: middle;"></span><span style="color: var(--tc-text-m);">Cuarto intento programado · la espera crece hasta 55 min</span></td></tr>
             </table>
-
-            <p style="margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m);">Intentos</p>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate; font-size:var(--tc-fs-small);">
-              <tr><th align="left" style="padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-bg-subtle); font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Intento</th><th align="left" style="padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-bg-subtle); font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Hora</th><th align="left" style="padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-bg-subtle); font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Resultado</th></tr>
-              <tr><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top;" class="pp-mono">1</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; white-space: nowrap;">10:42 a. m.</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Sin respuesta en 30 s</td></tr>
-              <tr><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top;" class="pp-mono">2</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; white-space: nowrap;">10:47 a. m.</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">HubSpot respondió 503 · servicio no disponible</td></tr>
-              <tr><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top;" class="pp-mono">3</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; white-space: nowrap;">11:02 a. m.</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">HubSpot respondió 503 · servicio no disponible</td></tr>
-              <tr><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top;" class="pp-mono">4</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; white-space: nowrap;">11:57 a. m.</td><td style="padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Programado · la espera crece hasta un tope de 55 min</td></tr>
+            <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">La solicitud</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); border-collapse: collapse; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); border-bottom: 1px solid var(--tc-border);">
+              <tr class="cr-dato"><td width="152" style="width: 152px; padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-m);">Solicitud</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h); overflow-wrap: anywhere; font-variant-numeric: tabular-nums;"><span class="cr-nw">SOL‑2026‑0318</span></td></tr>
+              <tr class="cr-dato"><td width="152" style="width: 152px; padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-m);">Cuenta</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h); overflow-wrap: anywhere; font-variant-numeric: tabular-nums;">Bancolombia · Modernización de pagos</td></tr>
+              <tr class="cr-dato"><td width="152" style="width: 152px; padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-m);">Quién solicita</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h); overflow-wrap: anywhere; font-variant-numeric: tabular-nums;">Andrés Rojas<br><span style="color: var(--tc-text-m);">andres.rojas@bancolombia.com.co</span></td></tr>
+              <tr class="cr-dato"><td width="152" style="width: 152px; padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-m);">Perfiles</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h); overflow-wrap: anywhere; font-variant-numeric: tabular-nums;"><span class="cr-nw">Laura Méndez <span class="pp-mono" style="font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m);">PS-0142</span></span> · <span class="cr-nw">Andrés Castaño <span class="pp-mono" style="font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m);">PS-0217</span></span> · <span class="cr-nw">Catalina Rojas <span class="pp-mono" style="font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m);">PS-0098</span></span></td></tr>
+              <tr class="cr-dato"><td width="152" style="width: 152px; padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-m);">Propietario previsto</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h); overflow-wrap: anywhere; font-variant-numeric: tabular-nums;">Mateo Gómez <span style="color: var(--tc-text-m);">· aún no recibe el aviso comercial</span></td></tr>
             </table>
-
-            <p style="margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m);">Datos de la solicitud</p>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); border-collapse: collapse; font-size:var(--tc-fs-small);">
-              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0;  vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Solicitud</td><td style="padding: var(--tc-sp-3) 0;  vertical-align: top; color: var(--tc-text-h);"><span class='pp-mono'>SOL-2026-0318</span></td></tr>
-              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Cuenta</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Bancolombia · Modernización de pagos</td></tr>
-              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Quién solicita</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Andrés Rojas · andres.rojas@bancolombia.com.co</td></tr>
-              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Perfiles</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Laura Méndez <span class='pp-mono' style='color: var(--tc-text-m);'>PS-0142</span> · Andrés Castaño <span class='pp-mono' style='color: var(--tc-text-m);'>PS-0217</span> · Catalina Rojas <span class='pp-mono' style='color: var(--tc-text-m);'>PS-0098</span></td></tr>
-              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Propietario previsto</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Mateo Gómez · aún no recibe el aviso comercial</td></tr>
-            </table>
-
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); background: var(--tc-surface-declared); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
-              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b);">
-                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase;">Sin negocios duplicados</span>
-                Antes de cada reintento buscamos en HubSpot si el negocio ya se creó con la referencia <span class='pp-mono'>SOL-2026-0318</span>. Si HubSpot lo creó y no alcanzó a confirmarlo, el reintento lo reconoce y no crea otro.
-              </td></tr>
-            </table>
-
-            <table class="cr-acciones" role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-3);"><tr><td style="padding: 0 var(--tc-sp-2) 0 0;"><a class="pp-correo__boton cr-boton" href="#fallos" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-primary-strong); border: 1px solid var(--tc-primary-strong); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-bg-topbar); text-decoration: none;">Abrir la bandeja de fallos</a></td><td style="padding: 0 var(--tc-sp-2) 0 0;"><a class="cr-boton cr-boton-sec" href="#estado" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-text-h); text-decoration: none;">Ver el estado de HubSpot</a></td></tr></table>
-            <p style="margin: 0 0 var(--tc-sp-5); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">En la bandeja de fallos puedes reintentar a mano o crear el negocio y vincularlo.</p>
-
-            <p style="margin: 0; padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-small); color: var(--tc-text-m);">Si los reintentos se agotan, la solicitud queda en la bandeja de fallos con todos sus datos y te volvemos a escribir a ti, no a una lista.</p>
+            <table class="cr-acciones" role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-3);"><tr><td style="padding: 0 var(--tc-sp-2) 0 0;"><a class="pp-correo__boton cr-boton" href="#accion" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-primary-strong); border: 1px solid var(--tc-primary-strong); border-radius: var(--tc-r-md); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-bg-topbar); text-decoration: none;">Abrir la bandeja de fallos</a></td><td style="padding: 0;"><a class="cr-boton cr-boton-sec" href="#secundaria" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-body); color: var(--tc-text-h); text-decoration: none;">Ver el estado de HubSpot</a></td></tr></table>
+            <p style="margin: 0 0 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">Si se agotan los reintentos, te escribimos de nuevo.</p>
           </td></tr>
-          <tr><td class="pp-correo__pie cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-bg-subtle); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
-            Aviso interno del Portal de perfiles. Lo recibes porque eres el responsable nominal de la integración con HubSpot. No lo reenvíes fuera de Trycore.
+          <tr><td class="pp-correo__pie cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+            Lo recibes porque eres el responsable nominal de la integración con HubSpot. No lo reenvíes fuera de Trycore.
           </td></tr>
         </table>
       </td></tr>
