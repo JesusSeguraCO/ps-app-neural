@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla correo-boletin-curado (Correo del boletín curado)
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: base = cuenta con proyecto conocido: la razón de la selección se refiere a su
+    proyecto (HU-113 happy). Variante correo-boletin-curado--sin-proyecto = encuadre genérico
+    cuando no se sabe en qué trabaja la cuenta; no se inventa una razón (HU-113 edge).
+    Los demás AC (perfil pausado, contacto sin cuenta, falta de razón, bajas) se resuelven en el
+    panel antes del envío; ningún correo sale en esos casos, por eso no son variantes de correo.
+  - Enlace propio por destinatario (HU-114): generado desde el envío con su cuenta y su
+    selección, vigencia atada al ciclo de la edición; el de ediciones anteriores ya no abre.
+  - Sin porcentajes, foto, contacto, CV, tarifa ni fecha exacta: solo banda de disponibilidad.
+  Trazabilidad: épica EP-011 · historias HU-113, HU-114, HU-115 · registrada en ../manifest.json
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Correo del boletín curado — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+
+    /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
+    .pp-correo-fondo { width: 100%; background: var(--tc-bg-canvas); }
+    .pp-correo { width: 100%; max-width: 600px; margin: 0 auto; }
+    .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
+    /* /PP:correo */
+
+    /* Composición propia (prefijo cr-): cabecera de bandeja que da contexto al revisor
+       (asunto, remitente, destinatario). No forma parte del cuerpo del correo. */
+    .cr-bandeja { max-width: 600px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-3) 0; }
+    .cr-bandeja__asunto { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .cr-bandeja__meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .cr-bandeja__meta dt { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .cr-bandeja__meta dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    .cr-boton { min-height: 44px; box-sizing: border-box; }
+    .cr-baja { display: inline-block; min-height: 44px; box-sizing: border-box; }
+    @media (max-width: 480px) {
+      .cr-cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
+      .cr-franja { padding-left: var(--tc-sp-5) !important; padding-right: var(--tc-sp-5) !important; }
+      .cr-perfil { padding: var(--tc-sp-4) !important; }
+      .cr-boton { display: block !important; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera — contexto de bandeja para la revisión -->
+  <header class="cr-bandeja">
+    <p class="cr-bandeja__asunto">3 perfiles para la migración del core de Davivienda · edición de octubre</p>
+    <dl class="cr-bandeja__meta">
+      <dt>De</dt><dd>People Service · Trycore &lt;portal@trycore.com&gt;</dd>
+      <dt>Para</dt><dd>obeltran@davivienda.com</dd>
+      <dt>Fecha</dt><dd>martes 6 de octubre de 2026, 8:00 a. m. (envío programado)</dd>
+    </dl>
+  </header>
+
+  <!-- región: contenido principal — cuerpo del correo (PP:correo) -->
+  <main>
+    <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
+      <tr><td style="padding: var(--tc-sp-5) var(--tc-sp-3) var(--tc-sp-8);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); border-collapse: separate; overflow: hidden; font-family:var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-navy); border-bottom: 3px solid var(--tc-primary);">
+            <span style="font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-bg-topbar);">trycore</span>
+            <span style="font-size:var(--tc-fs-small); color: var(--tc-navy-ink);">&nbsp;·&nbsp;Boletín de perfiles · octubre 2026</span>
+          </td></tr>
+          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size:var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-4); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Perfiles pensados para tu migración del core</p>
+            <p style="margin: 0 0 var(--tc-sp-5);">Hola, Óscar. Cada mes elegimos del banco de People Service unos pocos perfiles para tu equipo. Esta edición la armamos pensando en la <strong style="color: var(--tc-text-h);">migración del core bancario a la nube</strong> que nos contaste en agosto.</p>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); background: var(--tc-bg-subtle); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b);">
+                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m);">Por qué elegimos a estas personas</span>
+                Tu migración necesita a alguien que ya haya movido un núcleo transaccional sin parar la operación, alguien que cuide los datos en el paso de Oracle a PostgreSQL y alguien que asegure que los pagos siguen funcionando después del corte. Cada perfil de abajo cubre una de esas tres necesidades.
+              </td></tr>
+            </table>
+
+            <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">Disponibilidad al 6 de octubre de 2026. Lo verificado por Trycore va en verde; lo que declara el profesional, aparte.</p>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td class="cr-perfil" style="padding: var(--tc-sp-4) var(--tc-sp-5);">
+                <p style="margin: 0 0 var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Desarrolladora backend Java sénior</p>
+                <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Laura Méndez <span style="font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">&nbsp;·&nbsp;PS-0142</span></p>
+                <p style="margin: 0 0 var(--tc-sp-3);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-green-bg); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-ok-badge-ink);">Disponible ahora</span></p>
+                <p style="margin: 0 0 var(--tc-sp-3); line-height: var(--tc-lh-tight);"><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Java 17</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Spring Boot</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">AWS</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Oracle</span></p>
+                <p style="margin: 0 0 var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink);"><strong style="color: var(--tc-primary-ink);">✓ Verificado por Trycore:</strong> migró el núcleo transaccional de una aseguradora a microservicios en AWS (entrevista técnica y proyecto revisado).</p>
+                <p style="margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-b);"><strong style="color: var(--tc-text-m);">Declarado por el profesional:</strong> experiencia con Kafka en producción.</p>
+              </td></tr>
+            </table>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td class="cr-perfil" style="padding: var(--tc-sp-4) var(--tc-sp-5);">
+                <p style="margin: 0 0 var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Arquitecto de datos</p>
+                <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Andrés Quintero <span style="font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">&nbsp;·&nbsp;PS-0317</span></p>
+                <p style="margin: 0 0 var(--tc-sp-3);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-text-m);">Disponible en 2 a 4 semanas</span></p>
+                <p style="margin: 0 0 var(--tc-sp-3); line-height: var(--tc-lh-tight);"><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">PostgreSQL</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Oracle</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Debezium</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Azure</span></p>
+                <p style="margin: 0 0 var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink);"><strong style="color: var(--tc-primary-ink);">✓ Verificado por Trycore:</strong> diseñó la migración de datos de un core bancario de Oracle a PostgreSQL con cero pérdida de registros.</p>
+                <p style="margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-b);"><strong style="color: var(--tc-text-m);">Declarado por el profesional:</strong> certificación de Azure Data Engineer en curso.</p>
+              </td></tr>
+            </table>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td class="cr-perfil" style="padding: var(--tc-sp-4) var(--tc-sp-5);">
+                <p style="margin: 0 0 var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Analista QA de automatización</p>
+                <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Camila Torres <span style="font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">&nbsp;·&nbsp;PS-0088</span></p>
+                <p style="margin: 0 0 var(--tc-sp-3);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-green-bg); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-ok-badge-ink);">Disponible ahora</span></p>
+                <p style="margin: 0 0 var(--tc-sp-3); line-height: var(--tc-lh-tight);"><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Cypress</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">Postman</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">JMeter</span><span style="display: inline-block; margin: 0 var(--tc-sp-1) var(--tc-sp-1) 0; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink);">SQL</span></p>
+                <p style="margin: 0 0 var(--tc-sp-2); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink);"><strong style="color: var(--tc-primary-ink);">✓ Verificado por Trycore:</strong> armó la regresión automatizada de pagos PSE para una fintech de Medellín.</p>
+                <p style="margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-b);"><strong style="color: var(--tc-text-m);">Declarado por el profesional:</strong> pruebas de carga sobre sistemas de alto volumen.</p>
+              </td></tr>
+            </table>
+
+            <p style="margin: var(--tc-sp-2) 0 var(--tc-sp-5); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Al entrar verás el estado de hoy de cada perfil. Si alguno cambió después de este correo (por ejemplo, ya fue colocado en otro proyecto), sigue en la lista con su estado; no desaparece.</p>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-primary-surface-ink);">
+                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-primary-ink);">Tu enlace a esta edición</span>
+                Abre la selección de <strong>Davivienda · Migración del core</strong>. Vale mientras dure esta edición, hasta el <strong>31 de octubre de 2026</strong>; los enlaces de boletines anteriores ya no abren perfiles.<br>
+                Es personal: solo funciona con <strong>obeltran@davivienda.com</strong>. Al abrirlo te enviaremos un código a este buzón.
+              </td></tr>
+            </table>
+
+            <p style="margin: 0 0 var(--tc-sp-5);"><a class="pp-correo__boton cr-boton" href="#abrir" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-primary-strong); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-bg-topbar); text-decoration: none;">Ver la selección y armar mi equipo</a></p>
+
+            <p style="margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">Si el botón no funciona, copia esta dirección en tu navegador:</p>
+            <p style="margin: 0 0 var(--tc-sp-6); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-bg-subtle); border-radius:var(--tc-r-sm); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-h); overflow-wrap: anywhere; word-break: break-all;">portal.trycore.com/b/2610/Rf8kXw3nQ2vL7tPa</p>
+
+            <p style="margin: 0; padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-small); color: var(--tc-text-m);">No reenvíes este correo: el enlace no le da acceso a nadie más. Si alguien de tu equipo necesita ver la selección, pídele a tu contacto en Trycore que lo invite.</p>
+          </td></tr>
+          <tr><td class="pp-correo__pie cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-bg-subtle); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+            People Service · Trycore · Bogotá, Colombia. Recibes este boletín mensual porque tu empresa trabaja con Trycore. Edición <span style="font-family:var(--pp-mono);">BOL-2610</span>. Si te das de baja, no te enviaremos más ediciones.<br>
+            <a class="cr-baja" href="#baja" style="padding: var(--tc-sp-3) 0; color: var(--pp-teal-ink); text-decoration: underline; font-weight: var(--tc-fw-medium);">Dejar de recibir el boletín</a>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </main>
+</body>
+</html>

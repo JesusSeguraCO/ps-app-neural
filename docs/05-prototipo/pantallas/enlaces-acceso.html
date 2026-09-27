@@ -1,0 +1,419 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla enlaces-acceso
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (enlaces-acceso con sufijo de estado), no interacciones.
+  Trazabilidad: épica EP-001 · historias HU-122, HU-144 · registrada en ../manifest.json
+  Origen: v2-adaptar (tabla «Enlaces emitidos» del panel de Talento Humano del v2). Cambia por
+  RF-19.5 y el acceso nominal: cada enlace es un objeto con registro (cuenta, razón, correos
+  invitados, quién lo generó, vigencia, contenido como lista explícita de códigos y aperturas
+  por invitado) y se puede revocar; la revocación corta también las sesiones abiertas (HU-144)
+  y el registro se conserva. Sin variantes en el inventario: el registro muestra en la misma
+  composición los estados vigente, por vencer, sin aperturas, revocado y vencido.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Enlaces de acceso — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+    /* PP:botones */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+    .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+    .pp-btn--icono { width: 44px; padding: 0; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+    @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+    /* /PP:botones */
+    /* PP:panel */
+    .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+    .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+    .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
+    .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
+    .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
+    .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
+    .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+    .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
+    .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
+    .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+    .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+    .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+    .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+    .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
+    .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+    .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+    @media (max-width: 1023px) {
+    .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+    .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+    .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
+    .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
+    .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
+    .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+    }
+    @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+    /* /PP:panel */
+    /* PP:badges */
+    .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+    .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+    .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+    .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+    .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+    .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+    .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+    .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+    /* /PP:badges */
+    /* PP:campos */
+    .pp-form { display: grid; gap: var(--tc-sp-5); }
+    .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+    .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .pp-input::placeholder { color: var(--tc-text-s); }
+    .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+    .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+    .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
+    .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
+    .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+    @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+    /* /PP:campos */
+    /* PP:pestanas */
+    .pp-pestanas { display: flex; gap: var(--tc-sp-1); overflow-x: auto; border-bottom: 1px solid var(--tc-border); }
+    .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-4); border: 0; border-bottom: 2px solid transparent; background: none; font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; }
+    .pp-pestana:hover { color: var(--tc-text-h); }
+    .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-primary); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .pp-pestana__conteo { padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* /PP:pestanas */
+    /* PP:tabla */
+    .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+    .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
+    .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
+    .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
+    .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+    .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+    .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
+    .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+    .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
+    /* /PP:tabla */
+    /* PP:avisos */
+    .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .pp-aviso p { margin: 0; }
+    .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+    .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+    .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+    /* /PP:avisos */
+  </style>
+  <style>
+    /* Estilos propios de esta pantalla (prefijo ea-): SOLO composición/layout. */
+    .ea-herramientas { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
+    .ea-herramientas .pp-pestanas { flex: 1 1 420px; min-width: 0; }
+    .ea-buscar { flex: 0 1 320px; min-width: 0; }
+    .ea-tabla-marco { position: relative; max-height: none; }
+    .ea-tabla { min-width: 1000px; }
+    .ea-cuenta { text-decoration: underline; text-decoration-color: var(--tc-border-s); text-underline-offset: 3px; }
+    .ea-tabla .pp-mono { white-space: nowrap; }
+    .ea-nowrap { white-space: nowrap; }
+    .ea-corta { display: block; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ea-btn-revocar { color: var(--tc-danger-ink); }
+    .ea-btn-revocar:hover { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+    .ea-razon { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-width: 240px; color: var(--tc-text-b); }
+    .ea-acciones { display: grid; gap: var(--tc-sp-1); justify-items: stretch; }
+    .ea-registro { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--tc-sp-5); align-items: start; margin-top: var(--tc-sp-8); }
+    .ea-columna { display: grid; gap: var(--tc-sp-5); min-width: 0; }
+    .ea-cabecera { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); padding-bottom: var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .ea-cabecera h2 { margin: 0; font-size:var(--tc-fs-h3); }
+    .ea-cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .ea-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: var(--tc-sp-4) var(--tc-sp-5); margin: 0; }
+    .ea-datos dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ea-datos dd { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .ea-datos__ancho { grid-column: 1 / -1; }
+    .ea-subtitulo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); margin: var(--tc-sp-6) 0 var(--tc-sp-2); }
+    .ea-subtitulo h3 { margin: 0; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ea-subtitulo p { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .ea-filas { border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); overflow: hidden; }
+    .ea-fila { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .ea-fila:last-child { border-bottom: 0; }
+    .ea-fila--cambio { background: var(--tc-surface-quiet); }
+    .ea-fila__codigo { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .ea-fila__principal { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .ea-fila__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); overflow-wrap: anywhere; }
+    .ea-fila__nota { grid-column: 2 / -1; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-warn-ink); }
+    .ea-fila--invitado { grid-template-columns: minmax(0, 1fr) auto; }
+    .ea-fila__conteo { font-size:var(--tc-fs-caption); color: var(--tc-text-b); white-space: nowrap; }
+    .ea-linea { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+    .ea-linea li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: var(--tc-sp-3); padding-bottom: var(--tc-sp-4); }
+    .ea-linea li:last-child { padding-bottom: 0; }
+    .ea-punto { width: 10px; height: 10px; margin-top: var(--tc-sp-1); border-radius:var(--tc-r-pill); background: var(--tc-primary); }
+    .ea-punto--hueco { background: var(--tc-card); border: 2px solid var(--tc-border-s); }
+    .ea-linea__cuando { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .ea-linea__que { display: block; font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .ea-total { display: flex; align-items: baseline; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-4); }
+    .ea-total__cifra { font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); color: var(--tc-text-h); }
+    .ea-total__texto { font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .ea-revocar { border-color: var(--tc-red-bg); }
+    .ea-revocar h2 { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-h3); }
+    .ea-revocar > p { margin: 0 0 var(--tc-sp-4); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .ea-revocar .pp-form { gap: var(--tc-sp-4); }
+    .ea-tarjeta-titulo { margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-h3); }
+    @media (max-width: 1199px) { .ea-registro { grid-template-columns: minmax(0, 1fr); } .ea-columna--lado { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); } }
+    @media (max-width: 767px) {
+      .ea-buscar { flex-basis: 100%; }
+      .ea-fila { grid-template-columns: minmax(0, 1fr) auto; padding: var(--tc-sp-3); }
+      .ea-fila__codigo { grid-column: 1 / -1; }
+      .ea-fila__nota { grid-column: 1 / -1; }
+      .ea-fila--invitado { grid-template-columns: minmax(0, 1fr); }
+      .ea-panel .pp-panel__topbar .pp-btn { min-height: 44px; }
+    }
+    /* Sesión en la topbar del panel (mismo bloque en todas las pantallas del panel, ver admin-shell) */
+    .ps-sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-4); min-width: 0; }
+    .ps-sesion__quien { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; line-height: var(--tc-lh-h3); }
+    .ps-sesion__correo { font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .ps-sesion__vence { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    @media (max-width: 767px) {
+      .pp-panel__topbar { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
+      .ps-sesion { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
+      .ps-sesion__quien { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pp-panel ea-panel">
+    <!-- región: navegación / cabecera -->
+    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+      <div class="pp-sidebar__marca">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Panel del portal de perfiles</span></span>
+      </div>
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Bandeja de vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="#" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces de acceso</a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 8v6M22 11h-6"/></svg>Peticiones de invitación<span class="pp-sidelink__conteo">3</span></a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
+      <div class="pp-sidebar__pie">
+        <span class="pp-avatar" aria-hidden="true">KR</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Administradora de inventario</span></span>
+      </div>
+    </nav>
+
+    <div class="pp-panel__cuerpo">
+      <div class="pp-panel__topbar">
+        <ol class="pp-migas"><li>Clientes</li><li aria-current="page">Enlaces de acceso</li></ol>
+        <div class="ps-sesion">
+          <div class="ps-sesion__quien">
+            <span class="ps-sesion__correo pp-mono">karen.rodriguez@trycore.com</span>
+            <span class="ps-sesion__vence">Sesión abierta hasta las 6:40 p. m.</span>
+          </div>
+          <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Cerrar sesión</a>
+        </div>
+      </div>
+
+      <!-- región: contenido principal -->
+      <main class="pp-panel__contenido">
+        <div class="pp-encabezado">
+          <div class="pp-encabezado__texto">
+            <h1>Enlaces de acceso</h1>
+            <p>Cada enlace guarda para qué cuenta se generó, por qué, a quién se invitó, quién lo generó y quién lo ha abierto. Revocarlo lo corta al instante, también en las sesiones abiertas.</p>
+          </div>
+          <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--primario" href="generador-enlace.html">Generar enlace</a></div>
+        </div>
+
+        <div class="ea-herramientas">
+          <div class="pp-pestanas" role="tablist" aria-label="Estado de los enlaces">
+            <a class="pp-pestana" role="tab" aria-selected="true" href="#">Vigentes <span class="pp-pestana__conteo">9</span></a>
+            <a class="pp-pestana" role="tab" aria-selected="false" href="#">Vencidos <span class="pp-pestana__conteo">3</span></a>
+            <a class="pp-pestana" role="tab" aria-selected="false" href="#">Revocados <span class="pp-pestana__conteo">2</span></a>
+            <a class="pp-pestana" role="tab" aria-selected="false" href="#">Todos <span class="pp-pestana__conteo">14</span></a>
+          </div>
+          <div class="pp-campo ea-buscar">
+            <label class="pp-label pp-sr" for="ea-buscar">Buscar enlaces</label>
+            <input class="pp-input" id="ea-buscar" type="search" placeholder="Cuenta, proyecto o correo invitado">
+          </div>
+        </div>
+
+        <div class="pp-tabla-marco ea-tabla-marco" tabindex="0" role="region" aria-label="Registro de enlaces de acceso">
+          <table class="pp-tabla ea-tabla">
+            <caption class="pp-sr">Enlaces de acceso con su razón, invitados, autor, vigencia, aperturas y estado</caption>
+            <thead><tr><th scope="col">Cuenta y proyecto</th><th scope="col">Razón de la selección</th><th scope="col">Invitados</th><th scope="col">Generó</th><th scope="col">Vigencia</th><th scope="col">Aperturas</th><th scope="col">Estado</th><th scope="col"><span class="pp-sr">Acciones</span></th></tr></thead>
+            <tbody>
+              <tr aria-selected="true">
+                <th scope="row"><a class="pp-tabla__perfil ea-cuenta" href="#registro">Bancolombia</a><span class="pp-tabla__sub">Modernización de pagos</span><span class="pp-tabla__sub">6 perfiles · <span class="pp-mono">ENL-0031</span></span></th>
+                <td><span class="ea-razon">Buscas un equipo para llevar los pagos inmediatos de la banca personal a la nueva plataforma antes de marzo. Elegimos personas que ya conectaron sistemas de pagos en banca, que prueban bajo carga de fin de mes y una gerente que ha coordinado salidas a producción con varios equipos.</span></td>
+                <td><span class="pp-tabla__perfil">3 correos</span><span class="pp-tabla__sub ea-corta">mariana.ospina@bancolombia.com.co y 2 más</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Eida Tinjacá</span><span class="pp-tabla__sub">22 sep 2026</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Hasta 24 oct 2026</span><span class="pp-tabla__sub">Vence en 27 días</span></td>
+                <td><span class="pp-tabla__num">5</span><span class="pp-tabla__sub">2 de 3 invitados</span></td>
+                <td><span class="pp-badge pp-badge--publicado">Vigente</span></td>
+                <td><div class="ea-acciones"><a class="pp-btn pp-btn--fantasma pp-btn--sm ea-btn-revocar" href="#revocar">Revocar<span class="pp-sr"> el enlace</span></a></div></td>
+              </tr>
+              <tr>
+                <th scope="row"><a class="pp-tabla__perfil ea-cuenta" href="#registro">Seguros Bolívar</a><span class="pp-tabla__sub">Portal de siniestros</span><span class="pp-tabla__sub">4 perfiles · <span class="pp-mono">ENL-0027</span></span></th>
+                <td><span class="ea-razon">Dos frontend con React y accesibilidad, más una líder técnica que ya trabajó con aseguradoras y un QA manual con banca.</span></td>
+                <td><span class="pp-tabla__perfil">1 correo</span><span class="pp-tabla__sub ea-corta">paula.cardenas@segurosbolivar.com</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Eida Tinjacá</span><span class="pp-tabla__sub">6 sep 2026</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Hasta 6 oct 2026</span><span class="pp-tabla__sub">Vence en 9 días</span></td>
+                <td><span class="pp-tabla__num">1</span><span class="pp-tabla__sub">1 de 1 invitado</span></td>
+                <td><span class="pp-badge pp-badge--por-confirmar">Vence pronto</span></td>
+                <td><div class="ea-acciones"><a class="pp-btn pp-btn--fantasma pp-btn--sm ea-btn-revocar" href="#revocar">Revocar<span class="pp-sr"> el enlace</span></a></div></td>
+              </tr>
+              <tr>
+                <th scope="row"><a class="pp-tabla__perfil ea-cuenta" href="#registro">Grupo Éxito</a><span class="pp-tabla__sub">Plataforma omnicanal</span><span class="pp-tabla__sub">Sin selección · <span class="pp-mono">ENL-0044</span></span></th>
+                <td><span class="ea-razon">Sin selección: abre el banco completo para que el equipo busque perfiles de datos y de QA para la plataforma omnicanal.</span></td>
+                <td><span class="pp-tabla__perfil">1 correo</span><span class="pp-tabla__sub ea-corta">juliana.torres@grupoexito.com</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Eida Tinjacá</span><span class="pp-tabla__sub">25 sep 2026</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Hasta 14 nov 2026</span><span class="pp-tabla__sub">Vence en 48 días</span></td>
+                <td><span class="pp-tabla__num">2</span><span class="pp-tabla__sub">1 de 1 invitado</span></td>
+                <td><span class="pp-badge pp-badge--publicado">Vigente</span></td>
+                <td><div class="ea-acciones"><a class="pp-btn pp-btn--fantasma pp-btn--sm ea-btn-revocar" href="#revocar">Revocar<span class="pp-sr"> el enlace</span></a></div></td>
+              </tr>
+              <tr>
+                <th scope="row"><a class="pp-tabla__perfil ea-cuenta" href="#registro">Davivienda</a><span class="pp-tabla__sub">App de inversiones</span><span class="pp-tabla__sub">2 perfiles · <span class="pp-mono">ENL-0022</span></span></th>
+                <td><span class="ea-razon">Desarrolladores móviles con Kotlin y Swift para la app de inversiones, con experiencia en regulación financiera.</span></td>
+                <td><span class="pp-tabla__perfil">1 correo</span><span class="pp-tabla__sub ea-corta">tomas.beltran@davivienda.com</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Karen Rodríguez</span><span class="pp-tabla__sub">2 sep 2026</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Revocado el 18 sep 2026</span><span class="pp-tabla__sub">por Karen Rodríguez</span></td>
+                <td><span class="pp-tabla__num">3</span><span class="pp-tabla__sub">1 de 1 invitado</span></td>
+                <td><span class="pp-badge pp-badge--archivado">Revocado</span></td>
+                <td><span class="pp-tabla__sub">Sin acciones</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><a class="pp-tabla__perfil ea-cuenta" href="#registro">Claro Colombia</a><span class="pp-tabla__sub">Facturación</span><span class="pp-tabla__sub">5 perfiles · <span class="pp-mono">ENL-0019</span></span></th>
+                <td><span class="ea-razon">Analistas de datos con SQL y un líder de migración para la nueva plataforma de facturación.</span></td>
+                <td><span class="pp-tabla__perfil">3 correos</span><span class="pp-tabla__sub ea-corta">felipe.rozo@claro.com.co y 2 más</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Eida Tinjacá</span><span class="pp-tabla__sub">13 ago 2026</span></td>
+                <td><span class="pp-tabla__perfil ea-nowrap">Venció el 12 sep 2026</span><span class="pp-tabla__sub">30 días</span></td>
+                <td><span class="pp-tabla__num">7</span><span class="pp-tabla__sub">2 de 3 invitados</span></td>
+                <td><span class="pp-badge pp-badge--banda">Vencido</span></td>
+                <td><span class="pp-tabla__sub">Sin acciones</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- región: registro del enlace seleccionado + revocación -->
+        <div class="ea-registro" id="registro">
+          <section class="pp-tarjeta ea-columna" aria-labelledby="ea-registro-titulo">
+            <div>
+              <div class="ea-cabecera">
+                <div>
+                  <h2 id="ea-registro-titulo">Bancolombia · Modernización de pagos</h2>
+                  <p>Enlace <span class="pp-mono">ENL-0031</span> · generado el 22 sep 2026 a las 10:14</p>
+                </div>
+                <span class="pp-badge pp-badge--publicado">Vigente</span>
+              </div>
+              <dl class="ea-datos">
+                <div class="ea-datos__ancho"><dt>Razón de la selección</dt><dd>Buscas un equipo para llevar los pagos inmediatos de la banca personal a la nueva plataforma antes de marzo. Elegimos personas que ya conectaron sistemas de pagos en banca, que prueban bajo carga de fin de mes y una gerente que ha coordinado salidas a producción con varios equipos. El cliente la ve íntegra al abrir el enlace.</dd></div>
+                <div><dt>Generó</dt><dd>Eida Tinjacá · Coordinación de Servicio</dd></div>
+                <div><dt>Vigencia</dt><dd>Hasta el 24 oct 2026 · vence en 27 días</dd></div>
+                <div><dt>Cuenta en el CRM</dt><dd>Bancolombia · negocio en el pipeline People Service</dd></div>
+              </dl>
+
+              <div class="ea-subtitulo"><h3>Qué contenía</h3><p>Lista fija de 6 códigos, no un filtro</p></div>
+              <ul class="pp-lista ea-filas">
+                <li class="ea-fila"><span class="pp-mono ea-fila__codigo">PS-0142</span><span><span class="ea-fila__principal">Laura Méndez</span><span class="ea-fila__sub">Desarrolladora backend Java</span></span><span class="pp-badge pp-badge--disponible">Disponible ahora</span></li>
+                <li class="ea-fila"><span class="pp-mono ea-fila__codigo">PS-0187</span><span><span class="ea-fila__principal">Julián Ospina</span><span class="ea-fila__sub">Desarrollador backend .NET</span></span><span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span></li>
+                <li class="ea-fila"><span class="pp-mono ea-fila__codigo">PS-0217</span><span><span class="ea-fila__principal">Andrés Castaño</span><span class="ea-fila__sub">Analista QA automatización</span></span><span class="pp-badge pp-badge--disponible">Disponible ahora</span></li>
+                <li class="ea-fila ea-fila--cambio"><span class="pp-mono ea-fila__codigo">PS-0063</span><span><span class="ea-fila__principal">Natalia Restrepo</span><span class="ea-fila__sub">Líder técnica de integraciones</span></span><span class="pp-badge pp-badge--pausado">Pausado</span><p class="ea-fila__nota">Cambió después de generar el enlace. El cliente la sigue viendo en su posición con la etiqueta «Pausado» desde el 25 sep 2026; no se puede sumar al equipo.</p></li>
+                <li class="ea-fila ea-fila--cambio"><span class="pp-mono ea-fila__codigo">PS-0231</span><span><span class="ea-fila__principal">Camilo Vargas</span><span class="ea-fila__sub">Analista QA de rendimiento</span></span><span class="pp-badge pp-badge--colocado">Colocado</span><p class="ea-fila__nota">Cambió después de generar el enlace. El cliente lo sigue viendo en su posición con la etiqueta «Colocado» y su banda de liberación: se libera en 1 a 2 meses.</p></li>
+                <li class="ea-fila"><span class="pp-mono ea-fila__codigo">PS-0110</span><span><span class="ea-fila__principal">Diana Salazar</span><span class="ea-fila__sub">Gerente de proyecto ágil</span></span><span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span></li>
+              </ul>
+
+              <div class="ea-subtitulo"><h3>Correos invitados</h3><p>Solo ellos pueden entrar; reenviar el enlace no da acceso</p></div>
+              <ul class="pp-lista ea-filas">
+                <li class="ea-fila ea-fila--invitado"><span><span class="ea-fila__principal">mariana.ospina@bancolombia.com.co</span><span class="ea-fila__sub">Contacto de la cuenta en el CRM · invitada por Trycore</span></span><span class="ea-fila__conteo"><span class="pp-mono">3</span> aperturas</span></li>
+                <li class="ea-fila ea-fila--invitado"><span><span class="ea-fila__principal">jorge.salazar@bancolombia.com.co</span><span class="ea-fila__sub">Invitado por Trycore</span></span><span class="ea-fila__conteo"><span class="pp-mono">2</span> aperturas</span></li>
+                <li class="ea-fila ea-fila--invitado"><span><span class="ea-fila__principal">andres.rincon@bancolombia.com.co</span><span class="ea-fila__sub">Invitación aprobada el 23 sep · pedida por Mariana Ospina</span></span><span class="ea-fila__conteo"><span class="pp-mono">0</span> aperturas</span></li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- región: paneles secundarios -->
+          <div class="ea-columna ea-columna--lado">
+            <section class="pp-tarjeta" aria-labelledby="ea-aperturas-titulo">
+              <h2 class="ea-tarjeta-titulo" id="ea-aperturas-titulo">Aperturas</h2>
+              <p class="ea-total"><span class="ea-total__cifra pp-mono">5</span><span class="ea-total__texto">aperturas de 2 de 3 invitados</span></p>
+              <ol class="ea-linea">
+                <li><span class="ea-punto" aria-hidden="true"></span><span><span class="ea-linea__cuando">26 sep 2026 · 16:42</span><span class="ea-linea__que">jorge.salazar@bancolombia.com.co abrió la selección</span></span></li>
+                <li><span class="ea-punto" aria-hidden="true"></span><span><span class="ea-linea__cuando">25 sep 2026 · 09:10</span><span class="ea-linea__que">mariana.ospina@bancolombia.com.co abrió la selección</span></span></li>
+                <li><span class="ea-punto" aria-hidden="true"></span><span><span class="ea-linea__cuando">24 sep 2026 · 11:28</span><span class="ea-linea__que">jorge.salazar@bancolombia.com.co abrió la selección</span></span></li>
+                <li><span class="ea-punto" aria-hidden="true"></span><span><span class="ea-linea__cuando">23 sep 2026 · 15:03</span><span class="ea-linea__que">mariana.ospina@bancolombia.com.co abrió la selección</span></span></li>
+                <li><span class="ea-punto" aria-hidden="true"></span><span><span class="ea-linea__cuando">22 sep 2026 · 17:55</span><span class="ea-linea__que">mariana.ospina@bancolombia.com.co abrió la selección por primera vez</span></span></li>
+                <li><span class="ea-punto ea-punto--hueco" aria-hidden="true"></span><span><span class="ea-linea__cuando">22 sep 2026 · 10:14</span><span class="ea-linea__que">Eida Tinjacá generó el enlace</span></span></li>
+              </ol>
+            </section>
+
+            <section class="pp-tarjeta ea-revocar" id="revocar" aria-labelledby="ea-revocar-titulo">
+              <h2 id="ea-revocar-titulo">Revocar este enlace</h2>
+              <p>Deja de abrir al instante, incluso para quien lo tiene abierto ahora. Quien entre verá cómo pedir un enlace nuevo, sin perfiles. El registro se conserva y la revocación queda a tu nombre.</p>
+              <form class="pp-form" action="#">
+                <div class="pp-campo">
+                  <label class="pp-label" for="ea-motivo">Motivo de la revocación</label>
+                  <textarea class="pp-input pp-input--area" id="ea-motivo" aria-describedby="ea-motivo-ayuda" placeholder="Por ejemplo: la cuenta pausó el proyecto"></textarea>
+                  <p class="pp-ayuda" id="ea-motivo-ayuda">Queda en el registro junto a tu nombre y la fecha.</p>
+                </div>
+                <button type="submit" class="pp-btn pp-btn--destructivo pp-btn--bloque">Revocar enlace</button>
+              </form>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

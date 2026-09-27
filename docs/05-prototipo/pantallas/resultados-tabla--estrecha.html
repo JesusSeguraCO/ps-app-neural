@@ -1,0 +1,291 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla resultados-tabla--estrecha
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (resultados-tabla--<estado>.html), no interacciones.
+  Trazabilidad: épica EP-002 · historias HU-121 · registrada en ../manifest.json
+  Estado de ESTA pantalla: --estrecha — teléfono: la tabla se desplaza de lado DENTRO de su marco (la página no se arrastra);
+  perfil fijo a la izquierda y aviso de deslizar (AC edge «pantalla estrecha»).
+  Origen: v2-existe (Portal de Perfiles v2.dc.html, pantalla Resultados en vista tabla, y
+  handoff/components/portal/tabla-resultados.tsx). Ajuste por HU-121: una columna por criterio
+  (el v2 agrupaba los criterios en una sola columna de chips) y columnas base modalidad y país.
+  Nunca porcentajes: ✓/– por criterio y «N de 2» deseables. Sin foto, contacto, CV ni tarifa;
+  disponibilidad solo en banda.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vista tabla — pantalla estrecha — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+    /* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+    /* PP:chips */
+      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+      .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
+      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+      .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
+      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+      .pp-chip__quitar:hover { background: var(--pp-overlay); }
+      /* /PP:chips */
+    /* PP:tabla */
+      .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
+      /* /PP:tabla */
+    /* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+      /* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-equipo:hover { border-color: var(--tc-primary); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+  </style>
+  <style>
+    * { box-sizing: border-box; }
+    * { box-sizing: border-box; }
+    /* Composición propia de la vista tabla (prefijo rt-). Valores visuales → var(--token). */
+    .rt-contenido { max-width: 1400px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-8) var(--tc-sp-10); }
+    .rt-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); }
+    .rt-cabeza__texto { flex: 1 1 280px; min-width: 0; }
+    .rt-cabeza h1 { margin: 0; font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .rt-cabeza__ambito { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .rt-cabeza__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); }
+    .rt-vista { display: inline-flex; overflow: hidden; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+    .rt-vista__op { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 42px; padding: 0 var(--tc-sp-4); border: 0; background: none; font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-b); cursor: pointer; }
+    .rt-vista__op + .rt-vista__op { border-left: 1px solid var(--tc-border-s); }
+    .rt-vista__op[aria-pressed="true"] { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .rt-criterios { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); margin: var(--tc-sp-5) 0 0; padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); }
+    .rt-criterios__rotulo { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .rt-criterios .pp-chips { flex: 1 1 320px; }
+    .rt-leyenda { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin: var(--tc-sp-5) 0 var(--tc-sp-3); padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .rt-leyenda li { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .rt-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); min-height: 60px; margin-bottom: var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .rt-barra p { margin: 0; }
+    .rt-barra--activa { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-text-b); }
+    .rt-barra__seleccion { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .rt-barra__conteo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .rt-barra__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .rt-deslizar { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-teal-ink); }
+    /* Marco de la tabla: alto de pantalla de resultados (la tabla de la biblioteca trae 380 px de demo). */
+    .rt-marco { position: relative; max-height: 720px; }
+    .rt-marco .pp-tabla { min-width: 1120px; }
+    .rt-marco--base .pp-tabla { min-width: 640px; }
+    .rt-marco .pp-tabla td, .rt-marco .pp-tabla tbody th { vertical-align: middle; }
+    /* Columnas fijas a la izquierda: al desplazar de lado siempre se ve quién es. */
+    .rt-fija { position: sticky; left: 0; z-index: 1; background: var(--tc-card); }
+    .rt-fija--perfil { left: 60px; box-shadow:var(--tc-sh-1); }
+    .pp-tabla thead .rt-fija { z-index: 2; background: var(--tc-bg-subtle); }
+    .pp-tabla tbody tr[aria-selected="true"] .rt-fija { background: var(--tc-accent); }
+    .rt-col-sel { width: 60px; padding-left: var(--tc-sp-2); padding-right: 0; }
+    .pp-tabla .rt-col-sel { padding: 0 0 0 var(--tc-sp-2); }
+    .rt-sel { display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; }
+    .rt-sel input { width: 20px; height: 20px; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+    .rt-perfil { min-width: 240px; }
+    .rt-perfil__rol { display: inline-flex; align-items: center; min-height: 28px; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; }
+    .rt-perfil__rol:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .rt-perfil__linea { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .rt-perfil__codigo { font-family:var(--pp-mono); font-size:var(--tc-fs-badge); color: var(--tc-text-m); }
+    .rt-th-modo { display: block; font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .rt-th-crit { border-left: 1px solid var(--tc-border); }
+    .rt-celda { position: relative; border-left: 1px solid var(--tc-border); }
+    /* Marca de evidencia por celda: verificado (superficie teal) ≠ declarado (neutra, discontinua). */
+    .rt-ev { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); white-space: nowrap; cursor: help; }
+    .rt-ev__marca { font-weight: var(--tc-fw-bold); }
+    .rt-ev--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
+    .rt-ev--verificado .rt-ev__marca { color: var(--tc-ok-mark); }
+    .rt-ev--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
+    .rt-ev--declarado .rt-ev__marca { color: var(--tc-ok-mark); }
+    .rt-ev--no { color: var(--tc-text-m); }
+    /* Globo del dato que sustenta la celda (se muestra al pasar el cursor; aquí, uno fijado como muestra). */
+    .rt-globo { position: absolute; top: calc(100% - 6px); left: var(--tc-sp-2); z-index: 3; width: 248px; padding: var(--tc-sp-3); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); box-shadow:var(--tc-sh-3); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-b); white-space: normal; }
+    .rt-globo strong { display: block; margin-bottom: var(--tc-sp-1); font-size:var(--tc-fs-badge); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); }
+    .rt-conteo { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--tc-text-h); border-left: 1px solid var(--tc-border); }
+    .rt-en-equipo { font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); color: var(--pp-teal-ink); white-space: nowrap; }
+    .pp-tabla tbody tr { cursor: pointer; }
+    .rt-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .rt-pie p { margin: 0; }
+    .rt-aviso { margin: var(--tc-sp-5) 0; }
+    .rt-aviso .pp-aviso { align-items: flex-start; }
+    .rt-aviso__accion { margin-top: var(--tc-sp-2); }
+    @media (max-width: 1023px) {
+      .rt-contenido { padding: var(--tc-sp-5) var(--tc-sp-5) var(--tc-sp-8); }
+    }
+    @media (max-width: 759px) {
+      .rt-contenido { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
+      .rt-cabeza__acciones { width: 100%; }
+      .rt-cabeza__acciones .pp-btn { flex: 1 1 auto; }
+      .rt-vista { flex: 1 1 100%; }
+      .rt-vista__op { flex: 1; justify-content: center; min-height: 44px; }
+      .rt-criterios { padding: var(--tc-sp-3); }
+      .rt-barra { align-items: stretch; }
+      .rt-barra__acciones, .rt-barra__acciones .pp-btn { flex: 1 1 auto; }
+      .rt-perfil { min-width: 156px; }
+      .rt-fija--perfil { max-width: 156px; }
+    }
+  </style>
+</head>
+<body>
+<!-- región: navegación / cabecera (PP:topbar) -->
+  <header class="pp-topbar">
+    <a class="pp-marca" href="#buscar" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+      <p class="pp-cuenta__meta">Acceso válido hasta el 24 de octubre de 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="#seleccion">Selección para ti</a>
+      <a class="pp-navlink" href="#buscar" aria-current="page">Buscar</a>
+    </nav>
+    <a class="pp-equipo" href="#equipo">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">2</span><span class="pp-sr">2 perfiles en el equipo</span></a>
+  </header>
+
+    <!-- región: contenido principal (resultados en vista de tabla, HU-121) -->
+    <main class="rt-contenido" id="resultados" aria-labelledby="rt-h1">
+      <div class="rt-cabeza">
+        <div class="rt-cabeza__texto">
+          <h1 id="rt-h1">8 perfiles cumplen tus 2 criterios obligatorios</h1>
+          <p class="rt-cabeza__ambito">Banco de Trycore · Colombia y remoto en Latinoamérica · ordenados por deseables que cumplen</p>
+        </div>
+        <div class="rt-cabeza__acciones">
+          <button type="button" class="pp-btn pp-btn--contorno"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Copiar enlace de esta vista</button>
+          <div class="rt-vista" role="group" aria-label="Vista de resultados">
+            <button type="button" class="rt-vista__op" aria-pressed="false"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Tarjetas</button>
+            <button type="button" class="rt-vista__op" aria-pressed="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"/></svg>Tabla</button>
+          </div>
+        </div>
+      </div>
+      <div class="rt-criterios">
+        <span class="rt-criterios__rotulo">Criterios activos</span>
+        <ul class="pp-chips" aria-label="Criterios activos"><li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Java</span><span class="pp-chip__modo">obligatorio</span></li><li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Inglés B2</span><span class="pp-chip__modo">obligatorio</span></li><li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Sector banca</span><span class="pp-chip__modo">deseable</span></li><li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Kafka</span><span class="pp-chip__modo">deseable</span></li></ul>
+        <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Ajustar criterios</button>
+      </div>
+      <ul class="rt-leyenda" aria-label="Cómo leer las celdas">
+        <li><span class="rt-ev rt-ev--verificado"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado</span>lo comprobó Trycore</li>
+        <li><span class="rt-ev rt-ev--declarado"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado</span>lo afirma el profesional</li>
+        <li><span class="rt-ev rt-ev--no"><span class="rt-ev__marca" aria-hidden="true">–</span></span>no lo cumple</li>
+        <li>Pasa el cursor sobre una celda para ver el dato que la sustenta.</li>
+      </ul>
+      <div class="rt-barra">
+        <p>Marca varios perfiles para sumarlos al equipo de una vez.</p>
+        <p>Mi equipo: <span class="pp-mono">2</span> perfiles</p>
+      </div>
+      <p class="rt-deslizar"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8l-4 4 4 4M17 8l4 4-4 4M3 12h18"/></svg>Desliza la tabla de lado para ver los 4 criterios; el perfil queda fijo a la izquierda.</p>
+        <div class="pp-tabla-marco rt-marco" tabindex="0" role="region" aria-label="Resultados en tabla">
+          <table class="pp-tabla">
+            <caption class="pp-sr">Perfiles que cumplen los criterios obligatorios, con una columna por criterio activo. Marca filas para sumarlas al equipo de una vez.</caption>
+            <thead><tr><th scope="col" class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar todos los perfiles"></label></th><th scope="col" class="rt-fija rt-fija--perfil">Perfil</th><th scope="col" class="rt-th-crit">Java<span class="rt-th-modo">obligatorio</span></th><th scope="col" class="rt-th-crit">Inglés B2<span class="rt-th-modo">obligatorio</span></th><th scope="col" class="rt-th-crit">Sector banca<span class="rt-th-modo">deseable</span></th><th scope="col" class="rt-th-crit">Kafka<span class="rt-th-modo">deseable</span></th><th scope="col" class="rt-th-crit">Deseables<span class="rt-th-modo">cumple de 2</span></th><th scope="col">Disponibilidad</th><th scope="col">Modalidad</th><th scope="col">País</th></tr></thead>
+            <tbody>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Laura Méndez"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0142">Desarrolladora backend Java</a><span class="rt-perfil__linea">Laura Méndez<span class="rt-perfil__codigo">PS-0142</span><span class="rt-en-equipo">✓ En tu equipo</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Prueba técnica de Java y Spring Boot revisada por un arquitecto de Trycore"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Java: Prueba técnica de Java y Spring Boot revisada por un arquitecto de Trycore</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Entrevista conducida en inglés · nivel B2"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Inglés B2: Entrevista conducida en inglés · nivel B2</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: 8 años en banca: pagos inmediatos y conciliación para dos entidades"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Sector banca: 8 años en banca: pagos inmediatos y conciliación para dos entidades</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara 3 años con Kafka en mensajería de pagos"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Kafka: Declara 3 años con Kafka en mensajería de pagos</span></span></td><td class="rt-conteo">2 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td>Híbrido</td><td>Colombia</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Felipe Arango"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0115">Desarrollador backend</a><span class="rt-perfil__linea">Felipe Arango<span class="rt-perfil__codigo">PS-0115</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara 6 años con Java 11 y 17"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Java: Declara 6 años con Java 11 y 17</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Entrevista conducida en inglés · nivel B2"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Inglés B2: Entrevista conducida en inglés · nivel B2</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara 4 años en una cooperativa financiera"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Sector banca: Declara 4 años en una cooperativa financiera</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara Kafka en la migración de un core de créditos"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Kafka: Declara Kafka en la migración de un core de créditos</span></span></td><td class="rt-conteo">2 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span></td><td>Híbrido</td><td>Colombia</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Santiago Herrera"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0061">Líder técnico Java</a><span class="rt-perfil__linea">Santiago Herrera<span class="rt-perfil__codigo">PS-0061</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Prueba técnica de arquitectura Java revisada por Trycore"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Java: Prueba técnica de arquitectura Java revisada por Trycore</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Entrevista conducida en inglés · nivel C1"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Inglés B2: Entrevista conducida en inglés · nivel C1</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Referencia verificada: lideró el equipo de pagos de un banco"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Sector banca: Referencia verificada: lideró el equipo de pagos de un banco</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="No registra experiencia con Kafka"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Kafka: No registra experiencia con Kafka</span></span></td><td class="rt-conteo">1 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--banda">Más de 2 meses</span></td><td>Remoto</td><td>Colombia</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Julián Ospina"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0187">Desarrollador backend Java</a><span class="rt-perfil__linea">Julián Ospina<span class="rt-perfil__codigo">PS-0187</span><span class="rt-en-equipo">✓ En tu equipo</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Prueba técnica de Java revisada por Trycore"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Java: Prueba técnica de Java revisada por Trycore</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara inglés B2; sin entrevista en inglés"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Inglés B2: Declara inglés B2; sin entrevista en inglés</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="Su trayectoria es en retail y logística"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Sector banca: Su trayectoria es en retail y logística</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara Kafka Streams en un sistema de inventarios"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Kafka: Declara Kafka Streams en un sistema de inventarios</span></span></td><td class="rt-conteo">1 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span></td><td>Remoto</td><td>Colombia</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Daniela Pardo"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0239">Desarrolladora full stack Java</a><span class="rt-perfil__linea">Daniela Pardo<span class="rt-perfil__codigo">PS-0239</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Prueba técnica de Java y React revisada por Trycore"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Java: Prueba técnica de Java y React revisada por Trycore</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara inglés B2"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Inglés B2: Declara inglés B2</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara 2 años en una fintech de pagos"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Sector banca: Declara 2 años en una fintech de pagos</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="No registra experiencia con Kafka"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Kafka: No registra experiencia con Kafka</span></span></td><td class="rt-conteo">1 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td>Remoto</td><td>Perú</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Mateo Quintero"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0176">Ingeniero de integración</a><span class="rt-perfil__linea">Mateo Quintero<span class="rt-perfil__codigo">PS-0176</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Prueba técnica de integración con Java revisada por Trycore"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Java: Prueba técnica de integración con Java revisada por Trycore</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Entrevista conducida en inglés · nivel B2"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Inglés B2: Entrevista conducida en inglés · nivel B2</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="Su trayectoria es en telecomunicaciones"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Sector banca: Su trayectoria es en telecomunicaciones</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Validado en prueba técnica: productor y consumidor con Kafka"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Kafka: Validado en prueba técnica: productor y consumidor con Kafka</span></span></td><td class="rt-conteo">1 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--banda">En 1 a 2 meses</span></td><td>Remoto</td><td>México</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Sofía Cárdenas"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0254">Desarrolladora backend Java</a><span class="rt-perfil__linea">Sofía Cárdenas<span class="rt-perfil__codigo">PS-0254</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara 5 años con Java y Quarkus"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Java: Declara 5 años con Java y Quarkus</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Entrevista conducida en inglés · nivel B2"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Inglés B2: Entrevista conducida en inglés · nivel B2</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--declarado" title="Declarado: Declara 3 años en una aseguradora con productos bancarios"><span class="rt-ev__marca" aria-hidden="true">✓</span>Declarado<span class="pp-sr"> · cumple Sector banca: Declara 3 años en una aseguradora con productos bancarios</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="No registra experiencia con Kafka"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Kafka: No registra experiencia con Kafka</span></span></td><td class="rt-conteo">1 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td>Híbrido</td><td>Colombia</td></tr>
+            <tr><td class="rt-col-sel rt-fija"><label class="rt-sel"><input type="checkbox" aria-label="Marcar a Valentina Gómez"></label></td><th scope="row" class="rt-fija rt-fija--perfil rt-perfil"><a class="rt-perfil__rol" href="#ficha-PS-0203">Ingeniera de software Java</a><span class="rt-perfil__linea">Valentina Gómez<span class="rt-perfil__codigo">PS-0203</span></span></th><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Prueba técnica de Java revisada por Trycore"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Java: Prueba técnica de Java revisada por Trycore</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--verificado" title="Verificado: Entrevista conducida en inglés · nivel B2"><span class="rt-ev__marca" aria-hidden="true">✓</span>Verificado<span class="pp-sr"> · cumple Inglés B2: Entrevista conducida en inglés · nivel B2</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="Su trayectoria es en salud"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Sector banca: Su trayectoria es en salud</span></span></td><td class="rt-celda"><span class="rt-ev rt-ev--no" title="No registra experiencia con Kafka"><span class="rt-ev__marca" aria-hidden="true">–</span><span class="pp-sr">No cumple Kafka: No registra experiencia con Kafka</span></span></td><td class="rt-conteo">0 de 2<span class="pp-sr"> deseables</span></td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td>Presencial</td><td>Colombia</td></tr>
+            </tbody>
+          </table>
+        </div>
+      <div class="rt-pie"><p>Mostrando los <span class="pp-mono">8</span> perfiles que cumplen</p><a class="pp-enlace" href="#cercanos">Ver lo más cercano (3 perfiles que fallan un obligatorio)</a></div>
+    </main>
+</body>
+</html>

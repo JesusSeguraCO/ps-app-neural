@@ -1,0 +1,151 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla correo-aviso-interno--solicitud-delivery (Aviso a Coordinación de Servicio: solicitud con contexto)
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes que la HU exige son VARIANTES de pantalla en archivos propios
+    (correo-aviso-interno--estado.html), no interacciones. Base = aviso al comercial dueño de la
+    cuenta (RF-9.7.1/9.7.2: cuenta, quién solicita, perfiles o especificación, momento de
+    incorporación y enlace rastreado al negocio). Variantes: solicitud-delivery (HU-101, RF-17),
+    fallo-integracion (HU-105, RF-9.6) y cuenta-sin-apertura (HU-117, RF-18.6).
+    Canal decidido: correo desde el portal (T-28); sin Slack, Chat ni WhatsApp.
+  - Correo interno: destinatarios @trycore.com. Del profesional solo nombre + primer apellido,
+    código y banda de disponibilidad; nunca foto, contacto, CV, tarifa ni fecha exacta.
+  - VARIANTE solicitud-delivery: HU-101 happy path + error (especificación inferida, marcada como no revisada) + edge (responsable nominal y escalamiento).
+  Trazabilidad: épica EP-005 (y EP-007, EP-011) · historias HU-101, HU-105, HU-117 · registrada en ../manifest.json
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aviso a Coordinación de Servicio: solicitud con contexto — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+
+    /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
+    .pp-correo-fondo { width: 100%; background: var(--tc-bg-canvas); }
+    .pp-correo { width: 100%; max-width: 600px; margin: 0 auto; }
+    .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
+    /* /PP:correo */
+
+    /* Composición propia (prefijo cr-): cabecera de bandeja que da contexto al revisor
+       (asunto, remitente, destinatario) y filas de datos que se apilan en móvil. */
+    .cr-bandeja { max-width: 600px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-3) 0; }
+    .cr-bandeja__asunto { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .cr-bandeja__meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .cr-bandeja__meta dt { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .cr-bandeja__meta dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    .cr-boton-sec:hover { background: var(--tc-bg-subtle); }
+    @media (max-width: 480px) {
+      .cr-cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
+      .cr-franja { padding-left: var(--tc-sp-5) !important; padding-right: var(--tc-sp-5) !important; }
+      .cr-boton { display: block !important; text-align: center; box-sizing: border-box; min-height: 44px; }
+      .cr-acciones td { display: block; width: 100% !important; padding: 0 0 var(--tc-sp-2) !important; }
+      .cr-dato td { display: block; width: 100% !important; }
+      .cr-dato td:first-child { padding-bottom: 0 !important; }
+      .cr-dato td + td { border-top: 0 !important; padding-top: var(--tc-sp-1) !important; }
+      .cr-acciones { width: 100%; }
+      .cr-hist th:nth-child(2), .cr-hist td:nth-child(2) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera — contexto de bandeja para la revisión -->
+  <header class="cr-bandeja">
+    <p class="cr-bandeja__asunto">Solicitud de Bancolombia para alinear · responsable: Eida Tinjacá</p>
+    <dl class="cr-bandeja__meta">
+      <dt>De</dt><dd>Portal de perfiles · Trycore &lt;avisos@trycore.com&gt;</dd>
+      <dt>Para</dt><dd>eida.tinjaca@trycore.com (responsable nominal)</dd>
+      <dt>Fecha</dt><dd>28 de septiembre de 2026, 10:42 a. m.</dd>
+    </dl>
+  </header>
+
+  <!-- región: contenido principal — cuerpo del correo (PP:correo) -->
+  <main>
+    <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
+      <tr><td style="padding: var(--tc-sp-5) var(--tc-sp-3) var(--tc-sp-8);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); border-collapse: separate; overflow: hidden; font-family:var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-navy); border-bottom: 3px solid var(--tc-primary);">
+            <span style="font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-bg-topbar);">trycore</span>
+            <span style="font-size:var(--tc-fs-small); color: var(--tc-navy-ink);">&nbsp;·&nbsp;Portal de perfiles · aviso interno</span>
+          </td></tr>
+          <tr><td class="cr-franja" style="padding: var(--tc-sp-3) var(--tc-sp-8); background: var(--tc-warn-surface); border-bottom: 1px solid var(--tc-warn-border); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-warn-ink);">Especificación no revisada por el cliente · se prepara la sesión igual</td></tr>
+          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size:var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-3); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Tienes una sesión de alineación por agendar</p>
+            <p style="margin: 0 0 var(--tc-sp-5);">Hola, Eida. Eres la responsable de esta solicitud: nadie más la tiene en su bandeja. Aquí va la especificación completa, no un resumen.</p>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); border-collapse: collapse; font-size:var(--tc-fs-small);">
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0;  vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Cuenta</td><td style="padding: var(--tc-sp-3) 0;  vertical-align: top; color: var(--tc-text-h);">Bancolombia · Modernización de pagos</td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Quién solicita</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Andrés Rojas, arquitecto de soluciones<br><span style='color: var(--tc-text-m);'>andres.rojas@bancolombia.com.co</span></td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Responsable</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Eida Tinjacá · Coordinación de Servicio</td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Agendar antes de</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Miércoles 30 de septiembre de 2026 (plazo acordado con Delivery)</td></tr>
+            </table>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); background: var(--tc-surface-declared); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b);">
+                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase;">Reto declarado por el cliente</span>
+                «Migramos el motor de pagos inmediatos a una arquitectura por eventos antes del cierre contable de marzo. El equipo trabajaría con el frente de integración que ya tenemos en Medellín.»
+              </td></tr>
+            </table>
+
+            <p style="margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m);">Especificación <span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-amber-bg); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-warn-ink); white-space: nowrap;">No revisada · la inferimos nosotros</span></p>
+            <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Andrés no abrió el Perfil Objetivo. La especificación sale de lo que buscó y eligió; confírmala al inicio de la sesión.</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); border-collapse: collapse; font-size:var(--tc-fs-small);">
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0;  vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Rol</td><td style="padding: var(--tc-sp-3) 0;  vertical-align: top; color: var(--tc-text-h);">Desarrollo backend</td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Seniority</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Sin definir (no revisada)</td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Tecnologías</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Java · Microservicios <span style='color: var(--tc-text-m);'>(obligatorias)</span> · Kafka <span style='color: var(--tc-text-m);'>(deseable)</span></td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Sector</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Banca <span style='color: var(--tc-text-m);'>(deseable)</span></td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Modalidad</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Híbrido</td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Ubicación de la necesidad</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Medellín</td></tr>
+              <tr class="cr-dato"><td width="170" style="width: 170px; padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; font-weight: var(--tc-fw-medium); color: var(--tc-text-m);">Condiciones</td><td style="padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); vertical-align: top; color: var(--tc-text-h);">Sin definir (no revisada)</td></tr>
+            </table>
+
+            <p style="margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m);">Perfiles seleccionados</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); border-collapse: separate; font-size:var(--tc-fs-small);">
+              <tr><td style="padding: var(--tc-sp-3) var(--tc-sp-4);  line-height: var(--tc-lh-body);"><strong style="color: var(--tc-text-h);">Laura Méndez</strong> <span class="pp-mono" style="font-size:var(--tc-fs-caption); color: var(--tc-text-m);">PS-0142</span><br><span style="color: var(--tc-text-b);">Desarrolladora backend Java</span> <span style="color: var(--tc-text-m); white-space: nowrap;">· cumple 4 de 4</span><br><span style="display: inline-block; margin-top: var(--tc-sp-1);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-green-bg); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-ok-badge-ink); white-space: nowrap;">Disponible ahora</span></span></td></tr>
+              <tr><td style="padding: var(--tc-sp-3) var(--tc-sp-4); border-top: 1px solid var(--tc-border); line-height: var(--tc-lh-body);"><strong style="color: var(--tc-text-h);">Andrés Castaño</strong> <span class="pp-mono" style="font-size:var(--tc-fs-caption); color: var(--tc-text-m);">PS-0217</span><br><span style="color: var(--tc-text-b);">Analista QA automatización</span> <span style="color: var(--tc-text-m); white-space: nowrap;">· cumple 3 de 4</span><br><span style="display: inline-block; margin-top: var(--tc-sp-1);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-bg-subtle); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-text-m); white-space: nowrap;">Disponible en 2 a 4 semanas</span></span></td></tr>
+              <tr><td style="padding: var(--tc-sp-3) var(--tc-sp-4); border-top: 1px solid var(--tc-border); line-height: var(--tc-lh-body);"><strong style="color: var(--tc-text-h);">Catalina Rojas</strong> <span class="pp-mono" style="font-size:var(--tc-fs-caption); color: var(--tc-text-m);">PS-0098</span><br><span style="color: var(--tc-text-b);">Arquitecta de datos</span> <span style="color: var(--tc-text-m); white-space: nowrap;">· cumple 3 de 4</span><br><span style="display: inline-block; margin-top: var(--tc-sp-1);"><span style="display: inline-block; padding: var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-bg-subtle); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); color: var(--tc-text-m); white-space: nowrap;">Disponible en 4 a 6 semanas</span></span></td></tr>
+            </table>
+
+            <table class="cr-acciones" role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-3);"><tr><td style="padding: 0 var(--tc-sp-2) 0 0;"><a class="pp-correo__boton cr-boton" href="#solicitud" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-primary-strong); border: 1px solid var(--tc-primary-strong); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-bg-topbar); text-decoration: none;">Ver la solicitud en el panel</a></td><td style="padding: 0 var(--tc-sp-2) 0 0;"><a class="cr-boton cr-boton-sec" href="#alineacion" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-text-h); text-decoration: none;">Registrar fecha de alineación</a></td></tr></table>
+            <p style="margin: 0 0 var(--tc-sp-5); font-size:var(--tc-fs-caption); color: var(--tc-text-m);">Al registrar la fecha queda escrita en el negocio de HubSpot.</p>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-5); background: var(--tc-warn-surface); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); border-collapse: separate;">
+              <tr><td style="padding: var(--tc-sp-4); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-warn-ink);">
+                <span style="display: block; margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase;">Si nadie la agenda</span>
+                Si la sesión no tiene fecha el 30 de septiembre, el aviso escala a la Dirección de Servicio. La solicitud nunca queda en una bandeja compartida.
+              </td></tr>
+            </table>
+
+            <p style="margin: 0; padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-small); color: var(--tc-text-m);">El comercial de la cuenta, Mateo Gómez, recibió el aviso con el enlace al negocio. De los profesionales solo viajan nombre, primer apellido, código y banda de disponibilidad.</p>
+          </td></tr>
+          <tr><td class="pp-correo__pie cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-bg-subtle); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+            Aviso interno del Portal de perfiles. Lo recibes porque eres la responsable asignada de esta solicitud. No lo reenvíes fuera de Trycore.
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </main>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla peticiones-invitacion
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (peticiones-invitacion--estado.html), no interacciones.
+  Trazabilidad: épica EP-001 · historias HU-145 · registrada en ../manifest.json
+  Pantalla #14 «Peticiones de invitación» · origen: nueva (sin equivalente en el v2).
+  Lado del panel de la petición que el cliente hace en invitar-colega (HU-095).
+  Estado de ESTE archivo: base — administradora de inventario con 3 peticiones pendientes en enlaces vigentes; acaba de aprobar una (happy path de HU-145): la aprobada ya no aparece como pendiente, se confirma su alta como invitación aprobada y el registro de auditoría queda arriba en «Últimas decisiones».
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peticiones de invitación — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+    /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
+      .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
+        .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
+        .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+      /* /PP:panel */
+    /* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+    /* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+    /* PP:pestanas */
+      .pp-pestanas { display: flex; gap: var(--tc-sp-1); overflow-x: auto; border-bottom: 1px solid var(--tc-border); }
+      .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-4); border: 0; border-bottom: 2px solid transparent; background: none; font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; }
+      .pp-pestana:hover { color: var(--tc-text-h); }
+      .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-primary); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-pestana__conteo { padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      /* /PP:pestanas */
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
+      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+      /* /PP:campos */
+    /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(640px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow:var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-5) var(--tc-sp-6) var(--tc-sp-4); padding-right: var(--tc-sp-10); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0 var(--tc-sp-6) 0 0; font-size:var(--tc-fs-h2); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-3); right: var(--tc-sp-3); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-4); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; gap: var(--tc-sp-3); margin: 0; }
+      .pp-datos__fila dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-datos__fila dd { margin: 0; font-size:var(--tc-fs-small); }
+      @media (max-width: 767px) { .pp-hoja__cabecera, .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-hoja__cabecera { padding-right: var(--tc-sp-10); } }
+      /* /PP:hoja */
+  </style>
+  <style>
+    /* Composición propia de peticiones de invitación (prefijo pi-). Valores visuales → var(--token). */
+    .pi-rejilla { margin-top: var(--tc-sp-5); display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--tc-sp-6); align-items: start; }
+    .pi-col { display: grid; gap: var(--tc-sp-4); min-width: 0; }
+    .pi-lista { display: grid; gap: var(--tc-sp-4); }
+    .pi-peticion { display: grid; gap: var(--tc-sp-4); min-width: 0; }
+    .pi-peticion--no-vigente { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
+    .pi-peticion--foco { border-color: var(--tc-primary); }
+    .pi-cab { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .pi-cab > :first-child { flex: 1 1 240px; min-width: 0; }
+    .pi-nombre { margin: 0; }
+    .pi-correo { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); overflow-wrap: anywhere; }
+    .pi-marcas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); }
+    .pi-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: var(--tc-sp-3) var(--tc-sp-5); margin: 0; }
+    .pi-datos dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .pi-datos dd { display: grid; gap: var(--tc-sp-1); justify-items: start; margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .pi-datos .pp-badge { white-space: normal; }
+    .pi-sub { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pi-nota { margin: 0; padding: var(--tc-sp-3) var(--tc-sp-4); border-radius:var(--tc-r-md); background: var(--tc-bg-subtle); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .pi-nota__rotulo { display: block; margin-bottom: var(--tc-sp-1); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .pi-pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); }
+    .pi-pie__nota { flex: 1 1 220px; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pi-pie__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pi-bloqueo { display: flex; gap: var(--tc-sp-2); flex: 1 1 260px; margin: 0; padding: var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-warn-surface); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-warn-ink); }
+    .pi-bloqueo strong { font-weight: var(--tc-fw-semibold); }
+    .pi-lateral { display: grid; gap: var(--tc-sp-4); }
+    .pi-lateral h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .pi-lateral > p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .pi-registro { display: grid; gap: var(--tc-sp-3); }
+    .pi-registro li { display: grid; gap: var(--tc-sp-1); padding-left: var(--tc-sp-3); border-left: 2px solid var(--tc-border); font-size:var(--tc-fs-caption); color: var(--tc-text-b); overflow-wrap: anywhere; }
+    .pi-registro li.pi-registro--nuevo { border-left-color: var(--tc-primary); }
+    .pi-registro time { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
+    .pi-registro strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pi-regla { display: grid; gap: var(--tc-sp-2); padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); }
+    .pi-regla li { display: flex; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .pi-regla__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+    .pi-seccion { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2); margin: var(--tc-sp-2) 0 0; }
+    .pi-seccion h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .pi-seccion p { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* Hoja: datos de la petición y lista de invitados */
+    .pi-resumen { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-bg-subtle); }
+    .pi-invitados { border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); }
+    .pi-invitados li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); font-size:var(--tc-fs-small); }
+    .pi-invitados li:last-child { border-bottom: 0; }
+    .pi-invitados li[aria-current="true"] { background: var(--tc-accent); }
+    .pi-invitados__quien { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+    .pi-invitados__quien strong { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pi-invitados__quien span { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pi-hoja-rotulo { margin: 0 0 var(--tc-sp-2); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pi-hoja-nota { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pi-hoja-pie-nota { flex: 1 1 100%; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pi-fondo { pointer-events: none; }
+    /* Con la hoja abierta el fondo no desplaza: la pantalla mide lo que el viewport */
+    .pi-con-hoja .pp-panel { height: 100vh; overflow: hidden; }
+    @media (max-width: 1279px) { .pi-rejilla { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 767px) {
+      .pp-encabezado h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+      .pi-pie__acciones { flex: 1 1 100%; }
+      .pi-pie__acciones .pp-btn { flex: 1 1 0; }
+      .pp-hoja__pie .pp-btn { flex: 1 1 0; }
+    }
+    /* Sesión en la topbar del panel (mismo bloque en todas las pantallas del panel, ver admin-shell) */
+    .ps-sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-4); min-width: 0; }
+    .ps-sesion__quien { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; line-height: var(--tc-lh-h3); }
+    .ps-sesion__correo { font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .ps-sesion__vence { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    @media (max-width: 767px) {
+      .pp-panel__topbar { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
+      .ps-sesion { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
+      .ps-sesion__quien { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="pp-panel">
+  <!-- región: navegación / sidebar del panel -->
+  <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <div class="pp-sidebar__marca">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Panel del portal de perfiles</span></span>
+    </div>
+    <p class="pp-sidebar__seccion">Banco de perfiles</p>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Bandeja de vigencia<span class="pp-sidelink__conteo">7</span></a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+    <p class="pp-sidebar__seccion">Clientes</p>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces de acceso</a>
+    <a class="pp-sidelink" href="#" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 8v6M22 11h-6"/></svg>Peticiones de invitación<span class="pp-sidelink__conteo">3</span></a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Colocados</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+    <p class="pp-sidebar__seccion">Operación</p>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
+    <div class="pp-sidebar__pie">
+      <span class="pp-avatar" aria-hidden="true">KR</span>
+      <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Administradora de inventario</span></span>
+    </div>
+  </nav>
+  <div class="pp-panel__cuerpo">
+    <!-- región: cabecera con migas -->
+    <div class="pp-panel__topbar">
+      <ol class="pp-migas"><li>Clientes</li><li aria-current="page">Peticiones de invitación</li></ol>
+      <div class="ps-sesion">
+        <div class="ps-sesion__quien">
+          <span class="ps-sesion__correo pp-mono">karen.rodriguez@trycore.com</span>
+          <span class="ps-sesion__vence">Sesión abierta hasta las 6:40 p. m.</span>
+        </div>
+        <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Cerrar sesión</a>
+      </div>
+    </div>
+    <!-- región: contenido principal -->
+    <main class="pp-panel__contenido">
+      <div class="pp-encabezado">
+        <div class="pp-encabezado__texto">
+          <h1>Peticiones de invitación</h1>
+          <p>Clientes que piden acceso para un colega a su enlace. Nadie entra hasta que apruebas: reenviar el enlace no da acceso.</p>
+        </div>
+      </div>
+      <div class="pp-pestanas" role="tablist" aria-label="Estado de las peticiones">
+        <a class="pp-pestana" role="tab" aria-selected="true" href="#">Pendientes <span class="pp-pestana__conteo">3</span></a>
+        <a class="pp-pestana" role="tab" aria-selected="false" href="#">Resueltas <span class="pp-pestana__conteo">14</span></a>
+      </div>
+      <div class="pi-rejilla">
+        <div class="pi-col">
+          <div class="pp-aviso pp-aviso--ok" role="status"><span class="pp-aviso__icono" aria-hidden="true">✓</span><p><span class="pp-aviso__titulo">Aprobaste la invitación de Paula Henao</span>paula.henao@davivienda.com ya está en la lista de invitados de Davivienda · Core bancario, marcada como invitación aprobada. Quedó registrada en la auditoría.</p></div>
+          <div class="pi-lista">
+        <article class="pp-tarjeta pi-peticion" aria-labelledby="pi-p-natalia">
+          <div class="pi-cab">
+            <div>
+              <h3 class="pi-nombre" id="pi-p-natalia">Natalia Cárdenas</h3>
+              <p class="pi-correo">natalia.cardenas@bancolombia.com.co</p>
+            </div>
+            <div class="pi-marcas"><span class="pp-badge pp-badge--por-confirmar">Pendiente</span></div>
+          </div>
+          <dl class="pi-datos">
+            <div><dt>Pedida por</dt><dd>Mariana Ospina · Bancolombia<span class="pi-sub">Hoy, 27 de septiembre, 9:14 a. m.</span></dd></div>
+            <div><dt>Enlace</dt><dd>Bancolombia · Modernización de pagos<span class="pi-sub pp-mono">ENL-0031</span></dd></div>
+            <div><dt>Estado del enlace</dt><dd><span class="pp-badge pp-badge--publicado">Enlace vigente</span><span class="pi-sub">Hasta el 24 de octubre de 2026</span></dd></div>
+          </dl>
+          <p class="pi-nota"><span class="pi-nota__rotulo">Para qué lo invita</span>Es la gerente del proyecto; quiere revisar los perfiles de backend antes del comité del jueves.</p>
+          <div class="pi-pie">
+            <p class="pi-pie__nota">Tu decisión queda en la auditoría del panel con tu nombre y la hora.</p>
+            <div class="pi-pie__acciones">
+              <button type="button" class="pp-btn pp-btn--contorno">Rechazar</button>
+              <button type="button" class="pp-btn pp-btn--primario">Aprobar invitación</button>
+            </div>
+          </div>
+        </article>
+        <article class="pp-tarjeta pi-peticion" aria-labelledby="pi-p-sebastian">
+          <div class="pi-cab">
+            <div>
+              <h3 class="pi-nombre" id="pi-p-sebastian">Sebastián Mora</h3>
+              <p class="pi-correo">sebastian.mora@nexoconsultores.co</p>
+            </div>
+            <div class="pi-marcas"><span class="pp-badge pp-badge--por-confirmar">Pendiente</span><span class="pp-badge pp-badge--no-publicado">Dominio distinto al de la cuenta</span></div>
+          </div>
+          <dl class="pi-datos">
+            <div><dt>Pedida por</dt><dd>Mariana Ospina · Bancolombia<span class="pi-sub">25 de septiembre, 4:37 p. m.</span></dd></div>
+            <div><dt>Enlace</dt><dd>Bancolombia · Modernización de pagos<span class="pi-sub pp-mono">ENL-0031</span></dd></div>
+            <div><dt>Estado del enlace</dt><dd><span class="pp-badge pp-badge--publicado">Enlace vigente</span><span class="pi-sub">Hasta el 24 de octubre de 2026</span></dd></div>
+          </dl>
+          <p class="pi-nota"><span class="pi-nota__rotulo">Para qué lo invita</span>Consultor externo que nos apoya con la arquitectura de la pasarela.</p>
+          <div class="pi-pie">
+            <p class="pi-pie__nota">Tu decisión queda en la auditoría del panel con tu nombre y la hora.</p>
+            <div class="pi-pie__acciones">
+              <button type="button" class="pp-btn pp-btn--contorno">Rechazar</button>
+              <button type="button" class="pp-btn pp-btn--primario">Aprobar invitación</button>
+            </div>
+          </div>
+        </article>
+        <article class="pp-tarjeta pi-peticion" aria-labelledby="pi-p-sergio">
+          <div class="pi-cab">
+            <div>
+              <h3 class="pi-nombre" id="pi-p-sergio">Sergio Patiño</h3>
+              <p class="pi-correo">sergio.patino@grupoexito.com</p>
+            </div>
+            <div class="pi-marcas"><span class="pp-badge pp-badge--por-confirmar">Pendiente</span></div>
+          </div>
+          <dl class="pi-datos">
+            <div><dt>Pedida por</dt><dd>Juliana Torres · Grupo Éxito<span class="pi-sub">26 de septiembre, 11:02 a. m.</span></dd></div>
+            <div><dt>Enlace</dt><dd>Grupo Éxito · Plataforma omnicanal<span class="pi-sub pp-mono">ENL-0044</span></dd></div>
+            <div><dt>Estado del enlace</dt><dd><span class="pp-badge pp-badge--publicado">Enlace vigente</span><span class="pi-sub">Hasta el 14 de noviembre de 2026</span></dd></div>
+          </dl>
+          <p class="pi-nota"><span class="pi-nota__rotulo">Para qué lo invita</span>Líder de QA; va a entrevistar a los perfiles de automatización de pruebas.</p>
+          <div class="pi-pie">
+            <p class="pi-pie__nota">Tu decisión queda en la auditoría del panel con tu nombre y la hora.</p>
+            <div class="pi-pie__acciones">
+              <button type="button" class="pp-btn pp-btn--contorno">Rechazar</button>
+              <button type="button" class="pp-btn pp-btn--primario">Aprobar invitación</button>
+            </div>
+          </div>
+        </article>
+          </div>
+        </div>
+        <aside class="pp-tarjeta pi-lateral" aria-labelledby="pi-registro-titulo">
+          <h2 id="pi-registro-titulo">Últimas decisiones</h2>
+          <p>Cada aprobación o rechazo queda en la auditoría del panel: quién, cuándo, qué enlace y qué correo.</p>
+          <ol class="pp-lista pi-registro">
+            <li class="pi-registro--nuevo"><time datetime="2026-09-27T10:42">27 sep · 10:42 a. m.</time><span><strong>Karen Rodríguez aprobó</strong> a paula.henao@davivienda.com en Davivienda · Core bancario.</span></li>
+            <li><time datetime="2026-09-24T10:05">24 sep · 10:05 a. m.</time><span><strong>Karen Rodríguez rechazó</strong> a laura.pinto@gmail.com en Sura · Analítica de siniestros. Motivo: «Correo personal; la selección se comparte con correos de la empresa».</span></li>
+            <li><time datetime="2026-09-23T15:20">23 sep · 3:20 p. m.</time><span><strong>Karen Rodríguez aprobó</strong> a andres.rincon@bancolombia.com.co en Bancolombia · Modernización de pagos.</span></li>
+          </ol>
+          <a class="pp-enlace" href="#">Ver la auditoría completa</a>
+          <ul class="pp-lista pi-regla" aria-label="Qué pasa al decidir">
+            <li><span class="pi-regla__marca" aria-hidden="true">✓</span><span>Al aprobar, el correo entra en la lista de invitados de ese enlace como invitación aprobada.</span></li>
+            <li><span class="pi-regla__marca" aria-hidden="true">✓</span><span>Al rechazar, el correo no entra. Quien pidió ve en el portal que no se aprobó y a quién consultar.</span></li>
+            <li><span class="pi-regla__marca" aria-hidden="true">✓</span><span>Un enlace vencido o revocado no admite aprobaciones.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

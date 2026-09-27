@@ -1,0 +1,2616 @@
+{
+  "version": 1,
+  "pantallas": [
+    {
+      "slug": "app-shell",
+      "archivo": "pantallas/app-shell.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-091",
+        "HU-094"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Marco cliente (riel, cuenta, vigencia) · origen v2-existe"
+    },
+    {
+      "slug": "app-shell--sin-seleccion",
+      "archivo": "pantallas/app-shell--sin-seleccion.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-091",
+        "HU-094"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "app-shell"
+    },
+    {
+      "slug": "puerta-acceso",
+      "archivo": "pantallas/puerta-acceso.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Puerta: correo invitado → código · origen v2-adaptar"
+    },
+    {
+      "slug": "puerta-acceso--codigo-invalido",
+      "archivo": "pantallas/puerta-acceso--codigo-invalido.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "puerta-acceso"
+    },
+    {
+      "slug": "puerta-acceso--codigo",
+      "archivo": "pantallas/puerta-acceso--codigo.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "puerta-acceso"
+    },
+    {
+      "slug": "puerta-acceso--intentos-agotados",
+      "archivo": "pantallas/puerta-acceso--intentos-agotados.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "puerta-acceso"
+    },
+    {
+      "slug": "correo-codigo-acceso",
+      "archivo": "pantallas/correo-codigo-acceso.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-123"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Correo con código de un uso · origen nueva"
+    },
+    {
+      "slug": "correo-codigo-acceso--panel",
+      "archivo": "pantallas/correo-codigo-acceso--panel.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-090",
+        "HU-123"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "correo-codigo-acceso"
+    },
+    {
+      "slug": "acceso-vencido",
+      "archivo": "pantallas/acceso-vencido.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-092"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Enlace vencido y renovación · origen v2-adaptar"
+    },
+    {
+      "slug": "acceso-vencido--cuenta-inactiva",
+      "archivo": "pantallas/acceso-vencido--cuenta-inactiva.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-092"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "acceso-vencido"
+    },
+    {
+      "slug": "acceso-vencido--en-camino",
+      "archivo": "pantallas/acceso-vencido--en-camino.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-092"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "acceso-vencido"
+    },
+    {
+      "slug": "acceso-vencido--enviado",
+      "archivo": "pantallas/acceso-vencido--enviado.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-092"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "acceso-vencido"
+    },
+    {
+      "slug": "enlace-revocado",
+      "archivo": "pantallas/enlace-revocado.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-144",
+        "HU-090"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Enlace revocado o alterado · origen v2-adaptar"
+    },
+    {
+      "slug": "correo-enlace-renovado",
+      "archivo": "pantallas/correo-enlace-renovado.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-092"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Correo con el enlace nuevo · origen nueva"
+    },
+    {
+      "slug": "aterrizaje-curado",
+      "archivo": "pantallas/aterrizaje-curado.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-091",
+        "HU-144",
+        "HU-094"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Selección con su razón · origen v2-adaptar"
+    },
+    {
+      "slug": "aterrizaje-curado--perfil-cambio",
+      "archivo": "pantallas/aterrizaje-curado--perfil-cambio.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-091",
+        "HU-144",
+        "HU-094"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "aterrizaje-curado"
+    },
+    {
+      "slug": "aterrizaje-curado--sin-proyecto",
+      "archivo": "pantallas/aterrizaje-curado--sin-proyecto.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-091",
+        "HU-144",
+        "HU-094"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "aterrizaje-curado"
+    },
+    {
+      "slug": "aterrizaje-curado--sin-publicados",
+      "archivo": "pantallas/aterrizaje-curado--sin-publicados.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-091",
+        "HU-144",
+        "HU-094"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "aterrizaje-curado"
+    },
+    {
+      "slug": "encuadre-sin-seleccion",
+      "archivo": "pantallas/encuadre-sin-seleccion.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-093"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "«¿Qué necesita tu proyecto?» · origen nueva"
+    },
+    {
+      "slug": "encuadre-sin-seleccion--opcion-sin-perfiles",
+      "archivo": "pantallas/encuadre-sin-seleccion--opcion-sin-perfiles.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-093"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "encuadre-sin-seleccion"
+    },
+    {
+      "slug": "invitar-colega",
+      "archivo": "pantallas/invitar-colega.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-095",
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Pedir acceso para un colega · origen nueva"
+    },
+    {
+      "slug": "invitar-colega--pendiente",
+      "archivo": "pantallas/invitar-colega--pendiente.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-095",
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "invitar-colega"
+    },
+    {
+      "slug": "invitar-colega--rechazada",
+      "archivo": "pantallas/invitar-colega--rechazada.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-095",
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "invitar-colega"
+    },
+    {
+      "slug": "panel-acceso",
+      "archivo": "pantallas/panel-acceso.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-123"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Login del panel (@trycore.com + código) · origen nueva"
+    },
+    {
+      "slug": "panel-acceso--codigo",
+      "archivo": "pantallas/panel-acceso--codigo.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-123"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "panel-acceso"
+    },
+    {
+      "slug": "panel-acceso--sesion-caducada",
+      "archivo": "pantallas/panel-acceso--sesion-caducada.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-123"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "panel-acceso"
+    },
+    {
+      "slug": "admin-shell",
+      "archivo": "pantallas/admin-shell.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-123"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Marco del panel · origen v2-adaptar"
+    },
+    {
+      "slug": "enlaces-acceso",
+      "archivo": "pantallas/enlaces-acceso.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-122",
+        "HU-144"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Registro de enlaces y revocación · origen v2-adaptar"
+    },
+    {
+      "slug": "generador-enlace",
+      "archivo": "pantallas/generador-enlace.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-122"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Generar enlace curado · origen v2-adaptar"
+    },
+    {
+      "slug": "generador-enlace--emitido",
+      "archivo": "pantallas/generador-enlace--emitido.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-122"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "generador-enlace"
+    },
+    {
+      "slug": "generador-enlace--perfil-no-publicado",
+      "archivo": "pantallas/generador-enlace--perfil-no-publicado.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-122"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "generador-enlace"
+    },
+    {
+      "slug": "generador-enlace--sin-invitados",
+      "archivo": "pantallas/generador-enlace--sin-invitados.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-122"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "generador-enlace"
+    },
+    {
+      "slug": "generador-enlace--sin-razon",
+      "archivo": "pantallas/generador-enlace--sin-razon.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-122"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "generador-enlace"
+    },
+    {
+      "slug": "peticiones-invitacion",
+      "archivo": "pantallas/peticiones-invitacion.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Peticiones de invitación · origen nueva"
+    },
+    {
+      "slug": "peticiones-invitacion--enlace-no-vigente",
+      "archivo": "pantallas/peticiones-invitacion--enlace-no-vigente.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "peticiones-invitacion"
+    },
+    {
+      "slug": "peticiones-invitacion--rechazo-motivo",
+      "archivo": "pantallas/peticiones-invitacion--rechazo-motivo.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "peticiones-invitacion"
+    },
+    {
+      "slug": "peticiones-invitacion--ya-invitado",
+      "archivo": "pantallas/peticiones-invitacion--ya-invitado.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-145"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "peticiones-invitacion"
+    },
+    {
+      "slug": "resultados",
+      "archivo": "pantallas/resultados.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-074",
+        "HU-081",
+        "HU-065",
+        "HU-071",
+        "HU-072"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Resultados en tarjetas y facetas · origen v2-existe"
+    },
+    {
+      "slug": "resultados--afinamiento",
+      "archivo": "pantallas/resultados--afinamiento.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-074",
+        "HU-081",
+        "HU-065",
+        "HU-071",
+        "HU-072"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados"
+    },
+    {
+      "slug": "resultados--banco-completo",
+      "archivo": "pantallas/resultados--banco-completo.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-074",
+        "HU-081",
+        "HU-065",
+        "HU-071",
+        "HU-072"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados"
+    },
+    {
+      "slug": "resultados--buscando",
+      "archivo": "pantallas/resultados--buscando.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-074",
+        "HU-081",
+        "HU-065",
+        "HU-071",
+        "HU-072"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados"
+    },
+    {
+      "slug": "resultados--sin-reconocer",
+      "archivo": "pantallas/resultados--sin-reconocer.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-074",
+        "HU-081",
+        "HU-065",
+        "HU-071",
+        "HU-072"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados"
+    },
+    {
+      "slug": "resultados-tabla",
+      "archivo": "pantallas/resultados-tabla.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-121"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Vista tabla · origen v2-existe"
+    },
+    {
+      "slug": "resultados-tabla--estrecha",
+      "archivo": "pantallas/resultados-tabla--estrecha.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-121"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados-tabla"
+    },
+    {
+      "slug": "resultados-tabla--seleccion",
+      "archivo": "pantallas/resultados-tabla--seleccion.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-121"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados-tabla"
+    },
+    {
+      "slug": "resultados-tabla--sin-criterios",
+      "archivo": "pantallas/resultados-tabla--sin-criterios.html",
+      "epica": "EP-002",
+      "historias": [
+        "HU-121"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resultados-tabla"
+    },
+    {
+      "slug": "ficha-perfil",
+      "archivo": "pantallas/ficha-perfil.html",
+      "epica": "EP-003",
+      "historias": [
+        "HU-119",
+        "HU-120",
+        "HU-081"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Ficha en panel lateral · origen v2-existe"
+    },
+    {
+      "slug": "ficha-perfil--dato-ausente",
+      "archivo": "pantallas/ficha-perfil--dato-ausente.html",
+      "epica": "EP-003",
+      "historias": [
+        "HU-119",
+        "HU-120",
+        "HU-081"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "ficha-perfil"
+    },
+    {
+      "slug": "ficha-perfil--extremo",
+      "archivo": "pantallas/ficha-perfil--extremo.html",
+      "epica": "EP-003",
+      "historias": [
+        "HU-119",
+        "HU-120",
+        "HU-081"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "ficha-perfil"
+    },
+    {
+      "slug": "ficha-perfil--movil",
+      "archivo": "pantallas/ficha-perfil--movil.html",
+      "epica": "EP-003",
+      "historias": [
+        "HU-119",
+        "HU-120",
+        "HU-081"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "ficha-perfil"
+    },
+    {
+      "slug": "ficha-perfil--sin-criterios",
+      "archivo": "pantallas/ficha-perfil--sin-criterios.html",
+      "epica": "EP-003",
+      "historias": [
+        "HU-119",
+        "HU-120",
+        "HU-081"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "ficha-perfil"
+    },
+    {
+      "slug": "mi-equipo",
+      "archivo": "pantallas/mi-equipo.html",
+      "epica": "EP-004",
+      "historias": [
+        "HU-080",
+        "HU-084",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Mi equipo · origen v2-adaptar"
+    },
+    {
+      "slug": "mi-equipo--completa",
+      "archivo": "pantallas/mi-equipo--completa.html",
+      "epica": "EP-004",
+      "historias": [
+        "HU-080",
+        "HU-084",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "mi-equipo"
+    },
+    {
+      "slug": "mi-equipo--forma-referencia",
+      "archivo": "pantallas/mi-equipo--forma-referencia.html",
+      "epica": "EP-004",
+      "historias": [
+        "HU-080",
+        "HU-084",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "mi-equipo"
+    },
+    {
+      "slug": "mi-equipo--vacio",
+      "archivo": "pantallas/mi-equipo--vacio.html",
+      "epica": "EP-004",
+      "historias": [
+        "HU-080",
+        "HU-084",
+        "HU-095"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "mi-equipo"
+    },
+    {
+      "slug": "resumen-solicitud",
+      "archivo": "pantallas/resumen-solicitud.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-096",
+        "HU-100"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Resumen y envío (paso 3 de 3) · origen v2-existe"
+    },
+    {
+      "slug": "resumen-solicitud--perfil-no-disponible",
+      "archivo": "pantallas/resumen-solicitud--perfil-no-disponible.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-096",
+        "HU-100"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resumen-solicitud"
+    },
+    {
+      "slug": "resumen-solicitud--vacio",
+      "archivo": "pantallas/resumen-solicitud--vacio.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-096",
+        "HU-100"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "resumen-solicitud"
+    },
+    {
+      "slug": "solicitud-equipo",
+      "archivo": "pantallas/solicitud-equipo.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-097",
+        "HU-070",
+        "HU-082"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Identificación (paso 2 de 3) · origen v2-adaptar"
+    },
+    {
+      "slug": "solicitud-equipo--correo-bloqueado",
+      "archivo": "pantallas/solicitud-equipo--correo-bloqueado.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-097",
+        "HU-070",
+        "HU-082"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "solicitud-equipo"
+    },
+    {
+      "slug": "solicitud-equipo--especificacion-incompleta",
+      "archivo": "pantallas/solicitud-equipo--especificacion-incompleta.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-097",
+        "HU-070",
+        "HU-082"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "solicitud-equipo"
+    },
+    {
+      "slug": "solicitud-equipo--ubicacion-requerida",
+      "archivo": "pantallas/solicitud-equipo--ubicacion-requerida.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-097",
+        "HU-070",
+        "HU-082"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "solicitud-equipo"
+    },
+    {
+      "slug": "confirmacion-solicitud",
+      "archivo": "pantallas/confirmacion-solicitud.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-098"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Confirmación con SLA de 10 días hábiles · origen v2-existe"
+    },
+    {
+      "slug": "confirmacion-solicitud--solicitud-parecida",
+      "archivo": "pantallas/confirmacion-solicitud--solicitud-parecida.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-098"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "confirmacion-solicitud"
+    },
+    {
+      "slug": "agendar-alineacion",
+      "archivo": "pantallas/agendar-alineacion.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-099"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Agendar la sesión de alineación · origen nueva"
+    },
+    {
+      "slug": "agendar-alineacion--agendada",
+      "archivo": "pantallas/agendar-alineacion--agendada.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-099"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "agendar-alineacion"
+    },
+    {
+      "slug": "agendar-alineacion--sin-horarios",
+      "archivo": "pantallas/agendar-alineacion--sin-horarios.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-099"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "agendar-alineacion"
+    },
+    {
+      "slug": "correo-aviso-interno",
+      "archivo": "pantallas/correo-aviso-interno.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-101",
+        "HU-103",
+        "HU-105",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Avisos internos por correo · origen nueva"
+    },
+    {
+      "slug": "correo-aviso-interno--cuenta-sin-apertura",
+      "archivo": "pantallas/correo-aviso-interno--cuenta-sin-apertura.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-101",
+        "HU-103",
+        "HU-105",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "correo-aviso-interno"
+    },
+    {
+      "slug": "correo-aviso-interno--escalamiento",
+      "archivo": "pantallas/correo-aviso-interno--escalamiento.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-101",
+        "HU-103",
+        "HU-105",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "correo-aviso-interno"
+    },
+    {
+      "slug": "correo-aviso-interno--fallo-integracion",
+      "archivo": "pantallas/correo-aviso-interno--fallo-integracion.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-101",
+        "HU-103",
+        "HU-105",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "correo-aviso-interno"
+    },
+    {
+      "slug": "correo-aviso-interno--solicitud-delivery",
+      "archivo": "pantallas/correo-aviso-interno--solicitud-delivery.html",
+      "epica": "EP-005",
+      "historias": [
+        "HU-101",
+        "HU-103",
+        "HU-105",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "correo-aviso-interno"
+    },
+    {
+      "slug": "inventario-perfiles",
+      "archivo": "pantallas/inventario-perfiles.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-124",
+        "HU-132",
+        "HU-133",
+        "HU-134",
+        "HU-135"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Inventario · origen v2-adaptar"
+    },
+    {
+      "slug": "inventario-perfiles--incoherencia",
+      "archivo": "pantallas/inventario-perfiles--incoherencia.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-124",
+        "HU-132",
+        "HU-133",
+        "HU-134",
+        "HU-135"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inventario-perfiles"
+    },
+    {
+      "slug": "inventario-perfiles--lote",
+      "archivo": "pantallas/inventario-perfiles--lote.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-124",
+        "HU-132",
+        "HU-133",
+        "HU-134",
+        "HU-135"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inventario-perfiles"
+    },
+    {
+      "slug": "inventario-perfiles--observador",
+      "archivo": "pantallas/inventario-perfiles--observador.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-124",
+        "HU-132",
+        "HU-133",
+        "HU-134",
+        "HU-135"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inventario-perfiles"
+    },
+    {
+      "slug": "inventario-perfiles--pausar-motivo",
+      "archivo": "pantallas/inventario-perfiles--pausar-motivo.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-124",
+        "HU-132",
+        "HU-133",
+        "HU-134",
+        "HU-135"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inventario-perfiles"
+    },
+    {
+      "slug": "perfil-editor",
+      "archivo": "pantallas/perfil-editor.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Crear/editar perfil · origen v2-adaptar"
+    },
+    {
+      "slug": "perfil-editor--adjunto-no-admitido",
+      "archivo": "pantallas/perfil-editor--adjunto-no-admitido.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor"
+    },
+    {
+      "slug": "perfil-editor--cambios-declarados",
+      "archivo": "pantallas/perfil-editor--cambios-declarados.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor"
+    },
+    {
+      "slug": "perfil-editor--campos-incompletos",
+      "archivo": "pantallas/perfil-editor--campos-incompletos.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor"
+    },
+    {
+      "slug": "perfil-editor--consentimiento-invalido",
+      "archivo": "pantallas/perfil-editor--consentimiento-invalido.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor"
+    },
+    {
+      "slug": "perfil-editor--familia-sin-modalidades",
+      "archivo": "pantallas/perfil-editor--familia-sin-modalidades.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor"
+    },
+    {
+      "slug": "perfil-editor--publicar-bloqueado",
+      "archivo": "pantallas/perfil-editor--publicar-bloqueado.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-125",
+        "HU-126",
+        "HU-127",
+        "HU-128",
+        "HU-130",
+        "HU-131"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor"
+    },
+    {
+      "slug": "borrador-evidencia",
+      "archivo": "pantallas/borrador-evidencia.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-140"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Borrador de campos desde el artefacto · origen nueva"
+    },
+    {
+      "slug": "borrador-evidencia--campo-ambiguo",
+      "archivo": "pantallas/borrador-evidencia--campo-ambiguo.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-140"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "borrador-evidencia"
+    },
+    {
+      "slug": "borrador-evidencia--sin-texto",
+      "archivo": "pantallas/borrador-evidencia--sin-texto.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-140"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "borrador-evidencia"
+    },
+    {
+      "slug": "vista-previa-ficha",
+      "archivo": "pantallas/vista-previa-ficha.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-129"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Vista previa de la ficha · origen v2-existe"
+    },
+    {
+      "slug": "vista-previa-ficha--bloque-incompleto",
+      "archivo": "pantallas/vista-previa-ficha--bloque-incompleto.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-129"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "vista-previa-ficha"
+    },
+    {
+      "slug": "importar-perfiles",
+      "archivo": "pantallas/importar-perfiles.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Importar, exportar y revertir · origen v2-adaptar"
+    },
+    {
+      "slug": "importar-perfiles--campos-rechazados",
+      "archivo": "pantallas/importar-perfiles--campos-rechazados.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles"
+    },
+    {
+      "slug": "importar-perfiles--codigo-duplicado",
+      "archivo": "pantallas/importar-perfiles--codigo-duplicado.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles"
+    },
+    {
+      "slug": "importar-perfiles--filas-con-error",
+      "archivo": "pantallas/importar-perfiles--filas-con-error.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles"
+    },
+    {
+      "slug": "importar-perfiles--revertir-no-ultima",
+      "archivo": "pantallas/importar-perfiles--revertir-no-ultima.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles"
+    },
+    {
+      "slug": "importar-perfiles--revertir",
+      "archivo": "pantallas/importar-perfiles--revertir.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles"
+    },
+    {
+      "slug": "importar-perfiles--vista-previa",
+      "archivo": "pantallas/importar-perfiles--vista-previa.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086",
+        "HU-088",
+        "HU-141",
+        "HU-142",
+        "HU-087"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles"
+    },
+    {
+      "slug": "catalogos",
+      "archivo": "pantallas/catalogos.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-089",
+        "HU-143"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Catálogos · origen nueva"
+    },
+    {
+      "slug": "catalogos--duplicado",
+      "archivo": "pantallas/catalogos--duplicado.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-089",
+        "HU-143"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "catalogos"
+    },
+    {
+      "slug": "catalogos--fusion",
+      "archivo": "pantallas/catalogos--fusion.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-089",
+        "HU-143"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "catalogos"
+    },
+    {
+      "slug": "catalogos--modalidad-en-uso",
+      "archivo": "pantallas/catalogos--modalidad-en-uso.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-089",
+        "HU-143"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "catalogos"
+    },
+    {
+      "slug": "catalogos--parecidos",
+      "archivo": "pantallas/catalogos--parecidos.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-089",
+        "HU-143"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "catalogos"
+    },
+    {
+      "slug": "lexico-busqueda",
+      "archivo": "pantallas/lexico-busqueda.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-139"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Léxico de búsqueda · origen nueva"
+    },
+    {
+      "slug": "lexico-busqueda--candidatas",
+      "archivo": "pantallas/lexico-busqueda--candidatas.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-139"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "lexico-busqueda"
+    },
+    {
+      "slug": "lexico-busqueda--equivalencia-invalida",
+      "archivo": "pantallas/lexico-busqueda--equivalencia-invalida.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-139"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "lexico-busqueda"
+    },
+    {
+      "slug": "bandeja-vigencia",
+      "archivo": "pantallas/bandeja-vigencia.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-136"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Bandeja de vigencia · origen v2-existe"
+    },
+    {
+      "slug": "bandeja-vigencia--vacia",
+      "archivo": "pantallas/bandeja-vigencia--vacia.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-136"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "bandeja-vigencia"
+    },
+    {
+      "slug": "colocados",
+      "archivo": "pantallas/colocados.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-137"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Colocados y vencimientos · origen nueva"
+    },
+    {
+      "slug": "colocados--corte-desactualizado",
+      "archivo": "pantallas/colocados--corte-desactualizado.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-137"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados"
+    },
+    {
+      "slug": "colocados--en-el-portal",
+      "archivo": "pantallas/colocados--en-el-portal.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-137"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados"
+    },
+    {
+      "slug": "auditoria-perfil",
+      "archivo": "pantallas/auditoria-perfil.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-138"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Registro de auditoría · origen nueva"
+    },
+    {
+      "slug": "auditoria-perfil--archivado",
+      "archivo": "pantallas/auditoria-perfil--archivado.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-138"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "auditoria-perfil"
+    },
+    {
+      "slug": "integraciones-fallidas",
+      "archivo": "pantallas/integraciones-fallidas.html",
+      "epica": "EP-007",
+      "historias": [
+        "HU-105"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Bandeja de fallos con HubSpot · origen nueva"
+    },
+    {
+      "slug": "medicion",
+      "archivo": "pantallas/medicion.html",
+      "epica": "EP-008",
+      "historias": [
+        "HU-108",
+        "HU-109",
+        "HU-110",
+        "HU-111",
+        "HU-112"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Tablero: embudo, acierto, facetas, rutas · origen nueva"
+    },
+    {
+      "slug": "medicion--ruta-sin-datos",
+      "archivo": "pantallas/medicion--ruta-sin-datos.html",
+      "epica": "EP-008",
+      "historias": [
+        "HU-108",
+        "HU-109",
+        "HU-110",
+        "HU-111",
+        "HU-112"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "medicion"
+    },
+    {
+      "slug": "medicion--sin-actividad",
+      "archivo": "pantallas/medicion--sin-actividad.html",
+      "epica": "EP-008",
+      "historias": [
+        "HU-108",
+        "HU-109",
+        "HU-110",
+        "HU-111",
+        "HU-112"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "medicion"
+    },
+    {
+      "slug": "inicio-busqueda",
+      "archivo": "pantallas/inicio-busqueda.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-065",
+        "HU-066",
+        "HU-067"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Inicio: saludo, compositor, sugerencias · origen v2-existe"
+    },
+    {
+      "slug": "inicio-busqueda--requerimiento-pegado",
+      "archivo": "pantallas/inicio-busqueda--requerimiento-pegado.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-065",
+        "HU-066",
+        "HU-067"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inicio-busqueda"
+    },
+    {
+      "slug": "inicio-busqueda--sin-criterios-reconocibles",
+      "archivo": "pantallas/inicio-busqueda--sin-criterios-reconocibles.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-065",
+        "HU-066",
+        "HU-067"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inicio-busqueda"
+    },
+    {
+      "slug": "inicio-busqueda--sugerencia-generica",
+      "archivo": "pantallas/inicio-busqueda--sugerencia-generica.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-065",
+        "HU-066",
+        "HU-067"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inicio-busqueda"
+    },
+    {
+      "slug": "perfil-objetivo",
+      "archivo": "pantallas/perfil-objetivo.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-068",
+        "HU-069",
+        "HU-070",
+        "HU-118",
+        "HU-082",
+        "HU-083",
+        "HU-085",
+        "HU-073"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Perfil Objetivo · origen v2-existe"
+    },
+    {
+      "slug": "perfil-objetivo--baja-confianza",
+      "archivo": "pantallas/perfil-objetivo--baja-confianza.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-068",
+        "HU-069",
+        "HU-070",
+        "HU-118",
+        "HU-082",
+        "HU-083",
+        "HU-085",
+        "HU-073"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-objetivo"
+    },
+    {
+      "slug": "perfil-objetivo--combinacion-vacia",
+      "archivo": "pantallas/perfil-objetivo--combinacion-vacia.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-068",
+        "HU-069",
+        "HU-070",
+        "HU-118",
+        "HU-082",
+        "HU-083",
+        "HU-085",
+        "HU-073"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-objetivo"
+    },
+    {
+      "slug": "perfil-objetivo--retomada",
+      "archivo": "pantallas/perfil-objetivo--retomada.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-068",
+        "HU-069",
+        "HU-070",
+        "HU-118",
+        "HU-082",
+        "HU-083",
+        "HU-085",
+        "HU-073"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-objetivo"
+    },
+    {
+      "slug": "perfil-objetivo--ubicacion-obligatoria",
+      "archivo": "pantallas/perfil-objetivo--ubicacion-obligatoria.html",
+      "epica": "EP-009",
+      "historias": [
+        "HU-068",
+        "HU-069",
+        "HU-070",
+        "HU-118",
+        "HU-082",
+        "HU-083",
+        "HU-085",
+        "HU-073"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-objetivo"
+    },
+    {
+      "slug": "cero-resultados",
+      "archivo": "pantallas/cero-resultados.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-075",
+        "HU-076",
+        "HU-118",
+        "HU-083"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "El cero con la especificación a la vista · origen v2-existe"
+    },
+    {
+      "slug": "cero-resultados--cercanos",
+      "archivo": "pantallas/cero-resultados--cercanos.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-075",
+        "HU-076",
+        "HU-118",
+        "HU-083"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "cero-resultados"
+    },
+    {
+      "slug": "cero-resultados--obligatorio-vaciante",
+      "archivo": "pantallas/cero-resultados--obligatorio-vaciante.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-075",
+        "HU-076",
+        "HU-118",
+        "HU-083"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "cero-resultados"
+    },
+    {
+      "slug": "cero-resultados--por-filtro",
+      "archivo": "pantallas/cero-resultados--por-filtro.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-075",
+        "HU-076",
+        "HU-118",
+        "HU-083"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "cero-resultados"
+    },
+    {
+      "slug": "cero-resultados--vaga",
+      "archivo": "pantallas/cero-resultados--vaga.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-075",
+        "HU-076",
+        "HU-118",
+        "HU-083"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "cero-resultados"
+    },
+    {
+      "slug": "solicitud-a-medida",
+      "archivo": "pantallas/solicitud-a-medida.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-077"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Pedir el perfil que no existe · origen v2-existe"
+    },
+    {
+      "slug": "solicitud-a-medida--enviada",
+      "archivo": "pantallas/solicitud-a-medida--enviada.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-077"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "solicitud-a-medida"
+    },
+    {
+      "slug": "solicitud-a-medida--ya-existente",
+      "archivo": "pantallas/solicitud-a-medida--ya-existente.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-077"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "solicitud-a-medida"
+    },
+    {
+      "slug": "demanda-no-cubierta",
+      "archivo": "pantallas/demanda-no-cubierta.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-078",
+        "HU-085"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Registro de demanda (panel) · origen nueva"
+    },
+    {
+      "slug": "demanda-no-cubierta--vacia",
+      "archivo": "pantallas/demanda-no-cubierta--vacia.html",
+      "epica": "EP-010",
+      "historias": [
+        "HU-078",
+        "HU-085"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "demanda-no-cubierta"
+    },
+    {
+      "slug": "envios-curados",
+      "archivo": "pantallas/envios-curados.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-113",
+        "HU-114"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Selección y enlaces por contacto · origen nueva"
+    },
+    {
+      "slug": "envios-curados--contacto-sin-cuenta",
+      "archivo": "pantallas/envios-curados--contacto-sin-cuenta.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-113",
+        "HU-114"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "envios-curados"
+    },
+    {
+      "slug": "envios-curados--perfil-cambio",
+      "archivo": "pantallas/envios-curados--perfil-cambio.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-113",
+        "HU-114"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "envios-curados"
+    },
+    {
+      "slug": "envios-curados--sin-proyecto",
+      "archivo": "pantallas/envios-curados--sin-proyecto.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-113",
+        "HU-114"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "envios-curados"
+    },
+    {
+      "slug": "programar-envio",
+      "archivo": "pantallas/programar-envio.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-115"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Programar el boletín · origen nueva"
+    },
+    {
+      "slug": "programar-envio--bloqueado",
+      "archivo": "pantallas/programar-envio--bloqueado.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-115"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "programar-envio"
+    },
+    {
+      "slug": "programar-envio--excluidas",
+      "archivo": "pantallas/programar-envio--excluidas.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-115"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "programar-envio"
+    },
+    {
+      "slug": "seguimiento-envios",
+      "archivo": "pantallas/seguimiento-envios.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-116",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Quién abrió y quién entró · origen nueva"
+    },
+    {
+      "slug": "seguimiento-envios--cuenta-escalada",
+      "archivo": "pantallas/seguimiento-envios--cuenta-escalada.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-116",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "seguimiento-envios"
+    },
+    {
+      "slug": "seguimiento-envios--entregabilidad",
+      "archivo": "pantallas/seguimiento-envios--entregabilidad.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-116",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "seguimiento-envios"
+    },
+    {
+      "slug": "seguimiento-envios--sin-dato-apertura",
+      "archivo": "pantallas/seguimiento-envios--sin-dato-apertura.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-116",
+        "HU-117"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "seguimiento-envios"
+    },
+    {
+      "slug": "correo-boletin-curado",
+      "archivo": "pantallas/correo-boletin-curado.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-113",
+        "HU-114",
+        "HU-115"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Correo del boletín curado · origen nueva"
+    },
+    {
+      "slug": "correo-boletin-curado--sin-proyecto",
+      "archivo": "pantallas/correo-boletin-curado--sin-proyecto.html",
+      "epica": "EP-011",
+      "historias": [
+        "HU-113",
+        "HU-114",
+        "HU-115"
+      ],
+      "estado": "borrador",
+      "generada_en": "2026-09-27T18:10:29Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "correo-boletin-curado"
+    }
+  ]
+}

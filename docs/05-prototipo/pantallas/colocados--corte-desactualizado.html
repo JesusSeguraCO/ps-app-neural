@@ -1,0 +1,336 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla colocados
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (colocados--estado.html), no interacciones.
+  Trazabilidad: épica EP-006 · historias HU-137 · registrada en ../manifest.json
+  Pantalla #32 «Colocados y vencimientos» · origen: nueva. Cubre RF-8.13, RF-8.13.1, RF-8.13.2
+  y RF-8.13.3 (disparador de la renovación anticipada V2-2). Espejo de solo lectura del sistema
+  de asignación con fecha de corte declarada; sin acciones de edición.
+  Estado de ESTE archivo: corte-desactualizado — AC de error de HU-137: las dos últimas sincronizaciones fallaron; la tabla sigue siendo espejo de solo lectura y declara el corte de hace 2 días (25 sep 5:00 a. m.) con aviso de posible desactualización y enlace a Fallos.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Colocados y vencimientos · corte desactualizado — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+    /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
+      .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
+        .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
+        .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+      /* /PP:panel */
+    /* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+    /* PP:tabla */
+      .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
+      /* /PP:tabla */
+    /* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+    /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(640px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow:var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-5) var(--tc-sp-6) var(--tc-sp-4); padding-right: var(--tc-sp-10); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0 var(--tc-sp-6) 0 0; font-size:var(--tc-fs-h2); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-3); right: var(--tc-sp-3); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-4); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; gap: var(--tc-sp-3); margin: 0; }
+      .pp-datos__fila dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-datos__fila dd { margin: 0; font-size:var(--tc-fs-small); }
+      @media (max-width: 767px) { .pp-hoja__cabecera, .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-hoja__cabecera { padding-right: var(--tc-sp-10); } }
+      /* /PP:hoja */
+  </style>
+  <style>
+    /* Composición propia de colocados (prefijo cl-). Valores visuales → var(--token). */
+    .ip-sidebar-nav { display: flex; flex-direction: column; gap: var(--tc-sp-1); }
+    .ip-sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-4); min-width: 0; }
+    .ip-sesion__quien { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; line-height: var(--tc-lh-h3); }
+    .ip-sesion__correo { font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .ip-sesion__vence { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cl-contenedor { max-width: 1180px; }
+    .cl-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); margin-bottom: var(--tc-sp-2); }
+    .cl-titulo h1 { margin: 0; }
+    .cl-solo-lectura { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); white-space: nowrap; }
+    .cl-espejo { margin-bottom: var(--tc-sp-6); }
+    .cl-espejo__cuerpo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .cl-espejo__datos { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-5); margin: 0; }
+    .cl-espejo__datos div { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-2); }
+    .cl-espejo__datos dt { font-weight: var(--tc-fw-semibold); }
+    .cl-espejo__datos dd { margin: 0; }
+    .cl-resumen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .cl-cifra { display: grid; gap: var(--tc-sp-1); align-content: start; padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .cl-cifra__valor { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); line-height: var(--tc-lh-h2); color: var(--tc-text-h); }
+    .cl-cifra__rotulo { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .cl-cifra__nota { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cl-cifra--pronto { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .cl-lista__cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-4); margin-bottom: var(--tc-sp-3); }
+    .cl-lista__cab h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .cl-lista__cab p { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cl-corte { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .cl-marco { max-height: none; }
+    .cl-tabla { min-width: 900px; }
+    .cl-tabla thead th small { display: block; font-weight: var(--tc-fw-regular); color: var(--tc-text-s); }
+    .cl-tramo th { padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-surface-quiet); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); }
+    .cl-tramo--pronto th { background: var(--tc-warn-surface); color: var(--tc-warn-ink-strong); }
+    .cl-tabla tbody tr.cl-fila--pronto { background: var(--tc-warn-surface); }
+    .cl-tabla tbody tr.cl-fila--pronto > th { border-left: 3px solid var(--tc-amber); }
+    .cl-tabla tbody tr.cl-fila--pronto:hover { background: var(--tc-warn-surface); }
+    .cl-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
+    .cl-codigo { display: block; margin-top: var(--tc-sp-1); font-family:var(--pp-mono); font-variant-numeric: tabular-nums; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cl-cuenta { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .cl-faltan { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); white-space: nowrap; }
+    .cl-faltan--pronto { color: var(--tc-warn-ink-strong); }
+    .cl-portal { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1); }
+    .cl-ver { white-space: nowrap; }
+    .cl-regla { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .cl-regla li { display: flex; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .cl-regla__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+    /* hoja del edge: dato espejo vs lo que ve el cliente */
+    .cl-seccion { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); }
+    .cl-seccion--espejo { background: var(--tc-bg-subtle); }
+    .cl-seccion--portal { background: var(--tc-surface-declared); }
+    .cl-seccion__rotulo { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); }
+    .cl-seccion p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .cl-datos2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cl-mini { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+    .cl-mini__nombre { margin: 0; font-size:var(--tc-fs-body); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .cl-mini__rol { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .cl-mini__fila { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); }
+    @media (max-width: 1023px) {
+      .ip-sidebar-nav { flex-direction: row; gap: var(--tc-sp-1); }
+      /* la tabla pasa a tarjetas apiladas: cada fila es una tarjeta con rótulos */
+      .cl-marco { border: 0; background: none; box-shadow:none; overflow: visible; }
+      .cl-tabla { min-width: 0; }
+      .cl-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .cl-tabla, .cl-tabla tbody { display: block; }
+      .cl-tabla tbody tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-3) var(--tc-sp-3); margin-bottom: var(--tc-sp-3); padding: var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+      .cl-tabla tbody tr.cl-fila--pronto { border-left: 3px solid var(--tc-amber); }
+      .cl-tabla tbody tr.cl-fila--pronto > th { border-left: 0; }
+      .cl-tabla tbody tr > * { display: block; padding: 0; border: 0; }
+      .cl-tabla tbody tr > th { grid-column: 1 / -1; }
+      .cl-tabla tbody td[data-rotulo]::before { content: attr(data-rotulo); display: block; margin-bottom: var(--tc-sp-1); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); }
+      .cl-tabla tbody td.cl-ancho { grid-column: 1 / -1; }
+      .cl-tabla tbody tr.cl-tramo { display: block; margin: var(--tc-sp-4) 0 var(--tc-sp-2); padding: 0; border: 0; background: none; box-shadow:none; }
+      .cl-tabla tbody tr.cl-tramo > th { background: none; }
+      .cl-ver .pp-btn { width: 100%; border-color: var(--tc-border-s); background: var(--tc-card); }
+      .cl-tabla tbody .cl-faltan { font-size:var(--tc-fs-small); }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .cl-tabla tbody { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-3); }
+      .cl-tabla tbody tr { margin-bottom: 0; }
+      .cl-tabla tbody tr.cl-tramo { grid-column: 1 / -1; margin: var(--tc-sp-3) 0 0; }
+    }
+    @media (max-width: 767px) {
+      .pp-panel__topbar { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
+      .ip-sesion { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
+      .ip-sesion__quien { align-items: flex-start; }
+      .pp-encabezado h1, .cl-titulo h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+      .cl-resumen { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .cl-cifra { grid-template-columns: auto minmax(0, 1fr); column-gap: var(--tc-sp-4); align-items: center; padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .cl-cifra__valor { grid-row: span 2; }
+      .cl-datos2 { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="pp-panel">
+    <!-- región: navegación / sidebar navy (patrón PP:panel) -->
+    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+      <div class="pp-sidebar__marca">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Panel del portal de perfiles</span></span>
+      </div>
+      <div class="ip-sidebar-nav">
+        <p class="pp-sidebar__seccion">Banco de perfiles</p>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico<span class="pp-sidelink__conteo">3</span></a>
+        <p class="pp-sidebar__seccion">Clientes</p>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 8v6M22 11h-6"/></svg>Peticiones<span class="pp-sidelink__conteo">2</span></a>
+        <a class="pp-sidelink" href="#contenido" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Colocados</a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+        <p class="pp-sidebar__seccion">Operación</p>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+        <a class="pp-sidelink" href="#contenido"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">2</span></a>
+      </div>
+      <div class="pp-sidebar__pie">
+        <span class="pp-avatar" aria-hidden="true">KR</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Administradora de inventario</span></span>
+      </div>
+    </nav>
+
+    <div class="pp-panel__cuerpo">
+      <!-- región: cabecera del contenido (migas + identidad de la sesión) -->
+      <header class="pp-panel__topbar">
+        <ol class="pp-migas"><li>Clientes</li><li aria-current="page">Colocados</li></ol>
+        <div class="ip-sesion">
+          <div class="ip-sesion__quien">
+            <span class="ip-sesion__correo pp-mono">karen.rodriguez@trycore.com</span>
+            <span class="ip-sesion__vence">Sesión abierta hasta las 6:40 p. m.</span>
+          </div>
+          <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#contenido">Cerrar sesión</a>
+        </div>
+      </header>
+
+      <!-- región: contenido principal -->
+      <main class="pp-panel__contenido" id="contenido">
+        <div class="cl-contenedor">
+        <div class="pp-encabezado">
+          <div class="pp-encabezado__texto">
+            <div class="cl-titulo"><h1>Colocados y vencimientos</h1><span class="cl-solo-lectura"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>Solo lectura</span></div>
+            <p>Perfiles asignados a una cuenta y cuándo vence cada asignación, del más próximo al más lejano. Los que vencen dentro de 60 días van destacados: es inventario que vuelve y una conversación de renovación con fecha.</p>
+          </div>
+        </div>
+        <div class="pp-aviso pp-aviso--warn cl-espejo" role="alert">
+          <span class="pp-aviso__icono" aria-hidden="true">!</span>
+          <div class="cl-espejo__cuerpo">
+            <p><span class="pp-aviso__titulo">Estas fechas tienen 2 días de atraso</span>Las sincronizaciones del 26 y el 27 de septiembre no se completaron: el sistema de asignación no entregó el archivo exportado. La tabla muestra el último corte que sí llegó. Un cambio hecho allá desde entonces todavía no aparece aquí; confírmalo en el sistema de asignación antes de hablar con la cuenta.</p>
+            <dl class="cl-espejo__datos">
+              <div><dt>Fecha de corte</dt><dd class="cl-corte">25 sep 2026 · 5:00 a. m.</dd></div>
+              <div><dt>Último intento</dt><dd class="cl-corte">27 sep 2026 · 5:00 a. m. · falló</dd></div>
+              <div><dt>Próximo intento</dt><dd class="cl-corte">28 sep 2026 · 5:00 a. m.</dd></div>
+            </dl>
+            <p><a class="pp-enlace" href="#contenido">Ver el detalle en Fallos</a></p>
+          </div>
+        </div>
+        <section class="cl-resumen" aria-label="Resumen de colocados">
+          <div class="pp-tarjeta cl-cifra"><span class="cl-cifra__valor">9</span><span class="cl-cifra__rotulo">Perfiles colocados</span><span class="cl-cifra__nota">En 7 cuentas · todos siguen publicados</span></div>
+          <div class="pp-tarjeta cl-cifra cl-cifra--pronto"><span class="cl-cifra__valor">4</span><span class="cl-cifra__rotulo">Vencen en los próximos 60 días</span><span class="cl-cifra__nota">Conversaciones de renovación con fecha</span></div>
+          <div class="pp-tarjeta cl-cifra"><span class="cl-cifra__valor">12 días</span><span class="cl-cifra__rotulo">Próximo vencimiento</span><span class="cl-cifra__nota">Julián Pardo · Cooperativa Horizonte · 9 oct</span></div>
+        </section>
+        <section aria-labelledby="cl-lista">
+          <div class="cl-lista__cab"><h2 id="cl-lista">Colocados por proximidad del vencimiento</h2><p>Fechas según el corte del <span class="cl-corte">25 sep 2026 · 5:00 a. m.</span> · días contados desde hoy, 27 sep 2026</p></div>
+          <div class="pp-tabla-marco cl-marco" tabindex="0" role="region" aria-label="Perfiles colocados y sus vencimientos">
+            <table class="pp-tabla cl-tabla">
+              <caption class="pp-sr">Perfiles colocados, ordenados por fecha de vencimiento de la asignación; los que vencen dentro de 60 días van destacados</caption>
+              <thead><tr><th scope="col">Perfil</th><th scope="col">Cuenta</th><th scope="col" class="cl-col-inicio">Inicio</th><th scope="col">Vence</th><th scope="col">Faltan</th><th scope="col">En el portal <small>el cliente ve la banda, nunca la fecha</small></th><th scope="col"><span class="pp-sr">Acción</span></th></tr></thead>
+              <tbody>
+            <tr class="cl-tramo cl-tramo--pronto"><th scope="rowgroup" colspan="7">Vencen en los próximos 60 días · 4 perfiles · hasta el 26 nov 2026</th></tr>
+            <tr class="cl-fila--pronto"><th scope="row"><span class="pp-tabla__perfil">Julián Pardo</span><span class="pp-tabla__sub">Arquitecto de datos · Líder</span><span class="cl-codigo">PS-0056</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Cooperativa Horizonte</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-02-03">3 feb 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2026-10-09">9 oct 2026</time></td><td data-rotulo="Faltan"><span class="cl-faltan cl-faltan--pronto">12 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Julián Pardo en el inventario">Ver en inventario</a></td></tr>
+            <tr class="cl-fila--pronto"><th scope="row"><span class="pp-tabla__perfil">Sofía Castaño</span><span class="pp-tabla__sub">Líder técnica .NET · Líder</span><span class="cl-codigo">PS-0173</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Banco del Valle Andino</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-01-14">14 ene 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2026-10-23">23 oct 2026</time></td><td data-rotulo="Faltan"><span class="cl-faltan cl-faltan--pronto">26 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Sofía Castaño en el inventario">Ver en inventario</a></td></tr>
+            <tr class="cl-fila--pronto"><th scope="row"><span class="pp-tabla__perfil">Santiago Herrera</span><span class="pp-tabla__sub">Líder técnico Java · Líder</span><span class="cl-codigo">PS-0061</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Seguros Altamira</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-04-01">1 abr 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2026-11-13">13 nov 2026</time></td><td data-rotulo="Faltan"><span class="cl-faltan cl-faltan--pronto">47 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">En 1 a 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Santiago Herrera en el inventario">Ver en inventario</a></td></tr>
+            <tr class="cl-fila--pronto"><th scope="row"><span class="pp-tabla__perfil">Diana Pulido</span><span class="pp-tabla__sub">Desarrolladora full stack · Senior</span><span class="cl-codigo">PS-0236</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Energía Sabana</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-05-18">18 may 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2026-11-20">20 nov 2026</time></td><td data-rotulo="Faltan"><span class="cl-faltan cl-faltan--pronto">54 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">En 1 a 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Diana Pulido en el inventario">Ver en inventario</a></td></tr>
+            <tr class="cl-tramo"><th scope="rowgroup" colspan="7">Después de 60 días · 5 perfiles</th></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Felipe Arango</span><span class="pp-tabla__sub">Desarrollador backend · Semi senior</span><span class="cl-codigo">PS-0115</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Logística Magdalena</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-07-06">6 jul 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2026-12-15">15 dic 2026</time></td><td data-rotulo="Faltan"><span class="cl-faltan">79 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">Más de 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Felipe Arango en el inventario">Ver en inventario</a></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Catalina Rojas</span><span class="pp-tabla__sub">Analista QA automatización · Senior</span><span class="cl-codigo">PS-0155</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Banco del Valle Andino</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-09-01">1 sep 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2027-01-29">29 ene 2027</time></td><td data-rotulo="Faltan"><span class="cl-faltan">124 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">Más de 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Catalina Rojas en el inventario">Ver en inventario</a></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Tomás Villegas</span><span class="pp-tabla__sub">Ingeniero de datos · Senior</span><span class="cl-codigo">PS-0208</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Salud Integral Caribe</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-08-10">10 ago 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2027-02-26">26 feb 2027</time></td><td data-rotulo="Faltan"><span class="cl-faltan">152 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">Más de 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Tomás Villegas en el inventario">Ver en inventario</a></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Natalia Cárdenas</span><span class="pp-tabla__sub">Scrum master · Senior</span><span class="cl-codigo">PS-0134</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Retail Nogal</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-06-15">15 jun 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2027-04-30">30 abr 2027</time></td><td data-rotulo="Faltan"><span class="cl-faltan">215 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">Más de 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Natalia Cárdenas en el inventario">Ver en inventario</a></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Ricardo Muñoz</span><span class="pp-tabla__sub">Arquitecto cloud · Líder</span><span class="cl-codigo">PS-0077</span></th><td class="cl-ancho" data-rotulo="Cuenta"><span class="cl-cuenta">Cooperativa Horizonte</span></td><td class="cl-col-inicio pp-tabla__num" data-rotulo="Inicio"><time datetime="2026-03-02">2 mar 2026</time></td><td class="pp-tabla__num" data-rotulo="Vence"><time datetime="2027-06-30">30 jun 2027</time></td><td data-rotulo="Faltan"><span class="cl-faltan">276 días</span></td><td class="cl-ancho" data-rotulo="En el portal"><span class="cl-portal"><span class="pp-badge pp-badge--publicado">Publicado</span><span class="pp-badge pp-badge--banda">Más de 2 meses</span></span></td><td class="cl-ancho cl-ver"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#contenido" aria-label="Ver a Ricardo Muñoz en el inventario">Ver en inventario</a></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <ul class="pp-lista pp-tarjeta cl-regla" aria-label="Cómo se arma esta pestaña">
+          <li><span class="cl-regla__marca" aria-hidden="true">✓</span><span>Es un espejo del sistema de asignación, que es la fuente de verdad. Se sincroniza una vez al día; nada se edita desde aquí.</span></li>
+          <li><span class="cl-regla__marca" aria-hidden="true">✓</span><span>Un perfil colocado no se oculta: sigue publicado y su disponibilidad es la fecha de fin de la asignación.</span></li>
+          <li><span class="cl-regla__marca" aria-hidden="true">✓</span><span>El cliente ve la banda de arranque («En 1 a 2 meses»), calculada contra el día en que mira. Las fechas de esta tabla no salen del panel.</span></li>
+        </ul>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

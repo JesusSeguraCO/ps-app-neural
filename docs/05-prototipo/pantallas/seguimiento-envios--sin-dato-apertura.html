@@ -1,0 +1,402 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla seguimiento-envios
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (seguimiento-envios--estado.html), no interacciones.
+  Trazabilidad: épica EP-011 · historias HU-116, HU-117 · registrada en ../manifest.json
+  Pantalla #43 «Quién abrió y quién entró» (panel, Mercadeo) · origen: nueva (sin equivalente en el v2).
+  Apertura = señal débil (se muestra atenuada, nunca decide). Regla de 3 envíos seguidos contada
+  por clic o entrada al portal, no por apertura. Entrega fallida no suma a la regla: primero el dato.
+  Estado de ESTE archivo: variante --sin-dato-apertura (HU-116 escenario de error): la herramienta no reporta aperturas. El paso «Abrieron» y la columna de apertura dicen «Sin dato» en lugar de 0; aviso que separa ausencia de dato de ausencia de apertura; clic, entrada y solicitud siguen completos.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quién abrió y quién entró · sin dato de apertura — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+      /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+      /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+      /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
+      .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
+        .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
+        .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+      /* /PP:panel */
+      /* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+      /* PP:tabla */
+      .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
+      /* /PP:tabla */
+      /* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+      /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
+      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+      /* /PP:campos */
+      /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+  
+    /* PP:pestanas */
+    .pp-pestanas { display: flex; gap: var(--tc-sp-1); overflow-x: auto; border-bottom: 1px solid var(--tc-border); }
+    .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-4); border: 0; border-bottom: 2px solid transparent; background: none; font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; }
+    .pp-pestana:hover { color: var(--tc-text-h); }
+    .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-primary); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    /* /PP:pestanas */
+
+    /* Marco canónico del panel (admin-shell): sesión en la cabecera y pestañas de Envíos (prefijo sh-). */
+    .sh-sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2) var(--tc-sp-4); min-width: 0; }
+    .sh-sesion__quien { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; line-height: var(--tc-lh-h3); }
+    .sh-sesion__correo { font-size:var(--tc-fs-small); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .sh-sesion__vence { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .sh-subnav { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-6); }
+    .sh-subnav .pp-pestanas { flex: 1 1 320px; min-width: 0; }
+    @media (max-width: 767px) {
+      .pp-panel__topbar { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); }
+      .sh-sesion { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
+      .sh-sesion__quien { align-items: flex-start; }
+      .sh-subnav > .pp-btn { width: 100%; }
+    }
+    </style>
+  <style>
+    /* Composición propia del seguimiento de envíos (prefijo sg-). Valores visuales → var(--token). */
+    .sg-filtro { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--tc-sp-3); }
+    .sg-filtro .pp-campo { width: 320px; }
+    .sg-embudo { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--tc-sp-3); margin: 0 0 var(--tc-sp-5); padding: 0; list-style: none; }
+    .sg-paso { position: relative; display: grid; gap: var(--tc-sp-1); align-content: start; padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .sg-paso__rotulo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .sg-paso__valor { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); line-height: var(--tc-lh-h2); color: var(--tc-text-h); }
+    .sg-paso__de { font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .sg-paso__nota { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .sg-paso--debil { background: var(--tc-surface-declared); border-style: dashed; border-color: var(--tc-border-s); box-shadow:none; }
+    .sg-paso--debil .sg-paso__valor { color: var(--tc-text-m); }
+    .sg-paso--sin-dato .sg-paso__valor { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .sg-paso--fuerte { border-top: 3px solid var(--tc-primary); }
+    .sg-debil { display: inline-flex; align-items: center; padding: 0 var(--tc-sp-2); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-pill); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-text-m); white-space: nowrap; }
+    .sg-regla { margin-bottom: var(--tc-sp-5); }
+    .sg-seccion { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin: 0 0 var(--tc-sp-3); }
+    .sg-seccion h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .sg-seccion p { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .sg-tabla-marco { max-height: none; }
+    .sg-tabla { min-width: 1040px; }
+    .sg-tabla td { white-space: nowrap; }
+    .sg-tabla thead th { white-space: normal; vertical-align: bottom; }
+    .sg-tabla thead th.sg-th-estrecho { width: 130px; }
+    .sg-tabla tbody th { min-width: 150px; }
+    .sg-tabla td.sg-lectura { white-space: normal; min-width: 200px; }
+    .sg-lectura .pp-badge { white-space: normal; }
+    .sg-lectura__sub { display: block; margin-top: var(--tc-sp-1); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .sg-cel__sub { display: block; min-width: 120px; max-width: 150px; font-size:var(--tc-fs-caption); color: var(--tc-text-m); white-space: normal; }
+    .sg-cel--debil { color: var(--tc-text-m); }
+    .sg-sin-dato { display: inline-flex; padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-pill); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); color: var(--tc-text-m); white-space: nowrap; }
+    .sg-contador { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-family:var(--pp-mono); font-variant-numeric: tabular-nums; font-size:var(--tc-fs-small); color: var(--tc-text-h); }
+    .sg-contador__pips { display: inline-flex; gap: var(--tc-sp-1); }
+    .sg-pip { width: 8px; height: 8px; border-radius:var(--tc-r-pill); border: 1px solid var(--tc-border-s); background: var(--tc-card); }
+    .sg-pip--lleno { background: var(--tc-amber); border-color: var(--tc-amber); }
+    .sg-pip--tope { background: var(--tc-red); border-color: var(--tc-red); }
+    .sg-pip--pausa { background: var(--tc-bg-subtle); border-style: dashed; }
+    .pp-tabla tbody tr.sg-fila--foco { background: var(--tc-warn-surface); }
+    .pp-tabla tbody tr.sg-fila--error { background: var(--tc-red-bg); }
+    .sg-pie-tabla { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-3); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .sg-leyenda { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-4); }
+    .sg-leyenda span { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .sg-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--tc-sp-6); align-items: start; margin-top: var(--tc-sp-6); }
+    .sg-bloque { display: grid; gap: var(--tc-sp-4); }
+    .sg-bloque > h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .sg-bloque > p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .sg-casos { display: grid; gap: var(--tc-sp-3); }
+    .sg-caso { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--tc-sp-2) var(--tc-sp-4); align-items: center; padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-left-width: 3px; border-radius:var(--tc-r-md); background: var(--tc-card); }
+    .sg-caso--propuesta { border-left-color: var(--tc-amber); }
+    .sg-caso--canal { border-left-color: var(--tc-red); }
+    .sg-caso--cerca { border-left-color: var(--tc-border-s); }
+    .sg-caso__cuenta { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .sg-caso__texto { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .sg-guia { display: grid; gap: var(--tc-sp-3); }
+    .sg-guia li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .sg-guia strong { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .sg-guia__marca { font-weight: var(--tc-fw-bold); text-align: center; color: var(--pp-teal-ink); }
+    .sg-detalle { margin-bottom: var(--tc-sp-5); display: grid; gap: var(--tc-sp-4); border-color: var(--tc-warn-border); }
+    .sg-detalle--error { border-color: var(--tc-red); }
+    .sg-detalle__cabecera { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); }
+    .sg-detalle__cabecera h2 { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .sg-detalle__cabecera p { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); max-width: 72ch; }
+    .sg-historico { overflow-x: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); }
+    .sg-historico table { width: 100%; min-width: 620px; border-collapse: collapse; font-size:var(--tc-fs-small); }
+    .sg-historico th, .sg-historico td { padding: var(--tc-sp-2) var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); text-align: left; white-space: nowrap; }
+    .sg-historico thead th { background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .sg-historico tbody tr:last-child > * { border-bottom: 0; }
+    .sg-historico tbody th { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .sg-hechos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-3); margin: 0; }
+    .sg-hechos div { padding: var(--tc-sp-3); border-radius:var(--tc-r-md); background: var(--tc-bg-subtle); }
+    .sg-hechos dt { font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .sg-hechos dd { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-h); }
+    .sg-acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .sg-correo { font-family:var(--pp-mono); font-size:var(--tc-fs-caption); overflow-wrap: anywhere; }
+    @media (max-width: 1279px) {
+      .sg-embudo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .sg-rejilla { grid-template-columns: minmax(0, 1fr); }
+      .sg-tabla tbody th { position: sticky; left: 0; z-index: 1; min-width: 140px; background: var(--tc-card); border-right: 1px solid var(--tc-border); }
+      .sg-tabla thead th:first-child { left: 0; z-index: 2; }
+      .pp-tabla tbody tr.sg-fila--foco th { background: var(--tc-warn-surface); }
+      .pp-tabla tbody tr.sg-fila--error th { background: var(--tc-red-bg); }
+    }
+    @media (max-width: 767px) {
+      .pp-encabezado h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+      .sg-filtro, .sg-filtro .pp-campo { width: 100%; }
+      .sg-filtro .pp-btn { flex: 1 1 0; }
+      .sg-embudo { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-2); }
+      .sg-paso { padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .sg-paso:first-child { grid-column: 1 / -1; }
+      .sg-caso { grid-template-columns: minmax(0, 1fr); }
+      .sg-hechos { grid-template-columns: minmax(0, 1fr); }
+      .sg-acciones .pp-btn { flex: 1 1 auto; }
+    }
+      /* Móvil: cada cuenta como tarjeta (mismo criterio que la tabla de programar-envio). */
+    @media (max-width: 639px) {
+      .sg-tabla-marco { overflow: visible; max-height: none; box-shadow:none; }
+      .sg-tabla { min-width: 0; }
+      .sg-tabla thead { display: none; }
+      .sg-tabla, .sg-tabla tbody { display: block; }
+      .sg-tabla tbody tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+      .sg-tabla tbody tr:last-child { border-bottom: 0; }
+      .sg-tabla tbody th, .sg-tabla tbody td { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); padding: var(--tc-sp-1) 0; border: 0; white-space: normal; min-width: 0; }
+      .sg-tabla tbody th { position: static; display: block; order: 0; min-width: 0; border-right: 0; background: none; }
+      .pp-tabla tbody tr.sg-fila--foco th, .pp-tabla tbody tr.sg-fila--error th { background: none; }
+      .sg-tabla td::before { content: attr(data-label); font-family:var(--tc-font-body); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+      .sg-tabla td.sg-lectura { order: 1; display: grid; justify-items: start; gap: var(--tc-sp-1); min-width: 0; padding-bottom: var(--tc-sp-2); }
+      .sg-tabla td.sg-lectura::before { content: none; }
+      .sg-tabla td.sg-td-seguidos { order: 2; padding-bottom: var(--tc-sp-2); border-bottom: 1px dashed var(--tc-border); }
+      .sg-tabla td { order: 3; }
+      .sg-cel__sub { flex-basis: 100%; min-width: 0; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="pp-panel">
+  <!-- región: navegación / sidebar del panel -->
+    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+      <div class="pp-sidebar__marca">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Panel del portal de perfiles</span></span>
+      </div>
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 8v6M22 11h-6"/></svg>Peticiones<span class="pp-sidelink__conteo">2</span></a>
+      <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="envios-curados.html" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">2</span></a>
+      <div class="pp-sidebar__pie">
+        <span class="pp-avatar" aria-hidden="true">PG</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Paula Giraldo</span><span class="pp-persona__area">Mercadeo</span></span>
+      </div>
+    </nav>
+  <div class="pp-panel__cuerpo">
+      <!-- región: cabecera del contenido (migas + identidad de la sesión) -->
+      <header class="pp-panel__topbar">
+        <ol class="pp-migas"><li>Envíos</li><li aria-current="page">Seguimiento de envíos</li></ol>
+        <div class="sh-sesion">
+          <div class="sh-sesion__quien">
+            <span class="sh-sesion__correo pp-mono">paula.giraldo@trycore.com</span>
+            <span class="sh-sesion__vence">Sesión abierta hasta las 6:40 p. m.</span>
+          </div>
+          <a class="pp-btn pp-btn--contorno pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
+        </div>
+      </header>
+    <!-- región: contenido principal -->
+    <main class="pp-panel__contenido">
+        <!-- región: secciones de Envíos (Programar y Seguimiento viven aquí, no en el menú) -->
+        <div class="sh-subnav">
+          <div class="pp-pestanas" role="tablist" aria-label="Secciones de Envíos"><a class="pp-pestana" role="tab" aria-selected="false" href="envios-curados.html">Selecciones por cuenta</a><a class="pp-pestana" role="tab" aria-selected="false" href="programar-envio.html">Programar</a><a class="pp-pestana" role="tab" aria-selected="true" href="seguimiento-envios.html">Seguimiento</a></div>
+          <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Exportar CSV</a>
+        </div>
+      <div class="pp-encabezado">
+        <div class="pp-encabezado__texto">
+          <h1>Quién abrió y quién entró</h1>
+          <p>Boletín curado de septiembre · enviado el 1 sep 2026 a 18 cuentas y 41 contactos. Por cuenta: si el correo llegó, si lo abrieron, si tocaron el enlace, si entraron al portal y si terminó en solicitud.</p>
+        </div>
+        <form class="sg-filtro" aria-label="Elegir envío">
+          <div class="pp-campo">
+            <label class="pp-label" for="sg-envio">Envío</label>
+            <div class="pp-select"><select class="pp-input" id="sg-envio">
+              <option>Boletín de septiembre · 1 sep 2026</option>
+              <option>Boletín de agosto · 4 ago 2026</option>
+              <option>Boletín de julio · 7 jul 2026</option>
+            </select></div>
+          </div>
+        </form>
+      </div>
+      <!-- región: embudo del envío, por cuenta -->
+      <h2 class="pp-sr">Resumen del envío por cuenta</h2>
+      <ul class="sg-embudo">
+        <li class="pp-tarjeta sg-paso"><span class="sg-paso__rotulo">Correo entregado</span><span class="sg-paso__valor">17 <span class="sg-paso__de">de 18 cuentas</span></span><span class="sg-paso__nota">39 de 41 contactos · 2 rebotes</span></li>
+        <li class="pp-tarjeta sg-paso sg-paso--debil sg-paso--sin-dato"><span class="sg-paso__rotulo">Abrieron <span class="sg-debil">Señal débil</span></span><span class="sg-paso__valor">Sin dato</span><span class="sg-paso__nota">La herramienta de envío no reportó aperturas. No significa cero.</span></li>
+        <li class="pp-tarjeta sg-paso sg-paso--fuerte"><span class="sg-paso__rotulo">Tocaron el enlace</span><span class="sg-paso__valor">8 <span class="sg-paso__de">cuentas</span></span><span class="sg-paso__nota">Cuenta para la regla de 3 envíos</span></li>
+        <li class="pp-tarjeta sg-paso sg-paso--fuerte"><span class="sg-paso__rotulo">Entraron al portal</span><span class="sg-paso__valor">7 <span class="sg-paso__de">cuentas</span></span><span class="sg-paso__nota">Incluye 1 invitado sin correo propio</span></li>
+        <li class="pp-tarjeta sg-paso sg-paso--fuerte"><span class="sg-paso__rotulo">Terminaron en solicitud</span><span class="sg-paso__valor">2 <span class="sg-paso__de">cuentas</span></span><span class="sg-paso__nota">Registradas en HubSpot</span></li>
+      </ul>
+      <div class="pp-aviso pp-aviso--warn sg-regla" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Este envío no trae datos de apertura</span>La herramienta de envío no reportó aperturas del boletín de septiembre. Donde verías el conteo pone «Sin dato»: no quiere decir que nadie lo abriera. Clics, entradas y solicitudes sí están completos, y la regla de 3 envíos no depende de la apertura.</p></div>
+      <!-- región: detalle por cuenta -->
+      <div class="sg-seccion"><h2 id="sg-tabla-titulo">Por cuenta</h2><p>Mostrando 8 de 18 cuentas · ordenadas por lo que piden revisar</p></div>
+      <div class="pp-tabla-marco sg-tabla-marco" tabindex="0" role="region" aria-labelledby="sg-tabla-titulo">
+        <table class="pp-tabla sg-tabla">
+          <caption class="pp-sr">Resultado del envío por cuenta: entrega, apertura, clic, entrada, solicitud y envíos seguidos sin clic ni entrada</caption>
+          <thead><tr><th scope="col">Cuenta</th><th scope="col">Entregado</th><th scope="col">Abrió <span class="sg-debil">Señal débil</span></th><th scope="col">Clics</th><th scope="col">Entradas</th><th scope="col">Solicitud</th><th scope="col" class="sg-th-estrecho">Envíos seguidos sin clic ni entrada</th><th scope="col">Lectura</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Bancolombia</span><span class="pp-tabla__sub">Ejecutivo: Andrés Villa</span></th><td data-label="Entregado"><span class="pp-tabla__num">3 de 3</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">2</td><td data-label="Entradas"><span class="pp-tabla__num">3</span><span class="sg-cel__sub">1 invitado del enlace sin correo propio: se atribuye a este envío</span></td><td data-label="Solicitud"><span class="pp-si" aria-hidden="true">✓</span> <span class="pp-tabla__num">SOL-0231</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip"></span><span class="sg-pip"></span><span class="sg-pip"></span></span><span>0 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--publicado">Llegó a solicitud</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Sura</span><span class="pp-tabla__sub">Ejecutivo: Paula Restrepo</span></th><td data-label="Entregado"><span class="pp-tabla__num">2 de 2</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">1</td><td data-label="Entradas"><span class="pp-tabla__num">1</span></td><td data-label="Solicitud"><span class="pp-no" aria-label="No">–</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip"></span><span class="sg-pip"></span><span class="sg-pip"></span></span><span>0 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--banda">Entró sin solicitar</span><span class="sg-lectura__sub">Miró 4 perfiles; ninguno sumado</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Davivienda</span><span class="pp-tabla__sub">Ejecutivo: Paula Restrepo</span></th><td data-label="Entregado"><span class="pp-tabla__num">2 de 2</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">1</td><td data-label="Entradas"><span class="pp-tabla__num">1</span></td><td data-label="Solicitud"><span class="pp-si" aria-hidden="true">✓</span> <span class="pp-tabla__num">SOL-0236</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip"></span><span class="sg-pip"></span><span class="sg-pip"></span></span><span>0 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--publicado">Llegó a solicitud</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Grupo Éxito</span><span class="pp-tabla__sub">Ejecutivo: Camilo Duarte</span></th><td data-label="Entregado"><span class="pp-tabla__num">3 de 3</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">0</td><td data-label="Entradas"><span class="pp-tabla__num">0</span></td><td data-label="Solicitud"><span class="pp-no" aria-label="No">–</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip sg-pip--lleno"></span><span class="sg-pip sg-pip--lleno"></span><span class="sg-pip"></span></span><span>2 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--por-confirmar">Sin clic ni entrada</span><span class="sg-lectura__sub">Sin dato de apertura: no se puede saber si abre y no entra</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Colsubsidio</span><span class="pp-tabla__sub">Ejecutivo: Paula Restrepo</span></th><td data-label="Entregado"><span class="pp-tabla__num">2 de 2</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">0</td><td data-label="Entradas"><span class="pp-tabla__num">0</span></td><td data-label="Solicitud"><span class="pp-no" aria-label="No">–</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip sg-pip--lleno"></span><span class="sg-pip sg-pip--lleno"></span><span class="sg-pip"></span></span><span>2 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--por-confirmar">Sin clic ni entrada</span><span class="sg-lectura__sub">A un envío del aviso a su ejecutiva</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Celsia</span><span class="pp-tabla__sub">Ejecutivo: Andrés Villa</span></th><td data-label="Entregado"><span class="pp-tabla__num">2 de 2</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">1</td><td data-label="Entradas"><span class="pp-tabla__num">1</span></td><td data-label="Solicitud"><span class="pp-no" aria-label="No">–</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip"></span><span class="sg-pip"></span><span class="sg-pip"></span></span><span>0 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--publicado">Entró</span><span class="sg-lectura__sub">Tocó el enlace y entró al portal</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Alpina</span><span class="pp-tabla__sub">Ejecutivo: Camilo Duarte</span></th><td data-label="Entregado"><span class="pp-tabla__num">3 de 3</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">0</td><td data-label="Entradas"><span class="pp-tabla__num">0</span></td><td data-label="Solicitud"><span class="pp-no" aria-label="No">–</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip sg-pip--lleno"></span><span class="sg-pip"></span><span class="sg-pip"></span></span><span>1 de 3</span></span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--banda">Sin clic en este envío</span><span class="sg-lectura__sub">Primer envío seguido sin clic</span></td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Comfama</span><span class="pp-tabla__sub">Ejecutivo: Camilo Duarte</span></th><td data-label="Entregado"><span class="pp-tabla__num">0 de 2</span><span class="sg-cel__sub">2 rebotes</span></td><td data-label="Abrió (señal débil)"><span class="sg-sin-dato">Sin dato</span></td><td data-label="Clics" class="pp-tabla__num">0</td><td data-label="Entradas"><span class="pp-tabla__num">0</span></td><td data-label="Solicitud"><span class="pp-no" aria-label="No">–</span></td><td data-label="Envíos seguidos sin clic ni entrada" class="sg-td-seguidos"><span class="sg-contador"><span class="sg-contador__pips" aria-hidden="true"><span class="sg-pip sg-pip--pausa"></span><span class="sg-pip sg-pip--pausa"></span><span class="sg-pip sg-pip--pausa"></span></span><span>En pausa</span></span><span class="sg-cel__sub">no cuenta hasta corregir el dato</span></td><td data-label="Lectura" class="sg-lectura"><span class="pp-badge pp-badge--archivado">El correo no llega</span><span class="sg-lectura__sub">Corregir el dato antes de escalar</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sg-pie-tabla">
+        <div class="sg-leyenda"><span><span class="sg-pip sg-pip--lleno" aria-hidden="true"></span>envío sin clic ni entrada</span><span><span class="sg-pip sg-pip--tope" aria-hidden="true"></span>3 de 3: cuenta en revisión</span><span><span class="sg-pip sg-pip--pausa" aria-hidden="true"></span>en pausa por entregabilidad</span></div>
+        <a class="pp-enlace" href="#">Ver las 18 cuentas</a>
+      </div>
+      <div class="sg-rejilla">
+        <section class="pp-tarjeta sg-bloque" aria-labelledby="sg-mirar">
+          <h2 id="sg-mirar">Para mirar en este envío</h2>
+          <p>Cada caso pide una acción distinta: el problema puede estar en el correo, en el portal o en la selección.</p>
+          <ul class="pp-lista sg-casos">
+            <li class="sg-caso sg-caso--cerca"><span><span class="sg-caso__cuenta">Grupo Éxito · 2 de 3</span><span class="sg-caso__texto">Dos envíos seguidos sin clic ni entrada. Sin dato de apertura no se puede distinguir si abre y no entra.</span></span><a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Ver histórico</a></li>
+            <li class="sg-caso sg-caso--cerca"><span><span class="sg-caso__cuenta">Colsubsidio · 2 de 3</span><span class="sg-caso__texto">Dos envíos seguidos sin clic ni entrada. Si el de octubre tampoco tiene, avisamos a Paula Restrepo.</span></span><a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Ver histórico</a></li>
+            <li class="sg-caso sg-caso--canal"><span><span class="sg-caso__cuenta">Comfama · el correo no llega</span><span class="sg-caso__texto">Los 2 contactos rebotaron: el buzón no existe. Corrige el dato antes de sacar conclusiones comerciales.</span></span><a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Corregir el correo</a></li>
+          </ul>
+        </section>
+        <aside class="pp-tarjeta sg-bloque" aria-labelledby="sg-leer">
+          <h2 id="sg-leer">Cómo leer este informe</h2>
+          <ul class="pp-lista sg-guia">
+            <li><span class="sg-guia__marca" aria-hidden="true">1</span><span><strong>No llega:</strong> es un dato que corregir, no una señal comercial. No suma a la regla hasta arreglarlo.</span></li>
+            <li><span class="sg-guia__marca" aria-hidden="true">2</span><span><strong>Llega y no abre:</strong> la apertura es poco fiable; mira clics y entradas antes de concluir.</span></li>
+            <li><span class="sg-guia__marca" aria-hidden="true">3</span><span><strong>Abre y no entra:</strong> el canal funciona; lo que no convence es la selección.</span></li>
+            <li><span class="sg-guia__marca" aria-hidden="true">4</span><span><strong>Entra y no solicita:</strong> revisa qué perfiles miró antes de cambiar la oferta.</span></li>
+            <li><span class="sg-guia__marca" aria-hidden="true">5</span><span><strong>Entra sin abrir:</strong> un invitado del enlace que no recibió el correo cuenta para este envío.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

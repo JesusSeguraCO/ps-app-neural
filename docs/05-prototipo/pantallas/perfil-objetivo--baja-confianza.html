@@ -1,0 +1,573 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla perfil-objetivo
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (perfil-objetivo--estado.html), no interacciones.
+  Trazabilidad: épica EP-009 · historias HU-068, HU-069, HU-070, HU-118, HU-082, HU-083, HU-085 · registrada en ../manifest.json
+  Estado de ESTA pantalla: --baja-confianza — instrucción corta y ambigua. La lectura se muestra
+  DESTACADA y expandida (no compacta), fila por fila con de dónde salió cada criterio, y con una
+  invitación explícita a corregirla (HU-068). El Perfil Objetivo está inferido y sin revisar: si se
+  envía así, viaja marcado como no revisado por el cliente (HU-070).
+  Origen: v2-existe (Portal de Perfiles v2.dc.html, pantalla «Resultados»: PanelPerfilObjetivo +
+  BloqueInterpretacion; handoff/components/portal/panel-perfil-objetivo.tsx, bloque-interpretacion.tsx,
+  chip-criterio.tsx). Cambio exigido por HU-083: el campo del reto encabeza la especificación
+  (en v2 iba al final). Cada criterio muestra su origen: escrito por ti, inferido o añadido por ti.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perfil Objetivo — lectura de baja confianza — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+    /* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-equipo:hover { border-color: var(--tc-primary); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+    /* PP:chips */
+      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+      .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
+      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+      .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
+      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+      .pp-chip__quitar:hover { background: var(--pp-overlay); }
+      /* /PP:chips */
+    /* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+    /* PP:perfil */
+      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
+      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
+      .pp-perfil--en-equipo { border-color: var(--tc-primary); }
+      .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
+      .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
+      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
+      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+      .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
+      .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
+      .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
+      .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
+      .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
+      .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
+      .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
+      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
+      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
+      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
+      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-criterio--cumple { color: var(--tc-ok-ink); }
+      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+      .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
+      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
+      .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
+      .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
+      /* /PP:perfil */
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
+      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+      /* /PP:campos */
+    /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+    /* PP:check */
+      .pp-check { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-2) 0; cursor: pointer; }
+      .pp-check input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+      .pp-check__texto { font-size:var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
+      .pp-check__ayuda { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      /* /PP:check */
+    /* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+  </style>
+  <style>
+    /* Composición propia de la pantalla Perfil Objetivo (prefijo po-). Valores visuales → var(--token). */
+    .po-main { max-width: 1400px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-8) var(--tc-sp-10); }
+
+    /* Instrucción enviada */
+    .po-instruccion { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-lg); box-shadow:var(--pp-cmd-shadow); }
+    .po-instruccion__icono { color: var(--pp-teal-ink); }
+    .po-instruccion__texto { flex: 1 1 280px; min-width: 0; margin: 0; }
+    .po-instruccion__rotulo { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .po-instruccion__frase { display: block; font-size:var(--tc-fs-body); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+
+    /* Lectura del portal (HU-068 / HU-069) */
+    .po-lectura { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
+    .po-lectura__titulo { margin: 0; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); letter-spacing: 0; color: var(--pp-teal-ink); white-space: nowrap; }
+    .po-lectura > .pp-chips { flex: 1 1 480px; min-width: 0; }
+    .po-lectura__nota { flex-basis: 100%; margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .po-chip { flex-wrap: wrap; max-width: 100%; }
+    .po-chip__origen { font-size:var(--tc-fs-badge); opacity: .85; }
+    .po-chip--dato { background: var(--tc-bg-subtle); border-color: var(--tc-border); color: var(--tc-text-b); }
+
+    .po-lectura--abierta { display: block; padding: var(--tc-sp-5) var(--tc-sp-6) var(--tc-sp-6); border-color: var(--tc-warn-border); box-shadow:var(--tc-sh-2); }
+    .po-lectura--abierta .po-lectura__titulo { font-size:var(--tc-fs-h3); white-space: normal; color: var(--tc-text-h); }
+    .po-lectura__prosa { max-width: 72ch; margin: var(--tc-sp-2) 0 0; color: var(--tc-text-b); }
+    .po-lectura--abierta .pp-aviso { margin-top: var(--tc-sp-4); }
+    .po-filas { display: grid; margin: var(--tc-sp-4) 0 0; padding: 0; list-style: none; border-top: 1px solid var(--tc-border); }
+    .po-fila { display: grid; grid-template-columns: 150px minmax(0, 300px) minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .po-fila__campo { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .po-fila__origen { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .po-fila__vacio { font-size:var(--tc-fs-small); color: var(--tc-text-m); font-style: italic; }
+    .po-lectura__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
+
+    /* Marca de origen de cada criterio */
+    .po-marca { display: inline-flex; align-items: center; margin-right: var(--tc-sp-1); padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-body); white-space: nowrap; vertical-align: 1px; }
+    .po-marca--escrito { background: var(--tc-bg-subtle); color: var(--tc-text-b); }
+    .po-marca--inferido { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+    .po-marca--tuyo { background: var(--tc-accent); color: var(--pp-teal-ink); }
+
+    /* Rejilla: panel + resultados */
+    .po-rejilla { display: grid; grid-template-columns: 372px minmax(0, 1fr); align-items: start; gap: var(--tc-sp-6); margin-top: var(--tc-sp-6); }
+
+    /* Panel Perfil Objetivo */
+    .po-panel { min-width: 0; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
+    .po-panel__cabecera { padding: var(--tc-sp-5) var(--tc-sp-5) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .po-panel__cabecera h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .po-panel__cabecera > p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .po-conteo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); margin: var(--tc-sp-3) 0 0; padding: var(--tc-sp-2) var(--tc-sp-3); border-radius:var(--tc-r-md); background: var(--tc-accent); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); }
+    .po-conteo__num { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-bold); font-variant-numeric: tabular-nums; line-height: var(--tc-lh-h2); }
+    .po-conteo--cero { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+    .po-estado-spec { display: flex; align-items: flex-start; gap: var(--tc-sp-2); margin: var(--tc-sp-2) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .po-estado-spec--sin-revisar { color: var(--tc-warn-ink); }
+
+    .po-campo { min-width: 0; padding: var(--tc-sp-3) var(--tc-sp-5) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .po-campo--reto { padding-top: var(--tc-sp-4); background: var(--tc-surface-declared); }
+    .po-campo__cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); margin-bottom: var(--tc-sp-2); }
+    .po-campo__nombre { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .po-campo__exige { display: block; font-family:var(--tc-font-body); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .po-origen { display: block; margin: var(--tc-sp-2) 0 0; line-height: var(--tc-lh-body); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+
+    .po-peso { display: inline-flex; flex: none; overflow: hidden; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); }
+    .po-peso button { min-height: 32px; padding: 0 var(--tc-sp-3); border: 0; background: none; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); cursor: pointer; }
+    .po-peso button + button { border-left: 1px solid var(--tc-border-s); }
+    .po-peso__obl[aria-pressed="true"] { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .po-peso__des[aria-pressed="true"] { background: var(--tc-accent); color: var(--pp-teal-ink); outline: 1px solid var(--tc-primary); outline-offset: -2px; }
+
+    .po-resumen { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-primary); border-radius:var(--tc-r-md); background: var(--tc-card); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); color: var(--tc-text-b); text-align: left; cursor: pointer; }
+    .po-resumen--cerrado { border-color: var(--tc-border-s); box-shadow:var(--tc-sh-1); }
+    .po-resumen span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .po-opciones { margin: var(--tc-sp-2) 0 0; padding: var(--tc-sp-1); list-style: none; border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-card); }
+    .po-opciones__nota { margin: 0; padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-2); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .po-opcion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 36px; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); color: var(--tc-text-b); cursor: pointer; }
+    .po-opcion:hover { background: var(--tc-bg-subtle); }
+    .po-opcion[aria-selected="true"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .po-opcion__valor { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-width: 0; }
+    .po-caja { display: grid; flex: none; place-items: center; width: 16px; height: 16px; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-sm); background: var(--tc-card); color: var(--tc-bg-topbar); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-bold); line-height: 1; }
+    .po-opcion[aria-selected="true"] .po-caja { border-color: transparent; background: var(--pp-teal-fill); }
+    .po-opcion__conteo { flex: none; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); white-space: nowrap; }
+    .po-opcion--fuera .po-opcion__conteo { font-family:var(--tc-font-body); color: var(--tc-warn-ink-strong); }
+    .po-opcion--fuera[aria-selected="true"] .po-caja { background: var(--tc-amber); }
+    .po-opcion--cero .po-opcion__conteo { color: var(--tc-danger-ink); }
+    .po-agregar { display: flex; gap: var(--tc-sp-2); margin-top: var(--tc-sp-2); }
+    .po-agregar .pp-input { flex: 1; min-width: 0; border-style: dashed; box-shadow:none; font-size:var(--tc-fs-small); }
+    .po-campo .pp-check { min-height: 36px; padding: var(--tc-sp-1) 0; margin-top: var(--tc-sp-1); }
+    .po-campo .pp-check__texto { font-size:var(--tc-fs-caption); }
+    .po-ubicacion { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--tc-sp-2); }
+    .po-campo .pp-aviso { margin-top: var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+
+    .po-soltar { margin: var(--tc-sp-3) 0 0; }
+    .po-soltar__titulo { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .po-soltar__lista { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+    .po-soltar__btn { justify-content: space-between; width: 100%; }
+    .po-soltar__btn .pp-mono { color: var(--pp-teal-ink); }
+    .po-deshacer { margin-top: var(--tc-sp-2); }
+
+    .po-panel__pie { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-5); }
+    .po-panel__pie p { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); text-align: center; }
+
+    /* Resultados */
+    .po-resultados { min-width: 0; }
+    .po-resultados__cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
+    .po-resultados__cabeza > div:first-child { flex: 1 1 260px; min-width: 0; }
+    .po-resultados__cabeza h2 { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .po-resultados__cabeza p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .po-vista { display: inline-flex; gap: var(--tc-sp-1); }
+    .po-resultados > .pp-aviso { margin-bottom: var(--tc-sp-4); }
+    .po-mas { display: flex; justify-content: center; margin-top: var(--tc-sp-5); }
+
+    .po-cero { display: flex; flex-direction: column; align-items: center; padding: var(--tc-sp-8) var(--tc-sp-6); text-align: center; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); }
+    .po-cero__icono { display: grid; place-items: center; width: 44px; height: 44px; border-radius:var(--tc-r-md); background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+    .po-cero h2 { margin: var(--tc-sp-4) 0 0; font-size:var(--tc-fs-h3); text-wrap: balance; }
+    .po-cero > p { max-width: 54ch; margin: var(--tc-sp-2) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .po-cero__reto { max-width: 60ch; margin: var(--tc-sp-4) 0 0; padding: var(--tc-sp-3) var(--tc-sp-4); text-align: left; }
+    .po-cero .pp-chips { justify-content: center; margin-top: var(--tc-sp-4); }
+    .po-cero__acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--tc-sp-2); margin-top: var(--tc-sp-5); }
+    .po-cercanos { margin: var(--tc-sp-8) 0 var(--tc-sp-4); }
+    .po-cercanos h2 { margin: 0; font-size:var(--tc-fs-h3); }
+    .po-cercanos p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .po-falla { display: inline-flex; align-self: flex-start; margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3); border-radius:var(--tc-r-pill); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+
+    /* Revisión antes de enviar (HU-070 / HU-082) */
+    .po-revision { margin-top: var(--tc-sp-4); }
+    .po-revision > div { min-width: 0; }
+    .po-revision .pp-ayuda { margin-top: var(--tc-sp-2); color: var(--tc-danger-ink); }
+    .po-revision .pp-lista { display: grid; gap: var(--tc-sp-1); margin-top: var(--tc-sp-2); }
+    .po-revision li { display: flex; gap: var(--tc-sp-2); }
+    .po-revision__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-3); }
+
+    @media (max-width: 1180px) {
+      .po-rejilla { grid-template-columns: 340px minmax(0, 1fr); }
+      .po-lectura__titulo { flex-basis: 100%; }
+      .po-fila { grid-template-columns: 130px minmax(0, 1fr) auto; }
+      .po-fila__origen { grid-column: 2 / -1; grid-row: 2; }
+    }
+    @media (max-width: 959px) {
+      .po-rejilla { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 767px) {
+      .po-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
+      .po-instruccion { padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .po-instruccion__icono { display: none; }
+      .po-instruccion .pp-btn { width: 100%; }
+      .po-lectura { padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .po-lectura > .pp-chips { flex-basis: 100%; }
+      .po-lectura--abierta { padding: var(--tc-sp-4); }
+      .po-fila { grid-template-columns: minmax(0, 1fr) auto; }
+      .po-fila__campo { grid-column: 1 / -1; }
+      .po-fila__origen { grid-column: 1 / -1; grid-row: auto; }
+      .po-fila > .pp-btn { grid-column: 2; grid-row: 2; }
+      .po-peso button { min-height: 44px; }
+      .po-opcion { min-height: 44px; }
+      .po-campo .pp-check { min-height: 44px; }
+      .po-agregar .pp-input { font-size:var(--tc-fs-h3); }
+      .po-ubicacion { grid-template-columns: minmax(0, 1fr); }
+      .po-panel__cabecera, .po-campo, .po-panel__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+      .po-cero { padding: var(--tc-sp-6) var(--tc-sp-4); }
+      .po-revision .pp-btn { white-space: normal; }
+      .po-soltar__btn { white-space: normal; text-align: left; padding-block: var(--tc-sp-2); }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera -->
+  <header class="pp-topbar">
+    <a class="pp-marca" href="#buscar" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+      <p class="pp-cuenta__meta">Acceso válido hasta el 24 de octubre de 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="#seleccion">Selección para ti</a>
+      <a class="pp-navlink" href="#buscar" aria-current="page">Buscar</a>
+    </nav>
+    <a class="pp-equipo" href="#equipo">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">2</span><span class="pp-sr">2 perfiles en el equipo</span></a>
+  </header>
+
+  <!-- región: contenido principal -->
+  <main class="po-main" id="buscar">
+    <section class="po-instruccion" aria-label="Tu instrucción">
+      <svg class="pp-icono po-instruccion__icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 3v4M17 5h4"/></svg>
+      <p class="po-instruccion__texto"><span class="po-instruccion__rotulo">Tu instrucción</span><span class="po-instruccion__frase">«alguien para lo de pagos que sepa de nube»</span></p>
+      <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#buscar">Editar la instrucción</a>
+    </section>
+    <section class="po-lectura po-lectura--abierta" aria-labelledby="po-lectura-t">
+      <h2 class="po-lectura__titulo" id="po-lectura-t">Así entendimos tu instrucción: revísala antes de mirar los resultados</h2>
+      <p class="po-lectura__prosa">Buscas a alguien para un proyecto de pagos con experiencia en la nube. Tu instrucción es corta y dejó margen de interpretación, así que casi todo lo que sigue lo inferimos nosotros.</p>
+      <div class="pp-aviso pp-aviso--warn" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Corrige lo que no sea lo que pediste</span>Quita un criterio con la × o cámbialo aquí mismo. Los resultados y el Perfil Objetivo se recalculan sin que tengas que volver a escribir.</p></div>
+      <ul class="po-filas" aria-label="Criterios que entendimos y de dónde salen">
+        <li class="po-fila">
+          <span class="po-fila__campo">Familia de rol</span>
+          <ul class="pp-chips"><li class="pp-chip pp-chip--obligatorio po-chip"><span class="pp-chip__valor">Desarrollador Backend</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Desarrollador Backend"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
+          <p class="po-fila__origen"><span class="po-marca po-marca--inferido">Lo inferimos</span>de «lo de pagos»: los proyectos de pagos suelen pedir backend transaccional. También podría ser Full Stack.</p>
+          <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Cambiar</button>
+        </li>
+        <li class="po-fila">
+          <span class="po-fila__campo">Tecnologías</span>
+          <ul class="pp-chips"><li class="pp-chip pp-chip--deseable po-chip"><span class="pp-chip__valor">AWS</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio AWS"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
+          <p class="po-fila__origen"><span class="po-marca po-marca--inferido">Lo inferimos</span>de «que sepa de nube»: elegimos la nube con más perfiles en el banco. Podría ser Azure o Google Cloud.</p>
+          <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Cambiar</button>
+        </li>
+        <li class="po-fila">
+          <span class="po-fila__campo">Sector</span>
+          <ul class="pp-chips"><li class="pp-chip pp-chip--deseable po-chip"><span class="pp-chip__valor">Banca</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Banca"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul>
+          <p class="po-fila__origen"><span class="po-marca po-marca--inferido">Lo inferimos</span>de «pagos». Si tu proyecto no es de banca, quítalo con la ×.</p>
+          <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Cambiar</button>
+        </li>
+        <li class="po-fila">
+          <span class="po-fila__campo">Seniority</span>
+          <ul class="pp-chips"><li class="po-fila__vacio">No lo mencionaste</li></ul>
+          <p class="po-fila__origen">Sin seniority se muestran todos los niveles. Añádelo si lo necesitas.</p>
+          <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Añadir</button>
+        </li>
+      </ul>
+      <div class="po-lectura__acciones">
+        <button type="button" class="pp-btn pp-btn--primario">La lectura es correcta</button>
+        <a class="pp-btn pp-btn--fantasma" href="#buscar">Escribir de nuevo la instrucción</a>
+      </div>
+    </section>
+    <div class="po-rejilla">
+    <aside class="po-panel" aria-labelledby="po-panel-t">
+      <div class="po-panel__cabecera">
+        <h2 id="po-panel-t">Perfil objetivo</h2>
+        <p>Obligatorio reduce el conjunto. Deseable lo ordena y se cuenta en la evidencia de cada tarjeta.</p>
+        <p class="po-conteo" aria-live="polite"><span class="po-conteo__num">14</span><span>perfiles cumplen los criterios obligatorios</span></p>
+        <p class="po-estado-spec po-estado-spec--sin-revisar"><span aria-hidden="true">!</span><span>Especificación inferida, aún sin revisar. Si envías tu solicitud así, viaja marcada como no revisada por ti.</span></p>
+      </div>
+      <section class="po-campo po-campo--reto" aria-labelledby="po-reto-l">
+        <div class="pp-campo">
+          <label class="pp-label" id="po-reto-l" for="po-reto">¿Qué tiene que quedar funcionando cuando el proyecto termine? <span class="pp-label__opcional">(opcional)</span></label>
+          <textarea class="pp-input pp-input--area" id="po-reto" aria-describedby="po-reto-a" placeholder="Ej.: el equipo interno operando el motor de pagos sin acompañamiento"></textarea>
+          <p class="pp-ayuda" id="po-reto-a">No filtra perfiles. Viaja con la solicitud y orienta la conversación con Trycore. Puedes dejarlo vacío.</p>
+        </div>
+      </section>
+      <section class="po-campo" aria-labelledby="po-rol-l">
+        <div class="po-campo__cabeza">
+          <label class="po-campo__nombre" id="po-rol-l" for="po-rol">Familia de rol</label>
+          <div class="po-peso" role="group" aria-label="Peso del criterio Familia de rol"><button type="button" class="po-peso__obl" aria-pressed="true">Obligatorio</button><button type="button" class="po-peso__des" aria-pressed="false">Deseable</button></div>
+        </div>
+        <div class="pp-select"><select class="pp-input" id="po-rol"><option selected>Desarrollador Backend · 14 perfiles</option><option>Desarrollador Full Stack · 9 perfiles</option><option>Desarrollador Frontend · 12 perfiles</option><option>Ingeniero DevOps · 5 perfiles</option></select></div>
+        <p class="po-origen"><span class="po-marca po-marca--inferido">Lo inferimos</span>de «lo de pagos»</p>
+      </section>
+      <section class="po-campo" aria-labelledby="po-tec-l">
+        <div class="po-campo__cabeza">
+          <span class="po-campo__nombre" id="po-tec-l">Tecnologías</span>
+          <div class="po-peso" role="group" aria-label="Peso del criterio Tecnologías"><button type="button" class="po-peso__obl" aria-pressed="false">Obligatorio</button><button type="button" class="po-peso__des" aria-pressed="true">Deseable</button></div>
+        </div>
+        <button type="button" class="po-resumen po-resumen--cerrado" aria-expanded="false"><span>1 seleccionada: AWS</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <p class="po-origen"><span class="po-marca po-marca--inferido">Lo inferimos</span>de «que sepa de nube»</p>
+      </section>
+      <section class="po-campo" aria-labelledby="po-sen-l">
+        <div class="po-campo__cabeza">
+          <label class="po-campo__nombre" id="po-sen-l" for="po-sen">Seniority</label>
+          <div class="po-peso" role="group" aria-label="Peso del criterio Seniority"><button type="button" class="po-peso__obl" aria-pressed="false">Obligatorio</button><button type="button" class="po-peso__des" aria-pressed="true">Deseable</button></div>
+        </div>
+        <div class="pp-select"><select class="pp-input" id="po-sen"><option selected>Sin restricción</option><option>Junior · 2 perfiles</option><option>Semi-senior · 5 perfiles</option><option>Senior · 6 perfiles</option><option>Líder técnico · 1 perfil</option></select></div>
+      </section>
+      <section class="po-campo" aria-labelledby="po-sec-l">
+        <div class="po-campo__cabeza">
+          <label class="po-campo__nombre" id="po-sec-l" for="po-sec">Sector</label>
+          <div class="po-peso" role="group" aria-label="Peso del criterio Sector"><button type="button" class="po-peso__obl" aria-pressed="false">Obligatorio</button><button type="button" class="po-peso__des" aria-pressed="true">Deseable</button></div>
+        </div>
+        <div class="pp-select"><select class="pp-input" id="po-sec"><option>Sin preferencia</option><option selected>Banca · 6 perfiles</option><option>Seguros · 2 perfiles</option><option>Retail · 4 perfiles</option></select></div>
+        <p class="po-origen"><span class="po-marca po-marca--inferido">Lo inferimos</span>de «pagos»</p>
+      </section>
+      <section class="po-campo" aria-labelledby="po-mod-l">
+        <div class="po-campo__cabeza">
+          <label class="po-campo__nombre" id="po-mod-l" for="po-mod">Modalidad</label>
+          <div class="po-peso" role="group" aria-label="Peso del criterio Modalidad"><button type="button" class="po-peso__obl" aria-pressed="false">Obligatorio</button><button type="button" class="po-peso__des" aria-pressed="true">Deseable</button></div>
+        </div>
+        <div class="pp-select"><select class="pp-input" id="po-mod"><option selected>Sin restricción</option><option>Remoto · 14 perfiles</option><option>Híbrido · 10 perfiles</option><option>Presencial 100% · 3 perfiles</option></select></div>
+      </section>
+      <section class="po-campo" aria-labelledby="po-ubic-l">
+        <div class="po-campo__cabeza">
+          <span class="po-campo__nombre" id="po-ubic-l">Ubicación de la necesidad<span class="po-campo__exige">Opcional mientras la modalidad no sea presencial o híbrida</span></span>
+        </div>
+        <div class="po-ubicacion">
+          <div class="pp-campo">
+            <label class="pp-label" for="po-pais">País <span class="pp-label__opcional">(opcional)</span></label>
+            <div class="pp-select"><select class="pp-input" id="po-pais"><option selected>Sin indicar</option><option>Colombia</option><option>México</option><option>Perú</option></select></div>
+          </div>
+          <div class="pp-campo">
+            <label class="pp-label" for="po-ciudad">Ciudad <span class="pp-label__opcional">(opcional)</span></label>
+            <input class="pp-input" id="po-ciudad" type="text" placeholder="Sin indicar">
+          </div>
+        </div>
+      </section>
+      <div class="po-panel__pie">
+        <button type="button" class="pp-btn pp-btn--contorno pp-btn--bloque">Quitar todos los criterios</button>
+        <p>Todo lo que ves aquí viaja con tu solicitud a Talento Humano.</p>
+      </div>
+    </aside>
+      <section class="po-resultados" aria-label="Resultados">
+        <div class="po-resultados__cabeza">
+          <div>
+            <h2 aria-live="polite">14 perfiles cumplen lo obligatorio</h2>
+            <p>Ordenados por cuántos de tus 2 deseables cumple cada uno. Si corriges la lectura, cambian.</p>
+          </div>
+          <div class="po-vista" role="group" aria-label="Vista de resultados">
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="true">Tarjetas</button>
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Tabla</button>
+          </div>
+        </div>
+        <div class="pp-rejilla-perfiles">
+          <article class="pp-perfil" aria-labelledby="po-p-0115">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0115">Desarrollador backend Java</h3>
+                <p class="pp-perfil__nombre">Felipe Arango</p>
+              </div>
+              <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Java</li><li class="pp-tag">Spring Boot</li><li class="pp-tag">AWS</li><li class="pp-tag">Kafka</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Banca</li><li>Remoto</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 3 de 3 criterios</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>AWS · validado en prueba técnica</span></li></ul></div><div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por el profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 5 años declarados</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <a class="pp-btn pp-btn--primario pp-btn--sm" href="#ficha-0115">Ver ficha</a>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <span class="pp-codigo-perfil">PS-0115</span>
+            </div>
+          </article>
+          <article class="pp-perfil" aria-labelledby="po-p-0061">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0061">Líder técnico backend</h3>
+                <p class="pp-perfil__nombre">Santiago Herrera</p>
+              </div>
+              <span class="pp-badge pp-badge--banda">En proyecto · más de 2 meses</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Java</li><li class="pp-tag">AWS</li><li class="pp-tag">PostgreSQL</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Banca · Seguros</li><li>Híbrido</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 3 de 3 criterios</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>AWS · validado en prueba técnica</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · validado en entrevista técnica</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <a class="pp-btn pp-btn--primario pp-btn--sm" href="#ficha-0061">Ver ficha</a>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <span class="pp-codigo-perfil">PS-0061</span>
+            </div>
+          </article>
+          <article class="pp-perfil" aria-labelledby="po-p-0224">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0224">Desarrolladora backend .NET</h3>
+                <p class="pp-perfil__nombre">Paula Rincón</p>
+              </div>
+              <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">.NET</li><li class="pp-tag">Azure</li><li class="pp-tag">SQL Server</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Banca</li><li>Remoto</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 2 de 3 criterios</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Sin AWS validado (tiene Azure)</span></li></ul></div><div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 4 años declarados</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <a class="pp-btn pp-btn--primario pp-btn--sm" href="#ficha-0224">Ver ficha</a>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <span class="pp-codigo-perfil">PS-0224</span>
+            </div>
+          </article>
+          <article class="pp-perfil" aria-labelledby="po-p-0198">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0198">Desarrollador backend Node.js</h3>
+                <p class="pp-perfil__nombre">Camilo Restrepo</p>
+              </div>
+              <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Node.js</li><li class="pp-tag">AWS</li><li class="pp-tag">MongoDB</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Retail</li><li>Remoto</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 2 de 3 criterios</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>AWS · validado en prueba técnica</span></li></ul></div><div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por el profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Sin experiencia declarada en banca</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <a class="pp-btn pp-btn--primario pp-btn--sm" href="#ficha-0198">Ver ficha</a>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <span class="pp-codigo-perfil">PS-0198</span>
+            </div>
+          </article>
+        </div>
+        <div class="po-mas"><button type="button" class="pp-btn pp-btn--contorno">Ver los 10 perfiles restantes</button></div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

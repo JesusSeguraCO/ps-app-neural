@@ -1,0 +1,173 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla enlace-revocado
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (enlace-revocado con sufijo de estado), no interacciones.
+  Trazabilidad: épica EP-001 · historias HU-144, HU-090 · registrada en ../manifest.json
+  Origen: v2-adaptar (pantalla «Acceso vencido» del v2). Cubre los tres casos de HU-144 que
+  terminan en esta misma pantalla: enlace revocado, enlace alterado en su dirección y sesión
+  abierta cortada por la revocación (y la fila «revocado» del esquema de sesión de HU-090).
+  Los tres muestran el mismo contenido a propósito: el mensaje no revela la causa técnica, no
+  muestra la puerta de acceso ni el inventario, y sin sesión no lleva nombres de profesionales.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Enlace no disponible — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+
+    /* PP:botones */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+    .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+    .pp-btn--icono { width: 44px; padding: 0; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+    @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+    /* /PP:botones */
+
+    /* PP:topbar */
+    .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+    .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+    .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+    .pp-marca__sep { color: var(--tc-border-s); }
+    .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+    .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+    .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+    .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+    .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+    .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
+    .pp-equipo:hover { border-color: var(--tc-primary); }
+    .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+    @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+    @media (max-width: 767px) {
+      .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+      .pp-equipo { order: 1; margin-left: auto; }
+      .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+      .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+      .pp-cuenta__meta { display: none; }
+    }
+    /* /PP:topbar */
+    /* PP:puerta */
+    .pp-puerta { min-height: 100vh; display: grid; place-items: center; padding: var(--tc-sp-8) var(--tc-sp-4); background: var(--pp-hero); }
+    .pp-puerta__tarjeta { width: 100%; max-width: 448px; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-3); overflow: hidden; }
+    .pp-puerta__cabecera { display: flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-6) var(--tc-sp-8) 0; }
+    .pp-puerta__cuerpo { padding: var(--tc-sp-5) var(--tc-sp-8) var(--tc-sp-8); }
+    .pp-puerta__cuerpo h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-puerta__porque { margin: var(--tc-sp-4) 0 var(--tc-sp-5); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-surface-quiet); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .pp-puerta__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); font-size:var(--tc-fs-small); }
+    .pp-codigo { display: flex; gap: var(--tc-sp-2); min-width: 0; margin: var(--tc-sp-1) 0 0; padding: 0; border: 0; }
+    .pp-codigo__casilla { flex: 1 1 0; min-width: 0; max-width: 56px; height: 60px; padding: 0; text-align: center; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--pp-mono); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-medium); }
+    .pp-codigo__casilla:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+    .pp-codigo--error .pp-codigo__casilla { border-color: var(--tc-red); }
+    @media (max-width: 767px) { .pp-puerta__cabecera { padding: var(--tc-sp-5) var(--tc-sp-5) 0; } .pp-puerta__cuerpo { padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-6); } .pp-codigo { gap: var(--tc-sp-1); } }
+    /* /PP:puerta */
+
+    /* PP:badges */
+    .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+    .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+    .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+    .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+    .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+    .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+    .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+    .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+    /* /PP:badges */
+
+    /* Estilos propios de esta pantalla: SOLO composición/layout. */
+    .er-cuerpo h1 { margin-top: var(--tc-sp-4); }
+    .er-cuerpo > p { color: var(--tc-text-b); max-width: 62ch; }
+    .er-pasos-titulo { margin: var(--tc-sp-6) 0 var(--tc-sp-3); font-size:var(--tc-fs-h3); }
+    .er-pasos { counter-reset: paso; display: grid; gap: var(--tc-sp-3); }
+    .er-paso { counter-increment: paso; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--tc-sp-3); align-items: start; color: var(--tc-text-b); }
+    .er-paso::before { content: counter(paso); display: grid; place-items: center; width: 28px; height: 28px; border-radius:var(--tc-r-pill); background: var(--tc-accent); color: var(--pp-teal-ink); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+    .er-paso strong { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .er-contacto { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); margin-top: var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); border-radius:var(--tc-r-lg); background: var(--tc-bg-subtle); }
+    .er-contacto__texto { min-width: 0; }
+    .er-contacto__rotulo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .er-contacto__nombre { margin: var(--tc-sp-1) 0 0; font-family:var(--tc-font-heading); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .er-contacto__dato { margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); overflow-wrap: anywhere; }
+    .er-nota { margin: var(--tc-sp-5) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    @media (max-width: 767px) {
+      .er-contacto { padding: var(--tc-sp-4); }
+      .er-contacto .pp-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: contenido principal — sin topbar de cuenta: sin sesión válida no hay cuenta ni inventario que mostrar -->
+  <main class="pp-puerta">
+    <div class="pp-puerta__tarjeta">
+      <div class="pp-puerta__cabecera">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span class="pp-marca__palabra">trycore</span>
+        <span class="pp-marca__sep" aria-hidden="true">/</span>
+        <span class="pp-marca__producto">Portal de perfiles</span>
+      </div>
+
+      <div class="pp-puerta__cuerpo er-cuerpo">
+        <span class="pp-badge pp-badge--por-confirmar">Este enlace ya no abre</span>
+        <h1>Necesitas un enlace nuevo para ver esta selección</h1>
+        <p>No hiciste nada mal. El enlace que abriste ya no está disponible: puede que lo hayan retirado o que la dirección haya llegado incompleta al copiarla. Por cuidado con los datos de los profesionales, aquí no mostramos perfiles.</p>
+
+        <h2 class="er-pasos-titulo">Cómo pedir uno nuevo</h2>
+        <ol class="pp-lista er-pasos">
+          <li class="er-paso"><span><strong>Escríbenos</strong> desde el correo con el que te invitaron y cuéntanos para qué proyecto era la selección.</span></li>
+          <li class="er-paso"><span><strong>Te enviamos un enlace nuevo</strong> a ese mismo correo, normalmente el mismo día hábil.</span></li>
+          <li class="er-paso"><span><strong>Entras como la primera vez:</strong> con tu correo y el código que te llega al buzón.</span></li>
+        </ol>
+
+        <div class="er-contacto">
+          <div class="er-contacto__texto">
+            <p class="er-contacto__rotulo">Te atiende</p>
+            <p class="er-contacto__nombre">People Service · Trycore</p>
+            <p class="er-contacto__dato">people.service@trycore.com</p>
+          </div>
+          <a class="pp-btn pp-btn--primario" href="#pedir-enlace">Pedir un enlace nuevo</a>
+        </div>
+
+        <p class="er-nota">¿Te llegó otro enlace más reciente? Ábrelo desde ese correo; este ya no se puede usar.</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla correo-codigo-acceso
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (correo-codigo-acceso--<estado>.html), no interacciones.
+  Variante --panel: correo del código de un uso para entrar al panel de Talento Humano (HU-123).
+  Misma plantilla que la base (correo-codigo-acceso.html, HU-090); solo cambian los textos.
+  Plantilla de correo en tablas de 600 px, sin imágenes remotas ni píxel de seguimiento, sin
+  enlace que dé acceso: el código se escribe en la pestaña donde se pidió.
+  Trazabilidad: épica EP-001 · historias HU-090, HU-123 · registrada en ../manifest.json
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Correo con código de un uso · panel — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+
+    /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
+    .pp-correo-fondo { width: 100%; background: var(--tc-bg-canvas); }
+    .pp-correo { width: 100%; max-width: 600px; margin: 0 auto; }
+    .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
+    /* /PP:correo */
+
+    /* Composición propia de esta pantalla (prefijo cc-): el sobre del cliente de correo que
+       enmarca la vista previa. No forma parte del correo que se envía. */
+    .cc-marco { max-width: 624px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-3) 0; }
+    .cc-sobre { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); display: grid; grid-template-columns: auto 1fr; gap: var(--tc-sp-1) var(--tc-sp-4); font-size:var(--tc-fs-small); }
+    .cc-sobre dt { color: var(--tc-text-m); }
+    .cc-sobre dd { margin: 0; color: var(--tc-text-h); min-width: 0; overflow-wrap: anywhere; }
+    .cc-sobre__direccion { white-space: nowrap; }
+    .cc-sobre__asunto { font-weight: var(--tc-fw-semibold); }
+    .cc-nota { margin: var(--tc-sp-3) 0 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .cc-cuerpo-correo .pp-correo-fondo > tbody > tr > td { padding-top: var(--tc-sp-4) !important; }
+    @media (max-width: 480px) {
+      .cc-marco { padding-top: var(--tc-sp-4); }
+      .cc-sobre { grid-template-columns: 1fr; gap: 0; }
+      .cc-sobre dd { margin-bottom: var(--tc-sp-2); }
+      .cc-cuerpo-correo .pp-correo__cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
+      .cc-cuerpo-correo .pp-correo__cabecera,
+      .cc-cuerpo-correo .pp-correo__pie { padding: var(--tc-sp-4) var(--tc-sp-5) !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera — sobre del cliente de correo (contexto de la vista previa) -->
+  <header class="cc-marco">
+    <dl class="cc-sobre" aria-label="Datos del mensaje">
+      <dt>De</dt><dd>Portal de perfiles · Trycore <span class="cc-sobre__direccion">&lt;no-responder@portal.trycore.com&gt;</span></dd>
+      <dt>Para</dt><dd>karen.rodriguez@trycore.com</dd>
+      <dt>Asunto</dt><dd class="cc-sobre__asunto">Tu código para entrar al panel de People Service</dd>
+    </dl>
+    <p class="cc-nota">Vista previa del correo. Sin imágenes remotas ni píxel de seguimiento. El código no va en el asunto para que no se lea en la notificación del teléfono.</p>
+  </header>
+
+  <!-- región: contenido principal — el correo tal como se envía (tablas de 600 px, estilos en línea) -->
+  <main class="cc-cuerpo-correo">
+    <!-- PP:correo -->
+    <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
+      <tr><td style="padding: var(--tc-sp-8) var(--tc-sp-3);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); border-collapse: separate; overflow: hidden; font-family:var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-navy); border-bottom: 3px solid var(--tc-primary);">
+            <span style="font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-bg-topbar);">trycore</span>
+            <span style="font-size:var(--tc-fs-small); color: var(--tc-navy-ink);">&nbsp;·&nbsp;Panel de People Service</span>
+          </td></tr>
+          <tr><td class="pp-correo__cuerpo" style="padding: var(--tc-sp-8); font-size:var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-4); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Tu código para entrar al panel</p>
+            <p style="margin: 0 0 var(--tc-sp-5);">Escribe este código en la pestaña donde pediste entrar al panel. El panel no usa contraseña propia: tu correo corporativo es tu identidad y queda en el registro de auditoría.</p>
+            <p class="pp-correo__codigo" aria-label="Código: 7 3 0 5 6 8" style="margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-4); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); text-align: center; font-family:var(--pp-mono); font-size:var(--tc-fs-h1); font-weight: var(--tc-fw-medium); letter-spacing: var(--tc-ls-label); color: var(--tc-text-h);">730&nbsp;568</p>
+            <p style="margin: 0 0 var(--tc-sp-6); font-size:var(--tc-fs-small); color: var(--tc-text-m); text-align: center;">Vence en <strong style="color: var(--tc-text-h); font-weight: var(--tc-fw-semibold);">15 minutos</strong> y sirve una sola vez.</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body);">
+              <tr>
+                <td style="padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-1) 0; color: var(--tc-text-m); white-space: nowrap; vertical-align: top;">Acceso</td>
+                <td style="padding: var(--tc-sp-3) 0 var(--tc-sp-1); color: var(--tc-text-h);">Panel · administración de inventario</td>
+              </tr>
+              <tr>
+                <td style="padding: var(--tc-sp-1) var(--tc-sp-4) var(--tc-sp-3) 0; color: var(--tc-text-m); white-space: nowrap; vertical-align: top;">Pedido</td>
+                <td style="padding: var(--tc-sp-1) 0 var(--tc-sp-3); color: var(--tc-text-h);">27 sep 2026, 8:05 a.&nbsp;m. (hora de Colombia)</td>
+              </tr>
+            </table>
+            <p style="margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b);">Este correo no trae ningún enlace para entrar: el acceso es solo con el código, en la página que ya tienes abierta. La sesión dura la jornada, hasta doce horas, y se cierra tras sesenta minutos sin actividad.</p>
+            <p style="margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m);">Si no pediste este código, ignora el mensaje: nadie puede entrar sin él.</p>
+          </td></tr>
+          <tr><td class="pp-correo__pie" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-bg-subtle); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+            People Service · Trycore · Bogotá, Colombia. Recibes este correo porque se pidió un código de acceso al panel de People Service con esta dirección corporativa.
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+    <!-- /PP:correo -->
+  </main>
+</body>
+</html>

@@ -1,0 +1,875 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla _patrones (BIBLIOTECA DE PATRONES, artefacto de trabajo)
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: tokens.css (este archivo vive en la raíz del prototipo; las
+    pantallas de pantallas/ importan ../tokens.css). Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - USO: cada componente es una sección doc-bloque con (a) su bloque style delimitado por
+    /* PP:nombre */ ... /* /PP:nombre */ y (b) su HTML de ejemplo delimitado por los comentarios
+    PP:nombre ... /PP:nombre. Las pantallas copian AMBOS literalmente (el CSS al style de su
+    cabecera, empezando siempre por PP:base). Las clases pp-* son estables: no se renombran ni se
+    redefinen en las pantallas; la composición propia de cada pantalla usa otro prefijo.
+  Trazabilidad: épica transversal (EP-001…EP-011) · historias — · FUERA del manifest (no es pantalla)
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biblioteca de patrones pp-* — prototipo</title>
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    /* ── Solo documentación de esta biblioteca (prefijo doc-, NO se copia a las pantallas) ── */
+    .doc { max-width: 1200px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-4) var(--tc-sp-10); }
+    .doc-cabecera { margin-bottom: var(--tc-sp-8); }
+    .doc-cabecera p { max-width: 75ch; color: var(--tc-text-b); }
+    .doc-overline { font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--pp-teal-ink); margin: 0 0 var(--tc-sp-2); }
+    .doc-indice { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); padding: 0; margin: var(--tc-sp-4) 0 0; list-style: none; }
+    .doc-indice a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border: 1px solid var(--tc-border); border-radius:var(--tc-r-pill); background: var(--tc-card); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .doc-bloque { margin-top: var(--tc-sp-10); padding-top: var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .doc-bloque > h2 { font-size:var(--tc-fs-h2); }
+    .doc-bloque > p { max-width: 75ch; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .doc-clases { font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-b); background: var(--tc-bg-subtle); border-radius:var(--tc-r-sm); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-wrap: anywhere; }
+    .doc-demo { margin-top: var(--tc-sp-4); padding: var(--tc-sp-6); background: var(--tc-bg-canvas); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-lg); color: var(--tc-text-b); overflow: hidden; }
+    .doc-demo--sin-relleno { padding: 0; }
+    .doc-fila { display: flex; flex-wrap: wrap; gap: var(--tc-sp-3); align-items: center; }
+    .doc-pila { display: grid; gap: var(--tc-sp-4); }
+    .doc-dos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-6); align-items: start; }
+    .doc-rotulo { font-family:var(--pp-mono); font-size:var(--tc-fs-badge); color: var(--tc-text-m); margin: 0 0 var(--tc-sp-2); }
+    .doc-demo .pp-panel { min-height: 560px; }
+    .doc-demo .pp-puerta { min-height: 0; }
+    .doc-marco-hoja { position: relative; height: 640px; }
+    .doc-marco-hoja .pp-hoja-velo, .doc-marco-hoja .pp-hoja { position: absolute; }
+    @media (max-width: 767px) { .doc-demo { padding: var(--tc-sp-4); } .doc-demo--sin-relleno { padding: 0; } }
+  </style>
+
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+  </style>
+</head>
+<body>
+<div class="doc">
+  <header class="doc-cabecera">
+    <p class="doc-overline">Prototipo de referencia · artefacto de trabajo</p>
+    <h1>Biblioteca de patrones <span class="pp-mono">pp-*</span></h1>
+    <p>Cada bloque trae su CSS (etiqueta <code>&lt;style&gt;</code> delimitada por <code>/* PP:nombre */</code>) y su HTML de ejemplo (entre <code>&lt;!-- PP:nombre --&gt;</code>). Las 44 pantallas los copian literalmente: primero <code>PP:base</code>, luego los componentes que usan. Todo valor visual es un token de <code>tokens.css</code>; el tema oscuro sale gratis con <code>class="dark"</code> en <code>&lt;html&gt;</code>.</p>
+    <ul class="doc-indice">
+      <li><a href="#topbar">Topbar cliente</a></li><li><a href="#panel">Shell del panel</a></li><li><a href="#puerta">Puerta de acceso</a></li>
+      <li><a href="#perfil">Tarjeta de perfil</a></li><li><a href="#chips">Chips</a></li><li><a href="#badges">Badges</a></li>
+      <li><a href="#botones">Botones</a></li><li><a href="#campos">Campos</a></li><li><a href="#select">Select</a></li>
+      <li><a href="#check">Checkbox</a></li><li><a href="#tabla">Tabla</a></li><li><a href="#avisos">Avisos</a></li>
+      <li><a href="#hoja">Hoja lateral</a></li><li><a href="#pestanas">Pestañas</a></li><li><a href="#vacio">Estado vacío</a></li>
+      <li><a href="#franja">Franja de marca</a></li><li><a href="#correo">Correo</a></li><li><a href="#oscuro">Tema oscuro</a></li>
+    </ul>
+  </header>
+
+  <!-- ═════════════════════════════ BOTONES (se documenta pronto porque todo lo usa) ═════════════════════════════ -->
+  <section class="doc-bloque" id="botones">
+    <h2>Botones</h2>
+    <p>Primario teal para la acción de la pantalla; CTA navy en píldora solo para el cierre (enviar la solicitud); contorno para secundarias; fantasma para terciarias; destructivo para revocar, archivar o descartar. Altura táctil 44 px (la variante pequeña sube a 44 px en móvil).</p>
+    <p class="doc-clases">pp-btn · pp-btn--primario · pp-btn--cta · pp-btn--contorno · pp-btn--fantasma · pp-btn--destructivo · pp-btn--sm · pp-btn--icono · pp-btn--bloque · pp-btn[aria-pressed=true]</p>
+    <style>
+      /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:botones -->
+      <div class="doc-fila">
+        <button type="button" class="pp-btn pp-btn--primario">Buscar perfiles</button>
+        <button type="button" class="pp-btn pp-btn--cta">Enviar solicitud <span aria-hidden="true">→</span></button>
+        <button type="button" class="pp-btn pp-btn--contorno">Sumar al equipo</button>
+        <button type="button" class="pp-btn pp-btn--contorno" aria-pressed="true">✓ En el equipo</button>
+        <button type="button" class="pp-btn pp-btn--fantasma">Cancelar</button>
+        <button type="button" class="pp-btn pp-btn--destructivo">Revocar enlace</button>
+        <button type="button" class="pp-btn pp-btn--primario pp-btn--sm">Ver ficha</button>
+        <button type="button" class="pp-btn pp-btn--contorno pp-btn--icono" aria-label="Cerrar"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button type="button" class="pp-btn pp-btn--primario" disabled>Publicar</button>
+        <a class="pp-enlace" href="#botones">Enlace de texto</a>
+      </div>
+      <!-- /PP:botones -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ TOPBAR CLIENTE ═════════════════════════════ -->
+  <section class="doc-bloque" id="topbar">
+    <h2>Topbar del cliente</h2>
+    <p>Logo Trycore (símbolo SVG + palabra), cuenta del cliente con vigencia del acceso, navegación y el indicador «Mi equipo» con su conteo en Geist Mono. En móvil la navegación baja a una segunda fila desplazable y «Mi equipo» queda siempre visible.</p>
+    <p class="doc-clases">pp-topbar · pp-marca · pp-marca__palabra · pp-marca__sep · pp-marca__producto · pp-cuenta · pp-cuenta__nombre · pp-cuenta__meta · pp-topbar__nav · pp-navlink · pp-equipo · pp-equipo__conteo</p>
+    <style>
+      /* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-equipo:hover { border-color: var(--tc-primary); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+    </style>
+    <div class="doc-demo doc-demo--sin-relleno">
+      <!-- PP:topbar -->
+      <header class="pp-topbar">
+        <a class="pp-marca" href="#topbar" aria-label="Trycore · Portal de perfiles">
+          <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+          <span class="pp-marca__palabra">trycore</span>
+          <span class="pp-marca__sep" aria-hidden="true">/</span>
+          <span class="pp-marca__producto">Portal de perfiles</span>
+        </a>
+        <div class="pp-cuenta">
+          <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+          <p class="pp-cuenta__meta">Acceso válido hasta el 24 de octubre de 2026</p>
+        </div>
+        <nav class="pp-topbar__nav" aria-label="Portal">
+          <a class="pp-navlink" href="#topbar" aria-current="page">Selección para ti</a>
+          <a class="pp-navlink" href="#topbar">Buscar</a>
+        </nav>
+        <a class="pp-equipo" href="#topbar">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">3 perfiles en el equipo</span></a>
+      </header>
+      <!-- /PP:topbar -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ SHELL DEL PANEL ═════════════════════════════ -->
+  <section class="doc-bloque" id="panel">
+    <h2>Shell del panel (Talento Humano)</h2>
+    <p>Sidebar navy de 252 px con el degradado de marca, secciones y persona conectada; topbar con migas y acción; área de contenido sobre el lienzo con padding 24. Por debajo de 1024 px la sidebar se vuelve una barra superior con navegación desplazable.</p>
+    <p class="doc-clases">pp-panel · pp-sidebar · pp-sidebar__marca · pp-sidebar__titulo · pp-sidebar__sub · pp-sidebar__seccion · pp-sidelink · pp-sidebar__pie · pp-avatar · pp-persona · pp-persona__nombre · pp-persona__area · pp-panel__cuerpo · pp-panel__topbar · pp-migas · pp-panel__contenido</p>
+    <style>
+      /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: var(--tc-sp-1); padding: var(--tc-sp-5) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-5); }
+      .pp-sidebar__titulo { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 44px; padding: 0 var(--tc-sp-3); border-left: 3px solid transparent; border-radius:var(--tc-r-sm); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-sidelink:hover { background: var(--pp-overlay); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: var(--pp-overlay); border-left-color: var(--tc-teal); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink__conteo { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-teal-on-navy); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-3) 0; border-top: 1px solid var(--pp-overlay); display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius:var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size:var(--tc-fs-caption); color: var(--tc-navy-ink-mute); }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--tc-card); border-bottom: 1px solid var(--tc-border); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__contenido { flex: 1; min-width: 0; padding: var(--tc-sp-6); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo { display: none; }
+        .pp-sidelink { border-left: 0; border-bottom: 3px solid transparent; border-radius:0; }
+        .pp-sidelink[aria-current="page"] { border-bottom-color: var(--tc-teal); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } }
+      /* /PP:panel */
+    </style>
+    <div class="doc-demo doc-demo--sin-relleno">
+      <!-- PP:panel -->
+      <div class="pp-panel">
+        <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+          <div class="pp-sidebar__marca">
+            <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+            <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Portal de perfiles</span></span>
+          </div>
+          <p class="pp-sidebar__seccion">Inventario</p>
+          <a class="pp-sidelink" href="#panel" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Perfiles<span class="pp-sidelink__conteo">128</span></a>
+          <a class="pp-sidelink" href="#panel"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+          <a class="pp-sidelink" href="#panel"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Bandeja de vigencia<span class="pp-sidelink__conteo">7</span></a>
+          <p class="pp-sidebar__seccion">Clientes</p>
+          <a class="pp-sidelink" href="#panel"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces de acceso</a>
+          <a class="pp-sidelink" href="#panel"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+          <div class="pp-sidebar__pie">
+            <span class="pp-avatar" aria-hidden="true">KR</span>
+            <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Talento Humano</span></span>
+          </div>
+        </nav>
+        <div class="pp-panel__cuerpo">
+          <div class="pp-panel__topbar">
+            <ol class="pp-migas"><li>Inventario</li><li aria-current="page">Perfiles</li></ol>
+            <a class="pp-btn pp-btn--primario pp-btn--sm" href="#panel">Crear perfil</a>
+          </div>
+          <main class="pp-panel__contenido">
+            <div class="pp-encabezado">
+              <div class="pp-encabezado__texto"><h1>Perfiles</h1><p>128 perfiles · 96 publicados · 7 por revisar vigencia.</p></div>
+            </div>
+            <div class="pp-tarjeta">Área de contenido de la pantalla.</div>
+          </main>
+        </div>
+      </div>
+      <!-- /PP:panel -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ PUERTA DE ACCESO ═════════════════════════════ -->
+  <section class="doc-bloque" id="puerta">
+    <h2>Puerta de acceso</h2>
+    <p>Tarjeta centrada: explica por qué pide el correo, y el código de un uso va en 6 casillas en Geist Mono. El mensaje es neutro: nunca dice si el correo está invitado. Las casillas se reparten el ancho en móvil.</p>
+    <p class="doc-clases">pp-puerta · pp-puerta__tarjeta · pp-puerta__cabecera · pp-puerta__cuerpo · pp-puerta__porque · pp-puerta__acciones · pp-codigo · pp-codigo__casilla · pp-codigo--error</p>
+    <style>
+      /* PP:puerta */
+      .pp-puerta { min-height: 100vh; display: grid; place-items: center; padding: var(--tc-sp-8) var(--tc-sp-4); background: var(--pp-hero); }
+      .pp-puerta__tarjeta { width: 100%; max-width: 448px; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-3); overflow: hidden; }
+      .pp-puerta__cabecera { display: flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-6) var(--tc-sp-8) 0; }
+      .pp-puerta__cuerpo { padding: var(--tc-sp-5) var(--tc-sp-8) var(--tc-sp-8); }
+      .pp-puerta__cuerpo h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+      .pp-puerta__porque { margin: var(--tc-sp-4) 0 var(--tc-sp-5); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius:var(--tc-r-md); background: var(--tc-surface-quiet); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-puerta__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); font-size:var(--tc-fs-small); }
+      .pp-codigo { display: flex; gap: var(--tc-sp-2); min-width: 0; margin: var(--tc-sp-1) 0 0; padding: 0; border: 0; }
+      .pp-codigo__casilla { flex: 1 1 0; min-width: 0; max-width: 56px; height: 60px; padding: 0; text-align: center; border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--pp-mono); font-size:var(--tc-fs-h2); font-weight: var(--tc-fw-medium); }
+      .pp-codigo__casilla:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-codigo--error .pp-codigo__casilla { border-color: var(--tc-red); }
+      @media (max-width: 767px) { .pp-puerta__cabecera { padding: var(--tc-sp-5) var(--tc-sp-5) 0; } .pp-puerta__cuerpo { padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-6); } .pp-codigo { gap: var(--tc-sp-1); } }
+      /* /PP:puerta */
+    </style>
+    <div class="doc-demo doc-demo--sin-relleno">
+      <!-- PP:puerta -->
+      <main class="pp-puerta">
+        <div class="pp-puerta__tarjeta">
+          <div class="pp-puerta__cabecera">
+            <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+            <span class="pp-marca__palabra">trycore</span>
+          </div>
+          <form class="pp-puerta__cuerpo" action="#" aria-describedby="pp-puerta-porque">
+            <h1>Escribe el código que te enviamos</h1>
+            <p>Si el correo <strong>laura.mendez@bancolombia.com.co</strong> tiene una invitación vigente, le llegó un código de seis dígitos. Vence en 15 minutos y sirve una sola vez.</p>
+            <p class="pp-puerta__porque" id="pp-puerta-porque">Pedimos tu correo porque los perfiles incluyen el nombre y la trayectoria de profesionales reales, publicados con su consentimiento.</p>
+            <fieldset class="pp-codigo">
+              <legend class="pp-label">Código de un solo uso</legend>
+              <input class="pp-codigo__casilla" inputmode="numeric" maxlength="1" value="4" aria-label="Dígito 1">
+              <input class="pp-codigo__casilla" inputmode="numeric" maxlength="1" value="8" aria-label="Dígito 2">
+              <input class="pp-codigo__casilla" inputmode="numeric" maxlength="1" value="2" aria-label="Dígito 3">
+              <input class="pp-codigo__casilla" inputmode="numeric" maxlength="1" aria-label="Dígito 4">
+              <input class="pp-codigo__casilla" inputmode="numeric" maxlength="1" aria-label="Dígito 5">
+              <input class="pp-codigo__casilla" inputmode="numeric" maxlength="1" aria-label="Dígito 6">
+            </fieldset>
+            <div class="pp-puerta__acciones" style="margin-top: var(--tc-sp-5);"><button type="submit" class="pp-btn pp-btn--primario pp-btn--bloque">Entrar al portal</button></div>
+            <div class="pp-puerta__acciones"><a class="pp-enlace" href="#puerta">Reenviar el código</a><a class="pp-enlace" href="#puerta">Usar otro correo</a></div>
+          </form>
+        </div>
+      </main>
+      <!-- /PP:puerta -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ CHIPS ═════════════════════════════ -->
+  <section class="doc-bloque" id="chips">
+    <h2>Chips de criterio</h2>
+    <p>Obligatorio = navy lleno; deseable = contorno teal; «no está en el banco» = ámbar discontinuo. El modo va escrito, no solo pintado. El botón de quitar amplía su área táctil a 44 px sin agrandar el chip.</p>
+    <p class="doc-clases">pp-chips · pp-chip · pp-chip--obligatorio · pp-chip--deseable · pp-chip--fuera · pp-chip__valor · pp-chip__modo · pp-chip__quitar</p>
+    <style>
+      /* PP:chips */
+      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+      .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
+      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+      .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
+      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+      .pp-chip__quitar:hover { background: var(--pp-overlay); }
+      /* /PP:chips */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:chips -->
+      <ul class="pp-chips" aria-label="Criterios activos">
+        <li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Java</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Java"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>
+        <li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Inglés B2</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Inglés B2"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>
+        <li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Sector banca</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Sector banca"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>
+        <li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Kafka</span><span class="pp-chip__modo">deseable</span></li>
+        <li class="pp-chip pp-chip--fuera"><span class="pp-chip__valor">COBOL</span><span class="pp-chip__modo">no está en el banco</span></li>
+      </ul>
+      <!-- /PP:chips -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ BADGES ═════════════════════════════ -->
+  <section class="doc-bloque" id="badges">
+    <h2>Badges de disponibilidad y estado</h2>
+    <p>El texto siempre dice el significado (nunca solo color). Disponibilidad solo en bandas, nunca fecha exacta. Estados del ciclo de vida del perfil para el panel y para perfiles de un enlace curado.</p>
+    <p class="doc-clases">pp-badge · pp-badge--disponible · pp-badge--por-confirmar · pp-badge--colocado · pp-badge--pausado · pp-badge--archivado · pp-badge--no-publicado · pp-badge--banda · pp-badge--publicado</p>
+    <style>
+      /* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:badges -->
+      <div class="doc-pila">
+        <div class="doc-fila">
+          <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+          <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
+          <span class="pp-badge pp-badge--banda">En proyecto · más de 2 meses</span>
+        </div>
+        <div class="doc-fila">
+          <span class="pp-badge pp-badge--disponible">Disponible</span>
+          <span class="pp-badge pp-badge--por-confirmar">Por confirmar</span>
+          <span class="pp-badge pp-badge--colocado">Colocado</span>
+          <span class="pp-badge pp-badge--pausado">Pausado</span>
+          <span class="pp-badge pp-badge--archivado">Archivado</span>
+          <span class="pp-badge pp-badge--no-publicado">No publicado</span>
+          <span class="pp-badge pp-badge--publicado">Publicado</span>
+        </div>
+      </div>
+      <!-- /PP:badges -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ TARJETA DE PERFIL ═════════════════════════════ -->
+  <section class="doc-bloque" id="perfil">
+    <h2>Tarjeta de perfil</h2>
+    <p>Sin foto, sin contacto, sin tarifa. Título = capacidad; nombre + primer apellido; banda de disponibilidad; evidencia ✓/– por criterio y «cumple N de M» (nunca porcentajes). Lo verificado por Trycore va sobre superficie teal; lo declarado por el profesional, sobre superficie neutra con borde discontinuo. En un enlace curado un perfil que cambió nunca desaparece: muestra su estado real.</p>
+    <p class="doc-clases">pp-rejilla-perfiles · pp-perfil · pp-perfil--en-equipo · pp-perfil--cambio · pp-perfil__estado · pp-perfil__cabecera · pp-perfil__rol · pp-perfil__nombre · pp-perfil__tecnologias · pp-tag · pp-perfil__meta · pp-evidencia · pp-evidencia__conteo · pp-bloque · pp-bloque--verificado · pp-bloque--declarado · pp-bloque__rotulo · pp-criterios · pp-criterio · pp-criterio--cumple · pp-criterio--no · pp-criterio__marca · pp-perfil__pie · pp-codigo-perfil</p>
+    <style>
+      /* PP:perfil */
+      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
+      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
+      .pp-perfil--en-equipo { border-color: var(--tc-primary); }
+      .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
+      .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
+      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
+      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+      .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
+      .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
+      .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
+      .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
+      .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
+      .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
+      .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
+      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
+      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
+      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
+      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-criterio--cumple { color: var(--tc-ok-ink); }
+      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+      .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
+      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
+      .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
+      .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
+      /* /PP:perfil */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:perfil -->
+      <div class="pp-rejilla-perfiles">
+        <article class="pp-perfil pp-perfil--en-equipo" aria-labelledby="pp-p-0142">
+          <div class="pp-perfil__cabecera">
+            <div>
+              <h3 class="pp-perfil__rol" id="pp-p-0142">Desarrolladora backend Java</h3>
+              <p class="pp-perfil__nombre">Laura Méndez</p>
+            </div>
+            <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+          </div>
+          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Java</li><li class="pp-tag">Spring Boot</li><li class="pp-tag">Kafka</li><li class="pp-tag">PostgreSQL</li></ul>
+          <ul class="pp-perfil__meta"><li>Banca · Seguros</li><li>Híbrido</li><li>Medellín, Colombia</li></ul>
+          <div class="pp-evidencia">
+            <p class="pp-evidencia__conteo">Cumple 3 de 4 criterios</p>
+            <div class="pp-bloque pp-bloque--verificado">
+              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
+              <ul class="pp-criterios">
+                <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Java · validado en prueba técnica</span></li>
+                <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Inglés B2 · entrevista en inglés</span></li>
+              </ul>
+            </div>
+            <div class="pp-bloque pp-bloque--declarado">
+              <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p>
+              <ul class="pp-criterios">
+                <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 8 años declarados</span></li>
+                <li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Sin experiencia declarada en Kubernetes</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="pp-perfil__pie">
+            <a class="pp-btn pp-btn--primario pp-btn--sm" href="#perfil">Ver ficha</a>
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="true">✓ En el equipo</button>
+            <span class="pp-codigo-perfil">PS-0142</span>
+          </div>
+        </article>
+
+        <article class="pp-perfil" aria-labelledby="pp-p-0217">
+          <div class="pp-perfil__cabecera">
+            <div>
+              <h3 class="pp-perfil__rol" id="pp-p-0217">Analista QA automatización</h3>
+              <p class="pp-perfil__nombre">Andrés Castaño</p>
+            </div>
+            <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
+          </div>
+          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Cypress</li><li class="pp-tag">Selenium</li><li class="pp-tag">Postman</li></ul>
+          <ul class="pp-perfil__meta"><li>Retail</li><li>Remoto</li><li>Bogotá, Colombia</li></ul>
+          <div class="pp-evidencia">
+            <p class="pp-evidencia__conteo">Lo más cercano · falla un obligatorio: Inglés B2</p>
+            <div class="pp-bloque pp-bloque--declarado">
+              <p class="pp-bloque__rotulo">Declarado por el profesional</p>
+              <ul class="pp-criterios">
+                <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Automatización de pruebas · 5 años</span></li>
+                <li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Inglés declarado A2 (se pide B2)</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="pp-perfil__pie">
+            <a class="pp-btn pp-btn--primario pp-btn--sm" href="#perfil">Ver ficha</a>
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+            <span class="pp-codigo-perfil">PS-0217</span>
+          </div>
+        </article>
+
+        <article class="pp-perfil pp-perfil--cambio" aria-labelledby="pp-p-0098">
+          <p class="pp-perfil__estado"><span aria-hidden="true">!</span><span><strong>Colocado en otro proyecto</strong> · actualizado el 12 de septiembre de 2026. Ya no se puede sumar al equipo.</span></p>
+          <div class="pp-perfil__cabecera">
+            <div>
+              <h3 class="pp-perfil__rol" id="pp-p-0098">Arquitecta de datos</h3>
+              <p class="pp-perfil__nombre">Catalina Rojas</p>
+            </div>
+            <span class="pp-badge pp-badge--colocado">Colocado</span>
+          </div>
+          <ul class="pp-perfil__meta"><li>Telecomunicaciones</li><li>Presencial</li><li>Cali, Colombia</li></ul>
+          <div class="pp-perfil__pie">
+            <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#perfil">Ver perfiles parecidos</a>
+            <span class="pp-codigo-perfil">PS-0098</span>
+          </div>
+        </article>
+      </div>
+      <!-- /PP:perfil -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ CAMPOS ═════════════════════════════ -->
+  <section class="doc-bloque" id="campos">
+    <h2>Campos, labels, ayuda y error</h2>
+    <p>Label encima, ayuda debajo, error con el motivo y cómo corregirlo. 44 px de alto; texto de 17 px en móvil (≥ 16 px para que iOS no haga zoom).</p>
+    <p class="doc-clases">pp-form · pp-campo · pp-label · pp-label__opcional · pp-input · pp-input--area · pp-ayuda · pp-error · [aria-invalid=true]</p>
+    <style>
+      /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
+      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+      /* /PP:campos */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:campos -->
+      <form class="pp-form" action="#" style="max-width: 480px;">
+        <div class="pp-campo">
+          <label class="pp-label" for="pp-correo">Correo corporativo</label>
+          <input class="pp-input" id="pp-correo" type="email" placeholder="nombre.apellido@empresa.com" aria-describedby="pp-correo-ayuda">
+          <p class="pp-ayuda" id="pp-correo-ayuda">El mismo correo por el que recibiste la invitación.</p>
+        </div>
+        <div class="pp-campo">
+          <label class="pp-label" for="pp-cargo">Cargo <span class="pp-label__opcional">(opcional)</span></label>
+          <input class="pp-input" id="pp-cargo" type="text" value="Gerente de tecnología">
+        </div>
+        <div class="pp-campo">
+          <label class="pp-label" for="pp-ciudad">Ciudad del proyecto</label>
+          <input class="pp-input" id="pp-ciudad" type="text" aria-invalid="true" aria-describedby="pp-ciudad-error">
+          <p class="pp-error" id="pp-ciudad-error"><span aria-hidden="true">!</span>Indica la ciudad: dos perfiles del equipo son presenciales.</p>
+        </div>
+        <div class="pp-campo">
+          <label class="pp-label" for="pp-notas">Contexto del proyecto</label>
+          <textarea class="pp-input pp-input--area" id="pp-notas" placeholder="Qué construye el equipo y desde cuándo lo necesitas"></textarea>
+        </div>
+      </form>
+      <!-- /PP:campos -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ SELECT ═════════════════════════════ -->
+  <section class="doc-bloque" id="select">
+    <h2>Select</h2>
+    <p>Select nativo (accesible por defecto) con la flecha dibujada en CSS, sin imágenes. Hereda las reglas de <code>.pp-input</code>: copia también PP:campos.</p>
+    <p class="doc-clases">pp-select · pp-input (dentro)</p>
+    <style>
+      /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--tc-text-m); border-bottom: 2px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:select -->
+      <div class="pp-campo" style="max-width: 320px;">
+        <label class="pp-label" for="pp-modalidad">Modalidad</label>
+        <div class="pp-select">
+          <select class="pp-input" id="pp-modalidad"><option>Cualquier modalidad</option><option selected>Híbrido</option><option>Remoto</option><option>Presencial</option></select>
+        </div>
+      </div>
+      <!-- /PP:select -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ CHECKBOX ═════════════════════════════ -->
+  <section class="doc-bloque" id="check">
+    <h2>Checkbox</h2>
+    <p>Checkbox nativo con color de marca; toda la fila es clicable y mide al menos 44 px.</p>
+    <p class="doc-clases">pp-check · pp-check__texto · pp-check__ayuda</p>
+    <style>
+      /* PP:check */
+      .pp-check { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-2) 0; cursor: pointer; }
+      .pp-check input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+      .pp-check__texto { font-size:var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
+      .pp-check__ayuda { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      /* /PP:check */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:check -->
+      <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Consentimiento de publicación firmado<span class="pp-check__ayuda">Sin consentimiento vigente el perfil no se puede publicar.</span></span></label>
+      <label class="pp-check"><input type="checkbox"><span class="pp-check__texto">Solo perfiles disponibles ahora</span></label>
+      <!-- /PP:check -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ TABLA ═════════════════════════════ -->
+  <section class="doc-bloque" id="tabla">
+    <h2>Tabla con cabecera fija</h2>
+    <p>El marco hace scroll propio (vertical y horizontal); la cabecera queda fija. En móvil la tabla desplaza dentro de su marco, nunca desborda la página. Criterios como ✓/–, códigos en Geist Mono.</p>
+    <p class="doc-clases">pp-tabla-marco · pp-tabla · pp-tabla__perfil · pp-tabla__sub · pp-tabla__num · pp-si · pp-no · tr[aria-selected=true]</p>
+    <style>
+      /* PP:tabla */
+      .pp-tabla-marco { max-height: 380px; overflow: auto; border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); background: var(--tc-card); box-shadow:var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size:var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: top; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-accent); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-m); font-weight: var(--tc-fw-bold); }
+      /* /PP:tabla */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:tabla -->
+      <div class="pp-tabla-marco" tabindex="0" role="region" aria-label="Resultados en tabla">
+        <table class="pp-tabla">
+          <caption class="pp-sr">Perfiles con evidencia por criterio</caption>
+          <thead><tr><th scope="col">Perfil</th><th scope="col">Java <span class="pp-sr">obligatorio</span></th><th scope="col">Inglés B2</th><th scope="col">Banca</th><th scope="col">Kafka</th><th scope="col">Cumple</th><th scope="col">Disponibilidad</th><th scope="col">Código</th></tr></thead>
+          <tbody>
+            <tr aria-selected="true"><th scope="row"><span class="pp-tabla__perfil">Laura Méndez</span><span class="pp-tabla__sub">Desarrolladora backend Java</span></th><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td class="pp-tabla__num">3 de 4</td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td class="pp-tabla__num">PS-0142</td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Julián Ospina</span><span class="pp-tabla__sub">Desarrollador backend Java</span></th><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td class="pp-tabla__num">3 de 4</td><td><span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span></td><td class="pp-tabla__num">PS-0187</td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Valentina Gómez</span><span class="pp-tabla__sub">Ingeniera de software</span></th><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td class="pp-tabla__num">2 de 4</td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td class="pp-tabla__num">PS-0203</td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Santiago Herrera</span><span class="pp-tabla__sub">Líder técnico Java</span></th><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td class="pp-tabla__num">4 de 4</td><td><span class="pp-badge pp-badge--banda">Más de 2 meses</span></td><td class="pp-tabla__num">PS-0061</td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Daniela Pardo</span><span class="pp-tabla__sub">Desarrolladora full stack</span></th><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td class="pp-tabla__num">2 de 4</td><td><span class="pp-badge pp-badge--disponible">Disponible ahora</span></td><td class="pp-tabla__num">PS-0239</td></tr>
+            <tr><th scope="row"><span class="pp-tabla__perfil">Felipe Arango</span><span class="pp-tabla__sub">Desarrollador backend</span></th><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td><span class="pp-no" aria-label="No cumple">–</span></td><td><span class="pp-si" aria-label="Cumple">✓</span></td><td class="pp-tabla__num">3 de 4</td><td><span class="pp-badge pp-badge--banda">En 2 a 4 semanas</span></td><td class="pp-tabla__num">PS-0115</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- /PP:tabla -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ AVISOS ═════════════════════════════ -->
+  <section class="doc-bloque" id="avisos">
+    <h2>Avisos</h2>
+    <p>Cuatro tonos con icono textual y título: el tono nunca es el único portador del significado. Usa <code>role="status"</code> para ok/info y <code>role="alert"</code> para danger.</p>
+    <p class="doc-clases">pp-aviso · pp-aviso--ok · pp-aviso--warn · pp-aviso--danger · pp-aviso--info · pp-aviso__icono · pp-aviso__titulo</p>
+    <style>
+      /* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:avisos -->
+      <div class="doc-pila">
+        <div class="pp-aviso pp-aviso--ok" role="status"><span class="pp-aviso__icono" aria-hidden="true">✓</span><p><span class="pp-aviso__titulo">Solicitud enviada</span>Te respondemos en 10 días hábiles con la propuesta del equipo.</p></div>
+        <div class="pp-aviso pp-aviso--warn" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Un perfil de tu equipo cambió</span>Catalina Rojas fue colocada en otro proyecto. Sigue en tu lista con su estado.</p></div>
+        <div class="pp-aviso pp-aviso--danger" role="alert"><span class="pp-aviso__icono" aria-hidden="true">×</span><p><span class="pp-aviso__titulo">No se puede publicar</span>Falta el consentimiento de publicación firmado por el profesional.</p></div>
+        <div class="pp-aviso pp-aviso--info" role="status"><span class="pp-aviso__icono" aria-hidden="true">i</span><p><span class="pp-aviso__titulo">Así interpretamos tu búsqueda</span>Java y Inglés B2 como obligatorios; sector banca como deseable.</p></div>
+      </div>
+      <!-- /PP:avisos -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ HOJA LATERAL ═════════════════════════════ -->
+  <section class="doc-bloque" id="hoja">
+    <h2>Hoja lateral (ficha)</h2>
+    <p>Velo + hoja anclada a la derecha (máx. 640 px, 100 % en móvil) con cabecera, cuerpo con scroll propio y pie de acciones. En pantalla va <code>position: fixed</code>; aquí se muestra dentro de un marco.</p>
+    <p class="doc-clases">pp-hoja-velo · pp-hoja · pp-hoja__cabecera · pp-hoja__cerrar · pp-hoja__cuerpo · pp-hoja__pie · pp-datos · pp-datos__fila</p>
+    <style>
+      /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(640px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow:var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-5) var(--tc-sp-6) var(--tc-sp-4); padding-right: var(--tc-sp-10); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0 var(--tc-sp-6) 0 0; font-size:var(--tc-fs-h2); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-3); right: var(--tc-sp-3); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-4); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; gap: var(--tc-sp-3); margin: 0; }
+      .pp-datos__fila dt { font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-datos__fila dd { margin: 0; font-size:var(--tc-fs-small); }
+      @media (max-width: 767px) { .pp-hoja__cabecera, .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-hoja__cabecera { padding-right: var(--tc-sp-10); } }
+      /* /PP:hoja */
+    </style>
+    <div class="doc-demo doc-demo--sin-relleno doc-marco-hoja">
+      <!-- PP:hoja -->
+      <div class="pp-hoja-velo" aria-hidden="true"></div>
+      <aside class="pp-hoja" role="dialog" aria-modal="true" aria-labelledby="pp-hoja-titulo">
+        <header class="pp-hoja__cabecera">
+          <h2 id="pp-hoja-titulo">Desarrolladora backend Java</h2>
+          <p>Laura Méndez · Medellín, Colombia · <span class="pp-mono">PS-0142</span></p>
+          <button type="button" class="pp-btn pp-btn--fantasma pp-btn--icono pp-hoja__cerrar" aria-label="Cerrar la ficha"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </header>
+        <div class="pp-hoja__cuerpo">
+          <div class="pp-bloque pp-bloque--verificado">
+            <p class="pp-bloque__rotulo">Verificado por Trycore</p>
+            <dl class="pp-datos">
+              <div class="pp-datos__fila"><dt>Validación técnica</dt><dd>Prueba práctica de Java y Spring Boot, revisada por un arquitecto de Trycore.</dd></div>
+              <div class="pp-datos__fila"><dt>Inglés</dt><dd>B2 · entrevista conducida en inglés.</dd></div>
+            </dl>
+          </div>
+          <div class="pp-bloque pp-bloque--declarado">
+            <p class="pp-bloque__rotulo">Declarado por la profesional</p>
+            <dl class="pp-datos">
+              <div class="pp-datos__fila"><dt>Trayectoria</dt><dd>8 años en banca: pagos inmediatos y conciliación para dos entidades financieras.</dd></div>
+              <div class="pp-datos__fila"><dt>Disponibilidad</dt><dd>Disponible ahora.</dd></div>
+            </dl>
+          </div>
+        </div>
+        <footer class="pp-hoja__pie">
+          <button type="button" class="pp-btn pp-btn--primario">Sumar al equipo</button>
+          <button type="button" class="pp-btn pp-btn--fantasma">Siguiente perfil</button>
+        </footer>
+      </aside>
+      <!-- /PP:hoja -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ PESTAÑAS ═════════════════════════════ -->
+  <section class="doc-bloque" id="pestanas">
+    <h2>Pestañas</h2>
+    <p>Subrayado teal en la activa y conteo en Geist Mono. Si no caben, la fila desplaza horizontalmente.</p>
+    <p class="doc-clases">pp-pestanas · pp-pestana · pp-pestana__conteo · [aria-selected=true]</p>
+    <style>
+      /* PP:pestanas */
+      .pp-pestanas { display: flex; gap: var(--tc-sp-1); overflow-x: auto; border-bottom: 1px solid var(--tc-border); }
+      .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-4); border: 0; border-bottom: 2px solid transparent; background: none; font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; }
+      .pp-pestana:hover { color: var(--tc-text-h); }
+      .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-primary); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-pestana__conteo { padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      /* /PP:pestanas */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:pestanas -->
+      <div class="pp-pestanas" role="tablist" aria-label="Estado de los perfiles">
+        <a class="pp-pestana" role="tab" aria-selected="true" href="#pestanas">Publicados <span class="pp-pestana__conteo">96</span></a>
+        <a class="pp-pestana" role="tab" aria-selected="false" href="#pestanas">Borradores <span class="pp-pestana__conteo">14</span></a>
+        <a class="pp-pestana" role="tab" aria-selected="false" href="#pestanas">Pausados <span class="pp-pestana__conteo">6</span></a>
+        <a class="pp-pestana" role="tab" aria-selected="false" href="#pestanas">Colocados <span class="pp-pestana__conteo">9</span></a>
+        <a class="pp-pestana" role="tab" aria-selected="false" href="#pestanas">Archivados <span class="pp-pestana__conteo">3</span></a>
+      </div>
+      <!-- /PP:pestanas -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ ESTADO VACÍO ═════════════════════════════ -->
+  <section class="doc-bloque" id="vacio">
+    <h2>Estado vacío</h2>
+    <p>Ningún vacío es un callejón: explicación + acción siguiente. Variante de atención para accesos vencidos o bloqueos.</p>
+    <p class="doc-clases">pp-vacio · pp-vacio--atencion · pp-vacio__icono · pp-vacio__acciones</p>
+    <style>
+      /* PP:vacio */
+      .pp-vacio { padding: var(--tc-sp-10) var(--tc-sp-6); border: 1px dashed var(--tc-border-s); border-radius:var(--tc-r-lg); background: var(--tc-card); text-align: center; }
+      .pp-vacio--atencion { border-color: var(--tc-warn-border); background: var(--tc-warn-surface); }
+      .pp-vacio__icono { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto var(--tc-sp-4); border-radius:var(--tc-r-pill); background: var(--tc-accent); color: var(--pp-teal-ink); }
+      .pp-vacio h2 { font-size:var(--tc-fs-h3); }
+      .pp-vacio p { max-width: 52ch; margin: 0 auto var(--tc-sp-5); color: var(--tc-text-b); }
+      .pp-vacio__acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-4); } }
+      /* /PP:vacio */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:vacio -->
+      <div class="pp-vacio">
+        <div class="pp-vacio__icono" aria-hidden="true"><svg class="pp-icono" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.6.9 2.6 2.7 3 5.2"/></svg></div>
+        <h2>Todavía no has sumado perfiles</h2>
+        <p>Empieza por la selección que armamos para tu proyecto: son perfiles escogidos a mano para esta necesidad.</p>
+        <div class="pp-vacio__acciones"><a class="pp-btn pp-btn--primario" href="#vacio">Ver la selección</a><a class="pp-btn pp-btn--contorno" href="#vacio">Buscar en el banco</a></div>
+      </div>
+      <!-- /PP:vacio -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ FRANJA DE MARCA ═════════════════════════════ -->
+  <section class="doc-bloque" id="franja">
+    <h2>Franja de marca</h2>
+    <p>Bloque navy con el degradado de la sidebar y un filo teal superior. Para el encabezado de la selección curada, confirmaciones y el panel explicativo de las puertas. Variante plana a sangre (sin radio).</p>
+    <p class="doc-clases">pp-franja · pp-franja--plana · pp-franja__overline · pp-franja__titulo · pp-franja__texto · pp-franja__acciones</p>
+    <style>
+      /* PP:franja */
+      .pp-franja { position: relative; overflow: hidden; padding: var(--tc-sp-8); border-radius:var(--tc-r-lg); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-franja::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--tc-grad-cta); }
+      .pp-franja--plana { border-radius:0; }
+      .pp-franja__overline { margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-teal-on-navy); }
+      .pp-franja__titulo { margin: 0 0 var(--tc-sp-2); max-width: 32ch; font-size:var(--tc-fs-h1); line-height: var(--tc-lh-h1); color: var(--tc-bg-topbar); }
+      .pp-franja__texto { margin: 0; max-width: 62ch; color: var(--tc-navy-ink); }
+      .pp-franja__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-5); }
+      @media (max-width: 767px) { .pp-franja { padding: var(--tc-sp-6) var(--tc-sp-5); } .pp-franja__titulo { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); } }
+      /* /PP:franja */
+    </style>
+    <div class="doc-demo">
+      <!-- PP:franja -->
+      <section class="pp-franja" aria-labelledby="pp-franja-titulo">
+        <p class="pp-franja__overline">People Services · Trycore</p>
+        <h2 class="pp-franja__titulo" id="pp-franja-titulo">Seis perfiles escogidos para Modernización de pagos</h2>
+        <p class="pp-franja__texto">Eida Tinjacá los seleccionó por experiencia en pagos inmediatos y banca. Cada uno muestra qué verificamos y qué declaró el profesional.</p>
+        <div class="pp-franja__acciones"><a class="pp-btn pp-btn--primario" href="#franja">Ver la selección</a></div>
+      </section>
+      <!-- /PP:franja -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ CORREO ═════════════════════════════ -->
+  <section class="doc-bloque" id="correo">
+    <h2>Plantilla de correo</h2>
+    <p>Maqueta en tablas de 600 px (fluida por debajo), estilos en línea por compatibilidad con clientes de correo, igualmente expresados con tokens. En la app el render sustituye cada <code>var()</code> por su valor. Mensaje neutro: no confirma si el correo está invitado.</p>
+    <p class="doc-clases">pp-correo-fondo · pp-correo · pp-correo__cabecera · pp-correo__cuerpo · pp-correo__codigo · pp-correo__boton · pp-correo__pie</p>
+    <style>
+      /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
+      .pp-correo-fondo { width: 100%; background: var(--tc-bg-canvas); }
+      .pp-correo { width: 100%; max-width: 600px; margin: 0 auto; }
+      .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
+      /* /PP:correo */
+    </style>
+    <div class="doc-demo doc-demo--sin-relleno">
+      <!-- PP:correo -->
+      <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
+        <tr><td style="padding: var(--tc-sp-8) var(--tc-sp-3);">
+          <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); border-collapse: separate; overflow: hidden; font-family:var(--tc-font-body); color: var(--tc-text-b);">
+            <tr><td class="pp-correo__cabecera" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-navy); border-bottom: 3px solid var(--tc-primary);">
+              <span style="font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-bg-topbar);">trycore</span>
+              <span style="font-size:var(--tc-fs-small); color: var(--tc-navy-ink);">&nbsp;·&nbsp;Portal de perfiles</span>
+            </td></tr>
+            <tr><td class="pp-correo__cuerpo" style="padding: var(--tc-sp-8); font-size:var(--tc-fs-body); line-height: var(--tc-lh-body);">
+              <p style="margin: 0 0 var(--tc-sp-4); font-family:var(--tc-font-heading); font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Tu código para entrar</p>
+              <p style="margin: 0 0 var(--tc-sp-5);">Escribe este código en la página donde lo pediste. Vence en 15 minutos y sirve una sola vez.</p>
+              <p class="pp-correo__codigo" style="margin: 0 0 var(--tc-sp-5); padding: var(--tc-sp-4); background: var(--tc-primary-surface); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-md); text-align: center; font-family:var(--pp-mono); font-size:var(--tc-fs-h1); font-weight: var(--tc-fw-medium); letter-spacing: var(--tc-ls-label); color: var(--tc-text-h);">482&nbsp;913</p>
+              <p style="margin: 0 0 var(--tc-sp-6);"><a class="pp-correo__boton" href="#correo" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-6); background: var(--tc-primary-strong); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); text-decoration: none;">Volver al portal</a></p>
+              <p style="margin: 0; font-size:var(--tc-fs-small); color: var(--tc-text-m);">Si no pediste este código, ignora el mensaje: nadie puede entrar sin él.</p>
+            </td></tr>
+            <tr><td class="pp-correo__pie" style="padding: var(--tc-sp-5) var(--tc-sp-8); background: var(--tc-bg-subtle); border-top: 1px solid var(--tc-border); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+              People Services · Trycore · Bogotá, Colombia. Recibes este correo porque se pidió un código de acceso al Portal de perfiles.
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <!-- /PP:correo -->
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════ TEMA OSCURO (verificación) ═════════════════════════════ -->
+  <section class="doc-bloque" id="oscuro">
+    <h2>Tema oscuro (verificación)</h2>
+    <p>Los mismos componentes bajo <code>class="dark"</code>: ninguna clase cambia, solo los tokens. En pantalla la clase va en <code>&lt;html&gt;</code>.</p>
+    <div class="doc-demo dark">
+      <div class="doc-dos">
+        <article class="pp-perfil" aria-labelledby="pp-p-0187-d">
+          <div class="pp-perfil__cabecera">
+            <div><h3 class="pp-perfil__rol" id="pp-p-0187-d">Desarrollador backend Java</h3><p class="pp-perfil__nombre">Julián Ospina</p></div>
+            <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
+          </div>
+          <div class="pp-evidencia">
+            <p class="pp-evidencia__conteo">Cumple 3 de 4 criterios</p>
+            <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo">Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Java · validado en prueba técnica</span></li></ul></div>
+            <div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por el profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span>Sin experiencia declarada en banca</span></li></ul></div>
+          </div>
+          <div class="pp-perfil__pie"><a class="pp-btn pp-btn--primario pp-btn--sm" href="#oscuro">Ver ficha</a><span class="pp-codigo-perfil">PS-0187</span></div>
+        </article>
+        <div class="doc-pila">
+          <div class="doc-fila"><button type="button" class="pp-btn pp-btn--primario">Buscar</button><button type="button" class="pp-btn pp-btn--cta">Enviar solicitud</button><button type="button" class="pp-btn pp-btn--contorno">Contorno</button><button type="button" class="pp-btn pp-btn--destructivo">Revocar</button></div>
+          <ul class="pp-chips"><li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Java</span><span class="pp-chip__modo">obligatorio</span></li><li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Kafka</span><span class="pp-chip__modo">deseable</span></li></ul>
+          <div class="pp-aviso pp-aviso--warn" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Por confirmar</span>La disponibilidad se revisa con el profesional.</p></div>
+          <div class="pp-campo"><label class="pp-label" for="pp-d-correo">Correo corporativo</label><input class="pp-input" id="pp-d-correo" placeholder="nombre.apellido@empresa.com"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

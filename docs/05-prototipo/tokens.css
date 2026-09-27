@@ -1,0 +1,319 @@
+/*
+ * tokens.css — fuente única de tokens del prototipo de referencia (docs/05-prototipo/).
+ * Procedencia: design system Trycore (docs/07-prototipo/_ds) + tema del Portal de Perfiles v2
+ * (docs/07-prototipo/handoff/styles/product-tokens.css y portal-theme.css). En caso de repetición,
+ * la declaración posterior (tema v2) gana, igual que en la app. Nombres idénticos a los de la app
+ * (--tc-*, --pp-*) para que el gate de fidelidad compare token a token.
+ * Fuentes Geist autoalojadas en ./fuentes (OFL), sin dependencias externas.
+ * Tema claro en :root; oscuro con class="dark" en <html> (como next-themes attribute="class").
+ */
+@font-face { font-family: 'Geist'; src: url('fuentes/Geist-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Geist'; src: url('fuentes/Geist-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Geist'; src: url('fuentes/Geist-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Geist'; src: url('fuentes/Geist-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Geist Mono'; src: url('fuentes/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Geist Mono'; src: url('fuentes/GeistMono-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
+:root {
+  /* ── Marca ── */
+  --tc-primary:      #00A19A;   /* Teal Trycore — acento, bordes, trazos, foco, series de gráfica.
+                                   Usos NO textuales: contra blanco da 3,2:1, que cumple el 3:1 de
+                                   WCAG para componentes de interfaz y gráficos, pero NO el 4,5:1 de
+                                   texto. No lo uses como relleno bajo texto ni como color de texto. */
+  --tc-primary-strong: #007F7A; /* Teal de contacto con texto: relleno de botón bajo blanco (4,9:1) y
+                                   teal como color de texto sobre blanco. Cumple WCAG AA. */
+  --tc-primary-strong-hover: #006B67; /* Hover del relleno anterior (6,4:1) */
+  --tc-primary-top:  #06C8BE;   /* Teal claro — extremo superior del degradado */
+  --tc-navy:         #1D2751;   /* Navy — sidebar, fondos oscuros, autoridad */
+  --tc-teal:         #64C2C8;   /* Teal claro — hover/activo sobre navy */
+  --tc-blue:         #5C82F2;   /* Blue medio — H3, etiquetas secundarias */
+
+  /* ── Texto ── */
+  --tc-text-h:       #1D2751;   /* Headings H1–H6 */
+  --tc-text-b:       #424242;   /* Body */
+  --tc-text-m:       #4A5568;   /* Labels secundarios, metadata */
+  --tc-text-s:       #9CA3AF;   /* Placeholders, captions */
+
+  /* ── Superficies ── */
+  --tc-bg-canvas:    #F9F9F9;   /* App shell */
+  --tc-bg-sidebar:   #1D2751;   /* Sidebar — siempre navy */
+  --tc-bg-topbar:    #FFFFFF;
+  --tc-card:         #FFFFFF;   /* Cards — blanco puro, flotan sobre el canvas */
+  --tc-accent:       #E8F6F7;   /* Quote boxes, bloques de énfasis */
+  --tc-bg-subtle:    #F3F4F6;   /* Chips, tags, inline badges */
+
+  /* ── Bordes ── */
+  --tc-border:       #E5E7EB;   /* Separadores, cards */
+  --tc-border-s:     #D1D5DB;   /* Bordes fuertes (inputs en foco) */
+
+  /* ── Estado ── */
+  --tc-green:    #16A34A;
+  --tc-amber:    #D97706;
+  --tc-red:      #DC2626;
+  --tc-green-bg: #DFF0D8;  --tc-green-fg: #5CA340;
+  --tc-amber-bg: #FCF8E3;  --tc-amber-fg: #B89500;
+  --tc-red-bg:   #F2DEDE;  --tc-red-fg:   #A64242;
+  --tc-info-bg:  #E8F0FE;  --tc-info-fg:  #2557A7;
+
+  /* ── Logo ── */
+  --tc-logo-dark: #000F4D;   /* Elipse base del símbolo */
+  --tc-logo-cyan: #00CCC2;   /* Línea curva con nodos */
+
+  /* ── Degradado de marca (brand mark / CTA) ── */
+  --tc-grad-brand: linear-gradient(180deg, #06C8BE 0%, #00A19A 100%);   /* @kind other */
+  --tc-grad-cta:   linear-gradient(135deg, #06C8BE 0%, #009490 100%);   /* @kind other */
+  --tc-grad-sidebar: linear-gradient(175deg, #1D2751 0%, #111C42 60%, #0D1835 100%);   /* @kind other */
+
+  /* ── Sombras (elevación) ── */
+  --tc-sh-1: rgba(0,0,0,.1) 0px 1px 3px, rgba(0,0,0,.06) 0px 1px 2px;  /* KPI / baja */
+  --tc-sh-2: 0 4px 12px rgba(0,0,0,.08);                               /* card / media */
+  --tc-sh-3: 0 12px 32px rgba(0,0,0,.14);                              /* modal / alta */
+  --tc-sh-focus: 0 0 0 3px rgba(100,194,200,.35);                      /* ring teal en inputs */
+
+  /* ── Halo / glow de marca ── */
+  --tc-glow-brand: 0 2px 8px rgba(0,161,154,.45);   /* brand mark */
+  --tc-glow-cta:   0 5px 16px rgba(0,161,154,.42);  /* CTA hover */
+
+  /* ── Easing canónico ── */
+  --tc-ease: cubic-bezier(.4, 0, .2, 1);   /* @kind other */
+
+  /* ── Duraciones ── */
+  --tc-dur-fast: .12s;   /* @kind other */
+  --tc-dur:      .15s;   /* @kind other */
+  --tc-dur-slow: .25s;   /* @kind other */
+
+  /* ── Familias ── */
+  --tc-font-heading: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+  --tc-font-body:    'Karla', 'Helvetica Neue', Arial, sans-serif;
+
+  /* ── Pesos ── */
+  --tc-fw-regular:  400;   /* @kind font */
+  --tc-fw-medium:   500;   /* @kind font */
+  --tc-fw-semibold: 600;   /* @kind font */
+  --tc-fw-bold:     700;   /* @kind font */
+
+  /* ── Escala (px) ──
+     H1 28–32 · H2 20–24 · H3 16–18 · Body 15 · Small 12–13 · Badge 10–11 */
+  --tc-fs-h1:    30px;
+  --tc-fs-h2:    22px;
+  --tc-fs-h3:    17px;
+  --tc-fs-body:  15px;
+  --tc-fs-small: 13px;
+  --tc-fs-caption: 12px;
+  --tc-fs-badge: 10px;
+
+  /* ── Line-height ── */
+  --tc-lh-h1:   1.25;   /* @kind font */
+  --tc-lh-h2:   1.30;   /* @kind font */
+  --tc-lh-h3:   1.35;   /* @kind font */
+  --tc-lh-body: 1.60;   /* @kind font */
+  --tc-lh-tight: 1.20;   /* @kind font */
+
+  /* ── Letter-spacing ── */
+  --tc-ls-heading: -0.01em;   /* @kind font */
+  --tc-ls-label:    0.55px;   /* @kind font */
+
+  /* ── Espaciado (escala base 4px) ── */
+  --tc-sp-1:  4px;
+  --tc-sp-2:  8px;
+  --tc-sp-3:  12px;
+  --tc-sp-4:  16px;
+  --tc-sp-5:  18px;   /* padding estándar de card */
+  --tc-sp-6:  24px;   /* padding del área de contenido */
+  --tc-sp-8:  32px;
+  --tc-sp-10: 40px;
+
+  /* ── Radios ──
+     Regla de marca: las superficies rectangulares nunca superan 6px.
+     La forma de píldora se reserva a CTAs y chips, donde es intencional. */
+  --tc-r-sm:   2px;
+  --tc-r-md:   4px;
+  --tc-r-lg:   6px;
+  --tc-r-xl:   6px;   /* alias heredado — mismo valor, tope de la escala */
+  --tc-r-pill: 999px;
+
+  /* ── Dimensiones de layout ── */
+  --tc-sidebar-w: 252px;
+  --tc-topbar-h:  66px;
+
+  /* Teal en contacto con texto, sobre superficie clara */
+  --tc-primary-ink: #00615E;            /* 6.6:1 sobre --tc-primary-surface */
+  --tc-primary-surface: #F2FAFA;        /* fondo de bloque verificado */
+  --tc-primary-surface-border: #9FD9D6;
+  --tc-primary-surface-ink: #1F3A38;    /* cuerpo dentro del bloque verificado */
+
+  /* Evidencia cumplida */
+  --tc-ok-ink: #1F4D2B;                 /* línea "✓ Banca · 8 años declarados" */
+  --tc-ok-mark: #15803D;                /* el glifo ✓ */
+  --tc-ok-badge-ink: #2F6B1E;           /* texto sobre --tc-green-bg */
+
+  /* Aviso */
+  --tc-warn-ink: #7A5600;               /* texto sobre --tc-amber-bg */
+  --tc-warn-ink-strong: #8A6100;        /* conteo "no está en el banco" sobre blanco */
+  --tc-warn-border: #E3D9A8;
+  --tc-warn-surface: #FEFCF3;
+
+  --tc-danger-ink: #8C2F2F;             /* texto sobre --tc-red-bg */
+
+  /* Superficies de la ficha */
+  --tc-surface-quiet: #F7FAFA;          /* cabecera del acordeón de validación */
+  --tc-surface-declared: #FCFCFD;       /* bloque declarado, tratamiento de bandas */
+
+  /* Tintas sobre navy */
+  --tc-navy-ink: #CFD8FF;               /* cuerpo sobre navy, 9.4:1 */
+  --tc-navy-ink-mute: #9FB0E8;          /* metadatos sobre navy, 5.4:1 */
+  --tc-teal-on-navy: #80FFF4;           /* overline sobre navy, 12.3:1 */
+
+  --tc-focus-ring: #0F2A6B;             /* outline de foco, no depende del color para leerse */
+
+  --pp-press: linear-gradient(180deg,#26336A 0%,#1D2751 100%); --pp-press-ink: #FFFFFF; /* CTA principal: navy de marca */
+  --pp-frame: #E9ECF1;
+  --pp-retrato: linear-gradient(140deg,#E4F7F5,#E3E8FF);
+  --tc-font-heading: 'Geist', system-ui, sans-serif;
+  --tc-font-body: 'Geist', system-ui, sans-serif;
+  --pp-mono: 'Geist Mono', ui-monospace, monospace;
+  --tc-r-sm: 6px;
+  --tc-r-md: 10px;
+  --tc-r-lg: 16px;
+  --tc-bg-canvas: #F6F7FA;
+  --tc-card: #FFFFFF;
+  --tc-bg-subtle: #F1F3F7;
+  --pp-subtle-hover: #E7EAF0;
+  --tc-border: #E4E7EE;
+  --tc-border-s: #D3D8E2;
+  --tc-text-h: #0B1020;
+  --tc-text-b: #3B4256;
+  --tc-text-m: #5C6377;
+  --tc-text-s: #6B7285;
+  --tc-primary: #00A19A;
+  --tc-primary-strong: #00807A;
+  --tc-primary-strong-hover: #006B67;
+  --tc-accent: #E6F6F5;
+  --pp-teal-ink: #007A75;
+  --pp-teal-fill: linear-gradient(180deg, #00857F 0%, #006F6A 100%);
+  --pp-teal-fill-hover: linear-gradient(180deg, #007A75 0%, #00615D 100%);
+  --tc-navy: #1D2751;
+  --pp-navy-ink: #1D2751;
+  --pp-grad-2: #1D2751;
+  --tc-grad-sidebar: linear-gradient(140deg, #1D2751 0%, #1A2C64 48%, #0B5063 100%);
+  --tc-sh-1: 0 1px 2px rgba(16,24,40,.05);
+  --tc-sh-2: 0 1px 2px rgba(16,24,40,.04), 0 6px 16px -4px rgba(16,24,40,.08);
+  --tc-sh-3: 0 20px 40px -12px rgba(16,24,40,.22), 0 6px 12px -6px rgba(16,24,40,.08);
+  --tc-sh-focus: 0 0 0 4px rgba(0,161,154,.18);
+  --pp-btn-shadow: 0 1px 2px rgba(0,60,58,.18), inset 0 1px 0 rgba(255,255,255,.16);
+  --pp-header: rgba(255,255,255,.78);
+  --pp-overlay: rgba(11,16,32,.45);
+  --pp-hero: radial-gradient(900px 320px at 0% 0%, rgba(0,161,154,.11), transparent 60%), radial-gradient(760px 320px at 100% 0%, rgba(29,39,81,.09), transparent 60%), #FFFFFF;
+  --pp-dot: rgba(29,39,81,.14);
+  --pp-cmd-shadow: 0 1px 2px rgba(16,24,40,.05), 0 18px 40px -18px rgba(16,24,40,.22);
+  --pp-orb-1: rgba(0,127,122,.65);
+  --pp-orb-2: rgba(29,39,81,.4);
+  --tc-green-bg: #E7F6EE;
+  --tc-ok-badge-ink: #1E6B3E;
+  --tc-ok-ink: #1F4D2B;
+  --tc-ok-mark: #15803D;
+  --tc-amber-bg: #FDF5DD;
+  --tc-warn-ink: #7A5600;
+  --tc-warn-ink-strong: #8A6100;
+  --tc-warn-border: #EBDCA6;
+  --tc-warn-surface: #FEFBF1;
+  --tc-red: #C62F2F;
+  --tc-red-bg: #FBEAEA;
+  --tc-danger-ink: #8C2F2F;
+  --tc-primary-surface: #F0FAF9;
+  --tc-primary-surface-border: #A9DCD8;
+  --tc-primary-surface-ink: #1F3A38;
+  --tc-primary-ink: #00615E;
+  --tc-surface-quiet: #F6F9FA;
+  --tc-surface-declared: #FAFBFC;
+  --tc-focus-ring: #007A75;
+  color-scheme: light;
+
+}
+
+.dark {
+  --pp-press: linear-gradient(180deg,#5EEAD4 0%,#2DD4C4 100%); --pp-press-ink: #04211F;
+  --pp-frame: #05070D;
+  --pp-retrato: linear-gradient(140deg,rgba(45,212,196,.14),rgba(129,160,255,.14));
+  --tc-bg-canvas: #0A0D16;
+  --tc-card: #11151F;
+  --tc-bg-subtle: #181D2A;
+  --pp-subtle-hover: #212838;
+  --tc-border: #232939;
+  --tc-border-s: #31384C;
+  --tc-text-h: #EEF1F7;
+  --tc-text-b: #C3C8D6;
+  --tc-text-m: #9AA1B4;
+  --tc-text-s: #8A91A6;
+  --tc-primary: #2DD4C4;
+  --tc-accent: rgba(45,212,196,.12);
+  --pp-teal-ink: #5EEAD4;
+  --pp-navy-ink: #B4C3FF;
+  --pp-grad-2: #A5B4FC;
+  --tc-navy: #2B3A80;
+  --tc-grad-sidebar: linear-gradient(140deg, #141C3E 0%, #172A5E 50%, #0B3F4E 100%);
+  --tc-sh-1: 0 1px 2px rgba(0,0,0,.4);
+  --tc-sh-2: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -8px rgba(0,0,0,.55);
+  --tc-sh-3: 0 24px 60px -16px rgba(0,0,0,.7);
+  --tc-sh-focus: 0 0 0 4px rgba(45,212,196,.22);
+  --pp-header: rgba(10,13,22,.72);
+  --pp-overlay: rgba(0,0,0,.6);
+  --pp-hero: radial-gradient(900px 320px at 0% 0%, rgba(45,212,196,.12), transparent 60%), radial-gradient(760px 320px at 100% 0%, rgba(99,102,241,.16), transparent 60%), #11151F;
+  --pp-dot: rgba(255,255,255,.09);
+  --pp-cmd-shadow: 0 0 0 1px rgba(45,212,196,.08), 0 24px 60px -24px rgba(45,212,196,.28);
+  --pp-orb-1: rgba(94,234,212,.7);
+  --pp-orb-2: rgba(165,180,252,.55);
+  --tc-green-bg: rgba(34,197,94,.13);
+  --tc-ok-badge-ink: #86EFAC;
+  --tc-ok-ink: #A7F3C5;
+  --tc-ok-mark: #4ADE80;
+  --tc-amber-bg: rgba(234,179,8,.13);
+  --tc-warn-ink: #F5CD5B;
+  --tc-warn-ink-strong: #F5CD5B;
+  --tc-warn-border: rgba(234,179,8,.32);
+  --tc-warn-surface: rgba(234,179,8,.06);
+  --tc-red: #F87171;
+  --tc-red-bg: rgba(239,68,68,.13);
+  --tc-danger-ink: #FCA5A5;
+  --tc-primary-surface: rgba(45,212,196,.07);
+  --tc-primary-surface-border: rgba(45,212,196,.3);
+  --tc-primary-surface-ink: #CCFBF1;
+  --tc-primary-ink: #5EEAD4;
+  --tc-surface-quiet: #141925;
+  --tc-surface-declared: #131824;
+  --tc-focus-ring: #5EEAD4;
+  color-scheme: dark;
+
+  --background: 227 38% 6%;
+  --foreground: 223 36% 95%;
+  --card: 224 29% 10%;
+  --card-foreground: 223 36% 95%;
+  --popover: 224 29% 10%;
+  --popover-foreground: 223 36% 95%;
+  --primary: 174 66% 50%;
+  --primary-foreground: 176 90% 10%;
+  --secondary: 224 27% 13%;
+  --secondary-foreground: 223 36% 95%;
+  --muted: 224 27% 13%;
+  --muted-foreground: 225 14% 66%;
+  --accent: 174 66% 50% / .12;
+  --accent-foreground: 170 76% 64%;
+  --destructive: 0 91% 71%;
+  --destructive-foreground: 0 0% 8%;
+  --border: 225 24% 18%;
+  --input: 225 21% 24%;
+  --ring: 170 76% 64%;
+}
+
+/* ── Base de documento (Trycore base.css + tema v2) ── */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body);
+  color: var(--tc-text-b); background: var(--tc-bg-canvas); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+h1, h2, h3, h4 { font-family: var(--tc-font-heading); color: var(--tc-text-h); letter-spacing: -0.02em; font-weight: var(--tc-fw-semibold); margin: 0 0 var(--tc-sp-2); }
+h1 { font-size: var(--tc-fs-h1); line-height: var(--tc-lh-h1); }
+h2 { font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+h3 { font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+p { margin: 0 0 var(--tc-sp-3); }
+a { color: var(--pp-teal-ink); text-decoration: none; }
+code, kbd, .mono { font-family: var(--pp-mono); }
+*:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }

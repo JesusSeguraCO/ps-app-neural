@@ -1,0 +1,398 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla app-shell
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (app-shell--<estado>.html), no interacciones.
+  Trazabilidad: épica EP-001 · historias HU-090, HU-091, HU-094 · registrada en ../manifest.json
+  Estado de ESTA pantalla: variante sin-seleccion — sesión válida en un enlace SIN selección
+  (Grupo Éxito · Plataforma omnicanal, ENL-0044) que abre el banco completo (HU-094, caso límite
+  «nunca hubo selección»). La topbar NO muestra «Selección para ti» (no hay a dónde volver);
+  «Buscar» queda activo. La topbar sigue mostrando la cuenta, el proyecto y la vigencia del
+  acceso (HU-090). Mismo marco PP:topbar que app-shell y aterrizaje-curado.
+  Origen: v2-existe (docs/07-prototipo/handoff/components/portal/app-shell.tsx), reconciliado con
+  el catálogo _patrones.html (#topbar): el riel de iconos del v2 se retira.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Marco cliente — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* Estilos propios de esta pantalla: SOLO composición/layout.
+       Valores visuales (color, fuente, spacing, radio, sombra) → var(--token). */
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family:var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; max-width: 70ch; }
+    .pp-encabezado__texto p { margin: 0; color: var(--tc-text-b); }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); padding: var(--tc-sp-5); }
+    /* /PP:base */
+/* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-5); border: 1px solid transparent; border-radius:var(--tc-r-md); font-family:var(--tc-font-body); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow:var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius:var(--tc-r-pill); box-shadow:var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow:var(--tc-sh-1); }
+      .pp-btn--contorno:hover { border-color: var(--tc-primary); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary); background: var(--tc-accent); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 36px; padding: 0 var(--tc-sp-3); font-size:var(--tc-fs-caption); }
+      .pp-btn--icono { width: 44px; padding: 0; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow:none; }
+      @media (max-width: 767px) { .pp-btn--sm { min-height: 44px; } }
+      /* /PP:botones */
+/* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: var(--tc-topbar-h); padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family:var(--tc-font-heading); font-size:var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-3); border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-2) 0 var(--tc-sp-4); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-pill); background: var(--tc-card); font-family:var(--tc-font-heading); font-size:var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--pp-navy-ink); text-decoration: none; white-space: nowrap; }
+      .pp-equipo:hover { border-color: var(--tc-primary); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; border-top: 1px solid var(--tc-border); }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+/* PP:badges */
+      .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-family:var(--tc-font-heading); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); line-height: var(--tc-lh-tight); white-space: nowrap; }
+      .pp-badge--disponible, .pp-badge--publicado { background: var(--tc-green-bg); color: var(--tc-ok-badge-ink); }
+      .pp-badge--por-confirmar { background: var(--tc-amber-bg); color: var(--tc-warn-ink); }
+      .pp-badge--colocado { background: var(--tc-info-bg); color: var(--tc-info-fg); }
+      .pp-badge--pausado { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-badge--archivado { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+      .pp-badge--no-publicado { background: var(--tc-card); border: 1px dashed var(--tc-border-s); color: var(--tc-text-m); }
+      .pp-badge--banda { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+      /* /PP:badges */
+/* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family:var(--tc-font-heading); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 44px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius:var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family:var(--tc-font-body); font-size:var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow:var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow:var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow:none; }
+      .pp-input--area { min-height: 112px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      @media (max-width: 767px) { .pp-input { font-size:var(--tc-fs-h3); } }
+      /* /PP:campos */
+/* PP:perfil */
+      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--tc-sp-4); }
+      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
+      .pp-perfil--en-equipo { border-color: var(--tc-primary); }
+      .pp-perfil--cambio { background: var(--tc-surface-quiet); box-shadow:var(--tc-sh-1); }
+      .pp-perfil__estado { display: flex; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-warn-border); border-radius:var(--tc-r-md); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
+      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3); flex-wrap: wrap; }
+      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+      .pp-perfil__rol { margin: 0; font-size:var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-perfil__nombre { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; }
+      .pp-tag { padding: var(--tc-sp-1) var(--tc-sp-2); border-radius:var(--tc-r-pill); background: var(--tc-bg-subtle); font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--pp-navy-ink); }
+      .pp-perfil__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-perfil__meta li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
+      .pp-evidencia { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); padding-top: var(--tc-sp-3); border-top: 1px dashed var(--tc-border); }
+      .pp-evidencia__conteo { margin: 0; font-size:var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-bloque { padding: var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-md); }
+      .pp-bloque--verificado { background: var(--tc-primary-surface); border-color: var(--tc-primary-surface-border); color: var(--tc-primary-surface-ink); }
+      .pp-bloque--declarado { background: var(--tc-surface-declared); border: 1px dashed var(--tc-border-s); color: var(--tc-text-b); }
+      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; }
+      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); }
+      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-h3); }
+      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-criterio--cumple { color: var(--tc-ok-ink); }
+      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+      .pp-criterio--no, .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-m); }
+      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); margin-top: auto; padding-top: var(--tc-sp-5); }
+      .pp-perfil__pie::before { content: ""; flex-basis: 100%; height: 0; margin-bottom: var(--tc-sp-2); border-top: 1px solid var(--tc-border); }
+      .pp-codigo-perfil { margin-left: auto; font-family:var(--pp-mono); font-size:var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
+      /* /PP:perfil */
+/* PP:chips */
+      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; padding: var(--tc-sp-1) var(--tc-sp-3); border: 1px solid transparent; border-radius:var(--tc-r-pill); font-size:var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+      .pp-chip__modo { font-size:var(--tc-fs-badge); opacity: .8; }
+      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+      .pp-chip--fuera { background: var(--tc-amber-bg); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius:var(--tc-r-pill); background: none; color: inherit; cursor: pointer; }
+      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+      .pp-chip__quitar:hover { background: var(--pp-overlay); }
+      /* /PP:chips */
+/* PP:avisos */
+      .pp-aviso { display: flex; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid transparent; border-left-width: 3px; border-radius:var(--tc-r-md); font-size:var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { margin: 0; }
+      .pp-aviso__icono { width: 18px; flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { display: block; font-weight: var(--tc-fw-semibold); }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); border-left-color: var(--tc-green); color: var(--tc-ok-badge-ink); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); border-left-color: var(--tc-amber); color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); border-left-color: var(--tc-red); color: var(--tc-danger-ink); }
+      .pp-aviso--info { background: var(--tc-info-bg); border-color: var(--tc-info-bg); border-left-color: var(--tc-info-fg); color: var(--tc-info-fg); }
+      /* /PP:avisos */
+
+    /* ── Estilos propios del marco cliente (app-shell): solo composición ── */
+    .as-main { max-width: 1280px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-6) var(--tc-sp-10); }
+    .as-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--tc-sp-8); align-items: center; padding: var(--tc-sp-8); background: var(--pp-hero); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-2); }
+    .as-pildora { display: inline-flex; align-items: center; gap: var(--tc-sp-2); max-width: 100%; padding: var(--tc-sp-1) var(--tc-sp-3) var(--tc-sp-1) var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius:var(--tc-r-pill); background: var(--tc-card); box-shadow:var(--tc-sh-1); font-size:var(--tc-fs-caption); color: var(--tc-text-b); }
+    .as-pildora__icono { display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius:var(--tc-r-pill); background: var(--tc-accent); color: var(--pp-teal-ink); }
+    .as-hero h1 { margin: var(--tc-sp-4) 0 0; max-width: 24ch; }
+    .as-razon { margin: var(--tc-sp-4) 0 0; padding-left: var(--tc-sp-4); border-left: 3px solid var(--tc-primary); }
+    .as-razon__rotulo { margin: 0 0 var(--tc-sp-1); font-size:var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-label); text-transform: uppercase; color: var(--tc-primary-ink); }
+    .as-razon__texto { margin: 0; max-width: 62ch; color: var(--tc-text-b); }
+    .as-hero__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3); margin-top: var(--tc-sp-6); }
+    .as-hero__firma { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .as-resumen { padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius:var(--tc-r-lg); box-shadow:var(--tc-sh-1); }
+    .as-resumen h2 { margin: 0 0 var(--tc-sp-3); font-size:var(--tc-fs-small); }
+    .as-familias { display: grid; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-4); padding: 0 0 var(--tc-sp-4); list-style: none; border-bottom: 1px dashed var(--tc-border); }
+    .as-familias li { display: flex; justify-content: space-between; gap: var(--tc-sp-3); font-size:var(--tc-fs-small); color: var(--tc-text-b); }
+    .as-familias .pp-mono { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .as-componentes { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: var(--tc-sp-2) 0 0; padding: 0; list-style: none; }
+    .as-componentes li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-1) var(--tc-sp-2); border: 1px solid var(--tc-primary-surface-border); border-radius:var(--tc-r-pill); background: var(--tc-primary-surface); font-size:var(--tc-fs-caption); color: var(--tc-primary-surface-ink); }
+    .as-componentes__marca { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .as-resumen__nota { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+
+    .as-busqueda { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--tc-sp-3); max-width: 720px; margin-top: var(--tc-sp-6); }
+    .as-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-6); align-items: start; margin-top: var(--tc-sp-8); }
+
+    .as-seleccion__cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4); margin-bottom: var(--tc-sp-4); }
+    .as-seleccion__cabecera h2 { margin: 0; }
+    .as-seleccion__cabecera p { margin: var(--tc-sp-1) 0 0; font-size:var(--tc-fs-small); color: var(--tc-text-m); }
+    .as-ampliar { display: grid; justify-items: end; gap: var(--tc-sp-1); }
+    .as-ampliar__ayuda { margin: 0; font-size:var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-rejilla-perfiles > li { display: flex; flex-direction: column; min-width: 0; }
+    .pp-rejilla-perfiles > li > .pp-perfil { flex: 1; }
+    .as-aviso { margin-bottom: var(--tc-sp-4); }
+    .as-posicion { margin: 0 0 var(--tc-sp-2); font-family:var(--pp-mono); font-size:var(--tc-fs-badge); color: var(--tc-text-m); }
+
+    @media (max-width: 1100px) {
+      .as-hero { grid-template-columns: 1fr; }
+      .as-cuerpo { grid-template-columns: 1fr; }
+      .as-ampliar { justify-items: start; }
+    }
+    @media (max-width: 767px) {
+      .as-main { padding: var(--tc-sp-5) var(--tc-sp-4) var(--tc-sp-10); }
+      .as-hero { padding: var(--tc-sp-5); gap: var(--tc-sp-5); }
+      .as-hero h1 { font-size:var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+      .as-hero__acciones .pp-btn { width: 100%; }
+      .as-busqueda { grid-template-columns: 1fr; }
+      .as-busqueda .pp-btn { width: 100%; }
+      .as-ampliar { justify-items: stretch; width: 100%; }
+      .as-ampliar .pp-btn { white-space: normal; text-align: center; }
+      .as-cuerpo { margin-top: var(--tc-sp-6); }
+    }
+
+    /* Conmutador de tema en la topbar del cliente (DESIGN.md · Topbar del cliente) */
+    .cl-tema { flex: none; }
+    @media (max-width: 767px) { .cl-tema { order: 1; } }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera -->
+  <header class="pp-topbar">
+    <a class="pp-marca" href="#contenido" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Grupo Éxito · Plataforma omnicanal</p>
+      <p class="pp-cuenta__meta">Acceso válido hasta el 14 de noviembre de 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="#buscar" aria-current="page">Buscar</a>
+      <a class="pp-navlink" href="#buscar">Invitar a un colega</a>
+    </nav>
+    <a class="pp-equipo" href="#buscar">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">1</span><span class="pp-sr">1 perfil en el equipo</span></a>
+    <button type="button" class="pp-btn pp-btn--fantasma pp-btn--icono cl-tema" aria-pressed="false" aria-label="Cambiar a tema oscuro" title="Tema oscuro"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </header>
+
+  <!-- región: contenido principal (banco completo; sin selección no hay «Volver a la selección», HU-094) -->
+  <main class="as-main" id="contenido">
+    <section class="as-hero" aria-labelledby="as-titulo">
+      <div>
+        <span class="as-pildora"><span class="as-pildora__icono"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>Banco completo de People Service</span>
+        <h1 id="as-titulo">¿Qué perfiles necesita tu proyecto?</h1>
+        <div class="as-razon">
+          <p class="as-razon__rotulo">Cómo funciona</p>
+          <p class="as-razon__texto">Escribe el rol, las tecnologías o pega el requerimiento. Te mostramos qué cumple cada perfil, criterio por criterio.</p>
+        </div>
+        <form class="as-busqueda" action="#" role="search">
+          <div class="pp-campo">
+            <label class="pp-label" for="as-consulta">Qué buscas</label>
+            <input class="pp-input" id="as-consulta" type="search" placeholder="Ej.: analista de datos con Power BI y sector retail">
+          </div>
+          <button type="submit" class="pp-btn pp-btn--primario">Buscar perfiles</button>
+        </form>
+      </div>
+      <aside class="as-resumen" aria-labelledby="as-resumen-t">
+        <h2 id="as-resumen-t">Qué hay en el banco</h2>
+        <ul class="as-familias">
+          <li><span>Desarrollo backend</span><span class="pp-mono">31</span></li>
+          <li><span>Datos y analítica</span><span class="pp-mono">18</span></li>
+          <li><span>Frontend y móvil</span><span class="pp-mono">18</span></li>
+          <li><span>Calidad de software (QA)</span><span class="pp-mono">17</span></li>
+          <li><span>Gestión de proyectos</span><span class="pp-mono">12</span></li>
+        </ul>
+        <p class="as-resumen__nota">Cada perfil pasó por las cinco verificaciones de Trycore:</p>
+        <ul class="as-componentes">
+          <li><span class="as-componentes__marca" aria-hidden="true">✓</span>Validación técnica</li>
+          <li><span class="as-componentes__marca" aria-hidden="true">✓</span>Seguridad</li>
+          <li><span class="as-componentes__marca" aria-hidden="true">✓</span>Encaje con el proyecto</li>
+          <li><span class="as-componentes__marca" aria-hidden="true">✓</span>Formación</li>
+          <li><span class="as-componentes__marca" aria-hidden="true">✓</span>Identidad</li>
+        </ul>
+      </aside>
+    </section>
+
+    <div class="as-cuerpo">
+      <section id="buscar" aria-labelledby="buscar-t">
+        <div class="as-seleccion__cabecera">
+          <div>
+            <h2 id="buscar-t">Publicados recientemente</h2>
+            <p><span class="pp-mono">96</span> perfiles publicados en el banco</p>
+          </div>
+        </div>
+        <ul class="pp-rejilla-perfiles pp-lista" aria-label="Perfiles publicados recientemente">
+          <li>
+            <article class="pp-perfil pp-perfil--en-equipo" aria-labelledby="p-0252">
+              <div class="pp-perfil__cabecera">
+                <div>
+                  <h3 class="pp-perfil__rol" id="p-0252">Analista de datos y BI</h3>
+                  <p class="pp-perfil__nombre">Sara Quintero</p>
+                </div>
+                <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+              </div>
+              <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Power BI</li><li class="pp-tag">SQL</li><li class="pp-tag">Python</li></ul>
+              <ul class="pp-perfil__meta"><li>Retail · Consumo masivo</li><li>Híbrido</li><li>Medellín, Colombia</li></ul>
+              <div class="pp-evidencia">
+                <div class="pp-bloque pp-bloque--verificado">
+                  <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
+                  <ul class="pp-criterios">
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Power BI y SQL · caso práctico revisado por un arquitecto de datos</span></li>
+                  </ul>
+                </div>
+                <div class="pp-bloque pp-bloque--declarado">
+                  <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p>
+                  <ul class="pp-criterios">
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>5 años en tableros de ventas por canal para cadenas de retail</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="pp-perfil__pie">
+                <a class="pp-btn pp-btn--primario pp-btn--sm" href="#p-0252">Ver ficha</a>
+                <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="true">✓ En el equipo</button>
+                <span class="pp-codigo-perfil">PS-0252</span>
+              </div>
+            </article>
+          </li>
+          <li>
+            <article class="pp-perfil" aria-labelledby="p-0156">
+              <div class="pp-perfil__cabecera">
+                <div>
+                  <h3 class="pp-perfil__rol" id="p-0156">Ingeniero de datos en la nube</h3>
+                  <p class="pp-perfil__nombre">Mateo Giraldo</p>
+                </div>
+                <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
+              </div>
+              <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Azure Data Factory</li><li class="pp-tag">Databricks</li><li class="pp-tag">Spark</li></ul>
+              <ul class="pp-perfil__meta"><li>Retail</li><li>Remoto</li><li>Bogotá, Colombia</li></ul>
+              <div class="pp-evidencia">
+                <div class="pp-bloque pp-bloque--verificado">
+                  <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
+                  <ul class="pp-criterios">
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Canalizaciones de datos en Azure · prueba técnica</span></li>
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Inglés B2 · entrevista en inglés</span></li>
+                  </ul>
+                </div>
+                <div class="pp-bloque pp-bloque--declarado">
+                  <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por el profesional</p>
+                  <ul class="pp-criterios">
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Unificó las ventas de tienda física y comercio electrónico en un solo lago de datos</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="pp-perfil__pie">
+                <a class="pp-btn pp-btn--primario pp-btn--sm" href="#p-0156">Ver ficha</a>
+                <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+                <span class="pp-codigo-perfil">PS-0156</span>
+              </div>
+            </article>
+          </li>
+          <li>
+            <article class="pp-perfil" aria-labelledby="p-0253">
+              <div class="pp-perfil__cabecera">
+                <div>
+                  <h3 class="pp-perfil__rol" id="p-0253">Científica de datos, pronóstico de demanda</h3>
+                  <p class="pp-perfil__nombre">Valentina Ríos</p>
+                </div>
+                <span class="pp-badge pp-badge--banda">Disponible en 1 a 2 meses</span>
+              </div>
+              <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li class="pp-tag">Python</li><li class="pp-tag">scikit-learn</li><li class="pp-tag">BigQuery</li></ul>
+              <ul class="pp-perfil__meta"><li>Consumo masivo</li><li>Híbrido</li><li>Cali, Colombia</li></ul>
+              <div class="pp-evidencia">
+                <div class="pp-bloque pp-bloque--verificado">
+                  <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p>
+                  <ul class="pp-criterios">
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Modelos de pronóstico · ejercicio práctico revisado por un científico de datos</span></li>
+                  </ul>
+                </div>
+                <div class="pp-bloque pp-bloque--declarado">
+                  <p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Declarado por la profesional</p>
+                  <ul class="pp-criterios">
+                  <li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span>Pronóstico semanal de demanda para 400 tiendas</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="pp-perfil__pie">
+                <a class="pp-btn pp-btn--primario pp-btn--sm" href="#p-0253">Ver ficha</a>
+                <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+                <span class="pp-codigo-perfil">PS-0253</span>
+              </div>
+            </article>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

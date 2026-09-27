@@ -41,6 +41,8 @@ add:
 > Esta ADR es **autocontenida**: el algoritmo de subpasos de HubSpot y el vigilante de la vuelta al
 > determinista, que vivían en ADR-0005, se recogen aquí (§3); ADR-0005 ya no es referencia normativa.
 
+> **Decisión de negocio (2026-09-27, T-28):** además de la nota del negocio en HubSpot, Coordinación de Servicio recibe la solicitud por **correo interno** (HU-101): un trabajo `notificar_delivery` en la cola, mismo adaptador de Mailgun. Prototipo en `docs/05-prototipo/` (correo-aviso-interno--solicitud-delivery).
+
 ## 1. Objetivo de la iteración y drivers seleccionados (Pasos 2–3)
 
 - **Objetivo de la iteración:** re-instanciar el trabajo diferido y el correo sobre la nueva plataforma
