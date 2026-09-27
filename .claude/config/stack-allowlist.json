@@ -1,5 +1,5 @@
 {
-  "_comment": "Allowlist de dependencias del proyecto. Derivada de la sección de requisitos técnicos del PRD. El hook stack-guard.sh bloquea dependencias fuera de `allow` al editar package.json. Iteración 8 (2026-09-25): plataforma Docker/DO App Platform + Next.js TS + PostgreSQL + Mailgun; `source` apunta al PRD §8.3 reescrito en la v4.12 (D-23 revisada).",
+  "_comment": "Allowlist de dependencias del proyecto. Derivada de la sección de requisitos técnicos del PRD. El hook stack-guard.sh bloquea dependencias fuera de `allow` al editar package.json. Iteración 8 (2026-09-25): plataforma Docker/DO App Platform + Next.js TS + PostgreSQL + Mailgun; `source` apunta al PRD §8.3 reescrito en la v4.12 (D-23 revisada). Revisión adversarial (2026-09-26, H20): se añaden las dependencias de lint, tipos, tests y `cmdk` que ADR-0008 §7 declara, y el campo `versions` con las restricciones de versión de ADR-0008 (stack-guard.sh aún no lo lee: la de `next` la comprueba V8-2 en CI; riesgo R-78).",
   "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-contenedores-en-digitalocean",
   "version": "2.0",
   "runtime": {
@@ -40,7 +40,17 @@
     "esbuild",
     "@types/node",
     "@types/pg",
-    "kysely-codegen"
+    "kysely-codegen",
+    "cmdk",
+    "typescript-eslint",
+    "eslint-config-next",
+    "postcss",
+    "autoprefixer",
+    "@types/react",
+    "@types/react-dom",
+    "@testing-library/dom",
+    "jsdom",
+    "@vitejs/plugin-react"
   ],
   "deny_examples": [
     "@google/generative-ai / @google/genai (Gemini solo por fetch desde el servidor, ADR-0004 enmienda)",
@@ -59,10 +69,14 @@
     "node-cron (planificador propio en el worker, ADR-0009)",
     "laravel/framework",
     "symfony/*",
-    "slim/* y phpmailer/* (PHP retirado en la iteración 8)"
+    "slim/* y phpmailer/* (PHP retirado en la iteración 8)",
+    "react-hook-form / @hookform/resolvers (formularios nativos validados con zod; no se instala el componente form de shadcn, ADR-0008 §7)",
+    "sharp (imágenes sin optimizar, images.unoptimized, ADR-0008)",
+    "geist (fuentes woff2 versionadas en packages/ui/fuentes con next/font/local, ADR-0008)",
+    "happy-dom (se elige jsdom, ADR-0008)"
   ],
   "rationale": {
-    "next": "ADR-0008 (>=15.5 <16)",
+    "next": "ADR-0008 (>=15.5 <16; CVE-2025-29927, R-48; ver versions)",
     "react": "ADR-0008",
     "react-dom": "ADR-0008",
     "typescript": "ADR-0008",
@@ -73,7 +87,7 @@
     "clsx": "ADR-0008",
     "tailwind-merge": "ADR-0008",
     "lucide-react": "ADR-0008",
-    "nuqs": "ADR-0008, ADR-0004",
+    "nuqs": "ADR-0008 (parsers en packages/contratos, shallow obligatorio), ADR-0004 (enmienda de plataforma, revisión adversarial 2026-09-26: contrato único de URL)",
     "next-themes": "ADR-0008",
     "vitest": "ADR-0010 (dev)",
     "@testing-library/react": "ADR-0010 (dev)",
@@ -92,6 +106,29 @@
     "esbuild": "ADR-0008 (dev, bundle del worker)",
     "@types/node": "ADR-0008 (dev)",
     "@types/pg": "ADR-0008 (dev)",
-    "kysely-codegen": "ADR-0008 (dev)"
+    "kysely-codegen": "ADR-0008 (dev)",
+    "cmdk": "ADR-0008 §7 (primitiva Command de shadcn que usa PanelPerfilObjetivo; revisión 2026-09-26)",
+    "typescript-eslint": "ADR-0008 §7 (dev; reglas de lint sobre TS/TSX que sostienen V8-2 y CON-21)",
+    "eslint-config-next": "ADR-0008 §7 (dev; reglas de Next y de hooks; sostiene V8-2)",
+    "postcss": "ADR-0008 §7 (dev; requerido por Tailwind 3.4)",
+    "autoprefixer": "ADR-0008 §7 (dev; requerido por Tailwind 3.4)",
+    "@types/react": "ADR-0008 §7 (dev; TypeScript con React 19)",
+    "@types/react-dom": "ADR-0008 §7 (dev; TypeScript con React 19)",
+    "@testing-library/dom": "ADR-0008 §7 (dev; peer de @testing-library/react 16)",
+    "jsdom": "ADR-0008 §7 (dev; entorno DOM de Vitest; se descarta happy-dom)",
+    "@vitejs/plugin-react": "ADR-0008 §7 (dev; JSX en Vitest)"
+  },
+  "versions": {
+    "_comment": "Restricciones de versión de ADR-0008 §7 (revisión 2026-09-26). Rango semver por paquete. stack-guard.sh todavía no las aplica (solo compara nombres); la de next la comprueba V8-2 en CI (R-78).",
+    "next": ">=15.5.0 <16",
+    "react": "^19",
+    "react-dom": "^19",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^3.4",
+    "zod": "^4",
+    "typescript": "^5",
+    "eslint": "^9",
+    "pg": "^8"
   }
 }

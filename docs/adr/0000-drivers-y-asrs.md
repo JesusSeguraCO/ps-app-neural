@@ -21,16 +21,37 @@ tags:
 > [_backlog-arquitectonico.md](_backlog-arquitectonico.md)).
 >
 > **Cómo se genera:** la skill `setup-architecture` (`/build:architect`) lo **propone** leyendo `docs/`
-> (PRD v4.11 + user story map + `03-backlog/epicas.md` + `04-historias/HU-*.md` + `10-specs/` +
-> `01-prd/requisitos-tecnicos-hosting.md`) — de solo lectura. Este es un **documento vivo**: cada
-> re-corrida añade drivers nuevos que surjan de HUs/épicas nuevas.
+> (PRD v4.11, v4.12 desde la iteración 8 + user story map + `03-backlog/epicas.md` +
+> `04-historias/HU-*.md` + `10-specs/` + `01-prd/requisitos-tecnicos-hosting.md`, este último solo como
+> antecedente) — de solo lectura. Este es un **documento vivo**: cada re-corrida añade drivers nuevos
+> que surjan de HUs/épicas nuevas.
 >
 > **Iteración 8 (2026-09-25):** el sponsor cambió la plataforma después de aceptar 0001–0007. Las
 > restricciones de hosting (CON-1, 2, 3, 5, 7, 15, 16) quedan marcadas como reemplazadas por CON-18..22,
 > que salen de esa decisión, recogida en el PRD v4.12 (D-23 revisada, §8.3 reescrita).
 >
+> **Rebase de medidas (revisión adversarial, 2026-09-26, H17, H2, H9, H33):** la iteración 8 solo había
+> reemplazado las CON; los escenarios que el DoR y `stack_arch` usan como medida seguían describiendo
+> cPanel, PHP, MariaDB, SMTP y cron. Se reescribieron sobre contenedores, PostgreSQL administrado,
+> Mailgun y worker: **UC-1** y **UC-16** (token opaco en el fragmento en lugar de «enlace firmado»),
+> **UC-6** (el equipo ya no va en la URL, T-1), **UC-7** (PostgreSQL + cola del worker; traspaso a
+> Delivery), **UC-11** (aplicación asíncrona en el worker), **UC-14** (Spaces en lugar de carpeta privada), **UC-17** (traza a EP-002 y EP-009 por
+> los eventos de falsación), **UC-19** (último éxito y fallo de tareas críticas), **QA-2** (SSR, origen
+> `nyc`, TTFB, medida en producción en oscuro), **QA-5** (vista `catalogo_publicable`, HTML/RSC,
+> guardas de página), **QA-6** (sin ModSecurity; worker), **QA-7** (réplicas del worker), **QA-8**
+> (Mailgun, dominio de envío `mg.`), **QA-9** y **QA-10** (trabajo del worker con tope y retención de la
+> versión global), **QA-12** (PITR, `pg_dump` + `age`, custodia), **QA-13** (planificador del worker;
+> ADR-0009 deja de redefinirla: esta es la única medida), **QA-14** (tarea `escalar`), **QA-17** (fecha
+> civil de America/Bogota), **CON-6** (inventario de secretos vigente), **CON-20** (dominio de envío
+> `mg.people.trycore.com`), **CRN-9**, **CRN-13** y **CRN-17**. Se añade **UC-20** (armado de equipo,
+> EP-004), que no tenía driver.
+>
 > Las medidas marcadas *a validar* las propone la capa de arquitectura porque el PRD no las fija; se
 > confirman en la revisión única o quedan como riesgo abierto.
+>
+> **Consolidación (2026-09-26):** QA-2 es la fuente única de las metas de rendimiento en producción en
+> oscuro (TTFB P75 ≤ 800 ms, catálogo P95 ≤ 500 ms, *a validar*); V10-15 las mide y V8-6 (c) la cita
+> (I-9, resuelta). QA-3 remite a T-31 el número de códigos vigentes.
 
 ## Cómo se usa este documento en ADD
 
@@ -67,25 +88,26 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 
 | UC | Descripción | Trazabilidad |
 |----|-------------|--------------|
-| UC-1 | **Acceso nominal del cliente**: enlace firmado → correo en la lista de invitados → código de un uso al buzón → sesión por dispositivo. Vencimiento, revocación y renovación con pantallas propias, nunca error crudo | EP-001 · HU-090, HU-092, HU-144 · RF-1.1–1.6, 1.2.7, 1.2.9, 1.2.11, 19.6 · D-4 |
+| UC-1 | **Acceso nominal del cliente**: enlace con token opaco en el fragmento (`/e/#t=`, guardado solo como hash) → correo en la lista de invitados → código de un uso al buzón → sesión por dispositivo. Vencimiento, revocación y renovación con pantallas propias, nunca error crudo | EP-001 · HU-090, HU-092, HU-144 · RF-1.1–1.6, 1.2.7, 1.2.9, 1.2.11, 19.6 · D-4 |
 | UC-2 | **Invitar a un colega** con aprobación de Talento Humano (flujo entre cara cliente y panel) | EP-001 · HU-095 · RF-1.2.10 |
 | UC-3 | **Enlace curado como objeto con registro**: generación desde el panel (lista de códigos, razón, invitados, vigencia), reevaluación del estado de cada perfil al abrir, aperturas, revocación; token en servidor por encima de unas decenas de perfiles | EP-001 · HU-122, HU-144, HU-091, HU-093, HU-094 · RF-19, RF-1.3, RF-2.1–2.2 · spec enlaces-curados |
 | UC-4 | **Catálogo recortado solo con sesión**: el servidor entrega la proyección publicable (sin lista negra B.4, sin fecha de disponibilidad —solo la banda calculada contra la fecha del día—, ciudad solo para el conjunto presencial/híbrido) como proyección desde la BD por la API autenticada del portal | EP-003, EP-009 · RF-3.7, 3.13, 13.5.5.2, 14.0 · §8 Seguridad · §8.3 |
 | UC-5 | **Motor de criterios único y determinista** en el navegador: intérprete propio (léxico, normalización, distancia de edición, patrones), obligatorio/deseable, «cumple N de M», evidencia por criterio, «lo más cercano» = falla exactamente un obligatorio; interpretación separada de recuperación | EP-002, EP-009, EP-010 · HU-065, 074, 085, 118, 119, 076, 121 · RF-2.6, 13.7–13.10, 13.12, 14.3, 16.3 · D-14, D-24 |
-| UC-6 | **Estado en la URL y persistencia local**: criterios, vista, ámbito, ficha abierta y equipo en la URL; Perfil Objetivo y preferencias por dispositivo con esquema versionado | EP-002, EP-009 · HU-073, HU-096 · RF-2.5, 13.4, 16.4, 19.8 · D-16 |
-| UC-7 | **Solicitud durable hacia HubSpot**: se guarda primero en MariaDB y luego crea el negocio en el pipeline propio con propiedades, línea de tiempo y propietario; resolución de contacto/empresa sin duplicar; negocio nuevo relacionado si ya hay uno abierto; cola de reintento como tabla + cron | EP-005, EP-007 · HU-096–101, 102, 104, 105, 106, 107, 077 · RF-5, 9.1–9.6.2, 17 · D-6, D-7, D-21 |
+| UC-6 | **Estado en la URL y persistencia local**: criterios, vista, ámbito y ficha abierta en la URL con un contrato único de parámetros; Perfil Objetivo y preferencias por dispositivo con esquema versionado. Desde T-1 el equipo vive en servidor por invitado (UC-20), no en la URL | EP-002, EP-009 · HU-073, HU-096 · RF-2.5, 13.4, 16.4, 19.8 · D-16 |
+| UC-7 | **Solicitud durable hacia HubSpot**: se guarda primero en PostgreSQL (con su trabajo en la cola `trabajos`, en la misma transacción) y el worker crea el negocio en el pipeline propio con propiedades, línea de tiempo y propietario; resolución de contacto/empresa sin duplicar; negocio nuevo relacionado si ya hay uno abierto; reintento por la cola sin techo. Traspaso a Delivery con la especificación completa y la marca revisada/inferida (RF-17.1, RF-17.5) y fechas de alineación primera y actual (RF-9.1.3) | EP-005, EP-007 · HU-096–101, 102, 104, 105, 106, 107, 077 · RF-5, 9.1–9.6.2, 17 · D-6, D-7, D-21 |
 | UC-8 | **Camino del cero y registro de demanda**: solicitud de perfil a medida + especificación estructurada completa; opciones fuera del banco viajan pero no filtran; sondeo como tarjeta no-perfil con voto a HubSpot | EP-010, EP-002 · HU-075, 077, 078 · RF-10, 11, 14.3, 15.1, 13.7.3 · D-11, D-12 |
 | UC-9 | **Acceso al panel**: correo `@trycore.com` inscrito en lista nominal + código + sesión ≤ 12 h con cierre por inactividad a 60 min; roles administrador/observador aplicados en servidor; respuesta neutra; primer administrador sembrado en configuración | EP-006 · HU-123, HU-124 · RF-8.1–8.1.6 · D-22 |
 | UC-10 | **Ciclo de vida del perfil y consentimiento**: máquina de estados única (borrador · publicado · pausado · archivado) con guardas de publicación; consentimiento nominal con alcance; revocar despublica; sin borrado físico | EP-006 · HU-125–130, 132–135 · RF-8.2–8.5, 8.7, 8.10, 8.14 · B.9.2 |
-| UC-11 | **Importación masiva y reversión**: detección de formato, vista previa sin escritura, tres modos, fusión por campo, código duplicado = error, síncrona con límite de filas; revertir la última importación con foto previa y detección de conflictos; exportación del banco | EP-006 · HU-086, 087, 088, 141, 142 · RF-8.15 · spec importacion-masiva |
+| UC-11 | **Importación masiva y reversión**: detección de formato, vista previa sin escritura, tres modos, fusión por campo, código duplicado = error, aplicación en el worker (asíncrona, estado del lote consultable) con límite de filas medido; revertir la última importación con foto previa y detección de conflictos; exportación del banco | EP-006 · HU-086, 087, 088, 141, 142 · RF-8.15 · spec importacion-masiva |
 | UC-12 | **Auditoría por campo** de toda vía de escritura (panel, importación, reversión, sincronización, fusión, revocación), consultable también en archivados | EP-006 · HU-138 · RF-8.9, 8.1.3 |
 | UC-13 | **Catálogos paramétricos y léxico** administrables sin despliegue, con dependencias rol → familia → modalidades, detección de parecidos, desactivar en vez de borrar, fusión con impacto; Gemini propone léxico y una persona aprueba | EP-006 · HU-089, 139, 143 · RF-8.12, 8.12.1, 8.16 · D-24 |
-| UC-14 | **Colocados y evidencia**: espejo de solo lectura sincronizado a diario; artefacto de evidencia (documento, transcripción o enlace; sin video; ≤ 64 MB) en carpeta privada; borrador de campos revisado por persona | EP-006 · HU-131, 137, 140 · RF-8.11, 8.11.1, 8.13 · B.8.4, B.9.3 |
+| UC-14 | **Colocados y evidencia**: espejo de solo lectura sincronizado a diario; artefacto de evidencia (documento, transcripción o enlace; sin video; ≤ 64 MB) en almacenamiento de objetos privado (DO Spaces) con URL prefirmadas solo desde el panel; borrador de campos revisado por persona | EP-006 · HU-131, 137, 140 · RF-8.11, 8.11.1, 8.13 · B.8.4, B.9.3 |
 | UC-15 | **Notificación y escalamiento por horas hábiles**: aviso al propietario de la cuenta y a Coordinación de Servicio por el canal diario; 4 h hábiles sin apertura → Dirección Comercial; 24 h sin cambio de etapa → Dirección General; tiempo hasta la primera apertura registrado | EP-007 · HU-101, HU-103 · RF-9.5, 9.7, 17.1–17.2 |
-| UC-16 | **Correo curado**: armado desde el panel contra el inventario del momento, enlace firmado por destinatario, envío programado, bajas persistentes, medición de apertura/clic/entrada y regla de 3 envíos sin abrir | EP-011 · HU-113–117 · RF-18, 1.6 · spec correo-curado |
-| UC-17 | **Telemetría con atribución**: eventos RF-7 atribuidos a cuenta, correo invitado, sesión, conjunto curado y envío; informes de embudo, acierto de curaduría, filtros y rutas sin trabajo manual | EP-008 · HU-108–112 · RF-7 · §8 Trazabilidad |
+| UC-16 | **Correo curado**: armado desde el panel contra el inventario del momento, enlace directo `/e/#t=` con token opaco por destinatario (guardado solo como hash), envío programado, bajas persistentes, medición de apertura/clic/entrada y regla de 3 envíos sin abrir | EP-011 · HU-113–117 · RF-18, 1.6 · spec correo-curado |
+| UC-17 | **Telemetría con atribución**: eventos RF-7 atribuidos a cuenta, correo invitado, sesión, conjunto curado y envío; informes de embudo, acierto de curaduría, filtros y rutas sin trabajo manual; eventos de falsación (instrucción, Perfil Objetivo, cero, cercanos, composiciones, variante asignada en servidor) capturados desde el primer slice que los emite | EP-008, EP-002, EP-009 · HU-108–112 · RF-7, RF-12.1, RF-13.1, RF-14.2, RF-14.7 · §8 Trazabilidad, §14.7 |
 | UC-18 | **Gemini acotado**: extracción de criterios de requerimientos pegados largos con salida estructurada y vuelta al intérprete determinista; propuestas periódicas de léxico | EP-009, EP-006 · HU-067, 072, 139 · RF-12.2.1, 8.12.1, 16 · D-24 |
-| UC-19 | **Tareas programadas vigiladas**: reintento, escalamiento, sincronización, boletín y propuestas de léxico registran cada ejecución; alerta si alguna supera 2× su intervalo | EP-007 · RF-9.6.2 · §8.3 |
+| UC-19 | **Tareas programadas vigiladas**: las tareas del planificador del worker (escalamiento, sincronización, boletín, léxico, verificación de auditoría, exportación, retención) registran cada ejecución y su último éxito; una tarea fallida se reintenta sin esperar a su siguiente vencimiento; alerta si el último éxito supera 2× su intervalo y, en las críticas, al primer fallo | EP-007 · RF-9.6.2 · §8.3 |
+| UC-20 | **Armado de equipo**: sumar y quitar perfiles de «Mi equipo» (por invitado en servidor, T-1) desde ficha, tarjetas y tabla, incluida la selección múltiple de la tabla en una sola operación, sin perder cambios entre pestañas o dispositivos; indicador siempre visible; resumen del conjunto con roles cubiertos y fecha de inicio más temprana expresada como banda, nunca como fecha (CON-10); vacíos de composición en tono informativo; comparador de hasta 3 perfiles con los mismos criterios y el mismo motor (alcance pendiente de negocio, T-22); la selección sobrevive dentro de la vigencia del acceso | EP-004 · HU-080, HU-084, HU-120 (EP-003), HU-121 (EP-002) · RF-4.1–4.5, 13.12.4, 14.6 · D-16, T-1 |
 
 ## 3. Escenarios de atributos de calidad (QA) — formato de 6 partes
 
@@ -102,10 +124,10 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 ### QA-2 — Primer render útil · (A, A)
 - **Fuente:** cliente que llega desde el correo.
 - **Estímulo:** abre el enlace (primera visita o retorno con sesión).
-- **Artefacto:** sitio estático, entrega del catálogo, aterrizaje curado.
-- **Entorno:** red 4G (perfil «Slow 4G»), Cloudflare delante.
+- **Artefacto:** HTML renderizado por Next en el servidor con el bloque curado del enlace en el primer HTML (SSR por la proyección), aterrizaje `/e/#t=` y `GET /api/v1/catalogo` para revalidar.
+- **Entorno:** red 4G (perfil «Slow 4G») desde Colombia; Cloudflare delante (sin caché de borde para el HTML, que lleva nonce); origen en App Platform `nyc`.
 - **Respuesta:** ve la selección curada con su razón.
-- **Medida:** LCP < 2,5 s en P75 (§8); JS inicial ≤ 200 KB comprimido (*a validar*); catálogo servido en ≤ 500 ms (*a validar*).
+- **Medida:** LCP < 2,5 s en P75 (§8); JS inicial ≤ 200 KB comprimido (*a validar*); TTFB P75 del HTML ≤ 800 ms (*a validar*); catálogo P95 ≤ 500 ms (*a validar*). LCP, TTFB y catálogo se miden **en producción en oscuro** tras Cloudflare desde Colombia (V10-15, V8-6 c); Lighthouse contra el contenedor en CI es regresión, no evidencia de la medida.
 
 ### QA-3 — Seguridad del acceso del cliente · (A, A)
 - **Fuente:** atacante con el enlace o colega no invitado.
@@ -113,7 +135,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Artefacto:** puerta de acceso, endpoints de token y código.
 - **Entorno:** sin sesión.
 - **Respuesta:** rechaza, aplica espera y no revela quién está invitado.
-- **Medida:** 0 accesos con correo no invitado; tope de 5 intentos por enlace y por dirección (RF-1.2.9) más límite de Cloudflare; código de 6 dígitos, un uso, vigente ≤ 10 min (*a validar*); enlace manipulado → 0 bytes de inventario (HU-090); revocación efectiva en la siguiente petición (≤ 60 s, *a validar*).
+- **Medida:** 0 accesos con correo no invitado; tope de 5 intentos por enlace y por dirección (RF-1.2.9) en la aplicación, con la regla de Cloudflare solo como mitigación de ráfagas; tiempo de respuesta indistinguible entre invitado y no invitado también en modo degradado (worker caído); código de 6 dígitos, un uso, vigente ≤ 10 min (*a validar*; cuántos códigos pueden estar vigentes a la vez por persona tras un envío ambiguo, 1 o hasta 3, lo decide negocio en T-31); enlace manipulado → 0 bytes de inventario (HU-090); revocación efectiva en la siguiente petición (≤ 60 s, *a validar*).
 
 ### QA-4 — Autorización del panel · (A, A)
 - **Fuente:** observador, o tercero con correo `@trycore.com` no inscrito.
@@ -125,43 +147,43 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 
 ### QA-5 — Confidencialidad y Ley 1581 · (A, A)
 - **Fuente:** cualquier cliente HTTP, la importación o una revocación.
-- **Estímulo:** pide el catálogo o la ficha, inspecciona el bundle, publica sin consentimiento o revoca uno.
-- **Artefacto:** proyección del catálogo, guardas de estado, proxy de Gemini, build estático.
+- **Estímulo:** pide el catálogo, la ficha o una página protegida, inspecciona el bundle o el HTML, publica sin consentimiento o revoca uno.
+- **Artefacto:** proyección del catálogo sobre la vista `catalogo_publicable`, guardas de página y de estado, adaptador de Gemini, HTML y payload RSC renderizados, bundle e imagen.
 - **Entorno:** producción con datos reales.
-- **Respuesta:** sin sesión 401; con sesión, proyección recortada; publicar sin consentimiento se bloquea; revocar despublica.
-- **Medida:** 0 campos de B.4, 0 fechas de disponibilidad y 0 ciudades fuera del contexto presencial/híbrido en el payload (test de contrato); invariante en BD de 0 publicados sin consentimiento vigente; revocación excluida del catálogo en la siguiente petición; 0 URL públicas a artefactos; 0 datos de perfil hacia Gemini; 0 secretos en el bundle (grep en CI); `noindex` en el 100 % de las respuestas.
+- **Respuesta:** sin sesión 401 en la API y redirección sin payload en las páginas; con sesión, proyección recortada; publicar sin consentimiento se bloquea; revocar despublica.
+- **Medida:** 0 campos de B.4, 0 fechas de disponibilidad y 0 ciudades fuera del contexto presencial/híbrido en el payload JSON **y** en el HTML/RSC de cada página (test de contrato y rastreo); 0 páginas protegidas renderizadas sin sesión (recorrido del manifiesto de rutas); el rol de BD del portal no puede leer tablas base de inventario (test de permisos, también en producción en oscuro); invariante en BD de 0 publicados sin consentimiento vigente; revocación excluida del catálogo en la siguiente petición; 0 URL públicas a artefactos; 0 datos de perfil hacia Gemini; 0 secretos en el bundle (grep en CI); `noindex` en el 100 % de las respuestas.
 
 ### QA-6 — Durabilidad de la solicitud y entrega a HubSpot · (A, A)
 - **Fuente:** HubSpot o la red de salida.
-- **Estímulo:** 5xx, timeout o 429 al crear el negocio; ModSecurity interfiere.
-- **Artefacto:** endpoint de solicitud y cola de trabajos.
-- **Entorno:** HubSpot caído hasta 24 h; hosting operativo.
+- **Estímulo:** 5xx, timeout o 429 al crear el negocio.
+- **Artefacto:** Route Handler de solicitud, cola `trabajos` (outbox en la misma transacción) y worker.
+- **Entorno:** HubSpot caído hasta 24 h; portal, worker y BD operativos.
 - **Respuesta:** persiste, confirma al cliente, reintenta con espera creciente, alerta y entrega al volver.
-- **Medida:** 0 solicitudes perdidas (100 % persistidas antes de responder); confirmación P95 ≤ 2 s sin depender de HubSpot (*a validar*); alerta al tercer fallo (RF-9.6.1); entrega ≤ 60 min tras la recuperación (*a validar*). Fuera de alcance: pérdida del servidor (CRN-9).
+- **Medida:** 0 solicitudes perdidas (100 % persistidas antes de responder); confirmación P95 ≤ 2 s sin depender de HubSpot (*a validar*); alerta al tercer fallo (RF-9.6.1); entrega ≤ 60 min tras la recuperación (*a validar*). Fuera de alcance: pérdida de la BD o de la cuenta (QA-12, CRN-9).
 
 ### QA-7 — Idempotencia · (A, A)
-- **Fuente:** el cron de reintento, corridas solapadas o doble envío del cliente.
-- **Estímulo:** HubSpot creó el negocio y la respuesta se perdió; una corrida se solapa con la siguiente.
+- **Fuente:** los reintentos del worker, varias réplicas del worker o doble envío del cliente.
+- **Estímulo:** HubSpot creó el negocio y la respuesta se perdió; un trabajo con arrendamiento vencido lo retoma otro reclamo mientras el primero sigue vivo.
 - **Artefacto:** creación de negocio, contacto y empresa.
 - **Entorno:** fallo parcial.
-- **Respuesta:** reconoce lo ya creado por clave de idempotencia y bloqueo por trabajo.
-- **Medida:** en inyección de 50 respuestas perdidas y corridas solapadas: 0 negocios y 0 empresas duplicados; misma especificación reciente → 0 negocios nuevos (D-7).
+- **Respuesta:** reconoce lo ya creado por clave de idempotencia; reclamo por fila con arrendamiento y cierre condicionado al reclamo.
+- **Medida:** en inyección de 50 respuestas perdidas y dos réplicas del worker en paralelo: 0 negocios y 0 empresas duplicados; misma especificación reciente → 0 negocios nuevos (D-7).
 
 ### QA-8 — Entrega de correo (códigos, avisos, boletín) · (A, A)
-- **Fuente:** el portal, vía SMTP autenticado de `notify@people.trycore.com`.
+- **Fuente:** el worker (y portal y panel en modo degradado del acceso), por la API de Mailgun con dominio de envío `mg.people.trycore.com` y remitente visible `notify@people.trycore.com`.
 - **Estímulo:** código de acceso, aviso de solicitud o boletín.
-- **Artefacto:** módulo de correo saliente.
-- **Entorno:** IP compartida 192.99.84.46; destinatarios en Google Workspace y buzones corporativos de clientes.
-- **Respuesta:** llega a la bandeja de entrada; rebotes clasificados aparte.
-- **Medida:** SPF, DKIM y DMARC en pass en el 100 %; código de acceso en bandeja P95 ≤ 60 s (*a validar*); ≥ 95 % en bandeja principal en prueba con buzones reales antes del primer envío (*a validar*); 0 envíos por `sendmail`.
+- **Artefacto:** adaptador de correo (`packages/infra`), trabajos de envío y webhook de eventos de Mailgun.
+- **Entorno:** IP de envío de Mailgun; destinatarios en Google Workspace y buzones corporativos de clientes, con listas grises; envíos con resultado ambiguo (timeout o 5xx).
+- **Respuesta:** llega a la bandeja de entrada; rebotes, quejas y bajas llegan por webhook firmado y se clasifican aparte.
+- **Medida:** SPF y DKIM en pass para el dominio de envío y DMARC en pass alineado en modo relajado en el 100 %; 0 registros DNS en conflicto con el host web; código de acceso en bandeja P95 ≤ 60 s (*a validar*); ≥ 95 % en bandeja principal en prueba con buzones reales antes del primer envío (*a validar*); tras un envío ambiguo, el primer código entregado sigue siendo válido; 0 envíos por SMTP o `sendmail` (grep en CI).
 
 ### QA-9 — Integridad transaccional de la importación · (A, A)
 - **Fuente:** administradora de inventario.
-- **Estímulo:** confirma una importación y el proceso falla a mitad (timeout, ModSecurity, error de BD).
-- **Artefacto:** servicio de importación.
-- **Entorno:** hosting compartido (180 s, 512 MB).
-- **Respuesta:** todo o nada; la vista previa no escribe.
-- **Medida:** 0 perfiles aplicados a medias; diff = 0 tras una corrida abortada; reimportar el mismo archivo deja 100 % «sin cambios»; confirmar el límite de filas en P95 ≤ 30 s con límite de 200 filas (*a validar*); 0 perfiles publicados o con consentimiento concedido por importación.
+- **Estímulo:** confirma una importación y la aplicación falla a mitad (error de BD, tope de tiempo agotado, worker reiniciado o arrendamiento vencido).
+- **Artefacto:** trabajo `aplicar_importacion` del worker (concurrencia 1, sin reintento automático).
+- **Entorno:** worker con tope de tiempo por trabajo y arrendamiento de la cola; panel en uso concurrente.
+- **Respuesta:** todo o nada; la vista previa no escribe; un reclamo que retome el trabajo no reaplica.
+- **Medida:** 0 perfiles aplicados a medias; diff = 0 tras una corrida abortada o un proceso muerto, sin reaplicación; reimportar el mismo archivo deja 100 % «sin cambios»; límite de filas fijado por medición, con la aplicación dentro del tope del trabajo y retención de la versión global y de la cabeza de auditoría ≤ 5 s P95 con guardados concurrentes del panel y 0 respuestas 503 (*a validar*); 0 perfiles publicados o con consentimiento concedido por importación.
 
 ### QA-10 — Reversibilidad de la importación · (A, A)
 - **Fuente:** administradora.
@@ -169,7 +191,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Artefacto:** lote de importación con foto previa.
 - **Entorno:** normal.
 - **Respuesta:** restaura, archiva lo creado y avisa de conflictos.
-- **Medida:** 100 % de los actualizados con diff = 0 contra la foto; 100 % de los creados archivados y 0 borrados; 100 % de conflictos mostrados antes de aplicar; revertir una que no es la última → rechazo en el 100 %; ≤ 30 s (*a validar*).
+- **Medida:** 100 % de los actualizados con diff = 0 contra la foto; 100 % de los creados archivados y 0 borrados; 100 % de conflictos mostrados antes de aplicar; revertir una que no es la última → rechazo en el 100 %; dentro del tope del trabajo y con la misma cota de retención de la versión global que QA-9 (*a validar*).
 
 ### QA-11 — Auditoría completa · (A, A)
 - **Fuente:** cualquier vía de escritura.
@@ -180,25 +202,25 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Medida:** 1:1 mutaciones ↔ entradas en la batería de pruebas; 0 entradas sin autor; registro de solo inserción con evidencia de manipulación (cadena de hashes) verificable; historia de archivados consultable al 100 %.
 
 ### QA-12 — Recuperabilidad · (A, A)
-- **Fuente:** fallo de BD, error humano masivo o pérdida del servidor.
+- **Fuente:** fallo o corrupción de la BD, error humano masivo, pérdida de la cuenta o de la región de DigitalOcean.
 - **Estímulo:** datos corruptos o perdidos.
-- **Artefacto:** MariaDB, carpeta privada, JetBackup, exportación del banco.
+- **Artefacto:** PostgreSQL administrado (respaldo diario + PITR de 7 días), Spaces, exportación semanal `pg_dump` completa cifrada con `age` fuera del proveedor, custodia de secretos fuera de DO.
 - **Entorno:** degradado.
-- **Respuesta:** restaurar, o reconstruir desde exportación.
-- **Medida:** pérdida máxima ≤ 24 h (§8.3); restauración ≤ 4 h (*a validar*); una restauración de prueba superada antes de producción; exportación → importación deja 100 % «sin cambios». Pérdida del servidor: riesgo aceptado (§10.3).
+- **Respuesta:** restaurar por PITR con el runbook de conciliación (cola, HubSpot, Mailgun, tramo nuevo de auditoría), o reconstruir desde el volcado con los secretos custodiados.
+- **Medida:** pérdida máxima ≤ 24 h ante fallo de la BD (con PITR, minutos) (§8.3) y ≤ 7 días ante pérdida de cuenta o región (T-16); restauración ≤ 4 h (*a validar*); una restauración de prueba en producción en oscuro superada antes del primer envío real, con 0 reenvíos a bajas y 0 negocios huérfanos; desde el volcado y la custodia, sin acceso a DO, consentimientos y cadena de auditoría verificados al 100 %. Evidencias de Spaces sin copia fuera de DO: riesgo aceptado (T-16).
 
 ### QA-13 — Observabilidad de las tareas programadas · (A, A)
-- **Fuente:** el hosting.
-- **Estímulo:** una tarea deja de ejecutarse o termina con error.
-- **Artefacto:** crons de reintento, escalamiento, sincronización, boletín y léxico.
-- **Entorno:** fallo silencioso.
-- **Respuesta:** aviso al responsable técnico; cada corrida registra inicio, fin, resultado y cantidad.
-- **Medida:** alerta cuando una tarea supera 2× su intervalo (≤ 10 min reintento, ≤ 30 min escalamiento, ≤ 48 h diaria) (RF-9.6.2); 100 % de corridas registradas; cada corrida < 180 s; la vigilancia no depende solo del cron.
+- **Fuente:** el worker y su planificador.
+- **Estímulo:** una tarea programada deja de ejecutarse o termina con error; el worker cae o un trabajo se queda atascado.
+- **Artefacto:** planificador del worker (`tareas_programadas`: escalamiento, sincronización, boletín, léxico, verificación de auditoría, exportación, retención), cola `trabajos`, latido externo.
+- **Entorno:** fallo silencioso (tarea que falla en cada corrida, proceso muerto a mitad, worker caído).
+- **Respuesta:** reintento acotado de la tarea y aviso al responsable técnico; cada corrida registra inicio, fin, resultado y cantidad.
+- **Medida:** ningún trabajo retiene su fila más que su arrendamiento vigente; una corrida fallida no cuenta como éxito y la tarea se reintenta en ≤ 15 min sin esperar a su siguiente vencimiento; alerta cuando el **último éxito** de una tarea supera 2× su intervalo (≤ 30 min escalamiento, ≤ 48 h diaria, ≤ 14 días semanal) y **al primer fallo** de las tareas críticas (`verificar_auditoria`, `exportar_banco`, `escalar`) (RF-9.6.2); 100 % de corridas registradas; latido externo que alerta a ≤ 10 min sin ciclo del worker; la vigilancia no depende solo del worker (monitor externo y chequeo web). Única definición de la medida: los ADR la citan, no la redefinen.
 
 ### QA-14 — Escalamiento a tiempo · (A, A)
 - **Fuente:** el reloj hábil.
 - **Estímulo:** vencen 4 h hábiles sin apertura o 24 h hábiles sin cambio de etapa.
-- **Artefacto:** cron de escalamiento y consulta a HubSpot.
+- **Artefacto:** tarea `escalar` del planificador del worker (cada 15 min, crítica) y consulta a HubSpot.
 - **Entorno:** incluye noches, fines de semana y festivos.
 - **Respuesta:** avisa a Dirección Comercial o a Dirección General.
 - **Medida:** escalamiento entre el vencimiento y +15 min; 0 escalamientos por horas no hábiles en prueba con reloj simulado sobre una semana con festivo; 100 % de solicitudes con el tiempo hasta la primera apertura registrado.
@@ -225,7 +247,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Artefacto:** reevaluación al abrir y cálculo de la banda.
 - **Entorno:** enlace abierto días después.
 - **Respuesta:** muestra el estado real.
-- **Medida:** 0 perfiles omitidos en silencio (RF-19.2); 0 «Inmediato» con fecha vencida y > 30 días sin tocar (RF-8.14.4); banda calculada contra la fecha del día en el 100 %.
+- **Medida:** 0 perfiles omitidos en silencio (RF-19.2); 0 «Inmediato» con fecha vencida y > 30 días sin tocar (RF-8.14.4); banda calculada contra la fecha civil del día en `America/Bogota` (no la UTC del contenedor) en el 100 %.
 
 ### QA-18 — Móvil · (A, M)
 - **Fuente:** cliente en teléfono.
@@ -276,7 +298,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-3 | ⛔ **Reemplazada en la iteración 8 por CON-18** (despliegue por imagen, ADR-0010). Texto original: Despliegue Local → GitHub → *Update from Remote* → *Deploy* con `.cpanel.yml`; árbol del servidor limpio; **nunca `node_modules`** (inodos al 20 %) | §8.3, hosting §3–§4 |
 | CON-4 | Acceso sin proveedor de identidad: cliente por lista nominal de invitados + código; panel por lista nominal `@trycore.com` + código + sesión ≤ 12 h / 60 min | D-4, D-22, RF-1.2, RF-8.1 |
 | CON-5 | ⛔ **Reemplazada en la iteración 8 por CON-20**. Texto original: Correo solo por SMTP autenticado de `notify@people.trycore.com`; `sendmail` prohibido; `trycore.com` sigue en Google Workspace | §8.3, hosting §7 |
-| CON-6 | Secretos solo en servidor (desde la iteración 8: variables `SECRET` de App Platform, nunca en repositorio ni imagen; añade `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `SPACES_*`, `LATIDO_URL`; `SMTP_PASSWORD` desaparece). Texto original: en configuración PHP fuera de la carpeta pública: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `SMTP_PASSWORD`, `LINK_SIGNING_SECRET`, secreto de códigos, credenciales de BD | §8.3 |
+| CON-6 | Secretos solo en servidor. **Vigente (revisión 2026-09-26):** variables `SECRET` de App Platform por componente y con mínimo privilegio (cada proceso recibe solo las que usa), nunca en repositorio ni imagen: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `MAILGUN_SENDING_KEY` (una por componente), `MAILGUN_SUPPRESSIONS_KEY` (solo worker), `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `AUDIT_KEK`, `EMAIL_HMAC_KEY`, `OTP_PEPPER_CLIENTE` y `OTP_PEPPER_PANEL`, `EVENTOS_SEUDONIMO_SAL`, `SPACES_*`, `LATIDO_URL`, `SALUD_TOKEN` y una cadena de conexión por usuario de BD; copia cifrada de los secretos y de la llave privada `age` custodiada fuera de DO (T-24). Salen `SMTP_PASSWORD`, `MAILGUN_API_KEY` (llave de cuenta, en custodia) y `LINK_SIGNING_SECRET` (modelo de token opaco, ADR-0002). Iteración 8 (ya sustituido): añadía `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `SPACES_*`, `LATIDO_URL`. Texto original: en configuración PHP fuera de la carpeta pública: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `SMTP_PASSWORD`, `LINK_SIGNING_SECRET`, secreto de códigos, credenciales de BD | §8.3 |
 | CON-7 | ⛔ **Reemplazada en la iteración 8 por CON-21**. Texto original: Llamadas externas solo con `curl`; nunca `file_get_contents` con URL del usuario | hosting §2 |
 | CON-8 | Gemini solo en RF-12.2.1 y RF-8.12.1; recibe consulta y taxonomía, **nunca datos de perfiles**; no redacta sobre personas; desarrollo con token personal y solo datos ficticios | RF-16, D-24 |
 | CON-9 | El portal solo lee; la única escritura del inventario es el panel; catálogo solo tras sesión, como proyección desde la BD por la API autenticada; nunca API abierta | §8, §8.3 |
@@ -290,7 +312,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-17 | Alcance completo del panel en el MVP | D-8 |
 | CON-18 | **Contenedores Docker portables**; destino inicial **DigitalOcean App Platform**. Backend TypeScript con **Next.js** (servidor + rutas de API) y un **worker Node** para trabajo diferido. El hosting cPanel se abandona | D-23 revisada, PRD v4.12 §8.3 |
 | CON-19 | **PostgreSQL administrado** (respaldos y PITR fuera de los contenedores) | D-23 revisada, PRD v4.12 §8.3 |
-| CON-20 | Correo transaccional y boletín **solo por Mailgun** desde `notify@people.trycore.com`; `trycore.com` sigue en Google Workspace | PRD v4.12 §8.3 (sustituye a CON-5) |
+| CON-20 | Correo transaccional y boletín **solo por Mailgun**, con **dominio de envío `mg.people.trycore.com`** (staging: `mg.people-staging.trycore.com`), subdominio sin host web para que SPF, DKIM, MX de rebotes y CNAME de seguimiento no choquen con el CNAME del portal; remitente visible `notify@people.trycore.com` con alineación DMARC relajada; `trycore.com` sigue en Google Workspace | PRD v4.12 §8.3 (sustituye a CON-5); revisión adversarial H2 |
 | CON-21 | Llamadas externas **solo desde el servidor**, por adaptadores con timeout; nunca a URL aportadas por el usuario | Derivada de CON-7 y de la frontera de `build-config.json` (iteración 8) |
 | CON-22 | **Cloudflare delante** de los 4 hosts (proxy, caché de estáticos, límite de peticiones en el acceso) y el origen no alcanzable saltándose Cloudflare | Derivada de CON-15 (iteración 8) |
 
@@ -306,15 +328,15 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CRN-6 | Salida HTTPS hacia `generativelanguage.googleapis.com` no verificada; cuotas y coste de la llave de producción desconocidos | Verificar en el servidor antes de EP-009; presupuesto de llamadas |
 | CRN-7 | Permisos de la private app de HubSpot, pipeline y propiedades dependen de Mercadeo y Comercial; correspondencia cuenta del portal ↔ empresa de HubSpot | La cuenta guarda el id de empresa y propietario de HubSpot |
 | CRN-8 | (Iteración 8: el equivalente es la caída o el atasco del worker.) Si cae el crontab entero, la vigilancia de RF-9.6.2 cae con él | Vigilancia secundaria apoyada en el tráfico web o un monitor externo |
-| CRN-9 | Pérdida del servidor = pérdida de cola, auditoría, consentimientos y artefactos; la importación no puede reponer consentimientos | Riesgo aceptado; exportación periódica recomendada; declarar la consecuencia |
+| CRN-9 | Pérdida del servidor = pérdida de cola, auditoría, consentimientos y artefactos; la importación no puede reponer consentimientos. (Iteración 8 y revisión 2026-09-26: el equivalente es la pérdida de la BD, cubierta por PITR, o de la cuenta o región de DO, cubierta por el volcado `pg_dump` semanal, que **sí** restituye consentimientos y auditoría, más la custodia de secretos fuera de DO; las evidencias de Spaces no tienen copia, T-16) | Riesgo aceptado hasta 7 días; exportación semanal cifrada; custodia de secretos (T-24); declarar la consecuencia |
 | CRN-10 | Telemetría y notificaciones llevan datos personales; retención no definida (Ley 1581) | Política de retención propuesta y a validar |
 | CRN-11 | Motor del borrador de evidencia (HU-140) sin autorizar: D-24 no cubre RF-8.11 y el artefacto contiene datos personales | Decisión de negocio: ampliar D-24 con saneamiento, extracción determinista o diferir con acuerdo del equipo |
 | CRN-12 | Dónde vive «Mi equipo»: por dispositivo (D-16) o por invitado en servidor (RF-4.1, HU-095) | Decisión de negocio; cambia el modelo de datos |
-| CRN-13 | Documentos de discovery con restos anteriores a D-4/D-16 (EP-009 «contra la cuenta», HU-090 «entra directamente», RF-13.4.1, §13.7, §10.3 «sin nombre completo») | Corrección en discovery con aprobación; no bloquea la arquitectura |
+| CRN-13 | Documentos de discovery con restos anteriores a D-4/D-16 (EP-009 «contra la cuenta», HU-090 «entra directamente», RF-13.4.1, §13.7, §10.3 «sin nombre completo») | Corrección en discovery con aprobación; no bloquea la arquitectura, pero **sí el DoR de EP-001**: el AC de HU-090 contradice D-4 revisada y RF-1.2 (revisión 2026-09-26, H6; T-18) |
 | CRN-14 | Nivel 0 de validación contradictorio (RF-8.10 «se deriva del rol» vs. B.8.1 «no se deriva automáticamente») | Define si la modalidad es obligatoria para publicar; corregir en discovery |
 | CRN-15 | Concurrencia: dos administradoras editando el mismo perfil | Control de concurrencia optimista |
 | CRN-16 | Números sin fijar: duración de la sesión del cliente, vigencia del enlace, vigencia del código, umbral de confianza de RF-12.3, límite de filas de importación | Valores propuestos por la arquitectura, a validar |
-| CRN-17 | Sin SLO de disponibilidad en el PRD; hosting compartido | Se declara como hueco, no como QA |
+| CRN-17 | Sin SLO de disponibilidad en el PRD (desde la iteración 8, App Platform sin SLO contratado para este producto) | Se declara como hueco, no como QA |
 | CRN-18 | ⛔ **No aplica desde la iteración 8** (no hay ModSecurity). Texto original: ModSecurity puede bloquear POST legítimos (solicitud, requerimiento pegado, importación) | Pruebas con cargas reales y excepciones por regla |
 | CRN-19 | Hipótesis rival D-17: la entrada por instrucción debe poder retirarse sin tocar ficha, cero ni registro de demanda | Módulos separables |
 | CRN-20 | Agendamiento en el portal (HU-099) marcado v1.1 sin proveedor de calendario | Fuera de esta capa; la fecha de alineación debe llegar al negocio (RF-9.1.3) |
@@ -330,13 +352,13 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | **5** | Fase 9 · EP-005, EP-007, EP-011 | UC-7, 15, 16, 19 · QA-6, 7, 8, 13, 14, 22 · CON-5, 7 · CRN-1, 2, 3, 4, 5, 7, 8 | Integraciones y trabajo diferido | [0005](0005-integraciones-y-trabajo-diferido.md) |
 | **6** | Fase 8 · EP-008 | UC-17 · QA-21 · CRN-10 | Telemetría y atribución | [0006](0006-telemetria-y-atribucion.md) |
 | **7** | Transversal · salida a producción | CON-3, 15 · QA-12, 13 · CRN-17, 18 | Entornos, CI/CD, despliegue y perímetro | [0007](0007-entornos-despliegue-y-perimetro.md) |
-| **8** | Transversal · replanteo de plataforma (2026-09-25) | CON-18, 19, 20, 21, 22 · re-evaluación de UC-4, 5, 7, 15, 16, 19 · QA-1, 2, 4, 6, 7, 8, 12, 13, 14, 18, 19, 22 · CON-6, 9, 12, 13, 14 · CRN-1–5, 7–9, 17, 19 | Sistema completo sobre la nueva plataforma; enmiendas a 0002, 0003, 0004, 0006 | [0008](0008-plataforma-contenedores-y-stack.md), [0009](0009-trabajo-diferido-worker-y-correo.md), [0010](0010-entornos-despliegue-y-perimetro.md) |
+| **8** | Transversal · replanteo de plataforma (2026-09-25) | CON-18, 19, 20, 21, 22 · re-evaluación de UC-4, 5, 7, 15, 16, 19 · QA-1, 2, 4, 6, 7, 8, 12, 13, 14, 18, 19, 22 · CON-6, 9, 12, 13, 14 · CRN-1–5, 7–9, 17, 19 | Sistema completo sobre la nueva plataforma; enmiendas a 0002, 0003, 0004, 0006. **Revisión adversarial multiagente (2026-09-26):** 46 hallazgos verificados incorporados en 0000, 0002–0004, 0006, 0008–0010; nuevo UC-20 (armado de equipo) cubierto en la enmienda de 0004 | [0008](0008-plataforma-contenedores-y-stack.md), [0009](0009-trabajo-diferido-worker-y-correo.md), [0010](0010-entornos-despliegue-y-perimetro.md) |
 
 ## 7. Matriz de priorización (Importancia de negocio × Impacto arquitectónico)
 
 | | Impacto arq. ALTO | Impacto arq. MEDIO | Impacto arq. BAJO |
 |---|---|---|---|
-| **Negocio ALTO** | QA-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 · UC-1, 3, 4, 5, 7, 9, 10, 11, 12, 15 | QA-15, 16, 17, 18, 19, 20, 21, 22 · UC-2, 6, 8, 13, 16, 17, 19 | — |
+| **Negocio ALTO** | QA-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 · UC-1, 3, 4, 5, 7, 9, 10, 11, 12, 15 | QA-15, 16, 17, 18, 19, 20, 21, 22 · UC-2, 6, 8, 13, 16, 17, 19, 20 | — |
 | **Negocio MEDIO** | UC-18 | UC-14 | — |
 
 > Los cuadrantes superiores (alta importancia × alto impacto) son los **ASRs críticos**: se atacan

@@ -46,18 +46,48 @@
     },
     {
       "id": "otp-mail",
-      "name": "Correo saliente: Mailgun desde notify@people.trycore.com (códigos de acceso, avisos y boletín) + webhook de eventos",
-      "source": "docs/01-prd/portal-people-service.md#83-plataforma-de-ejecución-contenedores-en-digitalocean",
+      "name": "Correo saliente: Mailgun con dominio de envío mg.people.trycore.com y remitente notify@people.trycore.com (códigos de acceso, avisos y boletín) + webhook de eventos. Credenciales: MAILGUN_SENDING_KEY (principal, una por componente), MAILGUN_SUPPRESSIONS_KEY (solo worker) y MAILGUN_WEBHOOK_SIGNING_KEY (solo panel); lista normativa en ADR-0010 §3.3",
+      "source": "docs/adr/0009-trabajo-diferido-worker-y-correo.md",
       "paths": [
         "packages/infra/src/mailgun/**",
         "apps/panel/app/api/v1/webhooks/mailgun/**"
       ],
-      "credential_env": "MAILGUN_API_KEY",
+      "credential_env": "MAILGUN_SENDING_KEY",
       "message_kinds": [
         "send-access-code",
         "send-notification",
         "send-newsletter",
         "receive-delivery-event"
+      ],
+      "na": null,
+      "verified": []
+    },
+    {
+      "id": "object-storage",
+      "name": "DO Spaces: evidencias privadas (URL prefirmadas solo desde el panel) y subida de la exportación cifrada. Credenciales: SPACES_KEY (principal) y SPACES_SECRET; lista normativa en ADR-0010 §3.3",
+      "source": "docs/adr/0010-entornos-despliegue-y-perimetro.md",
+      "paths": [
+        "packages/infra/src/spaces/**"
+      ],
+      "credential_env": "SPACES_KEY",
+      "message_kinds": [
+        "presign-put",
+        "presign-get",
+        "export-upload"
+      ],
+      "na": null,
+      "verified": []
+    },
+    {
+      "id": "heartbeat-monitor",
+      "name": "Monitor externo tipo dead man's switch: latido saliente del worker",
+      "source": "docs/adr/0009-trabajo-diferido-worker-y-correo.md",
+      "paths": [
+        "packages/infra/src/latido/**"
+      ],
+      "credential_env": "LATIDO_URL",
+      "message_kinds": [
+        "heartbeat-ping"
       ],
       "na": null,
       "verified": []

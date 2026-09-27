@@ -15,7 +15,15 @@ add:
 
 > **Enmienda de plataforma (iteración 8, 2026-09-25):** el diseño de esta ADR se conserva; el
 > servidor pasa de PHP a TypeScript y el cron al worker. Ver la sección «Enmienda de plataforma» al
-> final.
+> final. La subsección «Revisión adversarial (2026-09-26)» de esa enmienda rige sobre el texto
+> anterior donde choquen (escritura superficial del estado, contrato único de URL, gate de QA-1,
+> confianza de RF-12.3, léxico, armado de equipo).
+>
+> **Consolidación (2026-09-26, tras la revisión en paralelo):** esta ADR es la referencia única del
+> contrato de URL (lista cerrada de parámetros, incluido `cmp` reservado), de la búsqueda y de Gemini;
+> ADR-0008 remite a ella sin enumerar los parámetros. QA-1 queda ⚠️ hasta ejecutar V4-1 (igual que en
+> ADR-0008 y el tablero). La persistencia de la vista por defecto y el umbral de confianza 0,8 pasan a
+> ser propuestas por defecto pendientes de T-30 y T-32.
 
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
@@ -317,7 +325,36 @@ arquitectónico.
   - ModSecurity puede cortar el POST del texto pegado o las URL largas; mitigación: E2E en staging con
     cargas reales (CRN-18).
   - Coste y cuota de Gemini sin conocer; mitigación: umbral, registro por llamada y alerta.
+  - *(Revisión adversarial 2026-09-26, a numerar en el backlog)* La escritura superficial del estado
+    depende de que Next integre `history.replaceState` con `useSearchParams` (Next ≥ 14.1); un cambio
+    de Next o de nuqs que vuelva a pedir el payload RSC reintroduciría una petición por filtro.
+    Mitigación: V4-1 falla ante cualquier petición de documento o RSC por interacción.
+  - *(Revisión adversarial 2026-09-26, a numerar)* El enmascarado de nombres de perfiles antes de
+    `proponer_lexico` también quita términos homónimos (un apellido que coincide con una tecnología o
+    un sector); esas consultas llegan al modelo empobrecidas. Se acepta: la propuesta solo pierde
+    calidad, nunca expone un nombre.
+  - *(Revisión adversarial 2026-09-26, a numerar)* La fórmula de confianza de RF-12.3 es heurística:
+    con el umbral mal calibrado una interpretación errónea puede mostrarse en forma compacta.
+    Mitigación: interpretación completa siempre que haya descartes, tokens no reconocidos o
+    degradación; calibración con `llamadas_llm` y con la prueba previa de RF-12.2.
 - **Trade-offs de negocio abiertos (no los decide la arquitectura):**
+  - **Trade-off de negocio pendiente: alcance del comparador de EP-004 (H33).** El PRD se contradice
+    (§13.5 descarta comparar perfiles de cara al cliente; RF-4.4, HU-120 y HU-121 lo piden) y
+    `backlog.md` lo pasa a «v1.1» sin acuerdo registrado. Opciones: (a) en alcance de v1, con el diseño
+    técnico de la revisión adversarial (coste: una vista más sobre el mismo `evaluar()`, sin endpoint
+    nuevo); (b) descartado, corrigiendo RF-4.4/HU-120 en discovery; (c) diferido a v1.1, registrado
+    como diferimiento acordado por el equipo. Recomendación técnica: (a), su coste es bajo. Mientras no
+    se decida, el UC de armado queda ⚠️.
+  - **Trade-off de negocio pendiente: prueba previa obligatoria de RF-12.2 (H36).** El PRD exige
+    pegar cinco requerimientos reales antes de construir RF-12.2, pero D-24/CON-8 limitan el
+    desarrollo a token personal y datos ficticios, y la llave de negocio solo existe en producción.
+    Opciones: (a) la prueba se hace con la llave de producción sobre cinco requerimientos saneados,
+    con consentimiento del cliente y la base legal de R-44 resuelta (coste: esperar a la llave y al
+    consentimiento); (b) EP-009 se construye solo con el intérprete determinista y Gemini se aplaza,
+    con acuerdo explícito del equipo (coste: RF-12.2.1 fuera de v1); (c) Comercial reescribe y
+    anonimiza cinco requerimientos reales, que ya son datos ficticios y pueden usar el token personal
+    (coste: horas de Comercial; la prueba pierde algo de realismo). Recomendación técnica: (c). El
+    resultado, sea cual sea, es condición de entrada de EP-009 junto a V4-8 (`verificar-salidas`).
   - **Tope y presupuesto de Gemini (CRN-6):** límite de llamadas por invitado y día y coste mensual
     aceptable.
   - **Caducidad del token de estado largo:** 90 días propuestos; depende de cuánto tiempo debe seguir
@@ -376,3 +413,57 @@ arquitectónico.
 **Veredictos que cambian en §5:** CRN-6 pasa a ⚠️ solo por cuota y coste de la llave de producción;
 QA-16 ⚠️ solo por el E2E de URL larga en staging. `@google/generative-ai` y `@google/genai` siguen
 fuera del stack: la llamada es `fetch` desde el servidor.
+
+### Revisión adversarial (2026-09-26)
+
+> Incorpora los hallazgos H4, H14 (parte del cliente), H15 (parte de `verificar-salidas`), H18 (CON-6),
+> H19 (vigilante), H31, H33 (parte técnica), H34, H35, H36 y H43 de la revisión multiagente. Donde esta
+> subsección choque con el texto anterior, incluida la tabla de arriba, rige esta subsección. Los
+> trade-offs de negocio que abre están en §6.
+
+| Tema (hallazgo) | Decisión vigente | Razón |
+|-----------------|------------------|-------|
+| Escritura del estado (H4) | `useEstadoBusqueda` se implementa con `useQueryStates` de nuqs con **`shallow: true` y `history: "replace"` fijados en los parsers compartidos**, no por llamada. Cambiar criterio, vista, ámbito o ficha actualiza la URL con `history.replaceState` y **no navega**: el árbol `force-dynamic` (ADR-0008) no se vuelve a pedir. Solo la carga inicial y la resolución de `s=` tocan el servidor. Regla de lint propia: falla ante `router.replace`, `router.push` o `<Link>` que escriban claves del contrato de búsqueda, ante `shallow: false` en ellas y ante `useSearchParams` leído fuera de `useEstadoBusqueda` | En App Router, cambiar `searchParams` navegando pide un payload RSC nuevo; con todo el árbol dinámico cada filtro viajaría a nyc con sesión y `ProyeccionCatalogo`, y QA-1 perdería la «latencia nula por toque» en que se apoya |
+| Ciudades en presencial/híbrido (H4, H14) | `POST /api/v1/catalogo/ciudades` es **aditiva**: no bloquea el pintado de resultados. Se llama solo cuando, con necesidad presencial o híbrida, cambia el conjunto de códigos visibles, 300 ms después del último cambio y cancelando la anterior (`AbortController`); la ciudad aparece en su sitio al llegar. El cliente envía los **`Criterios` completos** validados con el esquema de `packages/contratos` y el servidor ejecuta el mismo `evaluar()` (contrato en ADR-0003), con test de contrato «ciudades ⊆ resultados visibles» | Con criterios completos el servidor reproduce el resultado del navegador (sin ciudades de perfiles que no se muestran, CON-10); la espera y la cancelación evitan una petición por toque |
+| Gate de QA-1 unificado (H4) | Un solo gate, **V4-1** (tabla de abajo): sustituye a la prueba «sobre el build estático» de §3 y al benchmark de `packages/motor` como gate de QA-1 en V8-6 (el benchmark queda como test auxiliar) | Había dos definiciones incompatibles y ninguna medía la red a nyc, `/ciudades` ni las peticiones RSC |
+| Contrato único de URL (H34) | Los parsers viven **solo** en `packages/contratos/estado-busqueda`: un `createParser` de nuqs por parámetro más `createSerializer` y `createLoader` de `nuqs/server`, importados por el portal, los Route Handlers (resolver `s=`, construir URL en el panel y en correos) y los tests. Nombres cerrados: `v`, `rol`, `tec`, `sen`, `mod`, `pais`, `vista`, `ambito`, `ficha`, `s` y `cmp` (reservado para el comparador si queda en alcance). **El perfil abierto es `ficha=<codigo>`**: el `?id=` de ADR-0008 queda sustituido. `v=1` se escribe siempre; al leer, `v` ausente vale 1 y una versión desconocida lee los parámetros conocidos e ignora el resto; un valor inválido cae al valor por defecto del parámetro, nunca a una excepción. `nuqs` traza en `stack-allowlist.json` a ADR-0008 y a esta enmienda | Dos contratos hacían imposible el test de ida y vuelta de QA-16 y rompían URL compartidas; `ficha` nombra el código público del perfil y no sugiere un id interno de BD |
+| Vista por defecto (H34) | **Propuesta por defecto, pendiente de T-30 (no normativa):** pasar de `localStorage` a **`sessionStorage` versionado** según una lectura de RF-13.12 («persiste en la sesión»); `vista=` en la URL sigue mandando en cualquier caso. Qué significa «sesión» lo decide discovery en T-30: si es la pestaña, rige esta propuesta; si es la sesión de acceso (varios dispositivos), la vista se guarda en servidor junto a la sesión. Hasta que T-30 se resuelva, el slice de EP-002 no fija el comportamiento en un AC | Alinea la persistencia con el PRD sin crear estado de búsqueda fuera de la URL |
+| Confianza de la interpretación (H35) | **Determinista:** `confianza = Σ w(t) / n` sobre los n tokens significativos (sin palabras vacías, lista fija en `packages/motor`), con w = 1 por coincidencia exacta o patrón, 0,7 por difusa a distancia 1, 0,4 a distancia 2 y 0 si no se reconoce. Cada `Criterio` lleva `origen` (`lexico` \| `difuso` \| `patron` \| `modelo` \| `usuario`) y `fragmento` (texto que lo originó). **Modelo:** `200 {criterios (origen: 'modelo', fragmento), descartados: [{valor, motivo: 'fuera_de_catalogo' \| 'sin_fragmento'}], confianza}`, con `confianza` = valores válidos / valores propuestos; un valor cuyo fragmento no aparece en el texto se descarta. **RF-12.3 igual en las dos rutas:** umbral configurable; **0,8 es propuesta por defecto, pendiente de T-32** (CRN-16; no normativa hasta que negocio lo fije con la calibración de `llamadas_llm` y la prueba previa de T-23); bajo umbral, con descartes, con tokens no reconocidos o tras degradación, interpretación completa (chips con su origen, no reconocidos y descartados); por encima, compacta (una línea de chips). Los chips del modelo se marcan «extraído por servicio externo» y la degradación se avisa sin jerga | Hace aplicable RF-12.3 con una cifra explicable y la misma regla sea cual sea el intérprete; el origen por criterio cubre RF-2.6.2 y la explicabilidad exigida |
+| Coincidencias directas y relacionados (H35, RF-2.6.1) | **«Relacionados» = `masCercanos()`** (fallan exactamente un obligatorio), en una sección bajo las coincidencias directas, visible siempre que exista y rotulada con el criterio que falla; sin coincidencias directas es el camino del cero (RF-13.9.4). Sale del mismo `evaluar()` | Un solo motor y una sola definición de cercanía para RF-2.6.1 y RF-13.9.4 |
+| Propuestas de léxico (H43) | `consultas_sin_coincidencia` guarda **`modelo_permitido`** (booleano, por defecto `false`) y `origen` (`corta` \| `larga_local` \| `larga_degradada`). El cliente envía `false` si el dispositivo eligió «Interpretar sin servicio externo»; el servidor fuerza `false` para `larga_local`. `proponer_lexico` **solo selecciona filas con `modelo_permitido = true`**. Antes de enviar el lote enmascara, con `normalizar()` y coincidencia exacta por token, los nombres y primeros apellidos de todos los perfiles de `inventario` (cualquier estado, archivados incluidos), leídos en el momento del envío; una consulta que queda vacía o solo con máscara no se envía. Las filas no enviadas siguen visibles para Talento Humano en el panel | El servidor no conocía la elección local y la incumplía en diferido; con perfiles nominales un nombre buscado sin coincidencia llegaba al modelo, contra RF-16.2 |
+| Armado de equipo EP-004 (H33, parte técnica) | **Fecha de inicio más temprana (RF-4.3):** banda mínima del conjunto según el orden total de `banda_disponibilidad` declarado en `packages/contratos` («Por confirmar» solo si todas lo son), calculada en el cliente desde la proyección y nunca con fechas (QA-5); la banda la calcula el servidor con `Reloj` en America/Bogota (ADR-0003). Roles cubiertos = unión de `rol`. Función pura `resumenEquipo()` en `packages/motor`. **Concurrencia (RF-4.1, RF-13.12.4):** `PUT` de reemplazo completo se retira; la mutación es `PATCH /api/v1/equipo` `{agregar: [codigo], quitar: [codigo]}`, idempotente (operaciones de conjunto, `ON CONFLICT DO NOTHING`), en una transacción, que responde el equipo completo y su `version`; códigos no publicables del enlace → 422 con la lista; sesión y CSRF como en ADR-0002. La selección múltiple de la tabla es un solo `PATCH`. **Comparador (RF-4.4), si queda en alcance:** hasta 3 perfiles evaluados con el mismo `evaluar()` y los criterios de la URL; columnas = criterios activos con ✓/– y el dato (la misma evidencia que la tabla, RF-13.12.2); sin endpoint ni lógica nuevos; selección en `cmp=` | El cliente solo tiene bandas, no fechas; el reemplazo completo perdía cambios entre pestañas o dispositivos y las operaciones de conjunto conmutan sin `If-Match`. El alcance del comparador es de negocio (§6) |
+| Dónde se ejecutan las verificaciones de red (H31, H15) | E2E de URL de 2 000 caracteres, `s=<token>` y POST del texto pegado: el tramo de Cloudflare (conjunto gestionado, límites) en staging por el túnel; los límites de cabecera y cuerpo de **App Platform en producción en oscuro** (host `…ondigitalocean.app` y host público antes de difundirlo). `worker verificar-salidas` como **job puntual de App Platform en producción en oscuro** con las llaves de producción; en staging, `docker compose run worker verificar-salidas` solo prueba el código con token personal. La mitigación de R-2 queda condicionada a la corrida en producción. LCP y TTFB (QA-2) los mide ADR-0010 en oscuro; esta ADR no mide QA-2 | Staging es Docker Compose fuera de DigitalOcean (T-14): lo propio de App Platform no se puede observar allí |
+| Vigilante de la vuelta al determinista (H19) | Vive en la tarea `vigilar` del worker (ADR-0009): lee `llamadas_llm` y alerta si la tasa supera el 20 % con al menos 10 llamadas en 24 h. La referencia al cron de vigilancia de ADR-0005 queda sin efecto | ADR-0005 está reemplazado; la obligación no puede vivir solo en un ADR superseded |
+| Evidencia de CON-6 (H18) | `GEMINI_API_KEY` como variable `SECRET` solo en portal y worker; V8-9 (un proceso sin variable obligatoria sale con código ≠ 0) y `grep` de secretos sobre `.next/static` y la imagen en el CI de ADR-0010 (V8-4). `config.php` y ADR-0007 quedan sin efecto como evidencia | La evidencia de §5 citaba mecanismos de la plataforma abandonada |
+| Permisos sobre las tablas de búsqueda (consolidación, 2.ª pasada) | **Lista normativa** de esta ADR (ADR-0008 la cita sin copiarla; las migraciones de cada tabla emiten los `GRANT`, porque son objetos de `ps_duenio` en `operacion`): `ps_portal` — `SELECT` de `lexico` aprobado (la lectura de léxico que cita ADR-0003), `INSERT` en `consultas_sin_coincidencia` y `llamadas_llm`, `INSERT` y `SELECT` en `estados_largos` (crear y resolver `s=`); sin `UPDATE` ni `DELETE` en ninguna. `ps_panel` — `SELECT`, `INSERT` y `UPDATE` en `lexico` y `propuestas_lexico` (aprobar o rechazar propuestas, siempre por la unidad de trabajo), `INSERT` y `SELECT` en `estados_largos` (URL construidas en el panel y en correos), `SELECT` de `llamadas_llm` (observabilidad). `ps_worker` — `SELECT` y `UPDATE (procesada)` en `consultas_sin_coincidencia`, `INSERT` en `propuestas_lexico` y `llamadas_llm`, `SELECT` de `llamadas_llm` (vigilante), `INSERT` y `SELECT` en `estados_largos` (enlaces de avisos) y `DELETE` en `estados_largos` vencidos (`limpiar_tokens`) y en `consultas_sin_coincidencia` y `llamadas_llm` con más de 24 meses (retención de la telemetría, ADR-0006). `ps_exportador` — `SELECT`, como en todo el banco | Estas tablas no tenían dueño en ninguna lista de permisos: el portal no podía escribir en ellas con la lista de ADR-0002/0003/0006 y V8-10 no las cubría |
+
+**Vista de verificación vigente** (sustituye a la tabla de §4):
+
+| ID | Verificación | Dónde | Cuándo bloquea |
+|----|--------------|-------|----------------|
+| V4-1 | **QA-1:** Playwright contra la imagen standalone de `apps/portal` con PostgreSQL de CI sembrado con 300 perfiles sintéticos; CPU ×4 y red emulada por CDP (RTT 150 ms, 1,6 Mbps: Bogotá → nyc sobre 4G); 50 interacciones en tarjetas, 50 en tabla y un recorrido presencial con `/ciudades` real. Aserciones: P95 entrada → pintado de resultados < 1 000 ms; contador = resultados en cada paso; **0 peticiones de documento o RSC** (cabecera `RSC: 1` o parámetro `_rsc`) por interacción de filtrado; como mucho 1 `/ciudades` por ráfaga, con su latencia registrada | CI | Cada PR que toque `apps/portal`, `packages/motor` o `packages/contratos` |
+| V4-2 | **QA-16 y CON-13:** fast-check de ida y vuelta con los parsers compartidos (`createSerializer` → `createLoader` = identidad, en navegador y servidor); parámetros y versiones desconocidos y valores inválidos sin error; lint de claves de búsqueda (sin `router.*` ni `shallow: false`, sin `useSearchParams` directo) | CI | Cada PR que toque `packages/contratos` o `apps/portal` |
+| V4-3 | **QA-16:** URL de 2 000 caracteres, `s=<token>` y POST del texto pegado de extremo a extremo | Staging por el túnel (Cloudflare) y producción en oscuro (App Platform) | Antes de cerrar EP-002 (staging) y antes del primer envío real (producción) |
+| V4-4 | **CON-8, RF-16.2:** contrato del payload de `proponer_lexico`: con un perfil de prueba sembrado («Nombre Apellido») y consultas que lo contienen, una de ellas con `modelo_permitido = false`, el lote no lleva el nombre ni la consulta local | CI | Cada PR que toque `proponer_lexico` o `packages/infra/gemini` |
+| V4-5 | **CON-8:** payload de `POST /interpretar-requerimiento` = texto saneado + taxonomía | CI | Cada PR que toque `packages/infra/gemini` |
+| V4-6 | **RF-12.3:** propiedades de `confianza` (determinista; añadir un token no reconocido nunca la sube) y E2E de las dos rutas con doble de Gemini: completa bajo umbral o con descartes, compacta por encima, chips de origen, aviso de degradación. El umbral se lee de configuración; el valor 0,8 del E2E está *condicionado a T-32* (si T-32 fija otro, el test usa ese) | CI | Cada PR que toque `packages/motor/interprete` o la interpretación |
+| V4-7 | **QA-15:** vuelta al determinista ≤ 8 s con fallo inyectado (timeout, 5xx, 429, JSON inválido) | Integración con doble de Gemini en CI; E2E en staging con token personal | Antes de cerrar EP-009 |
+| V4-8 | **CRN-6:** `worker verificar-salidas` con las llaves de producción | Producción en oscuro | Condición de entrada de EP-009 |
+| V4-9 | **EP-004:** dos `PATCH /equipo` concurrentes del mismo invitado desde dos sesiones dan la unión sin pérdida; la selección múltiple es una sola petición; unitarios de `resumenEquipo()` (banda mínima, «Por confirmar», roles cubiertos) | CI | Antes de cerrar EP-004 |
+
+**Veredictos que cambian en §5 (revisión adversarial):**
+
+| Driver | ✅/⚠️/❌ | Evidencia / medida | Riesgo residual |
+|--------|---------|--------------------|-----------------|
+| QA-1 | ⚠️ | V4-1 con escritura superficial del estado y aserción de 0 peticiones RSC (plan concreto, sin ejecutar; mismo veredicto que ADR-0008 y el tablero) | Hasta ejecutar V4-1. La red y la CPU emuladas aproximan, no reproducen, un teléfono en Bogotá; se mantiene el contraste en un teléfono de gama media antes de la release |
+| QA-16 | ⚠️ | V4-2 en CI; contrato único de parsers | Hasta correr V4-3 en producción en oscuro; caducidad de 90 días sin validar con negocio |
+| UC-5 | ✅ | Relacionados = `masCercanos()` del mismo `evaluar()` | Calidad del léxico inicial |
+| UC-18 | ⚠️ | Diseño completo; V4-8 en producción en oscuro | Bloqueado por el trade-off de la prueba previa de RF-12.2 (§6) |
+| CON-6 | ✅ | V8-9 y V8-4 en el CI de ADR-0010 | — |
+| CON-8 | ✅ | V4-4 y V4-5; `modelo_permitido` y enmascarado de nombres de perfiles en `proponer_lexico` | Nombres de terceros ajenos al banco en el texto pegado siguen cubiertos solo por el aviso |
+| CRN-16 | ⚠️ | Fórmula de confianza definida; umbral 0,8 como propuesta por defecto (T-32); V4-6 | Umbral pendiente de negocio (T-32) y sin calibrar: depende de `llamadas_llm` y de la prueba previa de RF-12.2 |
+| Armado de equipo (UC a numerar en 0000; EP-004) | ⚠️ | Banda mínima, `PATCH` idempotente y comparador sobre `evaluar()` decididos; V4-9 | Alcance del comparador pendiente de negocio (§6) |
+
+**Trazabilidad añadida:** EP-004 (HU-080, HU-084, HU-120, HU-121) · RF-2.6.1, RF-2.6.2, RF-4.3, RF-4.4,
+RF-12.2, RF-13.9.4, RF-13.12, RF-13.12.4 · ADR-0009 (`vigilar`, `proponer_lexico`), ADR-0010 (entornos,
+verificaciones en oscuro) · stack: `nuqs`.

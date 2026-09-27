@@ -15,6 +15,22 @@ add:
 
 > **Enmienda de plataforma (iteración 8, 2026-09-25):** el diseño de esta ADR se conserva; la tabla de
 > eventos pasa a PostgreSQL y la retención al worker. Ver la sección «Enmienda de plataforma» al final.
+> Su subsección «Revisión adversarial (2026-09-26)» incorpora los hallazgos H9, H13, H24, H26, H32,
+> H40 y H43 de la revisión multiagente (particiones, eventos de falsación, variante, logs, token).
+>
+> **Consolidación (2026-09-26, tras la revisión en paralelo):** esta ADR es la referencia única del
+> dueño de `eventos` (`ps_eventos_dueno`), de sus particiones (función `mantener_eventos(sal)` llamada
+> por la tarea `retencion_eventos`) y de los permisos sobre `eventos` (I-4, resuelta). Se retiran el
+> rol `ps_mantenimiento`, la tarea `mantener_particiones_eventos`, `MANTENIMIENTO_DATABASE_URL` y la
+> creación de particiones por `migrar`. La unidad de asignación por cuenta y la exclusión de sesiones
+> internas pasan a ser propuestas por defecto pendientes de T-25 y T-26.
+>
+> **Consolidación, 2.ª pasada (2026-09-26):** `eventos` pasa al esquema propio `telemetria`, propiedad de
+> `ps_eventos_dueno` (antes `operacion.eventos`, en un esquema de `ps_duenio` donde `ps_migrador` podía
+> hacer `DROP`); las particiones iniciales las crea `crear_particiones()` sin sal; el portal completa
+> la visita por la función `completar_visita` (el `UPDATE` directo exigía `SELECT`); las vistas `v_*`
+> son de `ps_eventos_dueno`; y el endpoint anónimo `POST /api/v1/eventos/acceso` se retira: el token
+> solo viaja a `POST /acceso/enlace`, que escribe `enlace_abierto` (rige ADR-0002, H9).
 
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
@@ -280,6 +296,17 @@ arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-0
 - **Trade-offs de negocio abiertos (decide Mercadeo con el responsable de datos):**
   - **Atribución heredada del último envío** y su ventana (propuesta de 90 días): define cuánto
     crédito recibe el correo curado en los informes.
+  - **Trade-off de negocio pendiente (H32, revisión 2026-09-26): criterio estadístico del A/B con y
+    sin Perfil Objetivo (RF-13.1)** — umbral de decisión, ventana, muestra mínima, unidad de
+    asignación (cuenta o sesión) y qué pasa si al cierre no hay potencia. Con decenas de cuentas el
+    A/B probablemente no alcanza significación; hay que decidir antes de encender el experimento si
+    se acepta una lectura descriptiva o se decide por otra vía. La captura técnica ya está resuelta
+    (ver «Revisión adversarial» al final).
+  - **Trade-off de negocio pendiente (H32): definición de «sesión real»** para las reglas de
+    retirada de §14.7 y RF-14.2 más allá de la exclusión técnica de sesiones internas (p. ej. umbral
+    mínimo de actividad o de cuentas distintas para que la regla del 50 % cuente).
+- **Riesgos nuevos de la revisión adversarial (2026-09-26)**, pendientes de numerar en el backlog:
+  descritos al final de la subsección «Revisión adversarial».
 
 ## 7. Trazabilidad
 
@@ -310,12 +337,108 @@ arquitectónico. Las definiciones de los informes (UC-17) pasan al slice de EP-0
 
 | Mecanismo (texto anterior) | Implementación vigente |
 |----------------------------|------------------------|
-| Tabla `eventos` con partición lógica por columna `mes` en MariaDB | Tabla `operacion.eventos` con **particionado declarativo nativo** `PARTITION BY RANGE (fecha)` mensual; la retención de 24 meses es `DETACH` + `DROP` de la partición vencida, sin borrados fila a fila |
+| Tabla `eventos` con partición lógica por columna `mes` en MariaDB | Tabla `telemetria.eventos` con **particionado declarativo nativo** `PARTITION BY RANGE (fecha)` mensual; la retención de 24 meses es `DETACH` + `DROP` de la partición vencida, sin borrados fila a fila |
 | Vistas `v_embudo_cuenta`, `v_acierto_curaduria`, `v_filtros_usados`… en MariaDB | Mismas vistas en PostgreSQL, servidas por Route Handlers del panel (rol observador) |
-| Endpoints PHP `RegistrarEventos` y `RegistrarEventosAcceso` | Route Handlers `POST /api/v1/eventos` y `POST /api/v1/eventos/acceso` del portal con esquema `zod` por tipo |
+| Endpoints PHP `RegistrarEventos` y `RegistrarEventosAcceso` | Route Handlers `POST /api/v1/eventos` y `POST /api/v1/eventos/acceso` del portal con esquema `zod` por tipo (*el segundo se retira en la consolidación, 2.ª pasada: ver «Revisión adversarial», fila del endpoint anónimo*) |
 | Limitador de eventos en la aplicación (tabla MariaDB) | Tabla `limites` en PostgreSQL (ADR-0010); los eventos siguen fuera de la regla única de Cloudflare |
 | Cron `RetencionEventos` | Tarea `retencion_eventos` del planificador del worker (ADR-0009) |
 | Apertura de correo por píxel propio con SMTP del hosting (CRN-5) | Apertura por el seguimiento de Mailgun, recibida por webhook (ADR-0009), tratada como señal débil; la regla de «3 envíos sin abrir» sigue midiéndose por clic o entrada (T-10) |
 | ModSecurity puede bloquear los POST de eventos | No aplica |
 
 **Veredictos que cambian en §5:** CRN-5 ✅ (eventos de Mailgun firmados); el resto sin cambios.
+
+### Revisión adversarial (2026-09-26)
+
+> Incorpora los hallazgos H9, H13, H24, H26, H32, H40 y H43 de la revisión multiagente en lo que toca a
+> la telemetría. Donde el texto anterior o la tabla de la enmienda digan otra cosa, rige esta
+> subsección. Verificaciones con el prefijo nuevo por ADR (`V6-n`); las de otros ADR se citan como
+> `V8-n` (ADR-0008) y `V10-n` (ADR-0010). «V2-1» en §6 es la línea de Fase 2 del PRD (reclutamiento
+> inverso), no una verificación de ADR-0002.
+
+| Mecanismo (texto anterior) | Implementación vigente | Hallazgo |
+|----------------------------|------------------------|----------|
+| `PARTITION BY RANGE (fecha)` sin decir qué es `fecha` | La clave es `recibido_en` (reloj del servidor), nunca `ocurrido_en` del cliente: un reloj de navegador desajustado no puede mandar filas a meses sin partición. PK `(id, recibido_en)` | H26 |
+| Particiones mensuales sin creación futura | La creación inicial (tabla, partición `DEFAULT` y las del mes en curso y los **tres siguientes**) la hace el script de roles de ADR-0008 (`packages/infra/bootstrap/roles.sql`) con `doadmin`, llamando a `telemetria.crear_particiones()` (sin parámetros: el script no tiene la sal, que solo recibe el worker y no se guarda en la BD; *corregido en la consolidación, 2.ª pasada: antes llamaba a `mantener_eventos(sal)`*), porque el dueño es `NOLOGIN` y `ps_migrador` no es miembro; los cambios de esquema de `eventos` siguen el mismo procedimiento manual que la auditoría (ADR-0003). `migrar` **no** crea particiones (*corregido en la consolidación: el texto anterior decía «la migración inicial» y ADR-0010 atribuía la creación a `migrar`*). La tarea `retencion_eventos` del worker (diaria; único nombre de la tarea, I-4) mantiene siempre tres meses por delante. La partición `DEFAULT` es red de seguridad, no destino: si recibe una fila, `vigilar` alerta (junto con «menos de dos meses creados por delante»), leyendo ambas señales por `telemetria.estado_particiones()` (fila de permisos) y la función de mantenimiento mueve esas filas a su partición antes de crearla (con filas en `DEFAULT` para ese rango, crear la partición falla). Un INSERT del mes siguiente nunca falla | H26 |
+| `DETACH` + `DROP` ejecutados por `ps_worker`, que no es dueño | La tabla `telemetria.eventos` y sus particiones pertenecen a un rol **sin login** `ps_eventos_dueno`, dueño del **esquema propio `telemetria`** (*consolidación, 2.ª pasada*: fuera de los esquemas de `ps_duenio`, para que `ps_migrador` no pueda hacer `DROP` de la tabla), de esa tabla, de sus funciones y de las vistas `v_*`. Una función `telemetria.crear_particiones()` `SECURITY DEFINER`, sin parámetros, crea y adjunta las particiones futuras y mueve las filas de `DEFAULT`; la usan el script de roles y la función de mantenimiento. Una función `telemetria.mantener_eventos(sal)` `SECURITY DEFINER`, propiedad de ese rol, con `search_path` fijo y **sin parámetros de fecha** (usa la fecha del servidor, así un llamante no puede adelantar el borrado; su único argumento es la sal `EVENTOS_SEUDONIMO_SAL`, que solo recibe el worker y no se guarda en la BD), hace todo el mantenimiento: llamar a `crear_particiones()`, seudonimizar lo que cumple 12 meses y `DETACH` + `DROP` lo que cumple 24. `ps_worker` solo tiene `EXECUTE` sobre ella, por su *pool* normal (sin credencial aparte); no puede crear, soltar ni leer eventos. Se descarta `pg_partman` (extensión más que mantener para una operación de 20 líneas, y su disponibilidad en la BD administrada no está verificada) y un rol con login aparte (otra credencial más que custodiar: por eso no existen `ps_mantenimiento` ni `MANTENIMIENTO_DATABASE_URL`). Crear el rol y la función entra en el script de roles de ADR-0008 (V8-10) | H26 |
+| Bloqueos de mantenimiento sin acotar | Las particiones nuevas se crean como tabla suelta y se adjuntan con `ATTACH PARTITION` (bloqueo `SHARE UPDATE EXCLUSIVE`, no frena los INSERT). `DETACH ... CONCURRENTLY` no se puede usar mientras exista `DEFAULT`, así que el `DETACH` es normal con `lock_timeout = '2s'`; si no obtiene el bloqueo, se reintenta en la siguiente corrida diaria (la retención admite un día de holgura) | H26 |
+| Permisos implícitos sobre `eventos` | **Lista normativa** (ADR-0008 la cita sin copiarla): `ps_portal`: `USAGE` de `telemetria`, `INSERT` en `eventos` y `EXECUTE` de `telemetria.completar_visita(visita_id, contacto_id)`, `SECURITY DEFINER` de `ps_eventos_dueno` que hace el `UPDATE (contacto_id)` de los eventos de esa visita con la condición de 24 h dentro; sin `SELECT`, `UPDATE` ni `DELETE` directos (*consolidación, 2.ª pasada: el texto anterior daba `UPDATE (contacto_id)` directo «sin `SELECT`», que en PostgreSQL falla porque un `UPDATE` con `WHERE` exige `SELECT` sobre `visita_id` y `recibido_en`*); `SELECT` de `operacion.experimentos`. `ps_panel`: `SELECT` solo sobre las vistas `v_*`, no sobre la tabla; `SELECT`, `INSERT` y `UPDATE` en `operacion.experimentos` (configurar experimentos, por la unidad de trabajo). `ps_worker`: solo `EXECUTE` de `mantener_eventos(sal)` y de `telemetria.estado_particiones()`, `SECURITY DEFINER` de `ps_eventos_dueno` que devuelve, sin datos de eventos, el número de filas en `DEFAULT` y los meses de partición creados por delante (la usa `vigilar`, ADR-0009; *revisión de coherencia*); sin `SELECT` sobre `eventos`. `ps_exportador`: `SELECT` sobre `telemetria` pero el volcado excluye sus datos (fila «Exportación semanal»). Las vistas `v_*` son propiedad de `ps_eventos_dueno` y se definen en el script de roles (ADR-0008), que se ejecuta a mano con `doadmin` una vez por entorno al aprovisionarlo y de nuevo (idempotente, con dos personas) cada vez que cambian sus objetos (`auditoria`, `telemetria`, vistas `v_*`) o una migración añade objetos que requieren `GRANT` nuevos emitidos por él (regla de ADR-0008; incluye cuando EP-008 añade o cambia una vista): ni `ps_duenio` ni `migrar` leen `eventos`. Todos los `GRANT` sobre `telemetria` los emite ese script; los de `experimentos` (tabla de `ps_duenio`), la migración que la crea | H26, H0 |
+| El endpoint anónimo «verifica la firma del token del enlace» | Rige el modelo único de ADR-0002 (H9): token **opaco** aleatorio, guardado solo como SHA-256, sin firma ni `LINK_SIGNING_SECRET`. **El endpoint anónimo `POST /api/v1/eventos/acceso` (`RegistrarEventosAcceso`) se retira** (*consolidación, 2.ª pasada*: ADR-0002 prohíbe que el navegador envíe el token en eventos, y un segundo endpoint que recibe tokens era un segundo oráculo). El único tipo que aceptaba del navegador, `enlace_abierto`, lo escribe ahora **el servidor** en `POST /acceso/enlace` (que ya recibe el token para abrir el flujo de código y ya calcula el hash y busca siempre el enlace, con la neutralidad y la limitación de ADR-0002), en la misma transacción que `enlace_consultado` de `accesos_log`, con el `visita_id` que el navegador manda en ese cuerpo; `codigo_solicitado`, `codigo_fallido` y `acceso_concedido` ya los escribía el servidor. El clic del boletín no pasa por `/r/…`: **se mide solo como `enlace_abierto`** con el `envio_id` que el servidor lee de la columna `enlace_tokens.envio_id` del token por destinatario (ADR-0002, H9; nula para el token de cuenta) (`enlace_consultado` queda como registro de seguridad, no como medida); `contacto_id` sigue `NULL` hasta el código verificado, porque un enlace reenviado lo abre otra persona. *Texto anterior (endpoint anónimo con el token en el cuerpo) sustituido* | H9 |
+| Texto literal de la consulta sin coincidencia en `carga` de cada evento | El texto vive **una sola vez**, en `operacion.consultas_sin_coincidencia` (ADR-0004), que aplica el enmascarado, la retirada de nombres y apellidos de perfiles del inventario (diccionario determinista) y guarda `modelo_permitido` (falso si la sesión eligió «Interpretar sin servicio externo»; el navegador lo envía porque la elección vive en el dispositivo, y solo puede restringir). El evento `busqueda_sin_resultado` guarda solo `consulta_id`. Así hay un único punto de enmascarado y de retención y `proponer_lexico` puede excluir las consultas de quien rechazó el modelo. La tabla hereda la retención de la telemetría (24 meses) | H43 |
+| Exportación semanal de la BD completa | Los **datos** de `telemetria.eventos` quedan fuera de `exportar_banco` (`--exclude-table-data=telemetria.eventos*`, particiones incluidas; el esquema sí va). La telemetría no hace falta para recuperar el banco y no debe acabar en Google Drive con `contacto_id` y retención distinta. Lo aplica ADR-0010 §2 (fila de la exportación, alineada en la consolidación) | H13 |
+| Sal de seudonimización «de servidor» | Secreto `EVENTOS_SEUDONIMO_SAL`, custodiado con los demás fuera del proveedor (ADR-0010). Perderla o rotarla solo rompe la continuidad entre seudónimos antiguos y nuevos (no se pueden unir); no impide la retención ni expone datos. Se acepta y se registra la fecha de rotación | H24 |
+| «Logs sin datos personales» sin mecanismo | Los dos endpoints de eventos **no registran cuerpos**: solo contadores por lote (recibidos, aceptados, descartados por tipo y motivo, fallos de escritura). Un fallo de `zod` se registra por ruta del campo y código, nunca por valor; el token solo viaja en el cuerpo de `POST /acceso/enlace` (ADR-0002), nunca en la URL ni en un lote de eventos (no llega a los logs de Cloudflare ni de App Platform); los errores de `pg` pasan por el logger central con redacción de ADR-0010 antes de salir. La IP solo la usa el limitador y no se escribe en los logs de eventos | H40 |
+| `TipoEvento` = RF-7.1 + cuatro de acceso | Se amplía para poder ejecutar las pruebas de falsación del PRD (RF-12.1, RF-13.1, RF-14.2, RF-14.7, §14.7 · D-17). Ver «Eventos de falsación» abajo | H32 |
+
+#### Eventos de falsación (H32)
+
+Tipos nuevos, con carga cerrada por tipo en el esquema `zod` y **sin texto libre** (el único texto
+guardado es el de la consulta sin coincidencia, en su tabla):
+
+| Tipo | Carga | Mide |
+|------|-------|------|
+| `instruccion_enviada` | `origen` (`sugerencia_sin_editar` \| `sugerencia_editada` \| `libre`), `sugerencia_id` si la hubo, `fuente` (`determinista` \| `modelo`), número de criterios resultantes | RF-12.1 (> 60 % de sugerencias sin editar) y la ruta de entrada |
+| `perfil_objetivo_editado` | tipo de cambio (`añadido` \| `quitado` \| `modificado`) y clase de criterio; **nunca** su contenido (RF-13.4: la especificación vive en el dispositivo) | RF-13.1 (si se reconoce como propio o se reescribe) |
+| `cero_mostrado` | ruta, número de criterios obligatorios | camino del cero (EP-010) |
+| `cercanos_mostrados` | número de perfiles cercanos, ids de los criterios que fallan | «lo más cercano» y su uso |
+| `composicion_vista` / `composicion_descartada` | `composicion_id` | RF-14.7 (efecto de las composiciones de referencia) |
+
+- **Orden dentro de la visita:** cada evento lleva `n`, un contador monótono por `visita_id` que pone
+  el cliente; el servidor ordena por `(visita_id, n)` y no por relojes. Con eso «filtros aplicados
+  después de una instrucción» (RF-14.2, §14.7) y «tiempo hasta el primer perfil por ruta» (HU-111)
+  son consultas sobre la secuencia, sin eventos adicionales.
+- **Variante asignada en servidor:** tabla `operacion.experimentos` (nombre, variantes, unidad de
+  asignación, activo, desde, hasta). Al abrir la sesión, `ResolverAtribucion` calcula la variante como
+  `HMAC(sal del experimento, id de la unidad) mod n` y la guarda en
+  `identidad.sesiones_portal.variantes` (nombre de tabla de ADR-0002). La unidad de asignación es un
+  campo configurable del experimento; la **cuenta** como unidad es **propuesta por defecto, pendiente
+  de T-25** (no normativa): evita que colegas de la misma cuenta y sesiones sucesivas vean variantes
+  distintas (contaminación), a costa de menos potencia estadística (R-67). El render del portal lee la variante de la sesión
+  para mostrar u ocultar el Perfil Objetivo; el cliente no puede elegirla (una clave `variante` en el
+  cuerpo del lote se descarta). Cada evento se enriquece con las variantes de su sesión. Sin
+  experimento activo todos reciben el control. Es una bandera en tiempo de ejecución, distinta de la
+  retirada compilada de CRN-19 (V8-3).
+- **Sesiones internas:** el servidor marca `interna = true` en la sesión cuando el invitado es de
+  `@trycore.com` (vistas previas del comercial o de Mercadeo) y los eventos la heredan (marca técnica,
+  siempre se captura). **Excluirlas de las vistas de falsación es propuesta por defecto, pendiente de
+  T-26** (no normativa): forma parte de la definición de «sesión real», que decide negocio.
+- **Versión del esquema:** cada lote lleva `esquema_version`; añadir un tipo es aditivo. Los tipos se
+  incorporan al contrato en el **primer slice que los emite** (EP-002 para búsqueda, filtros, cero y
+  cercanos; EP-009 para instrucción, Perfil Objetivo, composiciones y variante), no en EP-008: sin
+  captura desde el primer día no hay trimestre que revisar. EP-008 sigue fijando las definiciones y el
+  SQL de los informes. QA-21 y UC-17 trazan además a EP-002 y EP-009.
+- **Vistas nuevas** (SQL en el slice de EP-008, aplicado en el script de roles con dueño `ps_eventos_dueno`; ver la fila de permisos): `v_falsacion_sugerencias`, `v_filtros_tras_instruccion`,
+  `v_perfil_objetivo_ab`, `v_composiciones`, `v_tiempo_primer_perfil`.
+
+#### Verificaciones
+
+| ID | Verificación | Drivers |
+|----|--------------|---------|
+| V6-1 | **Cambio de mes y retención**: test de integración que crea particiones de meses pasados con datos sintéticos, ejecuta `mantener_eventos(sal)` como `ps_worker` y comprueba: tres meses creados por delante, `DEFAULT` vacía, INSERT del primer segundo del mes siguiente aceptado, seudonimización a 12 meses, partición de 25 meses eliminada. Conectado como `ps_worker`, `CREATE`, `DROP`, `DETACH` y `SELECT` directos sobre `eventos` fallan por permisos; una fila forzada en `DEFAULT` dispara la alerta de `vigilar`, que la detecta llamando como `ps_worker` a `telemetria.estado_particiones()` (devuelve el conteo de `DEFAULT` y los meses por delante, sin filas de eventos). **Visita y dueño** (*consolidación, 2.ª pasada*): como `ps_portal`, `completar_visita` rellena `contacto_id` en los eventos de su visita de las últimas 24 h y no toca los de otra visita ni los de más de 24 h; `UPDATE` o `SELECT` directos sobre `eventos` → error. Como `ps_migrador`, `DROP TABLE` o `ALTER TABLE` sobre `telemetria.eventos` → error. `crear_particiones()` sobre una BD vacía (como en el script de roles) deja el mes en curso y tres por delante sin necesitar la sal | QA-13, QA-21, CON-9 |
+| V6-2 | **Eventos de falsación**: con un conjunto fijo de visitas (sugerencia sin editar, editada, libre, filtros tras instrucción, cero, cercanos, composición vista y descartada), las consultas base de cada vista nueva devuelven el resultado esperado; eventos fuera de orden de reloj se ordenan por `n` | UC-17, QA-21 |
+| V6-3 | **Variante en servidor**: `variante` enviada por el cliente se ignora; el HTML con sesión de cada variante muestra u oculta el Perfil Objetivo; sesiones `@trycore.com` quedan con `interna = true`. *Condicionadas a T-25 y T-26:* la misma unidad (cuenta, si T-25 la confirma) recibe la misma variante en sesiones distintas; las sesiones internas quedan fuera de las vistas (si T-26 lo confirma) | UC-17 |
+| V6-4 | **Logs sin datos personales**: lotes con correo y teléfono en la consulta, un campo `token` (descartado por `zod`), evento que falla `zod` y un error de escritura provocado; stdout no contiene el correo, el teléfono, el token, el texto de la consulta ni la IP | QA-5, CRN-10 |
+| V6-5 | **Sin token en eventos** (*consolidación, 2.ª pasada*; sustituye a la prueba del endpoint anónimo retirado): `POST /api/v1/eventos/acceso` no aparece en el manifiesto del portal (V8-1); un lote de `POST /api/v1/eventos` con campo `token` se descarta; `POST /acceso/enlace` escribe `enlace_abierto` en la misma transacción que `enlace_consultado` (con el `envio_id` leído de `enlace_tokens.envio_id` si el token es de destinatario) y registrar `enlace_abierto` no altera la respuesta: para cada caso (token válido, inexistente, revocado), código, cuerpo y tiempo dentro de tolerancia son los mismos que sin telemetría; el contrato de la respuesta (200/410, token inexistente = mismo 410 que revocado) es el de ADR-0002; ningún camino verifica firmas. Misma prueba que la parte de telemetría de V2-6 | QA-3 |
+
+#### Veredictos que cambian en §5
+
+- **QA-13 · retención vigilada:** ✅ se mantiene, ahora con V6-1 (antes el mecanismo de la enmienda
+  fallaba por permisos y por falta de particiones futuras).
+- **UC-17 · informes:** sigue ⚠️, pero la captura para las pruebas de falsación ya existe (V6-2,
+  V6-3); falta el criterio estadístico del A/B (trade-off de negocio en §6) y las definiciones de
+  EP-008.
+- **QA-5 · Ley 1581:** sigue ⚠️; la consulta literal pierde los nombres de perfiles del inventario y
+  ya no se duplica en `eventos`; los logs se prueban (V6-4). Los nombres propios que no están en el
+  inventario siguen sin detectarse (R-28).
+- **QA-3 · endpoint anónimo:** ⚠️ se mantiene; V6-5 sustituye la prueba basada en firma y, tras la
+  consolidación, la del endpoint anónimo, que se retira (el token solo llega a `POST /acceso/enlace`).
+
+#### Riesgos nuevos (sin numerar; los numera el backlog)
+
+- Con decenas de cuentas y asignación por cuenta, el A/B de RF-13.1 puede no tener potencia
+  estadística; sin criterio fijado antes de encenderlo, el resultado se acomodará a lo que cada quien
+  prefería (lo que §14.7 quiere evitar).
+- Una partición `DEFAULT` con filas que nadie mueve bloquea la creación de la partición de su rango;
+  lo mitiga la alerta de `vigilar` y la función de mantenimiento, pero depende de que la tarea corra.
+- El origen de `instruccion_enviada` (sugerencia editada o no) y `modelo_permitido` los declara el
+  navegador; un cliente manipulado puede sesgar la proporción de RF-12.1 (no la atribución). Se acepta:
+  no hay otra fuente y el incentivo para falsearlo es nulo.
