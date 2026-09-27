@@ -227,10 +227,8 @@ cerrados de uno en uno:
    mínimo y el tipo `enviar_codigo` (Mailgun como doble declarado en CI); CI mínimo: lint, typecheck,
    V8-1, V8-2, V8-9, V8-11, V2-1 y la prueba de CSP del shell. Sin datos de perfiles.
 2. **Login del panel** (HU-123): código al correo `@trycore.com` inscrito y sesión de una jornada;
-   cierra `login-authn` del lado del panel y es prerrequisito de generar enlaces. *Ubicación
-   condicionada a T-19:* construirlo aquí es la **propuesta por defecto, pendiente de T-19** (no
-   normativa); HU-123 está hoy en EP-006 y moverla, o declararla prerrequisito del DoR de EP-001, lo
-   aprueba el PO. Hasta entonces este orden no se da por hecho.
+   cierra `login-authn` del lado del panel y es prerrequisito de generar enlaces. *T-19 resuelta el 2026-09-27:* HU-123 pasa a EP-001 y
+   este orden es normativo.
 3. **Modelo mínimo de perfil publicable:** tablas de perfil y consentimiento y la vista
    `catalogo_publicable`, con perfiles ficticios sembrados solo en local, CI y staging. La edición de
    perfiles sigue en EP-006.

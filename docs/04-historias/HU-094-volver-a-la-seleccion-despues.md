@@ -4,9 +4,10 @@ titulo: "Volver a la selección después de explorar"
 epica: EP-001
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
-prd_version: 4.0
+prd_version: 4.13
+depende_de: [HU-090, HU-091]
 ---
 
 # HU-094 — Volver a la selección después de explorar
@@ -19,39 +20,49 @@ prd_version: 4.0
 
 ### Happy path
 
-**Dado** que amplié la búsqueda,
-**cuando** toco volver a la selección,
-**Entonces** regreso a los perfiles del correo
-**Y** los que sumé al equipo mientras exploraba se conservan
+**Dado** que tengo una sesión válida en un enlace con selección
+**Y** que amplié la búsqueda al banco completo
+**Y** que sumé perfiles a «Mi equipo» mientras exploraba
+**Cuando** toco «Volver a la selección»
+**Entonces** veo los perfiles del enlace con su razón declarada
+**Y** los perfiles que sumé a «Mi equipo» siguen en «Mi equipo»
 
-### Error — la selección ya no existe
+### Error — perfiles de la selección archivados
 
-**Dado** que los perfiles de la selección se archivaron,
-**cuando** intento volver,
-**Entonces** se me explica y se ofrece continuar desde lo que llevo
+**Dado** que tengo una sesión válida en un enlace con selección
+**Y** que amplié la búsqueda al banco completo
+**Y** que los perfiles de la selección se archivaron mientras exploraba
+**Cuando** toco «Volver a la selección»
+**Entonces** veo cada perfil archivado en la selección con la etiqueta de su estado
+**Y** veo la opción de continuar desde lo que llevo en «Mi equipo»
 
 ### Edge case — nunca hubo selección
 
-**Dado** que entré sin curaduría,
-**cuando** miro la pantalla,
-**Entonces** no aparece la opción de volver a una selección que no existe
-
+**Dado** que tengo una sesión válida en un enlace sin selección
+**Cuando** abro el banco completo
+**Entonces** no veo la opción «Volver a la selección»
 
 ## Notas
 
-Cubre RF-2.2. Es la resolución de la tensión entre curaduría y descubrimiento de §2.5.
+Cubre **RF-2.2**. Es la resolución de la tensión entre curaduría y descubrimiento de §2.5.
+
+**Ajustada el 2026-09-27** (corrección de discovery T-18): el caso de error ya no «explica y oculta» la selección; por **RF-19.2** el portal nunca omite un perfil en silencio. «Mi equipo» vive en el servidor por invitado (T-1), así que lo que se conserva al volver también se conserva si la persona cambia de dispositivo; esa continuidad la prueba la historia de «Mi equipo» (EP-004), no esta.
+
+**Dueña única del retorno** (validación INVEST del 2026-09-27): esta es la única historia que tiene el criterio observable de «volver a la selección». HU-144 muestra la opción de ampliar la búsqueda y remite aquí para el retorno.
+
+**Orden de construcción y pruebas:** HU-090 → HU-091 o HU-144 (la que se construya primero; ambas muestran la selección) → HU-094. Para no esperar a que HU-091/HU-144 estén cerradas de punta a punta, HU-094 se construye y verifica con una **sesión y una selección sembradas** en fixtures de prueba.
 
 ## Trazabilidad
 
-Épica madre: **EP-001** · PRD v4.0
+Épica madre: **EP-001** · PRD v4.13 · §2.5 · T-1 · depende de HU-090 y de HU-091 o HU-144 (la vista de la selección) · orden de construcción: HU-090 → HU-091/HU-144 → HU-094
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
+| I | Independiente | ✓ con dependencia declarada: se secuencia después de la puerta (HU-090) y de la vista de la selección (HU-091 o HU-144); el retorno se construye y verifica solo con una selección sembrada |
 | N | Negociable | ✓ describe el resultado, no la implementación |
-| V | Valiosa | ✓ el beneficio es visible para quien la ejecuta |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ los criterios describen resultados observables |
+| V | Valiosa | ✓ el cliente explora sin miedo a perder la curaduría |
+| E | Estimable | ✓ la selección vive en el enlace y el equipo en el servidor (ADR-0003/0004); falta la cifra del equipo |
+| S | Pequeña | ✓ S: una sola interacción (volver) y la presencia o ausencia de su opción |
+| T | Testeable | ✓ tres escenarios con resultados observables (perfiles del enlace, equipo conservado, etiqueta de archivado, ausencia de la opción) |

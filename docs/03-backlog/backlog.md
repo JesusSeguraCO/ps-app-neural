@@ -1,10 +1,10 @@
 ---
 artefacto: backlog
 proyecto: portal-people-service
-version: 5.4
-fecha: 2026-09-22
-prd_version: 4.12
-epicas_version: 5.4
+version: 5.5
+fecha: 2026-09-27
+prd_version: 4.13
+epicas_version: 5.5
 historias_escritas: 79
 historias_descartadas: 1
 ---
@@ -18,9 +18,9 @@ historias_descartadas: 1
 
 | Artefacto | Versión | Dónde |
 |---|---|---|
-| PRD | **4.8** | `docs/01-prd/portal-people-service.md` |
-| Épicas | **5.2** — 11 épicas, con requisitos por épica | `docs/03-backlog/epicas.md` |
-| Mapa de historias | **2.0** — regenerado sobre PRD 4.5 con IDs reales | `docs/02-user-story-map/portal-people-service.md` |
+| PRD | **4.13** | `docs/01-prd/portal-people-service.md` |
+| Épicas | **5.5** — 11 épicas, con requisitos por épica | `docs/03-backlog/epicas.md` |
+| Mapa de historias | **3.3** — alineado a PRD 4.13 y épicas 5.5 | `docs/02-user-story-map/portal-people-service.md` |
 | Historias escritas | **79** activas, 1 descartada | `docs/04-historias/` |
 | Prototipo Low-Fi (v1) | entregado | `prototipo-portal-people-service.html` |
 | Prototipo Mid-Fi (v2) | entregado, con llamada real al modelo | `prototipo-midfi-portal-people-service.html` |
@@ -94,7 +94,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-120** | Comparar perfiles sin perder la lista | EP-003 | alta | M | prototipado | — |
 | **HU-121** | Comparar muchos perfiles por el mismo criterio | EP-002 | alta | M | prototipado | — |
 | **HU-122** | Generar un enlace con exactamente los perfiles que elegí | EP-001 | alta | S | prototipado | *Dividida el 22-sep en 122 + 144* |
-| **HU-123** | Entrar al panel con mi correo corporativo | EP-006 | alta | M | borrador | Sin proveedor de identidad: correo inscrito + código (D-22 rev. 2026-09-24) |
+| **HU-123** | Entrar al panel con mi correo corporativo | EP-001 | alta | M | borrador | Sin proveedor de identidad: correo inscrito + código (D-22 rev. 2026-09-24). *Reasignada de EP-006 a EP-001 el 2026-09-27 (T-19): la caparazón necesita el login del panel para generar enlaces (HU-122)* |
 | **HU-124** | Consultar el banco sin poder modificarlo | EP-006 | media | S | borrador | Depende de HU-123 |
 | **HU-125** | Crear un perfil eligiendo del catálogo | EP-006 | alta | M | borrador | — |
 | **HU-126** | Editar un perfil publicado sin sorpresas | EP-006 | alta | M | borrador | — |
@@ -111,7 +111,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-137** | Ver los perfiles colocados y sus vencimientos | EP-006 | media | M | borrador | Depende del sistema de asignación |
 | **HU-138** | Consultar quién cambió qué y cuándo | EP-006 | alta | M | borrador | Depende de HU-123 |
 | **HU-139** | Administrar el léxico de búsqueda | EP-006 | media | M | borrador | — |
-| **HU-140** | Obtener un borrador de los campos desde el artefacto | EP-006 | media | L | borrador | Depende de HU-131 · candidata a v2 |
+| **HU-140** | Obtener un borrador de los campos desde el artefacto | EP-006 | media | L | borrador | Depende de HU-131 · plantilla determinista sin IA (T-2, 2026-09-25) · la marca «candidata a v2» no es un acuerdo del equipo: diferirla exige ese acuerdo |
 | **HU-141** | Confirmar la importación sabiendo qué campos toca | EP-006 | media | M | borrador | Depende de HU-086 |
 | **HU-142** | Corregir solo las filas que fallaron | EP-006 | media | S | borrador | Depende de HU-141 |
 | **HU-143** | Retirar y fusionar valores sin romper los perfiles que los usan | EP-006 | media | M | borrador | Depende de HU-089 |
@@ -143,7 +143,7 @@ El backlog ya no espera a nadie. Lo que lo limita ahora es lo que no está escri
 | Decisión | Resolución |
 |---|---|
 | **D-1** Identificación del perfil | Nombre y primer apellido visibles, capacidad como descriptor, código al pie, sin fotografía |
-| **D-4** Control de acceso del cliente | Enlace firmado + lista nominal de correos invitados + código al buzón, una vez por dispositivo, sin proveedor de identidad. Reenviar no da acceso; el colega se invita con aprobación de Talento Humano |
+| **D-4** Control de acceso del cliente | Enlace firmado + lista nominal de correos invitados + código al buzón, sesión de 30 días por dispositivo acotada a la vigencia del enlace (30 días por omisión), sin proveedor de identidad. Reenviar no da acceso; el colega se invita con aprobación de Talento Humano |
 | **D-22** Acceso al panel | Correo `@trycore.com` inscrito + código de un uso + sesión de una jornada, con rol administrador y rol observador; sin proveedor de identidad |
 | **D-24** Interpretación y modelo | Algoritmo propio primero (léxico + normalización + tolerancia a errores); Gemini solo para requerimientos pegados largos y para proponer léxico con aprobación humana. Desarrollo con token personal y datos ficticios; producción con llave de negocio |
 | **D-23** Plataforma de la v1 | *Revisada 2026-09-25:* contenedores Docker en DigitalOcean — Next.js TypeScript + proceso de trabajo diferido + PostgreSQL administrado + Mailgun (PRD §8.3, ADR 0008–0010) |
@@ -158,7 +158,7 @@ El backlog ya no espera a nadie. Lo que lo limita ahora es lo que no está escri
 | **D-12** Mínimo de resultados para el espacio no-perfil | 8 resultados visibles |
 | **D-13** Dueño y cadencia del registro de demanda | Talento Humano, revisión mensual |
 | **D-14** Umbral de similitud del camino del cero | Sin umbral numérico: fallar exactamente un criterio, diciendo cuál |
-| **D-16** Persistencia del Perfil Objetivo | **Por dispositivo, no por cuenta.** Queda en el navegador de quien la escribió. Sin implicación ISO 27000. Un enlace reenviado no arrastra especificación |
+| **D-16** Persistencia del Perfil Objetivo | **Por dispositivo, solo para el Perfil Objetivo** (acotada el 2026-09-25, T-1). Queda en el navegador de quien la escribió. **«Mi equipo» no sigue esta regla:** vive en el servidor por invitado, cada invitado ve solo el suyo, se recupera en otro dispositivo y viaja completo a la solicitud (RF-4.1) |
 | **D-19** Composiciones de referencia | **Solo los tres tipos de proyecto más frecuentes.** Delivery entrega esas tres composiciones reales; fuera de ellas el portal calla |
 | **D-10** Disponibilidad y vínculo laboral | **El portal no comunica el vínculo laboral** y publica un solo lenguaje de disponibilidad: banda de arranque (Inmediato, 1 semana, 2 semanas, 1 mes, Más de 1 mes), derivada de la fecha del panel. RF-3.13 nuevo; RF-3.3 reescrito |
 | **D-18** Ubicación del profesional | *Revisada:* país siempre; **ciudad publicada solo en necesidad Presencial 100% o Híbrido** |

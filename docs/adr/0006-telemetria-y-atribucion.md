@@ -93,7 +93,7 @@ add:
   - `packages/contratos` → esquema del evento (`TipoEvento` enumerado de RF-7.1 más los cuatro tipos
     de acceso, y carga permitida por tipo), compartido por portal y por los tests PHP vía JSON Schema
     generado.
-  - `server/` → casos de uso `RegistrarEventos` (con sesión) y `RegistrarEventosAcceso` (sin sesión),
+  - `server/` → casos de uso `RegistrarEventos` (con sesión) y `RegistrarEventosAcceso` (sin sesión; **retirado**, ver revisión adversarial),
     puerto `RepositorioEventos` (dominio), adaptador `EventosMariaDb` (infraestructura); servicio de
     dominio `ResolverAtribucion`; caso de uso `ConsultarInformeTelemetria` para el panel; tarea
     programada `RetencionEventos` (diaria).
@@ -104,7 +104,8 @@ add:
     aplicados, texto de consulta cuando no hubo coincidencia). Nunca identidad. En la pantalla de
     acceso genera un `visita_id` aleatorio (en `sessionStorage`) que viaja en el lote anónimo y en el
     primer lote con sesión, para enlazar ambos tramos del embudo.
-  - `RegistrarEventosAcceso` (sin sesión):
+  - ⛔ *Retirado en la revisión adversarial (2026-09-26): este endpoint anónimo ya no existe; `enlace_abierto` lo escribe el servidor en `POST /acceso/enlace` (ver «Revisión adversarial», fila del endpoint anónimo). Se conserva el texto como rastro.*
+  - ~~`RegistrarEventosAcceso` (sin sesión)~~:
     - Acepta solo `enlace_abierto` desde el navegador; `codigo_solicitado`, `codigo_fallido` y
       `acceso_concedido` los inserta el propio servicio de acceso (ADR-0002) desde el servidor.
     - Verifica la firma del token del enlace; si no es válida, descarta en silencio.
