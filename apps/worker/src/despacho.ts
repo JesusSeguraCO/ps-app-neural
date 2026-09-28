@@ -8,6 +8,7 @@ import {
   planDeEnvioCodigo,
   type ResultadoEnvio,
 } from "@ps/dominio/acceso/codigo";
+import { mensajeCodigo } from "@ps/dominio/acceso/mensajes";
 import {
   ESQUEMAS_PAYLOAD,
   type PayloadEnviarCodigo,
@@ -125,16 +126,8 @@ async function enviarCodigo(
   ]);
   const codigoId = g.rows[0].id as string;
 
-  const { resultado } = await ctx.correo.enviar({
-    para: fila.correo,
-    asunto: "Tu código de acceso a Trycore People",
-    texto: [
-      `Tu código de acceso es ${codigo}.`,
-      "",
-      "Vence en 10 minutos y sirve una sola vez.",
-      "Si no lo pediste, ignora este mensaje: nadie entra sin el código.",
-    ].join("\n"),
-  });
+  const m = mensajeCodigo(p.ambito, codigo);
+  const { resultado } = await ctx.correo.enviar({ para: fila.correo, asunto: m.asunto, texto: m.texto, html: m.html });
 
   const marcar =
     p.ambito === "cliente"

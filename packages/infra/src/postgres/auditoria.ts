@@ -154,7 +154,7 @@ export async function verificarCadena(
             hash_anterior, hash
        FROM auditoria.auditoria ORDER BY seq`,
   );
-  let anterior = HASH_GENESIS;
+  let anterior: Buffer = HASH_GENESIS;
   let esperado = 1;
   for (const f of r.rows) {
     const seq = Number(f.seq);

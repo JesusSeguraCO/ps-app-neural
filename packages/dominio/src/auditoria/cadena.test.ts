@@ -81,7 +81,7 @@ describe("valores cifrados con la clave del titular (AES-256-GCM)", () => {
     const c = cifrarValor(clave, "revocado")!;
     expect(descifrarValor(clave, c)).toBe("revocado");
     expect(cifrarValor(clave, null)).toBeNull();
-    c[c.length - 1] ^= 1;
+    c.writeUInt8(c.readUInt8(c.length - 1) ^ 1, c.length - 1);
     expect(() => descifrarValor(clave, c)).toThrow();
   });
 });

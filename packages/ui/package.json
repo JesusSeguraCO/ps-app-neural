@@ -3,8 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
     "./tokens.css": "./tokens.css",
-    "./tailwind.preset": "./tailwind.preset.ts" },
-  "scripts": { "typecheck": "tsc --noEmit -p ." }
+    "./tailwind.preset": "./tailwind.preset.ts",
+    "./patrones.css": "./patrones.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  }
 }

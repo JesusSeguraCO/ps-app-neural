@@ -6,6 +6,7 @@ export interface Mensaje {
   para: string;
   asunto: string;
   texto: string;
+  html?: string;
   variables?: Record<string, string>;
 }
 
@@ -37,6 +38,7 @@ export function enviadorMailgun(opciones: {
         to: m.para,
         subject: m.asunto,
         text: m.texto,
+        ...(m.html ? { html: m.html } : {}),
         "o:tracking": "no",
         "o:tracking-clicks": "no",
         "o:tracking-opens": "no",

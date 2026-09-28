@@ -1,7 +1,8 @@
 // Perímetro (ADR-0010 §3.3): (1) cabecera de borde → 403; (2) nonce y CSP; (3) redirección optimista
 // sin BD. Runtime Node (next ≥ 15.5, V8-2). La autoridad de la sesión es la guarda de página.
+import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE_PORTAL } from "@ps/dominio/acceso/sesion";
+import { COOKIE_CSRF, COOKIE_PORTAL } from "@ps/dominio/acceso/sesion";
 import { decidirPerimetro } from "@ps/infra/perimetro";
 import rutasPublicas from "./rutas-publicas.json";
 
@@ -31,5 +32,14 @@ export function middleware(req: NextRequest) {
   const res = NextResponse.next({ request: { headers: cabeceras } });
   res.headers.set("content-security-policy", decision.csp);
   if (!req.nextUrl.pathname.startsWith("/api/")) res.headers.set("cache-control", "private, no-store");
+  // Cookie CSRF de doble envío (ADR-0002 §2): legible por el propio origen, nunca por otro host.
+  if (!req.cookies.has(COOKIE_CSRF)) {
+    res.cookies.set(COOKIE_CSRF, randomBytes(32).toString("base64url"), {
+      path: "/",
+      secure: true,
+      sameSite: "strict",
+      httpOnly: false,
+    });
+  }
   return res;
 }

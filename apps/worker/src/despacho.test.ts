@@ -98,7 +98,7 @@ describe.skipIf(!HAY_BD)("despacho de la cola (ADR-0009)", () => {
     expect(correo.enviados).toHaveLength(1);
     const m = correo.enviados[0]!;
     expect(m.para).toBe("lider@cliente.com");
-    const codigo = m.texto.match(/\b(\d{6})\b/)?.[1];
+    const codigo = m.texto.match(/\b(\d{3}) (\d{3})\b/)?.slice(1).join("");
     expect(codigo).toBeDefined();
     const [c] = await codigos();
     expect(Buffer.compare(c.codigo_hmac, hmacCodigo(codigo!, PEPPER_CLIENTE))).toBe(0);
@@ -110,6 +110,9 @@ describe.skipIf(!HAY_BD)("despacho de la cola (ADR-0009)", () => {
       [id],
     );
     expect(t.rows[0].p).not.toContain(codigo!);
+    // El código no va en el asunto (no se lee en la notificación).
+    expect(m.asunto).not.toMatch(/\d{3}/);
+    expect(m.html).toContain(codigo!.slice(0, 3));
   });
 
   it("con ref nulo no envía nada y registra codigo_descartado", async () => {
@@ -187,7 +190,7 @@ describe.skipIf(!HAY_BD)("despacho de la cola (ADR-0009)", () => {
       JSON.stringify({ ref: usuarioId, ambito: "panel" }),
     ]);
     await vuelta(ctx);
-    const codigo = correo.enviados[0]!.texto.match(/\b(\d{6})\b/)![1]!;
+    const codigo = correo.enviados[0]!.texto.match(/\b(\d{3}) (\d{3})\b/)!.slice(1).join("");
     const r = await bd.instalacion.query(
       `SELECT codigo_hmac FROM identidad_panel.codigos_panel WHERE usuario_id = $1`,
       [usuarioId],

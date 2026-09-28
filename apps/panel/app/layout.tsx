@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@ps/ui/tokens.css";
+import "@ps/ui/patrones.css";
 import "./globals.css";
 
 // Todo el árbol es dinámico: cada HTML lleva su nonce de CSP (ADR-0008 fila QA-5/QA-2).

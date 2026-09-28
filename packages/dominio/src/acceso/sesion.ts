@@ -4,6 +4,9 @@
 // Cookies por host (`__Host-`: Secure, sin Domain, Path=/). Llevan el identificador; en BD su SHA-256.
 export const COOKIE_PORTAL = "__Host-ps";
 export const COOKIE_PANEL = "__Host-pp";
+// CSRF por doble envío: cookie legible por el propio origen y cabecera igual (ADR-0002 §2).
+export const COOKIE_CSRF = "__Host-csrf";
+export const CABECERA_CSRF = "x-ps-csrf";
 
 export type MotivoSinSesion =
   "sin_sesion" | "enlace_revocado" | "enlace_vencido" | "sesion_expirada";
