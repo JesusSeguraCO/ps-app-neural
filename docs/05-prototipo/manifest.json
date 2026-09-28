@@ -10,14 +10,14 @@
         "HU-091",
         "HU-094"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Marco cliente (riel, cuenta, vigencia) · origen v2-existe"
+      "notas": "Marco cliente (riel, cuenta, vigencia) · origen v2-existe · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "app-shell--sin-seleccion",
@@ -28,14 +28,15 @@
         "HU-091",
         "HU-094"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "app-shell"
+      "variante_de": "app-shell",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "puerta-acceso",
@@ -45,14 +46,14 @@
         "HU-090",
         "HU-095"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Puerta: correo invitado → código · origen v2-adaptar"
+      "notas": "Puerta: correo invitado → código · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "puerta-acceso--codigo-invalido",
@@ -62,14 +63,15 @@
         "HU-090",
         "HU-095"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "puerta-acceso"
+      "variante_de": "puerta-acceso",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "puerta-acceso--codigo",
@@ -79,14 +81,15 @@
         "HU-090",
         "HU-095"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "puerta-acceso"
+      "variante_de": "puerta-acceso",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "puerta-acceso--intentos-agotados",
@@ -96,14 +99,15 @@
         "HU-090",
         "HU-095"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "puerta-acceso"
+      "variante_de": "puerta-acceso",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "correo-codigo-acceso",
@@ -113,14 +117,14 @@
         "HU-090",
         "HU-123"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Correo con código de un uso · origen nueva"
+      "notas": "Correo con código de un uso · origen nueva · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "correo-codigo-acceso--panel",
@@ -130,14 +134,15 @@
         "HU-090",
         "HU-123"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "correo-codigo-acceso"
+      "variante_de": "correo-codigo-acceso",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "acceso-vencido",
@@ -146,14 +151,14 @@
       "historias": [
         "HU-092"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Enlace vencido y renovación · origen v2-adaptar"
+      "notas": "Enlace vencido y renovación · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "acceso-vencido--cuenta-inactiva",
@@ -162,14 +167,15 @@
       "historias": [
         "HU-092"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "acceso-vencido"
+      "variante_de": "acceso-vencido",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "acceso-vencido--en-camino",
@@ -178,14 +184,15 @@
       "historias": [
         "HU-092"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "acceso-vencido"
+      "variante_de": "acceso-vencido",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "acceso-vencido--enviado",
@@ -194,14 +201,15 @@
       "historias": [
         "HU-092"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "acceso-vencido"
+      "variante_de": "acceso-vencido",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "enlace-revocado",
@@ -211,14 +219,14 @@
         "HU-144",
         "HU-090"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Enlace revocado o alterado · origen v2-adaptar"
+      "notas": "Enlace revocado o alterado · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "correo-enlace-renovado",
@@ -227,14 +235,14 @@
       "historias": [
         "HU-092"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Correo con el enlace nuevo · origen nueva"
+      "notas": "Correo con el enlace nuevo · origen nueva · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "aterrizaje-curado",
@@ -245,14 +253,14 @@
         "HU-144",
         "HU-094"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Selección con su razón · origen v2-adaptar"
+      "notas": "Selección con su razón · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "aterrizaje-curado--perfil-cambio",
@@ -263,14 +271,15 @@
         "HU-144",
         "HU-094"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "aterrizaje-curado"
+      "variante_de": "aterrizaje-curado",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "aterrizaje-curado--sin-proyecto",
@@ -281,14 +290,15 @@
         "HU-144",
         "HU-094"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "aterrizaje-curado"
+      "variante_de": "aterrizaje-curado",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "aterrizaje-curado--sin-publicados",
@@ -299,14 +309,15 @@
         "HU-144",
         "HU-094"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "aterrizaje-curado"
+      "variante_de": "aterrizaje-curado",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "encuadre-sin-seleccion",
@@ -315,14 +326,14 @@
       "historias": [
         "HU-093"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "«¿Qué necesita tu proyecto?» · origen nueva"
+      "notas": "«¿Qué necesita tu proyecto?» · origen nueva · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "encuadre-sin-seleccion--opcion-sin-perfiles",
@@ -331,14 +342,15 @@
       "historias": [
         "HU-093"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "encuadre-sin-seleccion"
+      "variante_de": "encuadre-sin-seleccion",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "invitar-colega",
@@ -348,14 +360,14 @@
         "HU-095",
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Pedir acceso para un colega · origen nueva"
+      "notas": "Pedir acceso para un colega · origen nueva · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "invitar-colega--pendiente",
@@ -365,14 +377,15 @@
         "HU-095",
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "invitar-colega"
+      "variante_de": "invitar-colega",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "invitar-colega--rechazada",
@@ -382,14 +395,15 @@
         "HU-095",
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "invitar-colega"
+      "variante_de": "invitar-colega",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "panel-acceso",
@@ -398,14 +412,14 @@
       "historias": [
         "HU-123"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Login del panel (@trycore.com + código) · origen nueva"
+      "notas": "Login del panel (@trycore.com + código) · origen nueva · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "panel-acceso--codigo",
@@ -414,14 +428,15 @@
       "historias": [
         "HU-123"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "panel-acceso"
+      "variante_de": "panel-acceso",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "panel-acceso--sesion-caducada",
@@ -430,14 +445,15 @@
       "historias": [
         "HU-123"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "panel-acceso"
+      "variante_de": "panel-acceso",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "admin-shell",
@@ -446,14 +462,14 @@
       "historias": [
         "HU-123"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Marco del panel · origen v2-adaptar"
+      "notas": "Marco del panel · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "enlaces-acceso",
@@ -463,14 +479,14 @@
         "HU-122",
         "HU-144"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Registro de enlaces y revocación · origen v2-adaptar"
+      "notas": "Registro de enlaces y revocación · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "generador-enlace",
@@ -479,14 +495,14 @@
       "historias": [
         "HU-122"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Generar enlace curado · origen v2-adaptar"
+      "notas": "Generar enlace curado · origen v2-adaptar · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "generador-enlace--emitido",
@@ -495,14 +511,15 @@
       "historias": [
         "HU-122"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "generador-enlace"
+      "variante_de": "generador-enlace",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "generador-enlace--perfil-no-publicado",
@@ -511,14 +528,15 @@
       "historias": [
         "HU-122"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "generador-enlace"
+      "variante_de": "generador-enlace",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "generador-enlace--sin-invitados",
@@ -527,14 +545,15 @@
       "historias": [
         "HU-122"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "generador-enlace"
+      "variante_de": "generador-enlace",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "generador-enlace--sin-razon",
@@ -543,14 +562,15 @@
       "historias": [
         "HU-122"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "generador-enlace"
+      "variante_de": "generador-enlace",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "peticiones-invitacion",
@@ -559,14 +579,14 @@
       "historias": [
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Peticiones de invitación · origen nueva"
+      "notas": "Peticiones de invitación · origen nueva · aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "peticiones-invitacion--enlace-no-vigente",
@@ -575,14 +595,15 @@
       "historias": [
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "peticiones-invitacion"
+      "variante_de": "peticiones-invitacion",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "peticiones-invitacion--rechazo-motivo",
@@ -591,14 +612,15 @@
       "historias": [
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "peticiones-invitacion"
+      "variante_de": "peticiones-invitacion",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "peticiones-invitacion--ya-invitado",
@@ -607,14 +629,15 @@
       "historias": [
         "HU-145"
       ],
-      "estado": "borrador",
+      "estado": "aprobada",
       "generada_en": "2026-09-27T23:58:58Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "peticiones-invitacion"
+      "variante_de": "peticiones-invitacion",
+      "notas": "aprobada por Jesús Segura el 2026-09-28"
     },
     {
       "slug": "resultados",
