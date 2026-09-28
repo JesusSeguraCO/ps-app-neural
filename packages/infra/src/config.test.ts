@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ErrorConfiguracion, VARIABLES, cargarConfiguracion, type Proceso } from "./config";
+import { ErrorConfiguracion, VARIABLES, cargarConfiguracion, doblesDe, type Proceso } from "./config";
 
 const SECRETO = "s".repeat(48);
 
@@ -93,7 +93,7 @@ describe("dobles declarados", () => {
     delete entorno.MAILGUN_DOMAIN;
     delete entorno.HUBSPOT_PRIVATE_APP_TOKEN;
     const config = cargarConfiguracion("worker", entorno);
-    expect(config.dobles).toEqual(new Set(["mailgun", "hubspot"]));
+    expect(doblesDe(config)).toEqual(new Set(["mailgun", "hubspot"]));
   });
 
   it("sin declarar el doble la credencial sigue siendo obligatoria", () => {

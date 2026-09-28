@@ -124,10 +124,14 @@ export class ErrorConfiguracion extends Error {
   }
 }
 
-export type Configuracion = Readonly<Record<string, string | undefined>> & {
-  readonly APP_ENV: AppEnv;
-  readonly dobles: ReadonlySet<Doble>;
-};
+export type Configuracion = Readonly<Record<string, string | undefined>> & { readonly APP_ENV: AppEnv };
+
+const DOBLES_DE = new WeakMap<Configuracion, ReadonlySet<Doble>>();
+
+// Fronteras sustituidas por un doble declarado (solo local y ci).
+export function doblesDe(config: Configuracion): ReadonlySet<Doble> {
+  return DOBLES_DE.get(config) ?? new Set();
+}
 
 function leerDobles(proceso: Proceso, appEnv: string, crudo: string | undefined): Set<Doble> {
   const nombres = (crudo ?? "")
@@ -179,7 +183,9 @@ export function cargarConfiguracion(
   if (faltan.length || invalidas.length) {
     throw new ErrorConfiguracion(proceso, faltan, invalidas);
   }
-  return Object.freeze({ ...valores, APP_ENV: appEnv as AppEnv, dobles });
+  const config: Configuracion = Object.freeze({ ...valores, APP_ENV: appEnv as AppEnv });
+  DOBLES_DE.set(config, dobles);
+  return config;
 }
 
 // Punto de entrada de cada proceso: sin configuración completa, sale con código 1

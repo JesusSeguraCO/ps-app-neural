@@ -3,7 +3,7 @@
 // Sin configuración completa sale con código 1 antes de abrir conexiones (V8-9).
 import { randomUUID } from "node:crypto";
 import pg from "pg";
-import { exigirConfiguracion } from "@ps/infra/config";
+import { doblesDe, exigirConfiguracion } from "@ps/infra/config";
 import { DobleCorreo, enviadorMailgun, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { vuelta, type ContextoDespacho } from "./despacho";
 
@@ -17,7 +17,7 @@ if (process.argv.includes("--comprobar")) {
   process.exit(0);
 }
 
-const correo: EnviadorCorreo = config.dobles.has("mailgun")
+const correo: EnviadorCorreo = doblesDe(config).has("mailgun")
   ? new DobleCorreo((m) =>
       registrar({ evento: "correo_doble", para: m.para, asunto: m.asunto, texto: m.texto }),
     )
@@ -68,7 +68,7 @@ async function arrancar(): Promise<void> {
   await escucha.connect();
   escucha.on("notification", () => despertar?.());
   await escucha.query("LISTEN trabajos");
-  registrar({ evento: "worker_arrancado", pid: process.pid, pausado, dobles: [...config.dobles] });
+  registrar({ evento: "worker_arrancado", pid: process.pid, pausado, dobles: [...doblesDe(config)] });
   await bucle();
 }
 

@@ -45,7 +45,7 @@ describe.skipIf(!HAY_BD)("migrar (V8-11)", () => {
   });
 
   it("falla si las aplicadas no empiezan por las conocidas (nombre distinto)", async () => {
-    const [primera] = Object.keys(MIGRACIONES);
+    const primera = Object.keys(MIGRACIONES)[0]!;
     const renombradas = { [`${primera}_otra`]: MIGRACIONES[primera]! };
     await expect(
       migrarHastaElFinal(bd.urlDe("ps_migrador", { directa: true }), { migraciones: renombradas }),
