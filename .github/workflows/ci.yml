@@ -1,0 +1,31 @@
+# CI mínimo del scaffold (ADR-0010 §3.2). La matriz completa (Playwright, CSP,
+# Lighthouse, axe, V8-*) se activa por épica según ADR-0010.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node apps/worker/dist/worker.js --once
+  imagenes:
+    runs-on: ubuntu-latest
+    needs: verificar
+    strategy:
+      matrix:
+        app: [portal, panel, worker]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f docker/${{ matrix.app }}.Dockerfile -t ps-${{ matrix.app }}:ci .
