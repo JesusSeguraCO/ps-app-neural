@@ -133,7 +133,7 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 | HU-017 – HU-018 | Búsqueda por texto y ordenamiento | EP-002 | **Superado** por HU-065 (instrucción) y HU-074 (refinamiento) |
 | HU-019 – HU-020 | Sondeo de agentes autónomos en el grid | EP-002 | **Sin historia escrita.** RF-10 y RF-11 están en `epicas.md` pero nadie los redactó |
 | HU-021 – HU-028 | Tarjeta, ficha y evidencia de validación | EP-003 | **Parcial.** HU-081, HU-119 y HU-120 cubren competencias y comparación; la ficha completa, la evidencia por dimensión y la garantía Neural Speed no tienen historia |
-| HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | **Parcial.** Solo HU-080 y HU-084. Sumar, quitar, contador y recuperación de "Mi equipo" sin historia |
+| HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | **Parcial.** Solo HU-080 y HU-084. Sumar, quitar, contador y recuperación de "Mi equipo" sin historia. Suma desde el 2026-09-28 los tres criterios de «Mi equipo» que salieron de HU-094 y HU-095 (ver EP-004 en `epicas.md`) |
 | HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | **Cubierto** por HU-096 a HU-101 |
 | HU-042 – HU-058 | Panel de Talento Humano completo | EP-006 | **Cubierto el 2026-09-21** por HU-123 a HU-139, más HU-086 a HU-089 |
 | HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 · EP-011 | **Cubierto** por HU-102 a HU-117 |

@@ -25,7 +25,7 @@ spec: docs/10-specs/enlaces-curados.md
 **Y** que mi correo está en su lista de invitados y ya superé la puerta con él
 **Cuando** abro el enlace
 **Entonces** veo los perfiles seleccionados con la razón de la selección
-**Y** el panel de especificación aparece vacío, sin un rol deducido
+**Y** no veo ningún rol ni criterio deducido de la selección aplicado como filtro
 **Y** veo la opción de ampliar la búsqueda al banco completo
 
 ### Error — enlace revocado o alterado

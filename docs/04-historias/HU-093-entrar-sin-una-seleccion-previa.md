@@ -44,7 +44,7 @@ depende_de: [HU-090]
 **Y** que ningún perfil publicado corresponde a una de sus opciones en este momento
 **Cuando** elijo esa opción
 **Entonces** veo que hoy no hay perfiles publicados para esa opción
-**Y** veo las salidas del camino del cero: ampliar la búsqueda y pedir el perfil a medida (RF-14.3)
+**Y** veo la opción de ampliar la búsqueda al banco completo
 
 ### Edge case — enlace sin contexto de proyecto
 
@@ -54,6 +54,8 @@ depende_de: [HU-090]
 **Y** no veo ningún nombre de proyecto ni motivo de selección en el encabezado
 
 ## Notas
+
+**Ajustada el 2026-09-28 (DoR de EP-001, decisión del PO: reformular sin recortar).** La salida «pedir el perfil a medida» (RF-14.3) desde una opción del encuadre sin perfiles es de EP-010, que depende de EP-001; se añade a esta pantalla cuando se construya EP-010 (ver «Criterios recibidos de EP-001» en `docs/03-backlog/epicas.md`). EP-001 garantiza que la opción vacía nunca es un callejón sin salida: siempre ofrece ampliar la búsqueda.
 
 Cubre **RF-1.3**, el recorrido secundario «aterrizaje sin conjunto curado» de §6.3 y, para las opciones del encuadre, las facetas Rol y Categoría de **RF-2.3**.
 
