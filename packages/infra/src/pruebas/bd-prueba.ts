@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import pg from "pg";
-import { migrarHastaElFinal } from "../src/postgres/migrar";
+import { migrarHastaElFinal } from "../postgres/migrar";
 
 export const HAY_BD = Boolean(process.env.BD_INSTALACION_URL);
 
@@ -23,7 +23,7 @@ export interface BdPrueba {
   cerrar(): Promise<void>;
 }
 
-export async function crearBdPrueba(): Promise<BdPrueba> {
+export async function crearBdPrueba(opciones: { migrar?: boolean } = {}): Promise<BdPrueba> {
   const base = new URL(process.env.BD_INSTALACION_URL!);
   const nombre = `ps_t_${randomBytes(4).toString("hex")}`;
   // roles.sql toca roles globales del clúster: se serializa entre ficheros de test con un candado
@@ -36,7 +36,7 @@ export async function crearBdPrueba(): Promise<BdPrueba> {
   const urlInstalacion = new URL(base.toString());
   urlInstalacion.pathname = `/${nombre}`;
   const instalacion = new pg.Pool({ connectionString: urlInstalacion.toString(), max: 2 });
-  const roles = readFileSync(new URL("../bootstrap/roles.sql", import.meta.url), "utf8");
+  const roles = readFileSync(new URL("../../bootstrap/roles.sql", import.meta.url), "utf8");
   try {
     await instalacion.query(roles);
   } finally {
@@ -52,7 +52,7 @@ export async function crearBdPrueba(): Promise<BdPrueba> {
     return u.toString();
   };
 
-  await migrarHastaElFinal(urlDe("ps_migrador", { directa: true }));
+  if (opciones.migrar !== false) await migrarHastaElFinal(urlDe("ps_migrador", { directa: true }));
 
   const pools: pg.Pool[] = [];
   return {

@@ -4,10 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/worker.ts --bundle --platform=node --target=node22 --format=esm --external:pg-native --outfile=dist/worker.js",
+    "build": "esbuild src/worker.ts src/migrar.ts --bundle --platform=node --target=node22 --format=esm --external:pg-native --alias:server-only=../../scripts/server-only-vacio.mjs --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\" --outdir=dist",
     "dev": "npm run build && node dist/worker.js",
     "start": "node dist/worker.js",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "migrar": "node dist/migrar.js"
   },
-  "dependencies": { "@ps/dominio": "*", "@ps/infra": "*" }
+  "dependencies": {
+    "@ps/contratos": "*",
+    "@ps/dominio": "*",
+    "@ps/infra": "*",
+    "pg": "^8.23.0"
+  }
 }

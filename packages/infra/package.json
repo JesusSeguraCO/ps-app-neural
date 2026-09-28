@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
+    "@ps/dominio": "*",
     "kysely": "^0.29.6",
     "pg": "^8.23.0",
     "server-only": "^0.0.1",

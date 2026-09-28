@@ -9,7 +9,7 @@ import {
   codigoDeError,
   crearBdPrueba,
   type BdPrueba,
-} from "../../test/bd-prueba";
+} from "../pruebas/bd-prueba";
 
 describe.skipIf(!HAY_BD)("permisos de identidad y cola (V2-2, V9-10)", () => {
   let bd: BdPrueba;

@@ -2,7 +2,7 @@
 import { readdirSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { MIGRACIONES } from "../../migraciones/indice";
-import { HAY_BD, crearBdPrueba, type BdPrueba } from "../../test/bd-prueba";
+import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
 import { ErrorMigracion, migrarHastaElFinal } from "./migrar";
 
 describe("índice estático de migraciones (V8-11)", () => {
