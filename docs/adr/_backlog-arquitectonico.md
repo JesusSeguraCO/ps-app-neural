@@ -45,7 +45,7 @@ conservan como alias para no romper citas.
 
 | Driver | Tipo | Prioridad | Trazabilidad (EP/HU) | Iteración | ADR | Estado |
 |--------|------|-----------|----------------------|-----------|-----|--------|
-| UC-1 Acceso nominal del cliente | Funcional | (A,A) | EP-001 · HU-090, HU-092, HU-144 · RF-1.1–1.6, 1.2.7, 1.2.9, 1.2.11, 19.6 · D-4 | 2, 8 | 0002 | ABORDADO (✅) — DoR de EP-001 bloqueado por discovery (CRN-13, T-18) |
+| UC-1 Acceso nominal del cliente | Funcional | (A,A) | EP-001 · HU-090, HU-092, HU-144 · RF-1.1–1.6, 1.2.7, 1.2.9, 1.2.11, 19.6 · D-4 | 2, 8 | 0002 | ABORDADO (✅) — el bloqueo de discovery del DoR de EP-001 (CRN-13, T-18) se resolvió el 2026-09-27 |
 | UC-2 Invitar a un colega | Funcional | (A,M) | EP-001 · HU-095 · RF-1.2.10 | 2 | 0002 | ABORDADO (✅) |
 | UC-3 Enlace curado con registro | Funcional | (A,A) | EP-001 · HU-122, HU-144, HU-091, HU-093, HU-094 · RF-19, RF-1.3, RF-2.1–2.2 | 2, 8 | 0002, 0003 | ABORDADO (⚠️) |
 | UC-4 Catálogo recortado solo con sesión | Funcional | (A,A) | EP-003, EP-009 · RF-3.7, 3.13, 13.5.5.2, 14.0 · §8, §8.3 | 3, 8 | 0008, 0003 | ABORDADO (✅) |
@@ -53,7 +53,7 @@ conservan como alias para no romper citas.
 | UC-6 Estado en la URL y persistencia local | Funcional | (A,M) | EP-002, EP-009 · HU-073, HU-096 · RF-2.5, 13.4, 16.4, 19.8 · D-16 | 4, 8 | 0004, 0008 | ABORDADO (✅) |
 | UC-7 Solicitud durable hacia HubSpot | Funcional | (A,A) | EP-005, EP-007 · HU-096–101, 102, 104, 105, 106, 107, 077 · RF-5, 9.1–9.6.2, 17 · D-6, D-7, D-21 | 8 | 0009 | ABORDADO (⚠️) |
 | UC-8 Camino del cero y demanda | Funcional | (A,M) | EP-010, EP-002 · HU-075, 077, 078 · RF-10, 11, 14.3, 15.1, 13.7.3 · D-11, D-12 | 4 | 0004 | ABORDADO (✅) |
-| UC-9 Acceso al panel | Funcional | (A,A) | EP-006 · HU-123, HU-124 · RF-8.1–8.1.6 · D-22 | 2, 8 | 0002 | ABORDADO (✅) |
+| UC-9 Acceso al panel | Funcional | (A,A) | EP-001 · HU-123 (T-19) · EP-006 · HU-124 · RF-8.1–8.1.6 · D-22 | 2, 8 | 0002 | ABORDADO (✅) |
 | UC-10 Ciclo de vida del perfil y consentimiento | Funcional | (A,A) | EP-006 · HU-125–130, 132–135 · RF-8.2–8.5, 8.7, 8.10, 8.14 · B.9.2 | 3 | 0003 | ABORDADO (⚠️) |
 | UC-11 Importación masiva y reversión | Funcional | (A,A) | EP-006 · HU-086, 087, 088, 141, 142 · RF-8.15 | 3, 8 | 0003, 0009 | ABORDADO (✅) |
 | UC-12 Auditoría por campo | Funcional | (A,A) | EP-006 · HU-138 · RF-8.9, 8.1.3 | 3, 8 | 0003 | ABORDADO (✅) |
@@ -73,7 +73,7 @@ conservan como alias para no romper citas.
 | QA-1 Rendimiento del filtrado | QA | (A,A) | EP-002, EP-009, EP-010 (UC-5) · RF-13.8 · §8, §13.5 | 4, 8 | 0008, 0004 | ABORDADO (⚠️) |
 | QA-2 Primer render útil | QA | (A,A) | EP-001, EP-003 (UC-3, UC-4) · §8 | 6, 8 | 0008, 0006, 0010 | ABORDADO (⚠️) |
 | QA-3 Seguridad del acceso del cliente | QA | (A,A) | EP-001 · HU-090, HU-092, HU-144 (UC-1) · RF-1.2.9 | 2, 6, 8 | 0002, 0006, 0009, 0010 | ABORDADO (⚠️) |
-| QA-4 Autorización del panel | QA | (A,A) | EP-006 · HU-123, HU-124 (UC-9) · RF-8.1 | 2, 8 | 0008, 0002 | ABORDADO (✅) |
+| QA-4 Autorización del panel | QA | (A,A) | EP-001 · HU-123 (T-19) · EP-006 · HU-124 (UC-9) · RF-8.1 | 2, 8 | 0008, 0002 | ABORDADO (✅) |
 | QA-5 Confidencialidad y Ley 1581 | QA | (A,A) | EP-003, EP-006, EP-009 (UC-4, UC-18) · RF-3.13, RF-16 · §8, Anexo B | 2, 3, 6, 8 | 0002, 0003, 0006, 0008, 0010 | ABORDADO (⚠️) |
 | QA-6 Durabilidad de la solicitud | QA | (A,A) | EP-005, EP-007 · HU-096–101, HU-105 (UC-7) · RF-9.6.1 | 6, 8 | 0009, 0006 | ABORDADO (✅) |
 | QA-7 Idempotencia | QA | (A,A) | EP-005, EP-007 · HU-104, HU-106 (UC-7) · D-7 | 8 | 0009 | ABORDADO (✅) |

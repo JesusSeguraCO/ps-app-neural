@@ -25,8 +25,8 @@ depende_de: [HU-090]
 **Y** que mi colega tiene el enlace
 **Cuando** mi colega completa el ingreso con su correo y el código que le llegó
 **Entonces** mi colega ve la misma selección y el mismo contexto de cuenta que yo
-**Y** mi colega tiene su propio «Mi equipo», que empieza vacío y donde puede sumar y quitar perfiles
-**Y** mi colega no ve los perfiles que yo sumé a mi «Mi equipo», ni yo los suyos
+**Y** el «Mi equipo» de mi colega empieza vacío
+**Y** los perfiles guardados en mi «Mi equipo» no aparecen en el de mi colega
 
 ### Error — el colega abre el enlace sin estar invitado
 
@@ -59,6 +59,8 @@ Cubre **RF-1.2.10** (el lado de quien pide), **RF-1.2.11** y, para el equipo del
 **Ajustada el 2026-09-27 a T-1** (aprobado por el sponsor; backlog de arquitectura T-1, T-13, T-18): «Mi equipo» vive **en el servidor, por invitado**, ligado a su correo verificado y al enlace. Cada invitado ve solo el suyo, lo recupera en otro dispositivo y lo envía completo en su solicitud. Por eso el colega **no hereda** el equipo de quien lo invitó: comparte la selección curada y el contexto de la cuenta, no el borrador de otra persona. El Perfil Objetivo sigue guardándose por dispositivo (D-16), así que tampoco viaja entre invitados.
 
 **Dividida por actor el 2026-09-27** (validación INVEST: la historia sumaba dos actores y dos superficies). Esta historia es el lado del cliente: pedir, ver la petición pendiente o rechazada y la entrada del colega aprobado. La pantalla del panel donde Talento Humano aprueba o rechaza —con el alta en la lista de invitados y el registro de auditoría— pasa a **HU-145**, con criterios propios. No se recorta nada: el alcance es el mismo, repartido en dos historias que se construyen una detrás de otra dentro de EP-001.
+
+**Ajustada el 2026-09-28 (DoR de EP-001, decisión del PO: reformular sin recortar).** EP-001 garantiza que el colega entra con un «Mi equipo» propio, vacío y aislado del de quien lo invitó (verificado con equipos sembrados). Que el colega pueda sumar y quitar perfiles es comportamiento de «Mi equipo» y pasa a EP-004 (ver «Criterios recibidos de EP-001» en `docs/03-backlog/epicas.md`).
 
 **Pruebas.** Se construye y verifica con sesiones sembradas y peticiones sembradas en estado pendiente, aprobada y rechazada, sin esperar a HU-145; la prueba integrada pedir → aprobar → entrar se hace al cerrar ambas.
 

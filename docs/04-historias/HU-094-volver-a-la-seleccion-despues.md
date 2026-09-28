@@ -22,10 +22,10 @@ depende_de: [HU-090, HU-091]
 
 **Dado** que tengo una sesión válida en un enlace con selección
 **Y** que amplié la búsqueda al banco completo
-**Y** que sumé perfiles a «Mi equipo» mientras exploraba
+**Y** que mi «Mi equipo» tiene perfiles guardados
 **Cuando** toco «Volver a la selección»
 **Entonces** veo los perfiles del enlace con su razón declarada
-**Y** los perfiles que sumé a «Mi equipo» siguen en «Mi equipo»
+**Y** mi «Mi equipo» conserva exactamente los perfiles que tenía antes de volver
 
 ### Error — perfiles de la selección archivados
 
@@ -34,7 +34,7 @@ depende_de: [HU-090, HU-091]
 **Y** que los perfiles de la selección se archivaron mientras exploraba
 **Cuando** toco «Volver a la selección»
 **Entonces** veo cada perfil archivado en la selección con la etiqueta de su estado
-**Y** veo la opción de continuar desde lo que llevo en «Mi equipo»
+**Y** veo la opción de ampliar la búsqueda al banco completo
 
 ### Edge case — nunca hubo selección
 
@@ -47,6 +47,8 @@ depende_de: [HU-090, HU-091]
 Cubre **RF-2.2**. Es la resolución de la tensión entre curaduría y descubrimiento de §2.5.
 
 **Ajustada el 2026-09-27** (corrección de discovery T-18): el caso de error ya no «explica y oculta» la selección; por **RF-19.2** el portal nunca omite un perfil en silencio. «Mi equipo» vive en el servidor por invitado (T-1), así que lo que se conserva al volver también se conserva si la persona cambia de dispositivo; esa continuidad la prueba la historia de «Mi equipo» (EP-004), no esta.
+
+**Ajustada el 2026-09-28 (DoR de EP-001, decisión del PO: reformular sin recortar).** Esta historia afirma solo lo que construye EP-001: volver a la selección no altera el «Mi equipo» del invitado, verificado con un equipo sembrado. Sumar perfiles mientras se explora y «continuar desde lo que llevo en Mi equipo» son comportamiento de «Mi equipo» y pasan a EP-004 (ver «Criterios recibidos de EP-001» en `docs/03-backlog/epicas.md`).
 
 **Dueña única del retorno** (validación INVEST del 2026-09-27): esta es la única historia que tiene el criterio observable de «volver a la selección». HU-144 muestra la opción de ampliar la búsqueda y remite aquí para el retorno.
 

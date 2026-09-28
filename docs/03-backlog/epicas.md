@@ -154,6 +154,14 @@ prd_version_alineada: 4.13
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+
+**Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Para que EP-001 no construya «Mi equipo», estas afirmaciones salieron de sus historias y **son alcance de esta épica**; se redactan con las historias pendientes de sumar, quitar y recuperar «Mi equipo» (deuda de mapa):
+- Sumar perfiles a «Mi equipo» mientras se explora el banco completo y conservarlos al volver a la selección (antes en HU-094, happy path).
+- Ante perfiles de la selección archivados, ofrecer continuar desde lo que se lleva en «Mi equipo» (antes en HU-094, error).
+- El colega invitado puede sumar y quitar perfiles en su propio «Mi equipo» (antes en HU-095, happy path).
+
+EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» por invitado en el servidor, vacío al entrar y aislado entre invitados, que no se altera al volver a la selección.
+
 **Métrica de éxito:** promedio de 1,8 perfiles o más por solicitud enviada.
 
 **Historias anticipadas:** sumar un perfil al equipo · quitarlo · ver el contador desde cualquier pantalla · revisar el equipo como conjunto con fecha de inicio más temprana · comparar hasta tres perfiles · recuperar el equipo al volver.
@@ -342,6 +350,9 @@ prd_version_alineada: 4.13
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+
+**Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Con una selección curada de familias distintas, el panel de especificación (Perfil Objetivo) aparece vacío, sin un rol deducido (antes en HU-144, happy path). Se incorpora a la historia de EP-009 que muestre el panel al aterrizar desde un enlace curado. EP-001 garantiza lo previo: no se deduce ni se aplica ningún rol o criterio de la selección.
+
 **Métrica de éxito:** tiempo hasta el primer perfil abierto igual o menor que con facetas, con tasa de solicitud igual o mayor.
 **Prueba que la falsea:** si el tiempo sube y la tasa de solicitud no se mueve, el patrón está mal aplicado. Es condición de permanencia, no de lanzamiento.
 **Sin bloqueos.** D-16 se cerró el 2026-09-21 en persistencia por dispositivo y el 2026-09-25 quedó acotada al Perfil Objetivo (T-1): «Mi equipo» va al servidor por invitado (EP-004, RF-4.1); el Perfil Objetivo sigue en el dispositivo de quien lo especificó.
@@ -439,6 +450,9 @@ prd_version_alineada: 4.13
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006 · EP-009 (el camino del cero existe porque hay un Perfil Objetivo que mostrar)
+
+**Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Cuando una opción de la pregunta de encuadre no tiene perfiles publicados, la pantalla ofrece además **pedir el perfil a medida (RF-14.3)** (antes en HU-093, error). Se incorpora a HU-077 o a la historia de EP-010 que construya esa salida. EP-001 garantiza que la opción vacía siempre ofrece ampliar la búsqueda.
+
 **Métrica de éxito:** proporción de pantallas de cero que terminan en solicitud dirigida en lugar de abandono.
 **Riesgo propio:** mostrar "lo más cercano" cuando no se parece daña más que no mostrar nada.
 **Bloqueada por:** D-14 (umbral de similitud) y D-13 (dueño del registro de demanda).
