@@ -2,8 +2,13 @@
   "name": "portal-people-service",
   "private": true,
   "description": "Portal de Perfiles People Service — monorepo (ADR-0008)",
-  "workspaces": ["apps/*", "packages/*"],
-  "engines": { "node": ">=22" },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev:portal": "npm run dev -w @ps/portal",
     "dev:panel": "npm run dev -w @ps/panel",
@@ -16,6 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.4",
+    "@types/pg": "^8.23.1",
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "prettier": "^3.9.9",

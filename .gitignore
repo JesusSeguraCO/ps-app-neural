@@ -8,3 +8,6 @@ out/
 !.env.example
 .DS_Store
 coverage/
+
+# Base de datos local (scripts/bd-local.sh)
+.local/
