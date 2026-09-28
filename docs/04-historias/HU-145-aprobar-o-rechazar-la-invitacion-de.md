@@ -4,7 +4,7 @@ titulo: "Aprobar o rechazar la invitación de un colega"
 epica: EP-001
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.13
 depende_de: [HU-123, HU-095]
@@ -12,7 +12,7 @@ depende_de: [HU-123, HU-095]
 
 # HU-145 — Aprobar o rechazar la invitación de un colega
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario del banco de talento,
 **quiero** ver las peticiones de invitación de cada enlace y aprobarlas o rechazarlas desde el panel,
 **para** que el colega de un cliente pueda dar su segunda opinión sin que el enlace se convierta en una llave que abre a quien lo tenga.
 
@@ -50,7 +50,7 @@ depende_de: [HU-123, HU-095]
 **Y** que hay una petición pendiente cuyo correo ya está en la lista de invitados de ese enlace
 **Cuando** abro la petición
 **Entonces** veo que ese correo ya tiene acceso al enlace
-**Y** al cerrarla no se crea un invitado duplicado
+**Y** la lista de invitados del enlace sigue teniendo ese correo una sola vez
 
 ## Notas
 
