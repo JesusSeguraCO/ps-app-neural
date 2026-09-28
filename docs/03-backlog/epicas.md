@@ -69,6 +69,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-2.3 a RF-2.8 · RF-10 y RF-11 (sondeo y espacio no-perfil en el grid)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** resultados filtrados en menos de 1 segundo; al menos el 50% de las sesiones aplican un filtro propio más allá del conjunto curado.
 
 **Historias anticipadas:** filtrar por rol y categoría · filtrar por stack · filtrar por disponibilidad · combinar y limpiar filtros · buscar por texto libre · ordenar resultados · compartir el estado por URL · estado sin resultados con salida activa · ver y responder el sondeo de equipos híbridos · descartarlo de forma persistente.
@@ -107,6 +108,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-3 (completo) · RF-6 (completo)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** al menos el 60% de las sesiones abren como mínimo una ficha; ninguna revisión de marca detecta lenguaje de inventario aplicado a personas.
 **Decisión abierta que la condiciona:** D-5, grado de detalle de la trayectoria — crítica desde el cierre de D-1.
 
@@ -151,6 +153,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-4 (completo)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** promedio de 1,8 perfiles o más por solicitud enviada.
 
 **Historias anticipadas:** sumar un perfil al equipo · quitarlo · ver el contador desde cualquier pantalla · revisar el equipo como conjunto con fecha de inicio más temprana · comparar hasta tres perfiles · recuperar el equipo al volver.
@@ -178,6 +181,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-5 (completo) · RF-17.3 · RF-17.4
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** al menos el 85% de las solicitudes llegan con sector, fecha de inicio y duración diligenciados; ninguna pieza del flujo comunica reserva o contratación.
 
 **Historias anticipadas:** declarar el contexto del proyecto · identificarse cuando no se es el contacto del correo · revisar el resumen antes de enviar · enviar la solicitud · recibir la confirmación con el paso siguiente · agendar la alineación · intentar enviar con el equipo vacío.
@@ -278,6 +282,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-9 (completo) · RF-17.1 · RF-17.2 · RF-17.5
 **Fase:** MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** el 100% de las solicitudes enviadas tienen su oportunidad correspondiente en el CRM; cero registros duplicados de empresa; tiempo de solicitud a alineación agendada de 3 días hábiles o menos.
 **Desbloqueada el 2026-09-15.** D-6 cerrada: negocio en el pipeline propio de la línea, con propiedad de origen. D-7 cerrada: negocio nuevo asociado como relacionado al existente.
 
@@ -313,6 +318,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-7 (completo)
 **Fase:** MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** el tablero mensual reporta conversión, acierto de la curaduría y el top 10 de búsquedas sin resultados sin intervención manual.
 
 **Historias anticipadas:** registrar la entrada atribuida al correo · registrar filtros aplicados · distinguir curaduría de descubrimiento · registrar el embudo hasta el envío · reportar búsquedas sin resultados · reportar filtros más usados.
@@ -335,6 +341,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-12 (completo) · RF-13 (completo) · RF-16 (completo) · RF-2.6
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** tiempo hasta el primer perfil abierto igual o menor que con facetas, con tasa de solicitud igual o mayor.
 **Prueba que la falsea:** si el tiempo sube y la tasa de solicitud no se mueve, el patrón está mal aplicado. Es condición de permanencia, no de lanzamiento.
 **Sin bloqueos.** D-16 se cerró el 2026-09-21 en persistencia por dispositivo y el 2026-09-25 quedó acotada al Perfil Objetivo (T-1): «Mi equipo» va al servidor por invitado (EP-004, RF-4.1); el Perfil Objetivo sigue en el dispositivo de quien lo especificó.
@@ -431,6 +438,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-14.3 · RF-14.4 · RF-15
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006 · EP-009 (el camino del cero existe porque hay un Perfil Objetivo que mostrar)
 **Métrica de éxito:** proporción de pantallas de cero que terminan en solicitud dirigida en lugar de abandono.
 **Riesgo propio:** mostrar "lo más cercano" cuando no se parece daña más que no mostrar nada.
 **Bloqueada por:** D-14 (umbral de similitud) y D-13 (dueño del registro de demanda).
@@ -463,6 +471,7 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-18 (completo) · RF-1.6 · RF-7.3
 **Fase:** MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** 40% o más de las cuentas contactadas entran al portal, y ninguna cuenta acumula tres envíos con salida registrada sin entrar sin que alguien lo sepa.
 **Riesgo propio:** una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. Por eso RF-18.3 y RF-18.4 exigen construirla desde el panel, contra el inventario del momento, y marcar el bloque como desactualizado si un perfil cambia. Segundo riesgo, nuevo con la decisión: si nadie registra la salida, el portal no puede contar envíos ni vigilar la cadencia (RF-18.5).
 
