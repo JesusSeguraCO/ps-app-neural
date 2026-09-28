@@ -40,6 +40,8 @@ export default tseslint.config(
   { ignores: ["**/node_modules/**", "**/.next/**", "**/dist/**", "docs/**", "**/next-env.d.ts", ".local/**", ".claude/**", "_papelera/**"] },
   ...tseslint.configs.recommended,
   { files: ["**/*.{ts,tsx,mjs}"], rules: sinServerActionsNiEdge },
+  // Configuración CommonJS de herramientas (lighthouserc.cjs): require es su forma natural.
+  { files: ["**/*.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },
   { files: ["apps/portal/**/*.{ts,tsx}"], rules: sinImportsDe("panel") },
   { files: ["apps/panel/**/*.{ts,tsx}"], rules: sinImportsDe("portal") },
 );

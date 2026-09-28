@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postbuild": "rm -rf .next/standalone/apps/panel/.next/static && cp -R .next/static .next/standalone/apps/panel/.next/static"
   },
   "dependencies": {
     "@ps/contratos": "*",

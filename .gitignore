@@ -11,3 +11,5 @@ coverage/
 
 # Base de datos local (scripts/bd-local.sh)
 .local/
+test-results/
+playwright-report/

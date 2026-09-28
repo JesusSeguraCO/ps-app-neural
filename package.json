@@ -17,9 +17,15 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:e2e": "playwright test",
+    "test:rendimiento": "lhci autorun --config=lighthouserc.cjs",
+    "bd": "scripts/bd-local.sh"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.4",
     "@types/pg": "^8.23.1",
     "esbuild": "^0.28.2",

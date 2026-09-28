@@ -1,5 +1,6 @@
-# CI mínimo del scaffold (ADR-0010 §3.2). La matriz completa (Playwright, CSP,
-# Lighthouse, axe, V8-*) se activa por épica según ADR-0010.
+# CI de EP-001 · sub-slice 1 (ADR-0008 «Esqueleto andante», ADR-0010 §3.2): lint, tipos, build, V8-1,
+# V8-2, V8-9, V8-11, V2-1, V2-2, V9-10 contra PostgreSQL 16 + PgBouncer en modo transacción con roles
+# reales, prueba de CSP, axe y móvil en navegador (V8-7) y presupuesto de Lighthouse (V8-6 a).
 name: ci
 on:
   pull_request:
@@ -7,21 +8,44 @@ on:
     branches: [main]
 jobs:
   verificar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      PG_BIN: /usr/lib/postgresql/16/bin
+      PGB_BIN: /usr/sbin
+      REQUIERE_BD: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: PostgreSQL 16 y PgBouncer
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q postgresql-16 pgbouncer
+          sudo systemctl stop postgresql pgbouncer || true
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm test
       - run: npm run build
-      - run: node apps/worker/dist/worker.js --once
+      - name: BD de pruebas (roles reales, sin superusuario para la aplicación)
+        run: |
+          scripts/bd-local.sh arrancar
+          eval "$(scripts/entorno-dev.sh migrar)" && node apps/worker/dist/migrar.js
+      - name: Tests (unidad, BD, procesos y servidores standalone)
+        run: |
+          eval "$(scripts/bd-local.sh entorno)"
+          npx vitest run
+      - name: Navegador (CSP, axe, móvil)
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - name: Presupuesto de rendimiento (Lighthouse CI)
+        run: npx lhci autorun --config=lighthouserc.cjs
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
   imagenes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: verificar
     strategy:
       matrix:
