@@ -3,7 +3,9 @@
 // los ficheros de la carpeta.
 import type { Migration } from "kysely/migration";
 import * as m0001 from "./0001_identidad_y_cola";
+import * as m0002 from "./0002_claves_y_admin_inicial";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
+  "0002_claves_y_admin_inicial": m0002,
 };
