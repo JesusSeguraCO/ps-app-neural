@@ -1,0 +1,10 @@
+{
+  "name": "@ps/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts",
+    "./tokens.css": "./tokens.css",
+    "./tailwind.preset": "./tailwind.preset.ts" },
+  "scripts": { "typecheck": "tsc --noEmit -p ." }
+}
