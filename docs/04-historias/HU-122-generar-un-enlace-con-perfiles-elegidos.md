@@ -65,6 +65,8 @@ spec: docs/10-specs/enlaces-curados.md
 
 ## Notas
 
+**Degradación si HubSpot no responde** (DoR de EP-001, 2026-09-28): si la lectura del contacto de la cuenta en HubSpot falla o excede su tiempo, la administradora escribe los invitados a mano y la generación del enlace no se bloquea (adaptador de solo lectura, timeout de ADR-0009). No cambia los criterios: es cómo se degrada «el sistema me propone el correo del contacto».
+
 **Dividida el 2026-09-22.** La historia original tenía **seis escenarios** y dos happy paths con **actores distintos**: Talento Humano generando el enlace y el cliente abriéndolo. Cuando los happy paths cambian de actor, el corte natural está ahí. Lo que el cliente ve al abrir es ahora **HU-144**.
 
 **La decisión de fondo:** el enlace lleva **la lista de códigos**, no filtros. Una selección heterogénea no se puede expresar con ningún filtro, y ese es el caso real de uso.

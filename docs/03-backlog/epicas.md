@@ -33,7 +33,7 @@ prd_version_alineada: 4.13
 
 **Historias anticipadas:** entrar desde el correo · aterrizar en el conjunto curado con su razón · ampliar la búsqueda sin perder la selección · volver al conjunto curado · enlace vencido · aterrizaje sin parámetros de curaduría.
 
-**HU-123 (entrar al panel con el correo corporativo) pertenece a esta épica desde la v5.5.** Se reasignó desde EP-006 el 2026-09-27 por decisión del sponsor (T-19 del backlog de arquitectura): la caparazón de la aplicación necesita el login del panel para que Talento Humano genere enlaces (HU-122), y sin él EP-001 no se puede construir ni verificar completa. No recorta ni difiere alcance: la historia es la misma, cambia la épica que la construye. El resto de RF-8.1 (lista nominal de acceso, roles y observador) sigue en EP-006.
+**HU-123 (entrar al panel con el correo corporativo) pertenece a esta épica desde la v5.5.** Se reasignó desde EP-006 el 2026-09-27 por decisión del sponsor (T-19 del backlog de arquitectura): la caparazón de la aplicación necesita el login del panel para que Talento Humano genere enlaces (HU-122), y sin él EP-001 no se puede construir ni verificar completa. No recorta ni difiere alcance: la historia es la misma, cambia la épica que la construye. El resto de RF-8.1 (gestión de la lista nominal de acceso y de los roles) sigue en EP-006; la matriz rol × acción y el rol observador como mínimo técnico los construye EP-001, porque V2-3/V8-13 los exigen desde el sub-slice 2 (precisión del 2026-09-28).
 
 ### Requisitos de esta épica
 
