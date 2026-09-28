@@ -1,0 +1,426 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla seguimiento-envios
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (seguimiento-envios--estado.html), no interacciones.
+  Trazabilidad: épica EP-011 · historias HU-116, HU-117 · registrada en ../manifest.json
+  Pantalla #43 «Seguimiento» (antes «Quién entró»; panel, Mercadeo) · origen: nueva (sin equivalente en el v2).
+  Alcance PRD v4.14 (RF-18.6, decisión del sponsor 2026-09-27): el correo sale de Gmail o HubSpot;
+  el portal mide entrada por el enlace de cada destinatario, verificación del correo y solicitud.
+  La apertura «no la mide el portal» (nunca un cero). Regla: 3 ediciones con salida registrada y
+  sin entrada → aviso al ejecutivo. Ediciones sin salida registrada o con rebote registrado no cuentan.
+  Oficio v2 (2026-09-27): embudo en una franja con divisores de 1 px (no tarjetas KPI); estado como
+  punto + palabra; sin avisos explicativos ni guía de lectura; la regla vive en el tooltip de la
+  cabecera «Ediciones sin entrada»; cifras a la derecha en tabular-nums; destinatarios en filas
+  desplegadas bajo la cuenta; en móvil, una fila compacta por cuenta.
+  Estado de ESTE archivo: base — edición de septiembre (salió el 1 sep 2026 desde HubSpot; 18 cuentas, 41 destinatarios). Embudo destinatarios → entraron → verificaron → solicitaron, con cuántas cuentas terminaron en solicitud (HU-116 happy). Apertura como «No la mide el portal» + consultar en HubSpot, nunca cero (HU-116 error). Bancolombia desplegada por destinatario, con un invitado del enlace que no recibió la edición atribuido con su propio contacto (HU-116 edge). Sura entra y no suma perfiles: selección señalada para revisión (HU-117 edge). Colsubsidio a 2 de 3.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seguimiento — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+      /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+      /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+      /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+      .pp-migas a:hover { color: var(--tc-text-h); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+      /* /PP:panel */
+      /* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
+      /* PP:tabla */
+      .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+      .pp-barra .pp-pestanas { border-bottom: 0; }
+      .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+      .pp-buscador { position: relative; width: min(300px, 100%); }
+      .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+      .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+      .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+      .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+      .pp-tabla th.pp-tabla__acciones { text-align: right; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+      @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+      /* /PP:tabla */
+      /* PP:pestanas */
+      .pp-pestanas { display: flex; gap: var(--tc-sp-5); overflow-x: auto; border-bottom: 1px solid var(--tc-border); scrollbar-width: none; }
+      .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-1); border: 0; border-bottom: 2px solid transparent; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease); }
+      .pp-pestana:hover { color: var(--tc-text-h); }
+      .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-text-h); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+      .pp-pestana[aria-selected="true"] .pp-pestana__conteo { color: var(--tc-text-m); }
+      /* /PP:pestanas */
+      /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+      /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+      /* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
+      /* PP:toast */
+      .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+      .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+      .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+      @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+      /* /PP:toast */
+
+    /* ── Composición propia de esta pantalla (prefijo sg-) ── */
+    .sg-subnav { margin-bottom: var(--tc-sp-6); }
+    .sg-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .sg-edicion { width: auto; }
+    .sg-edicion .pp-input { min-height: 32px; padding-top: 0; padding-bottom: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); box-shadow: none; }
+    .sg-aviso { margin-bottom: var(--tc-sp-6); }
+    .sg-embudo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 1.25fr); margin: 0 0 var(--tc-sp-8); padding: 0; list-style: none; }
+    .sg-paso { min-width: 0; padding: 0 var(--tc-sp-6); }
+    .sg-paso:first-child { padding-left: 0; }
+    .sg-paso + .sg-paso { border-left: 1px solid var(--tc-border); }
+    .sg-paso__rotulo { display: block; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .sg-paso__valor { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-h2); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h2); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .sg-paso__de { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); letter-spacing: 0; color: var(--tc-text-m); }
+    .sg-paso__nota { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .sg-paso--fuera .sg-paso__valor { font-size: var(--tc-fs-body); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-h2); color: var(--tc-text-m); }
+    .sg-paso--vacio .sg-paso__valor { color: var(--tc-text-s); }
+    .sg-tabla-marco { max-height: none; }
+    .pp-tabla th.sg-num, .pp-tabla td.sg-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .sg-tabla td { color: var(--tc-text-b); }
+    .sg-tabla .pp-tabla__sub { font-weight: var(--tc-fw-regular); }
+    .sg-codigo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-h); white-space: nowrap; }
+    .sg-nada { color: var(--tc-text-s); }
+    .sg-cero { color: var(--tc-text-m); }
+    .sg-alerta { font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink-strong); }
+    .sg-tope { font-weight: var(--tc-fw-semibold); color: var(--tc-danger-ink); }
+    .sg-lectura__sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .sg-ayuda { position: relative; cursor: help; text-decoration: underline dotted; text-decoration-color: var(--tc-text-s); text-underline-offset: 3px; }
+    .sg-ayuda::after { content: attr(data-ayuda); position: absolute; top: calc(100% + var(--tc-sp-2)); right: 0; z-index: 5; width: 248px; padding: var(--tc-sp-2) var(--tc-sp-3); border-radius: var(--tc-r-sm); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); line-height: var(--tc-lh-h3); text-align: left; white-space: normal; opacity: 0; pointer-events: none; transition: opacity var(--tc-dur-fast) var(--tc-ease); }
+    .sg-ayuda:hover::after, .sg-ayuda:focus-visible::after { opacity: 1; }
+    .sg-expandir { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; margin-left: calc(var(--tc-sp-1) * -1); padding: 0 var(--tc-sp-1); border: 0; border-radius: var(--tc-r-sm); background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); cursor: pointer; text-align: left; }
+    .sg-expandir:hover { background: var(--tc-bg-subtle); }
+    .sg-expandir .pp-icono { color: var(--tc-text-m); transition: transform var(--tc-dur) var(--tc-ease); }
+    .sg-expandir[aria-expanded="true"] .pp-icono { transform: rotate(90deg); }
+    .sg-cuenta__sub { display: block; padding-left: calc(var(--tc-sp-4) + var(--tc-sp-1)); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .sg-sub > * { padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-surface-quiet); font-size: var(--tc-fs-caption); }
+    .sg-sub th[scope="row"] { padding-left: calc(var(--tc-sp-4) * 2 + var(--tc-sp-1)); }
+    .sg-correo { display: block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .sg-tabla .sg-movil { display: none; }
+    .sg-fila--foco > * { background: var(--tc-surface-quiet); }
+    .sg-acciones { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
+    @media (max-width: 1100px) {
+      .sg-tabla { min-width: 0; }
+      .sg-correo { max-width: 180px; }
+      .sg-tabla th, .sg-tabla td { padding-left: var(--tc-sp-3); padding-right: var(--tc-sp-3); }
+    }
+    @media (max-width: 1023px) {
+      .sg-embudo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .sg-embudo { row-gap: var(--tc-sp-5); }
+      .sg-paso:nth-child(4) { border-left: 0; padding-left: 0; }
+      .sg-paso--fuera { grid-column: span 2; }
+    }
+    @media (max-width: 1023px) {
+      .sg-tabla-marco { overflow: visible; }
+      .sg-tabla { min-width: 0; }
+      .sg-tabla, .sg-tabla tbody { display: block; }
+      .sg-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .sg-tabla tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-1) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+      .sg-tabla tbody tr:last-child { border-bottom: 0; }
+      .sg-tabla tr > * { padding: 0; border: 0; background: none; }
+      .sg-tabla tr.sg-sub, .sg-tabla tr.sg-fila--foco { background: var(--tc-surface-quiet); }
+      .sg-tabla tr.sg-sub { padding-left: calc(var(--tc-sp-4) * 2); }
+      .sg-tabla .sg-c-oculta, .sg-tabla .sg-c-sin--cero, .sg-tabla .sg-cuenta__sub { display: none; }
+      .sg-tabla .sg-c-cuenta { grid-column: 1; grid-row: 1; }
+      .sg-tabla .sg-c-sin { grid-column: 2; grid-row: 1; }
+      .sg-tabla .sg-c-lectura { grid-column: 1; grid-row: 2; }
+      .sg-tabla .sg-c-acc { grid-column: 2; grid-row: 2; justify-self: end; }
+      .sg-tabla .sg-c-acc--ancha { grid-column: 1 / -1; grid-row: 3; }
+      .sg-tabla .sg-movil { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .sg-tabla .sg-c-sin .sg-movil { margin-top: 0; }
+      .sg-sub th[scope="row"] { padding-left: 0; }
+      .sg-expandir { min-height: 44px; }
+      .sg-tabla tr:has(.sg-c-acc .pp-btn--icono) { position: relative; padding-right: calc(var(--tc-sp-10) + var(--tc-sp-4)); }
+      .sg-tabla .sg-c-acc .pp-btn--icono { position: absolute; top: var(--tc-sp-3); right: var(--tc-sp-2); }
+    }
+    @media (max-width: 767px) {
+      .sg-edicion { width: 100%; }
+      .sg-edicion .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); }
+      .sg-titulo { width: 100%; }
+      .sg-embudo { grid-template-columns: minmax(0, 1fr); row-gap: 0; border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); }
+      .sg-paso, .sg-paso:first-child, .sg-paso:nth-child(4) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0 var(--tc-sp-3); padding: var(--tc-sp-3) 0; }
+      .pp-encabezado { flex-wrap: nowrap; }
+      .pp-encabezado__texto { flex: 1; }
+      .pp-encabezado__acciones { flex: none; }
+      .pp-encabezado__acciones .pp-btn--fantasma { margin-right: calc(var(--tc-sp-3) * -1); }
+      .sg-paso + .sg-paso, .sg-paso:nth-child(4) { border-left: 0; border-top: 1px solid var(--tc-border); }
+      .sg-paso--fuera { grid-column: auto; }
+      .sg-paso__rotulo { grid-column: 1; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+      .sg-paso__valor { grid-column: 2; grid-row: 1 / span 2; margin: 0; font-size: var(--tc-fs-h3); text-align: right; }
+      .sg-paso__de { display: block; font-size: var(--tc-fs-caption); }
+      .sg-paso__nota { grid-column: 1; margin-top: 0; }
+      .sg-paso--fuera .sg-paso__valor { font-size: var(--tc-fs-small); }
+      .sg-sub th[scope="row"] { padding-left: 0; }
+      .sg-expandir { min-height: 44px; font-size: var(--tc-fs-body); }
+      .sg-correo { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="pp-panel">
+  <!-- región: navegación / sidebar del panel -->
+  <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <div class="pp-sidebar__marca">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Portal de perfiles</span></span>
+    </div>
+    <p class="pp-sidebar__seccion">Banco de perfiles</p>
+    <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+    <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+    <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+    <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+    <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+    <p class="pp-sidebar__seccion">Clientes</p>
+    <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+    <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+    <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+    <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+    <p class="pp-sidebar__seccion">Operación</p>
+    <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+    <a class="pp-sidelink" href="selecciones-curadas.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+    <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">2</span></a>
+    <div class="pp-sidebar__pie">
+      <span class="pp-avatar" aria-hidden="true">PG</span>
+      <span class="pp-persona"><span class="pp-persona__nombre">Paula Giraldo</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
+    </div>
+  </nav>
+  
+  <div class="pp-panel__cuerpo">
+    <!-- región: cabecera con migas -->
+    <div class="pp-panel__topbar">
+      <ol class="pp-migas"><li><a href="selecciones-curadas.html">Envíos</a></li><li aria-current="page">Seguimiento</li></ol>
+      <div class="pp-panel__herramientas">
+        <span class="pp-meta">paula.giraldo@trycore.com</span>
+        <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
+      </div>
+    </div>
+    <!-- región: contenido principal -->
+    <main class="pp-panel__contenido">
+      <div class="pp-encabezado">
+        <div class="pp-encabezado__texto">
+          <div class="sg-titulo">
+            <h1 class="pp-encabezado__titulo">Seguimiento</h1>
+            <label class="pp-select sg-edicion"><span class="pp-sr">Edición</span><select class="pp-input"><option>Octubre · 6 oct</option><option selected>Septiembre · 1 sep</option><option>Agosto · 4 ago</option><option>Julio · 7 jul</option></select></label>
+          </div>
+          <p class="pp-encabezado__meta">Salió el 1 sep desde HubSpot · 18 cuentas · 41 destinatarios · actualizado hoy, 7:00 a. m.</p>
+        </div>
+        <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--fantasma" href="#">Exportar CSV</a></div>
+      </div>
+      <h2 class="pp-sr">Embudo de la edición</h2>
+      <ul class="sg-embudo">
+        <li class="sg-paso"><span class="sg-paso__rotulo">Destinatarios</span><span class="sg-paso__valor">41</span><span class="sg-paso__nota">18 cuentas</span></li>
+        <li class="sg-paso"><span class="sg-paso__rotulo">Entraron por su enlace</span><span class="sg-paso__valor">7 <span class="sg-paso__de">de 18 cuentas</span></span><span class="sg-paso__nota">9 destinatarios · +1 invitado</span></li>
+        <li class="sg-paso"><span class="sg-paso__rotulo">Verificaron el correo</span><span class="sg-paso__valor">6 <span class="sg-paso__de">cuentas</span></span><span class="sg-paso__nota">8 destinatarios</span></li>
+        <li class="sg-paso"><span class="sg-paso__rotulo">Solicitaron</span><span class="sg-paso__valor">2 <span class="sg-paso__de">cuentas</span></span><span class="sg-paso__nota">SOL-0231 · SOL-0236</span></li>
+        <li class="sg-paso sg-paso--fuera"><span class="sg-paso__rotulo">Apertura del correo</span><span class="sg-paso__valor">No la mide el portal</span><span class="sg-paso__nota"><a class="pp-enlace" href="#">Consultar en HubSpot</a></span></li>
+      </ul>
+      <section aria-labelledby="sg-tabla-titulo">
+        <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="sg-tabla-titulo">Por cuenta</h2><span class="pp-meta">18 cuentas · primero lo que pide atención</span></div>
+        <div class="pp-tabla-marco sg-tabla-marco" tabindex="0" role="region" aria-labelledby="sg-tabla-titulo">
+          <table class="pp-tabla sg-tabla">
+          <caption class="pp-sr">Entrada por el enlace, verificación del correo y solicitud, por cuenta y destinatario</caption>
+          <thead><tr><th scope="col">Cuenta</th><th scope="col" class="sg-num">Entraron</th><th scope="col" class="sg-num">Verificaron</th><th scope="col">Solicitud</th><th scope="col" class="sg-num"><span class="sg-ayuda" tabindex="0" data-ayuda="Ediciones seguidas con salida registrada y sin ninguna entrada por los enlaces de la cuenta. A las 3 avisamos al ejecutivo. No cuentan las ediciones sin salida registrada ni las de rebote registrado." aria-describedby="sg-regla">Ediciones sin entrada</span><span class="pp-sr" id="sg-regla">Ediciones seguidas con salida registrada y sin ninguna entrada por los enlaces de la cuenta. A las 3 avisamos al ejecutivo. No cuentan las ediciones sin salida registrada ni las de rebote registrado.</span></th><th scope="col">Lectura</th><th scope="col" class="pp-tabla__acciones"><span class="pp-sr">Acciones</span></th></tr></thead>
+          <tbody>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-col"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Colsubsidio</button><span class="sg-cuenta__sub">Paula Restrepo</span><span class="sg-movil">0 de 2 entraron</span></th><td class="sg-num sg-c-oculta">0 de 2</td><td class="sg-num sg-c-oculta">0</td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-num sg-c-sin"><span class="sg-alerta">2 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--warn">A una edición del aviso</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Colsubsidio"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-sura"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Sura</button><span class="sg-cuenta__sub">Paula Restrepo</span><span class="sg-movil">1 de 2 entraron</span></th><td class="sg-num sg-c-oculta">1 de 2</td><td class="sg-num sg-c-oculta">1</td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-num sg-c-sin sg-c-sin--cero"><span class="sg-cero">0 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--warn">Entró y no sumó perfiles</span><span class="sg-lectura__sub">Miró 4 perfiles. Selección señalada para revisión.</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Sura"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-exito"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Grupo Éxito</button><span class="sg-cuenta__sub">Camilo Duarte</span><span class="sg-movil">1 de 3 entraron</span></th><td class="sg-num sg-c-oculta">1 de 3</td><td class="sg-num sg-c-oculta">0</td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-num sg-c-sin sg-c-sin--cero"><span class="sg-cero">0 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--neutro">Abrió el enlace, no verificó</span><span class="sg-lectura__sub">No pidió el código de acceso</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Grupo Éxito"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-alpina"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Alpina</button><span class="sg-cuenta__sub">Camilo Duarte</span><span class="sg-movil">0 de 3 entraron</span></th><td class="sg-num sg-c-oculta">0 de 3</td><td class="sg-num sg-c-oculta">0</td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-num sg-c-sin"><span>1 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--neutro">Sin entrada</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Alpina"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="true" aria-controls="sg-g-banc"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Bancolombia</button><span class="sg-cuenta__sub">Andrés Villa</span><span class="sg-movil">2 de 3 entraron · SOL-0231</span></th><td class="sg-num sg-c-oculta">2 de 3<span class="pp-tabla__sub">+1 invitado</span></td><td class="sg-num sg-c-oculta">2</td><td class="sg-c-oculta"><span class="sg-codigo">SOL-0231</span></td><td class="sg-num sg-c-sin sg-c-sin--cero"><span class="sg-cero">0 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--ok">Solicitó</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Bancolombia"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr class="sg-sub" data-grupo="sg-g-banc"><th scope="row" class="sg-c-cuenta"><span class="sg-correo" title="natalia.cardenas@bancolombia.com.co">natalia.cardenas@bancolombia.com.co</span><span class="sg-movil">Entró 1 sep · verificó · SOL-0231</span></th><td class="sg-num sg-c-oculta">1 sep, 4:12 p. m.</td><td class="sg-num sg-c-oculta"><span class="pp-si" aria-label="Sí">✓</span></td><td class="sg-c-oculta"><span class="sg-codigo">SOL-0231</span></td><td class="sg-c-sin"></td><td class="sg-c-lectura"></td><td class="sg-c-acc"></td></tr>
+            <tr class="sg-sub" data-grupo="sg-g-banc"><th scope="row" class="sg-c-cuenta"><span class="sg-correo" title="andres.rincon@bancolombia.com.co">andres.rincon@bancolombia.com.co</span><span class="sg-movil">Entró 2 sep · verificó</span></th><td class="sg-num sg-c-oculta">2 sep, 9:03 a. m.</td><td class="sg-num sg-c-oculta"><span class="pp-si" aria-label="Sí">✓</span></td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-c-sin"></td><td class="sg-c-lectura"></td><td class="sg-c-acc"></td></tr>
+            <tr class="sg-sub" data-grupo="sg-g-banc"><th scope="row" class="sg-c-cuenta"><span class="sg-correo" title="mariana.ospina@bancolombia.com.co">mariana.ospina@bancolombia.com.co</span><span class="sg-movil">No entró</span></th><td class="sg-num sg-c-oculta"><span class="sg-nada" aria-label="No entró">–</span></td><td class="sg-num sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-c-sin"></td><td class="sg-c-lectura"></td><td class="sg-c-acc"></td></tr>
+            <tr class="sg-sub" data-grupo="sg-g-banc"><th scope="row" class="sg-c-cuenta"><span class="sg-correo" title="juan.rios@bancolombia.com.co">juan.rios@bancolombia.com.co</span><span class="pp-tabla__sub">Invitado del enlace, no recibió esta edición</span><span class="sg-movil">Entró 3 sep · verificó</span></th><td class="sg-num sg-c-oculta">3 sep, 11:20 a. m.</td><td class="sg-num sg-c-oculta"><span class="pp-si" aria-label="Sí">✓</span></td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-c-sin"></td><td class="sg-c-lectura"><span class="sg-lectura__sub">Cuenta con su propio contacto</span></td><td class="sg-c-acc"></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-dav"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Davivienda</button><span class="sg-cuenta__sub">Paula Restrepo</span><span class="sg-movil">1 de 2 entraron · SOL-0236</span></th><td class="sg-num sg-c-oculta">1 de 2</td><td class="sg-num sg-c-oculta">1</td><td class="sg-c-oculta"><span class="sg-codigo">SOL-0236</span></td><td class="sg-num sg-c-sin sg-c-sin--cero"><span class="sg-cero">0 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--ok">Solicitó</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Davivienda"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-cel"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Celsia</button><span class="sg-cuenta__sub">Andrés Villa</span><span class="sg-movil">1 de 2 entraron</span></th><td class="sg-num sg-c-oculta">1 de 2</td><td class="sg-num sg-c-oculta">1</td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-num sg-c-sin sg-c-sin--cero"><span class="sg-cero">0 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--neutro">Entró, sin solicitud</span><span class="sg-lectura__sub">Sumó 2 perfiles a su equipo</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Celsia"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+            <tr><th scope="row" class="sg-c-cuenta"><button type="button" class="sg-expandir" aria-expanded="false" aria-controls="sg-g-isa"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>ISA</button><span class="sg-cuenta__sub">Camilo Duarte</span><span class="sg-movil">1 de 2 entraron</span></th><td class="sg-num sg-c-oculta">1 de 2</td><td class="sg-num sg-c-oculta">1</td><td class="sg-c-oculta"><span class="sg-nada" aria-label="No">–</span></td><td class="sg-num sg-c-sin sg-c-sin--cero"><span class="sg-cero">0 de 3</span><span class="sg-movil">sin entrada</span></td><td class="sg-c-lectura"><span class="pp-estado pp-estado--neutro">Entró, sin solicitud</span><span class="sg-lectura__sub">Sumó 1 perfil a su equipo</span></td><td class="pp-tabla__acciones sg-c-acc"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para ISA"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></td></tr>
+          </tbody>
+          </table>
+        </div>
+      <div class="pp-paginacion"><span>8 de 18 cuentas</span><div><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Mostrar las 10 restantes</button></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

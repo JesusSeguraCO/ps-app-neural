@@ -103,10 +103,10 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | UC-13 | **Catálogos paramétricos y léxico** administrables sin despliegue, con dependencias rol → familia → modalidades, detección de parecidos, desactivar en vez de borrar, fusión con impacto; Gemini propone léxico y una persona aprueba | EP-006 · HU-089, 139, 143 · RF-8.12, 8.12.1, 8.16 · D-24 |
 | UC-14 | **Colocados y evidencia**: espejo de solo lectura sincronizado a diario; artefacto de evidencia (documento, transcripción o enlace; sin video; ≤ 64 MB) en almacenamiento de objetos privado (DO Spaces) con URL prefirmadas solo desde el panel; borrador de campos revisado por persona | EP-006 · HU-131, 137, 140 · RF-8.11, 8.11.1, 8.13 · B.8.4, B.9.3 |
 | UC-15 | **Notificación y escalamiento por horas hábiles**: aviso al propietario de la cuenta y a Coordinación de Servicio por el canal diario; 4 h hábiles sin apertura → Dirección Comercial; 24 h sin cambio de etapa → Dirección General; tiempo hasta la primera apertura registrado | EP-007 · HU-101, HU-103 · RF-9.5, 9.7, 17.1–17.2 |
-| UC-16 | **Correo curado**: armado desde el panel contra el inventario del momento, enlace directo `/e/#t=` con token opaco por destinatario (guardado solo como hash), envío programado, bajas persistentes, medición de apertura/clic/entrada y regla de 3 envíos sin abrir | EP-011 · HU-113–117 · RF-18, 1.6 · spec correo-curado |
+| UC-16 | **Correo curado** (*decisión de negocio 2026-09-27: el boletín se confecciona y envía desde Gmail o HubSpot; el portal no lo compone, programa ni envía*): edición curada armada desde el panel contra el inventario del momento, enlace directo `/e/#t=` con token opaco por destinatario (guardado solo como hash, mostrado al generarse y regenerable), bloque de contenido listo para copiar, salida registrada por una persona con vigilancia de cadencia, exclusión manual, medición de entrada, verificación y solicitud por destinatario (la apertura no la mide el portal) y regla de 3 envíos con salida registrada sin entrada. *Retirado el 2026-09-27: envío programado, bajas persistentes y medición de apertura por el portal* | EP-011 · HU-113–117 · RF-18 (v4.14), 1.6 · spec correo-curado |
 | UC-17 | **Telemetría con atribución**: eventos RF-7 atribuidos a cuenta, correo invitado, sesión, conjunto curado y envío; informes de embudo, acierto de curaduría, filtros y rutas sin trabajo manual; eventos de falsación (instrucción, Perfil Objetivo, cero, cercanos, composiciones, variante asignada en servidor) capturados desde el primer slice que los emite | EP-008, EP-002, EP-009 · HU-108–112 · RF-7, RF-12.1, RF-13.1, RF-14.2, RF-14.7 · §8 Trazabilidad, §14.7 |
 | UC-18 | **Gemini acotado**: extracción de criterios de requerimientos pegados largos con salida estructurada y vuelta al intérprete determinista; propuestas periódicas de léxico | EP-009, EP-006 · HU-067, 072, 139 · RF-12.2.1, 8.12.1, 16 · D-24 |
-| UC-19 | **Tareas programadas vigiladas**: las tareas del planificador del worker (escalamiento, sincronización, boletín, léxico, verificación de auditoría, exportación, retención) registran cada ejecución y su último éxito; una tarea fallida se reintenta sin esperar a su siguiente vencimiento; alerta si el último éxito supera 2× su intervalo y, en las críticas, al primer fallo | EP-007 · RF-9.6.2 · §8.3 |
+| UC-19 | **Tareas programadas vigiladas**: las tareas del planificador del worker (escalamiento, sincronización, evaluación del correo curado, léxico, verificación de auditoría, exportación, retención) registran cada ejecución y su último éxito; una tarea fallida se reintenta sin esperar a su siguiente vencimiento; alerta si el último éxito supera 2× su intervalo y, en las críticas, al primer fallo | EP-007 · RF-9.6.2 · §8.3 |
 | UC-20 | **Armado de equipo**: sumar y quitar perfiles de «Mi equipo» (por invitado en servidor, T-1) desde ficha, tarjetas y tabla, incluida la selección múltiple de la tabla en una sola operación, sin perder cambios entre pestañas o dispositivos; indicador siempre visible; resumen del conjunto con roles cubiertos y fecha de inicio más temprana expresada como banda, nunca como fecha (CON-10); vacíos de composición en tono informativo; comparador de hasta 3 perfiles con los mismos criterios y el mismo motor (alcance pendiente de negocio, T-22); la selección sobrevive dentro de la vigencia del acceso | EP-004 · HU-080, HU-084, HU-120 (EP-003), HU-121 (EP-002) · RF-4.1–4.5, 13.12.4, 14.6 · D-16, T-1 |
 
 ## 3. Escenarios de atributos de calidad (QA) — formato de 6 partes
@@ -169,12 +169,13 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Respuesta:** reconoce lo ya creado por clave de idempotencia; reclamo por fila con arrendamiento y cierre condicionado al reclamo.
 - **Medida:** en inyección de 50 respuestas perdidas y dos réplicas del worker en paralelo: 0 negocios y 0 empresas duplicados; misma especificación reciente → 0 negocios nuevos (D-7).
 
-### QA-8 — Entrega de correo (códigos, avisos, boletín) · (A, A)
+### QA-8 — Entrega de correo (códigos y avisos internos) · (A, A)
+> *2026-09-27 (decisión de negocio, RF-18):* el boletín ya no sale por Mailgun; se confecciona y envía desde Gmail o HubSpot.
 - **Fuente:** el worker (y portal y panel en modo degradado del acceso), por la API de Mailgun con dominio de envío `mg.people.trycore.com` y remitente visible `notify@people.trycore.com`.
-- **Estímulo:** código de acceso, aviso de solicitud o boletín.
+- **Estímulo:** código de acceso o aviso interno (solicitud, escalamiento, cadencia del correo curado).
 - **Artefacto:** adaptador de correo (`packages/infra`), trabajos de envío y webhook de eventos de Mailgun.
 - **Entorno:** IP de envío de Mailgun; destinatarios en Google Workspace y buzones corporativos de clientes, con listas grises; envíos con resultado ambiguo (timeout o 5xx).
-- **Respuesta:** llega a la bandeja de entrada; rebotes, quejas y bajas llegan por webhook firmado y se clasifican aparte.
+- **Respuesta:** llega a la bandeja de entrada; rebotes y quejas llegan por webhook firmado y se clasifican aparte.
 - **Medida:** SPF y DKIM en pass para el dominio de envío y DMARC en pass alineado en modo relajado en el 100 %; 0 registros DNS en conflicto con el host web; código de acceso en bandeja P95 ≤ 60 s (*a validar*); ≥ 95 % en bandeja principal en prueba con buzones reales antes del primer envío (*a validar*); tras un envío ambiguo, el primer código entregado sigue siendo válido; 0 envíos por SMTP o `sendmail` (grep en CI).
 
 ### QA-9 — Integridad transaccional de la importación · (A, A)
@@ -212,7 +213,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 ### QA-13 — Observabilidad de las tareas programadas · (A, A)
 - **Fuente:** el worker y su planificador.
 - **Estímulo:** una tarea programada deja de ejecutarse o termina con error; el worker cae o un trabajo se queda atascado.
-- **Artefacto:** planificador del worker (`tareas_programadas`: escalamiento, sincronización, boletín, léxico, verificación de auditoría, exportación, retención), cola `trabajos`, latido externo.
+- **Artefacto:** planificador del worker (`tareas_programadas`: escalamiento, sincronización, evaluación del correo curado, léxico, verificación de auditoría, exportación, retención), cola `trabajos`, latido externo.
 - **Entorno:** fallo silencioso (tarea que falla en cada corrida, proceso muerto a mitad, worker caído).
 - **Respuesta:** reintento acotado de la tarea y aviso al responsable técnico; cada corrida registra inicio, fin, resultado y cantidad.
 - **Medida:** ningún trabajo retiene su fila más que su arrendamiento vigente; una corrida fallida no cuenta como éxito y la tarea se reintenta en ≤ 15 min sin esperar a su siguiente vencimiento; alerta cuando el **último éxito** de una tarea supera 2× su intervalo (≤ 30 min escalamiento, ≤ 48 h diaria, ≤ 14 días semanal) y **al primer fallo** de las tareas críticas (`verificar_auditoria`, `exportar_banco`, `escalar`) (RF-9.6.2); 100 % de corridas registradas; latido externo que alerta a ≤ 10 min sin ciclo del worker; la vigilancia no depende solo del worker (monitor externo y chequeo web). Única definición de la medida: los ADR la citan, no la redefinen.
@@ -274,7 +275,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Medida:** 0 cambios de código ni despliegues; visible en el portal en la siguiente carga de catálogo; fusión reasigna el 100 % de perfiles en una transacción; 0 entradas de léxico apuntando a valores inexistentes.
 
 ### QA-21 — Atribución de la telemetría · (A, M)
-- **Fuente:** invitado que entra desde el boletín u otro invitado del mismo enlace.
+- **Fuente:** invitado que entra por el enlace de su edición curada (correo enviado desde Gmail o HubSpot) u otro invitado del mismo enlace.
 - **Estímulo:** inicio de sesión y eventos del embudo.
 - **Artefacto:** capa de eventos.
 - **Entorno:** normal, incluido el pico tras un envío.
@@ -312,7 +313,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-17 | Alcance completo del panel en el MVP | D-8 |
 | CON-18 | **Contenedores Docker portables**; destino inicial **DigitalOcean App Platform**. Backend TypeScript con **Next.js** (servidor + rutas de API) y un **worker Node** para trabajo diferido. El hosting cPanel se abandona | D-23 revisada, PRD v4.12 §8.3 |
 | CON-19 | **PostgreSQL administrado** (respaldos y PITR fuera de los contenedores) | D-23 revisada, PRD v4.12 §8.3 |
-| CON-20 | Correo transaccional y boletín **solo por Mailgun**, con **dominio de envío `mg.people.trycore.com`** (staging: `mg.people-staging.trycore.com`), subdominio sin host web para que SPF, DKIM, MX de rebotes y CNAME de seguimiento no choquen con el CNAME del portal; remitente visible `notify@people.trycore.com` con alineación DMARC relajada; `trycore.com` sigue en Google Workspace | PRD v4.12 §8.3 (sustituye a CON-5); revisión adversarial H2 |
+| CON-20 | Correo transaccional (códigos y avisos internos) **solo por Mailgun** (*el boletín sale por Gmail o HubSpot desde el 2026-09-27, decisión de negocio*), con **dominio de envío `mg.people.trycore.com`** (staging: `mg.people-staging.trycore.com`), subdominio sin host web para que SPF, DKIM, MX de rebotes y CNAME de seguimiento no choquen con el CNAME del portal; remitente visible `notify@people.trycore.com` con alineación DMARC relajada; `trycore.com` sigue en Google Workspace | PRD v4.12 §8.3 (sustituye a CON-5); revisión adversarial H2 |
 | CON-21 | Llamadas externas **solo desde el servidor**, por adaptadores con timeout; nunca a URL aportadas por el usuario | Derivada de CON-7 y de la frontera de `build-config.json` (iteración 8) |
 | CON-22 | **Cloudflare delante** de los 4 hosts (proxy, caché de estáticos, límite de peticiones en el acceso) y el origen no alcanzable saltándose Cloudflare | Derivada de CON-15 (iteración 8) |
 
@@ -324,7 +325,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CRN-2 | El «canal de trabajo diario» de las notificaciones (RF-9.7.1) no está identificado, ni los destinatarios nominales de escalamiento | Integración saliente adicional sin definir; decisión de negocio |
 | CRN-3 | Falta el calendario hábil (horario, zona, festivos de Colombia, quién lo mantiene) | Tabla de calendario administrable; decisión de negocio sobre el horario |
 | CRN-4 | HU-105 dice que los reintentos se agotan y van a una bandeja de fallos; RF-9.6.1 dice que nunca se deja de reintentar | El diseño debe cumplir ambas (bandeja visible sin dejar de reintentar) |
-| CRN-5 | (Iteración 8: Mailgun entrega rebotes, quejas y aperturas por webhook firmado.) Medición del correo con SMTP propio: la apertura exige píxel (falla con Apple Mail Privacy Protection); rebotes exigen procesar el buzón; límite de envío no verificado | Estados «sin dato» explícitos; lectura de rebotes por IMAP o Return-Path |
+| CRN-5 | (Iteración 8: Mailgun entrega rebotes, quejas y aperturas por webhook firmado. *2026-09-27: el boletín sale por Gmail o HubSpot; el portal no mide la apertura, solo la entrada por enlace.*) Medición del correo con SMTP propio: la apertura exige píxel (falla con Apple Mail Privacy Protection); rebotes exigen procesar el buzón; límite de envío no verificado | Estados «sin dato» explícitos; lectura de rebotes por IMAP o Return-Path |
 | CRN-6 | Salida HTTPS hacia `generativelanguage.googleapis.com` no verificada; cuotas y coste de la llave de producción desconocidos | Verificar en el servidor antes de EP-009; presupuesto de llamadas |
 | CRN-7 | Permisos de la private app de HubSpot, pipeline y propiedades dependen de Mercadeo y Comercial; correspondencia cuenta del portal ↔ empresa de HubSpot | La cuenta guarda el id de empresa y propietario de HubSpot |
 | CRN-8 | (Iteración 8: el equivalente es la caída o el atasco del worker.) Si cae el crontab entero, la vigilancia de RF-9.6.2 cae con él | Vigilancia secundaria apoyada en el tráfico web o un monitor externo |

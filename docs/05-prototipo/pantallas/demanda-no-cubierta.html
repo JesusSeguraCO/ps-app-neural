@@ -1,0 +1,516 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla demanda-no-cubierta
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (demanda-no-cubierta--estado.html), no interacciones.
+  Trazabilidad: épica EP-010 · historias HU-078, HU-085 · registrada en ../manifest.json
+  Pantalla #40 «Registro de demanda (panel)» · origen: nueva (sin equivalente en el v2).
+  Demanda inducida por sugerencias marcada aparte de la espontánea (HU-078, escenario edge).
+  Necesidades añadidas a mano en el Perfil Objetivo llegan como «no está en el banco» (HU-085).
+  Estado de ESTE archivo: base — septiembre de 2026 con 24 búsquedas sin coincidencia en 9 cuentas (18 espontáneas, 6 inducidas por sugerencias sin editar; 10 terminaron en solicitud a medida). Arriba, el ranking de necesidades no cubiertas con espontáneas e inducidas en columnas separadas. Debajo, la lista «Todas»: cada fila muestra cuenta y contacto, especificación estructurada en texto (obligatorio en peso medio, deseable en gris, «no está en el banco» con subrayado punteado ámbar; leyenda al pie), origen (solo «Inducida»), desenlace y fecha; la primera fila va expandida con el texto escrito, el reto y la solicitud.
+  Oficio v2 (2026-09-27): ranking de necesidades arriba como bloque principal; búsquedas en lista
+  densa con divide-y (fila expandible con <details>: cita, reto, origen, solicitud); origen solo
+  marcado cuando es «Inducida»; desenlace como punto + texto; sin tarjetas KPI ni leyenda de ✓.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro de demanda — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+    /* /PP:botones */
+    /* PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
+    /* PP:panel */
+    .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+    .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+    .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+    .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+    .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+    .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+    .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+    .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+    .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+    .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+    .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+    .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+    .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+    .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+    .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+    .pp-migas a:hover { color: var(--tc-text-h); }
+    .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+    @media (max-width: 1023px) {
+    .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+    .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+    .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+    .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+    .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+    }
+    @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+    /* /PP:panel */
+    /* PP:filas */
+    .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+    .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+    .pp-fila:hover { background: var(--tc-surface-quiet); }
+    .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+    .pp-fila--enlace { cursor: pointer; }
+    .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .pp-fila__principal > p { margin: 0; }
+    .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .pp-fila__titulo a { color: inherit; text-decoration: none; }
+    .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+    .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+    .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+    .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+    .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+    @media (max-width: 767px) {
+    .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+    .pp-fila__acciones { justify-content: flex-end; }
+    .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+    }
+    /* /PP:filas */
+    /* PP:pestanas */
+    .pp-pestanas { display: flex; gap: var(--tc-sp-5); overflow-x: auto; border-bottom: 1px solid var(--tc-border); scrollbar-width: none; }
+    .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-1); border: 0; border-bottom: 2px solid transparent; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease); }
+    .pp-pestana:hover { color: var(--tc-text-h); }
+    .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-text-h); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .pp-pestana[aria-selected="true"] .pp-pestana__conteo { color: var(--tc-text-m); }
+    /* /PP:pestanas */
+    /* PP:campos */
+    .pp-form { display: grid; gap: var(--tc-sp-5); }
+    .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .pp-input::placeholder { color: var(--tc-text-s); }
+    .pp-input:hover { border-color: var(--tc-text-s); }
+    .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+    .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+    .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+    .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+    .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+    .pp-form--alineado { gap: 0; }
+    .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+    .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+    .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:campos */
+    /* PP:select */
+    .pp-select { position: relative; }
+    .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+    .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+    /* /PP:select */
+    /* PP:vacio */
+    .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+    .pp-filas .pp-vacio, .pp-tabla-marco .pp-vacio { border: 0; border-radius: 0; }
+    .pp-vacio--atencion { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .pp-vacio h2, .pp-vacio h3 { margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .pp-vacio p { max-width: 56ch; margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-vacio__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
+    @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-6) var(--tc-sp-4); } }
+    /* /PP:vacio */
+    /* PP:chips */
+    .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+    .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 28px; padding: 0 var(--tc-sp-3); border: 1px solid transparent; border-radius: var(--tc-r-pill); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+    .pp-chip:has(.pp-chip__quitar) { padding-right: var(--tc-sp-1); }
+    .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+    .pp-chip__modo { opacity: .75; }
+    .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+    .pp-chip--fuera { background: var(--tc-warn-surface); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+    .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--tc-r-pill); background: none; color: inherit; cursor: pointer; opacity: .75; }
+    .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+    .pp-chip__quitar:hover { opacity: 1; background: color-mix(in srgb, currentColor 16%, transparent); }
+    /* /PP:chips */
+
+    /* dn — local: registro de demanda (solo tokens) */
+    .dn-periodo { width: auto; min-width: 200px; }
+    .dn-seccion + .dn-seccion { margin-top: var(--tc-sp-10); }
+    .dn-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .dn-cab h2 { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    /* ranking */
+    .dn-rank__fila { display: grid; grid-template-columns: minmax(0, 1fr) 96px 112px 96px 96px; align-items: center; gap: var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); }
+    .dn-rank__fila + .dn-rank__fila { border-top: 1px solid var(--tc-border); }
+    .dn-rank__fila:not(.dn-rank__cabecera):hover { background: var(--tc-surface-quiet); }
+    .dn-rank__cabecera { padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .dn-rank__cabecera > span:not(:first-child) { justify-self: end; }
+    .dn-rank__que { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .dn-rank__nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); text-decoration: none; }
+    .dn-rank__nombre:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .dn-rank__sub { display: none; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .dn-rank__nota { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .dn-num { justify-self: end; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-b); }
+    .dn-rank__fila:not(.dn-rank__cabecera) > .dn-rank__cuentas { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .dn-num--cero { color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+    /* barra de pestañas + leyenda */
+    .dn-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .dn-barra .pp-pestanas { border-bottom: 0; }
+    .dn-leyenda { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-2); margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* chips compactos en fila */
+    .dn-c { font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .dn-c:not(:last-child)::after { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); font-weight: var(--tc-fw-regular); text-decoration: none; display: inline-block; }
+    .dn-c--obl { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .dn-c--des { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .dn-c--fuera { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); text-decoration: underline dotted var(--tc-amber); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+    .dn-spec-lista { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+    .dn-spec { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; }
+    details[open] > .dn-resumen .dn-spec { visibility: hidden; }
+    /* lista de búsquedas */
+    .dn-item + .dn-item { border-top: 1px solid var(--tc-border); }
+    .dn-cols { display: grid; grid-template-columns: 208px minmax(0, 1fr) 96px 152px 88px 16px; align-items: center; gap: var(--tc-sp-4); }
+    .dn-lista__cabecera { padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .dn-lista__cabecera .dn-fecha { justify-self: end; }
+    .dn-resumen { padding: var(--tc-sp-3) var(--tc-sp-5); cursor: pointer; list-style: none; transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .dn-resumen::-webkit-details-marker { display: none; }
+    .dn-resumen:hover { background: var(--tc-surface-quiet); }
+    .dn-resumen:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: -2px; }
+    details[open] > .dn-resumen { background: var(--tc-surface-quiet); }
+    .dn-cuenta { min-width: 0; display: grid; }
+    .dn-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .dn-cuenta__quien { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .dn-estado { display: contents; }
+    .dn-fecha { justify-self: end; text-align: right; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .dn-fecha strong { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .dn-chev { width: 16px; height: 16px; color: var(--tc-text-s); transition: transform var(--tc-dur-fast) var(--tc-ease); }
+    details[open] .dn-chev { transform: rotate(180deg); }
+    .dn-detalle { padding: var(--tc-sp-2) var(--tc-sp-5) var(--tc-sp-5); background: var(--tc-surface-quiet); }
+    .dn-detalle__cuerpo { grid-column: 2 / 6; display: grid; gap: var(--tc-sp-3); }
+    .dn-cita { margin: 0; max-width: 72ch; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .dn-datos { display: grid; gap: var(--tc-sp-2); margin: 0; }
+    .dn-datos > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--tc-sp-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .dn-datos dt { color: var(--tc-text-m); }
+    .dn-datos dd { margin: 0; color: var(--tc-text-b); }
+    .dn-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-6); }
+    .dn-vacia { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-6); padding: var(--tc-sp-6) var(--tc-sp-5); }
+    .dn-vacia p { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+    @media (max-width: 1023px) {
+      .dn-rank__fila { grid-template-columns: minmax(0, 1fr) 96px 96px; }
+      .dn-rank__cuentas, .dn-rank__solicitud { display: none; }
+      .dn-rank__sub { display: block; }
+      .dn-lista__cabecera { display: none; }
+      .dn-resumen.dn-cols { grid-template-columns: minmax(0, 1fr) auto 16px; grid-template-areas: "cuenta fecha chev" "spec spec spec" "estado estado estado"; gap: var(--tc-sp-2) var(--tc-sp-3); align-items: start; }
+      .dn-resumen .dn-cuenta { grid-area: cuenta; }
+      .dn-resumen .dn-fecha { grid-area: fecha; }
+      .dn-resumen .dn-chev { grid-area: chev; margin-top: var(--tc-sp-1); }
+      .dn-resumen .dn-spec { grid-area: spec; }
+      details[open] > .dn-resumen .dn-spec { display: none; }
+      .dn-resumen .dn-estado { grid-area: estado; display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); }
+      .dn-resumen .dn-fecha strong { display: inline; }
+      .dn-detalle.dn-cols { display: block; }
+      .dn-resumen .dn-origen:empty { display: none; }
+      .pp-sidebar__marca { order: -2; }
+      .pp-sidelink[aria-current="page"] { order: -1; flex: none; }
+    }
+    @media (max-width: 767px) {
+      .dn-periodo { min-width: 0; width: 100%; }
+      .pp-encabezado__acciones { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); }
+      .dn-rank__fila { grid-template-columns: minmax(0, 1fr) 72px 64px; gap: var(--tc-sp-3); padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+      .dn-resumen, .dn-detalle { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+      .dn-resumen { padding-top: var(--tc-sp-4); padding-bottom: var(--tc-sp-4); }
+      .dn-datos > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .dn-vacia { padding: var(--tc-sp-5) var(--tc-sp-4); }
+      .dn-vacia .pp-btn { width: 100%; }
+      .pp-paginacion { flex-wrap: wrap; }
+    }
+    /* /dn */
+  </style>
+</head>
+<body>
+<div class="pp-panel">
+  <!-- región: navegación / sidebar del panel -->
+  <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <div class="pp-sidebar__marca">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Portal de perfiles</span></span>
+    </div>
+    <p class="pp-sidebar__seccion">Inventario</p>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Perfiles<span class="pp-sidelink__conteo">128</span></a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Bandeja de vigencia<span class="pp-sidelink__conteo">7</span></a>
+    <p class="pp-sidebar__seccion">Clientes</p>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces de acceso</a>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>Peticiones de invitación<span class="pp-sidelink__conteo">3</span></a>
+    <p class="pp-sidebar__seccion">Medición</p>
+    <a class="pp-sidelink" href="#"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Uso del portal</a>
+    <a class="pp-sidelink" href="#" aria-current="page"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>Registro de demanda<span class="pp-sidelink__conteo">24</span></a>
+    <div class="pp-sidebar__pie">
+      <span class="pp-avatar" aria-hidden="true">KR</span>
+      <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Talento Humano</span></span>
+    </div>
+  </nav>
+  <div class="pp-panel__cuerpo">
+    <!-- región: cabecera con migas -->
+    <div class="pp-panel__topbar">
+      <ol class="pp-migas"><li>Medición</li><li aria-current="page">Registro de demanda</li></ol>
+    </div>
+    <!-- región: contenido principal -->
+    <main class="pp-panel__contenido">
+      <div class="pp-encabezado">
+        <div class="pp-encabezado__texto">
+          <h1 class="pp-encabezado__titulo">Registro de demanda</h1>
+          <p class="pp-encabezado__meta">24 búsquedas sin coincidencia en 9 cuentas · 10 terminaron en solicitud a medida</p>
+        </div>
+        <div class="pp-encabezado__acciones">
+          <div class="pp-select"><label class="pp-sr" for="dn-periodo">Período</label><select class="pp-input dn-periodo" id="dn-periodo"><option selected>Septiembre de 2026</option><option>Agosto de 2026</option><option>Julio de 2026</option></select></div>
+          <button type="button" class="pp-btn pp-btn--contorno"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Exportar CSV</button>
+        </div>
+      </div>
+      <section class="dn-seccion" aria-labelledby="dn-rank-titulo">
+        <div class="dn-cab">
+          <h2 id="dn-rank-titulo">Lo que más piden y no tenemos</h2>
+          <span class="pp-meta">Búsquedas por necesidad · lo inducido se cuenta aparte</span>
+        </div>
+        <ol class="pp-filas">
+          <li class="dn-rank__fila dn-rank__cabecera" aria-hidden="true"><span>Necesidad</span><span class="dn-rank__cuentas">Cuentas</span><span class="dn-rank__solicitud">Con solicitud</span><span>Espontáneas</span><span><span class="pp-estado pp-estado--warn">Inducidas</span></span></li>
+          <li class="dn-rank__fila">
+            <span class="dn-rank__que"><a class="dn-rank__nombre" href="#">COBOL</a><span class="dn-rank__nota">3 añadidas a mano en el Perfil Objetivo</span><span class="dn-rank__sub">3 cuentas · 3 con solicitud</span></span>
+            <span class="dn-num dn-rank__cuentas">3</span>
+            <span class="dn-num dn-rank__solicitud">3</span>
+            <span class="dn-num">5</span>
+            <span class="dn-num dn-num--cero">0</span>
+          </li>
+          <li class="dn-rank__fila">
+            <span class="dn-rank__que"><a class="dn-rank__nombre" href="#">SAP ABAP</a><span class="dn-rank__nota">2 añadidas a mano en el Perfil Objetivo</span><span class="dn-rank__sub">3 cuentas · 2 con solicitud</span></span>
+            <span class="dn-num dn-rank__cuentas">3</span>
+            <span class="dn-num dn-rank__solicitud">2</span>
+            <span class="dn-num">4</span>
+            <span class="dn-num dn-num--cero">0</span>
+          </li>
+          <li class="dn-rank__fila">
+            <span class="dn-rank__que"><a class="dn-rank__nombre" href="#">Snowflake</a><span class="dn-rank__nota">Solo por sugerencia: ninguna cuenta la escribió</span><span class="dn-rank__sub">1 cuenta · Sin solicitud</span></span>
+            <span class="dn-num dn-rank__cuentas">1</span>
+            <span class="dn-num dn-rank__solicitud">0</span>
+            <span class="dn-num dn-num--cero">0</span>
+            <span class="dn-num">3</span>
+          </li>
+          <li class="dn-rank__fila">
+            <span class="dn-rank__que"><a class="dn-rank__nombre" href="#">QA con Cypress, presencial en Medellín</a><span class="dn-rank__nota">Combinación sin perfiles</span><span class="dn-rank__sub">1 cuenta · Sin solicitud</span></span>
+            <span class="dn-num dn-rank__cuentas">1</span>
+            <span class="dn-num dn-rank__solicitud">0</span>
+            <span class="dn-num">2</span>
+            <span class="dn-num dn-num--cero">0</span>
+          </li>
+          <li class="dn-rank__fila">
+            <span class="dn-rank__que"><a class="dn-rank__nombre" href="#">Arquitectura de pagos senior con ISO 20022</a><span class="dn-rank__nota">Combinación sin perfiles</span><span class="dn-rank__sub">1 cuenta · 1 con solicitud</span></span>
+            <span class="dn-num dn-rank__cuentas">1</span>
+            <span class="dn-num dn-rank__solicitud">1</span>
+            <span class="dn-num">1</span>
+            <span class="dn-num dn-num--cero">0</span>
+          </li>
+        </ol>
+      </section>
+      <section class="dn-seccion" aria-labelledby="dn-busq-titulo">
+        <h2 class="pp-sr" id="dn-busq-titulo">Búsquedas sin coincidencia</h2>
+        <div class="dn-barra">
+          <div class="pp-pestanas" role="tablist" aria-label="Origen de la demanda">
+            <a class="pp-pestana" role="tab" aria-selected="true" href="#">Todas <span class="pp-pestana__conteo">24</span></a>
+            <a class="pp-pestana" role="tab" aria-selected="false" href="#">Espontáneas <span class="pp-pestana__conteo">18</span></a>
+            <a class="pp-pestana" role="tab" aria-selected="false" href="#">Inducidas <span class="pp-pestana__conteo">6</span></a>
+          </div>
+        </div>
+        <div class="pp-filas">
+          <div class="dn-lista__cabecera dn-cols" aria-hidden="true"><span>Cuenta</span><span>Especificación</span><span>Origen</span><span>Desenlace</span><span class="dn-fecha">Fecha</span><span></span></div>
+          <ul class="pp-lista">
+            <li class="dn-item">
+              <details open>
+                <summary class="dn-resumen dn-cols">
+                  <span class="dn-cuenta"><span class="dn-cuenta__nombre">Bancolombia</span><span class="dn-cuenta__quien">Mauricio Cárdenas · Modernización de pagos</span></span>
+                  <span class="dn-spec"><span class="pp-sr">Especificación: </span><span class="dn-c dn-c--obl">Arquitectura de pagos</span><span class="dn-c dn-c--obl">Senior</span><span class="dn-c dn-c--obl">ISO 20022</span><span class="dn-c dn-c--des">Sector banca<span class="pp-sr"> (deseable)</span></span><span class="dn-c dn-c--des">Híbrido<span class="pp-sr"> (deseable)</span></span></span>
+                  <span class="dn-estado"><span class="dn-origen"></span><span class="dn-desenlace"><span class="pp-estado pp-estado--ok">Solicitud <span class="pp-mono">SM-0047</span></span></span></span>
+                  <time class="dn-fecha" datetime="2026-09-27T09:41"><strong>27 sep</strong> 9:41 a. m.</time>
+                  <svg class="pp-icono dn-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="dn-detalle dn-cols">
+                  <div class="dn-detalle__cuerpo">
+                    <ul class="dn-spec-lista" aria-label="Especificación completa"><li class="dn-c dn-c--obl">Arquitectura de pagos</li><li class="dn-c dn-c--obl">Senior</li><li class="dn-c dn-c--obl">ISO 20022</li><li class="dn-c dn-c--des">Sector banca<span class="pp-sr"> (deseable)</span></li><li class="dn-c dn-c--des">Híbrido<span class="pp-sr"> (deseable)</span></li></ul>
+                    <p class="dn-cita">«arquitecto de pagos inmediatos senior con ISO 20022 para que el equipo del banco opere el nuevo motor de pagos»</p>
+                    <dl class="dn-datos"><div><dt>Reto</dt><dd>El equipo interno del banco operando el nuevo motor de pagos inmediatos sin acompañamiento externo.</dd></div><div><dt>Solicitud</dt><dd><a class="pp-enlace" href="#">Ver solicitud a medida <span class="pp-mono">SM-0047</span></a></dd></div></dl>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="dn-item">
+              <details>
+                <summary class="dn-resumen dn-cols">
+                  <span class="dn-cuenta"><span class="dn-cuenta__nombre">Bancolombia</span><span class="dn-cuenta__quien">Mariana Ospina · Modernización de pagos</span></span>
+                  <span class="dn-spec"><span class="pp-sr">Especificación: </span><span class="dn-c dn-c--obl">Desarrollador backend</span><span class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">COBOL<span class="pp-sr"> (no está en el banco)</span></span><span class="dn-c dn-c--obl">Inglés B2</span><span class="dn-c dn-c--des">Sector banca<span class="pp-sr"> (deseable)</span></span></span>
+                  <span class="dn-estado"><span class="dn-origen"></span><span class="dn-desenlace"><span class="pp-estado pp-estado--ok">Solicitud <span class="pp-mono">SM-0045</span></span></span></span>
+                  <time class="dn-fecha" datetime="2026-09-26T15:12"><strong>26 sep</strong> 3:12 p. m.</time>
+                  <svg class="pp-icono dn-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="dn-detalle dn-cols">
+                  <div class="dn-detalle__cuerpo">
+                    <ul class="dn-spec-lista" aria-label="Especificación completa"><li class="dn-c dn-c--obl">Desarrollador backend</li><li class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">COBOL<span class="pp-sr"> (no está en el banco)</span></li><li class="dn-c dn-c--obl">Inglés B2</li><li class="dn-c dn-c--des">Sector banca<span class="pp-sr"> (deseable)</span></li></ul>
+                    <p class="dn-cita">«Necesito alguien que sepa COBOL para migrar el core de pagos, con inglés para hablar con el proveedor»</p>
+                    <dl class="dn-datos"><div><dt>Nota</dt><dd>COBOL se añadió a mano en el Perfil Objetivo y viajó con la solicitud.</dd></div><div><dt>Solicitud</dt><dd><a class="pp-enlace" href="#">Ver solicitud a medida <span class="pp-mono">SM-0045</span></a></dd></div></dl>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="dn-item">
+              <details>
+                <summary class="dn-resumen dn-cols">
+                  <span class="dn-cuenta"><span class="dn-cuenta__nombre">Davivienda</span><span class="dn-cuenta__quien">Andrés Rincón · Core bancario</span></span>
+                  <span class="dn-spec"><span class="pp-sr">Especificación: </span><span class="dn-c dn-c--obl">Arquitecto de datos</span><span class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">Snowflake<span class="pp-sr"> (no está en el banco)</span></span><span class="dn-c dn-c--obl">Disponible ahora</span></span>
+                  <span class="dn-estado"><span class="dn-origen"><span class="pp-estado pp-estado--warn">Inducida</span></span><span class="dn-desenlace"><span class="pp-estado pp-estado--borrador">Sin solicitud</span></span></span>
+                  <time class="dn-fecha" datetime="2026-09-24T10:48"><strong>24 sep</strong> 10:48 a. m.</time>
+                  <svg class="pp-icono dn-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="dn-detalle dn-cols">
+                  <div class="dn-detalle__cuerpo">
+                    <ul class="dn-spec-lista" aria-label="Especificación completa"><li class="dn-c dn-c--obl">Arquitecto de datos</li><li class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">Snowflake<span class="pp-sr"> (no está en el banco)</span></li><li class="dn-c dn-c--obl">Disponible ahora</li></ul>
+                    <p class="dn-cita">«Arquitecto de datos con Snowflake disponible ya»</p>
+                    <dl class="dn-datos"><div><dt>Origen</dt><dd>Instrucción sugerida por el portal, usada sin editar.</dd></div><div><dt>Nota</dt><dd>Cerró la búsqueda sin pedir nada.</dd></div></dl>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="dn-item">
+              <details>
+                <summary class="dn-resumen dn-cols">
+                  <span class="dn-cuenta"><span class="dn-cuenta__nombre">Sura</span><span class="dn-cuenta__quien">Paula Henao · Analítica de siniestros</span></span>
+                  <span class="dn-spec"><span class="pp-sr">Especificación: </span><span class="dn-c dn-c--obl">Desarrollador SAP</span><span class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">SAP ABAP<span class="pp-sr"> (no está en el banco)</span></span><span class="dn-c dn-c--obl">Remoto</span><span class="dn-c dn-c--des">Inglés B1<span class="pp-sr"> (deseable)</span></span></span>
+                  <span class="dn-estado"><span class="dn-origen"></span><span class="dn-desenlace"><span class="pp-estado pp-estado--ok">Solicitud <span class="pp-mono">SM-0041</span></span></span></span>
+                  <time class="dn-fecha" datetime="2026-09-22T16:05"><strong>22 sep</strong> 4:05 p. m.</time>
+                  <svg class="pp-icono dn-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="dn-detalle dn-cols">
+                  <div class="dn-detalle__cuerpo">
+                    <ul class="dn-spec-lista" aria-label="Especificación completa"><li class="dn-c dn-c--obl">Desarrollador SAP</li><li class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">SAP ABAP<span class="pp-sr"> (no está en el banco)</span></li><li class="dn-c dn-c--obl">Remoto</li><li class="dn-c dn-c--des">Inglés B1<span class="pp-sr"> (deseable)</span></li></ul>
+                    <p class="dn-cita">«Desarrollador SAP ABAP remoto para el módulo de reclamaciones»</p>
+                    <dl class="dn-datos"><div><dt>Nota</dt><dd>SAP ABAP se añadió a mano en el Perfil Objetivo: no filtró resultados y viajó con la solicitud.</dd></div><div><dt>Solicitud</dt><dd><a class="pp-enlace" href="#">Ver solicitud a medida <span class="pp-mono">SM-0041</span></a></dd></div></dl>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="dn-item">
+              <details>
+                <summary class="dn-resumen dn-cols">
+                  <span class="dn-cuenta"><span class="dn-cuenta__nombre">Grupo Éxito</span><span class="dn-cuenta__quien">Juliana Torres · Plataforma omnicanal</span></span>
+                  <span class="dn-spec"><span class="pp-sr">Especificación: </span><span class="dn-c dn-c--obl">Analista QA automatización</span><span class="dn-c dn-c--obl">Cypress</span><span class="dn-c dn-c--obl">Presencial en Medellín</span><span class="dn-c dn-c--des">Sector retail<span class="pp-sr"> (deseable)</span></span></span>
+                  <span class="dn-estado"><span class="dn-origen"></span><span class="dn-desenlace"><span class="pp-estado pp-estado--borrador">Sin solicitud</span></span></span>
+                  <time class="dn-fecha" datetime="2026-09-21T09:30"><strong>21 sep</strong> 9:30 a. m.</time>
+                  <svg class="pp-icono dn-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="dn-detalle dn-cols">
+                  <div class="dn-detalle__cuerpo">
+                    <ul class="dn-spec-lista" aria-label="Especificación completa"><li class="dn-c dn-c--obl">Analista QA automatización</li><li class="dn-c dn-c--obl">Cypress</li><li class="dn-c dn-c--obl">Presencial en Medellín</li><li class="dn-c dn-c--des">Sector retail<span class="pp-sr"> (deseable)</span></li></ul>
+                    <p class="dn-cita">«QA automatizador con Cypress, presencial en Medellín»</p>
+                    <dl class="dn-datos"><div><dt>Nota</dt><dd>Ningún perfil cumple los tres obligatorios a la vez.</dd></div></dl>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="dn-item">
+              <details>
+                <summary class="dn-resumen dn-cols">
+                  <span class="dn-cuenta"><span class="dn-cuenta__nombre">Bancolombia</span><span class="dn-cuenta__quien">Ximena Duarte · Modernización de pagos</span></span>
+                  <span class="dn-spec"><span class="pp-sr">Especificación: </span><span class="dn-c dn-c--obl">Líder técnico</span><span class="dn-c dn-c--obl">Java</span><span class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">Rust<span class="pp-sr"> (no está en el banco)</span></span><span class="dn-c dn-c--obl">Sector banca</span></span>
+                  <span class="dn-estado"><span class="dn-origen"><span class="pp-estado pp-estado--warn">Inducida</span></span><span class="dn-desenlace"><span class="pp-estado pp-estado--ok">Solicitud <span class="pp-mono">SM-0039</span></span></span></span>
+                  <time class="dn-fecha" datetime="2026-09-20T11:17"><strong>20 sep</strong> 11:17 a. m.</time>
+                  <svg class="pp-icono dn-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+                <div class="dn-detalle dn-cols">
+                  <div class="dn-detalle__cuerpo">
+                    <ul class="dn-spec-lista" aria-label="Especificación completa"><li class="dn-c dn-c--obl">Líder técnico</li><li class="dn-c dn-c--obl">Java</li><li class="dn-c dn-c--fuera" title="No está en el banco: no filtró resultados">Rust<span class="pp-sr"> (no está en el banco)</span></li><li class="dn-c dn-c--obl">Sector banca</li></ul>
+                    <p class="dn-cita">«Líder técnico Java con Rust para banca»</p>
+                    <dl class="dn-datos"><div><dt>Origen</dt><dd>Instrucción sugerida por el portal, usada sin editar.</dd></div><div><dt>Solicitud</dt><dd><a class="pp-enlace" href="#">Ver solicitud a medida <span class="pp-mono">SM-0039</span></a></dd></div></dl>
+                  </div>
+                </div>
+              </details>
+            </li>
+          </ul>
+        </div>
+        <div class="pp-paginacion"><span class="dn-pie"><span>6 de 24 · más recientes primero</span><p class="dn-leyenda" aria-hidden="true"><span class="dn-c dn-c--obl">Obligatorio</span><span class="dn-c dn-c--des">deseable</span><span class="dn-c dn-c--fuera">no está en el banco</span></p></span><div><a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Ver las 18 siguientes</a></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

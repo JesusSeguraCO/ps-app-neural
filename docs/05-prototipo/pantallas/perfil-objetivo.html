@@ -1,0 +1,650 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla perfil-objetivo
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (perfil-objetivo--estado.html), no interacciones.
+  Trazabilidad: épica EP-009 · historias HU-068, HU-069, HU-070, HU-118, HU-082, HU-083, HU-085 · registrada en ../manifest.json
+  Estado de ESTA pantalla: base — instrucción inequívoca, lectura COMPACTA (HU-068 evidente) con el
+  origen de cada criterio; Perfil Objetivo revisado por el cliente, con el reto primero (HU-083),
+  rol obligatorio y resto deseable (HU-118), tecnologías en cascada con conteos y una necesidad
+  «no está en el banco» (HU-085), ubicación de la necesidad obligatoria por modalidad híbrida (HU-082).
+  Origen: v2-existe (Portal de Perfiles v2.dc.html, pantalla «Resultados»: PanelPerfilObjetivo +
+  BloqueInterpretacion; handoff/components/portal/panel-perfil-objetivo.tsx, bloque-interpretacion.tsx,
+  chip-criterio.tsx). Cambio exigido por HU-083: el campo del reto encabeza la especificación
+  (en v2 iba al final). Cada criterio muestra su origen: escrito por ti, inferido o añadido por ti.
+  Oficio v2 (2026-09-27, feedback del sponsor + hallazgos Krug): h1 = recuento de resultados; la lectura compacta (chips sin cita, tipo por color, origen en tooltip) es la única línea de verdad; el lateral solo edita (sticky con scroll propio, pie siempre visible), sin citas «Lo escribiste» por campo; avisos sin borde lateral; disponibilidad como punto + texto; verificado en tinte teal y declarado sin caja (patrón pp-perfil v2); una sola línea de ayuda (Obligatorio filtra · Deseable ordena); control segmentado único para peso y vista.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perfil Objetivo — Desarrollador frontend senior — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+    /* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+      .pp-equipo:hover { background: var(--tc-bg-subtle); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+        .pp-navlink { min-height: 44px; }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+    /* PP:chips */
+      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 28px; padding: 0 var(--tc-sp-3); border: 1px solid transparent; border-radius: var(--tc-r-pill); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+      .pp-chip:has(.pp-chip__quitar) { padding-right: var(--tc-sp-1); }
+      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+      .pp-chip__modo { opacity: .75; }
+      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+      .pp-chip--fuera { background: var(--tc-warn-surface); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--tc-r-pill); background: none; color: inherit; cursor: pointer; opacity: .75; }
+      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+      .pp-chip__quitar:hover { opacity: 1; background: color-mix(in srgb, currentColor 16%, transparent); }
+      /* /PP:chips */
+    /* PP:perfil */
+      .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: var(--tc-sp-4); }
+      .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); transition: border-color var(--tc-dur) var(--tc-ease); }
+      .pp-perfil:hover { border-color: var(--tc-border-s); }
+      .pp-perfil--en-equipo, .pp-perfil--en-equipo:hover { border-color: var(--tc-primary-surface-border); }
+      .pp-perfil--cambio { background: var(--tc-surface-quiet); }
+      .pp-perfil--cambio .pp-perfil__rol, .pp-perfil--cambio .pp-perfil__nombre { color: var(--tc-text-m); }
+      .pp-perfil__estado { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+      .pp-perfil__estado::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-amber); }
+      .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); flex-wrap: wrap; }
+      .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+      .pp-perfil__cabecera .pp-badge, .pp-perfil__cabecera .pp-estado { margin-top: var(--tc-sp-1); }
+      .pp-perfil__rol { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); }
+      .pp-perfil__rol a { color: inherit; text-decoration: none; }
+      .pp-perfil__rol a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-perfil__nombre { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-perfil__tecnologias > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+      .pp-perfil__tecnologias .pp-tag { padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+      .pp-perfil__meta { display: flex; flex-wrap: wrap; margin: var(--tc-sp-1) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-perfil__meta > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); }
+      .pp-evidencia { display: grid; gap: var(--tc-sp-3); margin-top: var(--tc-sp-4); }
+      .pp-evidencia__conteo { margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+      .pp-bloque { padding: var(--tc-sp-3); border-radius: var(--tc-r-sm); }
+      .pp-bloque--verificado { background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
+      .pp-bloque--declarado { padding-top: 0; padding-bottom: 0; background: none; color: var(--tc-text-b); }
+      .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); }
+      .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+      .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); font-weight: var(--tc-fw-medium); }
+      .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+      .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+      .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-criterio--cumple { color: var(--tc-text-h); }
+      .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+      .pp-criterio--no { color: var(--tc-text-m); }
+      .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-s); }
+      .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: auto; padding-top: var(--tc-sp-5); }
+      .pp-codigo-perfil { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+      .pp-perfil__pie .pp-codigo-perfil { margin-left: auto; }
+      .pp-tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 var(--tc-sp-2); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+      /* /PP:perfil */
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+    /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+    /* PP:check */
+      .pp-check { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-2) 0; cursor: pointer; }
+      .pp-check input { width: 18px; height: 18px; flex: none; margin: var(--tc-sp-1) 0 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+      .pp-check__texto { font-size: var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-body); }
+      .pp-check__ayuda { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      /* /PP:check */
+    /* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
+    /* PP:vacio */
+      .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+      .pp-filas .pp-vacio, .pp-tabla-marco .pp-vacio { border: 0; border-radius: 0; }
+      .pp-vacio--atencion { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-vacio h2, .pp-vacio h3 { margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+      .pp-vacio p { max-width: 56ch; margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-vacio__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
+      @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-6) var(--tc-sp-4); } }
+      /* /PP:vacio */
+  </style>
+  <style>
+    /* ── Composición propia de la pantalla (prefijo rs-) ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--tc-bg-canvas); color: var(--tc-text-b); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); -webkit-font-smoothing: antialiased; }
+    h1, h2, h3 { color: var(--tc-text-h); font-family: var(--tc-font-heading); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    .rs-main { max-width: 1320px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-6) var(--tc-sp-10); }
+
+    /* Barra de instrucción compacta: una línea */
+    .rs-busca { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-1) var(--tc-sp-1) var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); box-shadow: var(--pp-cmd-shadow); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .rs-busca:focus-within { border-color: var(--tc-primary); box-shadow: var(--pp-cmd-shadow), var(--tc-sh-focus); }
+    .rs-ambito { position: relative; display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-6) 0 var(--tc-sp-2); border: 0; border-right: 1px solid var(--tc-border); border-radius: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; cursor: pointer; }
+    .rs-ambito::after { content: ""; position: absolute; right: var(--tc-sp-3); top: 50%; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); }
+    .rs-ambito:hover { color: var(--tc-text-h); }
+    .rs-busca__campo { position: relative; display: flex; align-items: center; gap: var(--tc-sp-2); min-width: 0; color: var(--tc-text-s); }
+    .rs-busca__input { flex: 1; min-width: 0; min-height: 40px; padding: 0 var(--tc-sp-8) 0 0; border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-body); color: var(--tc-text-h); text-overflow: ellipsis; }
+    .rs-busca__input::placeholder { color: var(--tc-text-s); }
+    .rs-busca__input:focus, .rs-busca__input:focus-visible { outline: none; }
+    .rs-busca__atajo { position: absolute; right: var(--tc-sp-1); top: 50%; transform: translateY(-50%); pointer-events: none; }
+
+    /* Lectura de la instrucción + filtros: una línea de chips en dos capas */
+    .rs-lectura { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-3); padding: 0 var(--tc-sp-1); }
+    .rs-capas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .rs-capa { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); min-width: 0; }
+    .rs-capa + .rs-capa { padding-left: var(--tc-sp-3); border-left: 1px solid var(--tc-border-s); }
+    .rs-capa__rotulo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .rs-lectura__texto { max-width: 88ch; margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+
+    .rs-cabecera { margin-top: var(--tc-sp-8); }
+    .rs-cabecera .pp-encabezado__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .rs-cabecera .pp-encabezado__meta > * + *::before { content: "·"; margin-right: var(--tc-sp-3); color: var(--tc-text-s); }
+    .rs-cabecera .pp-encabezado__acciones { align-items: center; }
+
+    /* Control segmentado (vista, obligatorio/deseable, respuestas) */
+    .rs-seg { display: inline-flex; flex: none; border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .rs-seg > * { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 var(--tc-sp-3); border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background var(--tc-dur-fast) var(--tc-ease), color var(--tc-dur-fast) var(--tc-ease); }
+    .rs-seg > * + * { border-left: 1px solid var(--tc-border); }
+    .rs-seg > :hover { background: var(--tc-surface-quiet); color: var(--tc-text-h); }
+    .rs-seg > [aria-pressed="true"], .rs-seg > [aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .rs-seg > .rs-seg__obl[aria-pressed="true"] { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .rs-seg > .rs-seg__des[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .rs-seg--sm > * { padding: 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); }
+
+    /* Cuerpo: perfil objetivo (facetas) + resultados */
+    .rs-cuerpo { display: grid; grid-template-columns: 288px minmax(0, 1fr); gap: var(--tc-sp-8); align-items: start; }
+    .rs-obj__abrir { display: none; }
+    .rs-obj__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); }
+    .rs-obj__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .rs-facetas { margin: 0; padding: 0; list-style: none; }
+    .rs-faceta { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .rs-faceta__fila { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 32px; }
+    .rs-faceta__etiqueta { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .rs-faceta--vacia .rs-faceta__etiqueta { color: var(--tc-text-m); font-weight: var(--tc-fw-regular); }
+    .rs-valor { position: relative; display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--tc-sp-8) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); color: var(--tc-text-h); text-align: left; cursor: pointer; transition: border-color var(--tc-dur) var(--tc-ease); }
+    .rs-valor:hover { border-color: var(--tc-text-s); }
+    .rs-valor::after { content: ""; position: absolute; right: var(--tc-sp-3); top: 50%; width: 5px; height: 5px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); }
+    .rs-valor span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rs-faceta--vacia { grid-template-columns: 96px minmax(0, 1fr); align-items: center; }
+    .rs-faceta--vacia .rs-valor { color: var(--tc-text-s); box-shadow: none; }
+    .rs-obj__pie { display: grid; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); }
+    .rs-obj__pie .pp-btn { justify-self: start; }
+    .rs-obj__pie .pp-input--area { min-height: 88px; font-size: var(--tc-fs-small); }
+
+    /* Rejilla de tarjetas compactas */
+    .rs-rejilla { margin: 0; padding: 0; list-style: none; }
+    .rs-rejilla > li { display: flex; min-width: 0; }
+    .rs-rejilla .pp-perfil, .rs-rejilla .rs-esqueleto { flex: 1; }
+    .rs-no { color: var(--tc-text-m); }
+    .rs-no__marca { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+    .rs-ficha { display: inline-flex; align-items: center; min-height: 32px; font-size: var(--tc-fs-small); }
+    .rs-evid { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .rs-evid > li { display: inline-flex; align-items: baseline; gap: var(--tc-sp-1); }
+    .rs-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .rs-sello { margin: var(--tc-sp-2) 0 0; padding-top: var(--tc-sp-2); border-top: 1px solid var(--tc-primary-surface-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink); }
+    .rs-sello--solo { margin-top: 0; padding-top: 0; border-top: 0; }
+    .rs-sello__rotulo { margin-right: var(--tc-sp-1); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
+    .rs-declarado { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); padding: 0 var(--tc-sp-3); }
+    .rs-declarado__rotulo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+
+    .rs-mas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-6); }
+
+    /* Preguntas de afinamiento: junto a los resultados, nunca encima */
+    .rs-afinar { margin-bottom: var(--tc-sp-5); }
+    .rs-afinar .pp-fila { align-items: center; }
+    .rs-afinar__cabecera-der { display: flex; align-items: center; gap: var(--tc-sp-3); }
+
+    /* Cargando */
+    .rs-esqueleto { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+    .rs-barra { display: block; height: 12px; border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); animation: rs-pulso 1.6s var(--tc-ease) infinite; }
+    .rs-barra--alta { height: 16px; width: 70%; }
+    .rs-barra--40 { width: 40%; } .rs-barra--85 { width: 85%; } .rs-barra--55 { width: 55%; }
+    .rs-barra--bloque { height: 56px; }
+    @keyframes rs-pulso { 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) { .rs-barra { animation: none; } }
+
+    /* Sin reconocer: lo buscamos por ti */
+    .rs-medida { max-width: 640px; padding: var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+    .rs-medida h2 { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .rs-medida > p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .rs-medida .pp-form { margin-top: var(--tc-sp-5); }
+    .rs-medida fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+    .rs-medida legend { margin-bottom: var(--tc-sp-2); }
+    .rs-opciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .rs-medida__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    .rs-medida__pie > div { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-left: auto; }
+
+    @media (max-width: 1023px) {
+      .rs-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-4); }
+      .rs-obj__abrir { display: flex; justify-content: space-between; }
+      .rs-obj__cabecera, .rs-obj__cuerpo { display: none; }
+    }
+    @media (max-width: 767px) {
+      .rs-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
+      .rs-busca { grid-template-columns: minmax(0, 1fr) auto; padding: var(--tc-sp-1); }
+      .rs-busca__campo { grid-column: 1 / -1; order: -1; padding: 0 var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); }
+      .rs-busca__input { min-height: 44px; font-size: var(--tc-fs-h3); padding-right: 0; }
+      .rs-busca__atajo { display: none; }
+      .rs-ambito { min-height: 44px; border-right: 0; }
+      .rs-capa + .rs-capa { padding-left: 0; border-left: 0; }
+      .rs-cabecera { margin-top: var(--tc-sp-6); }
+      .rs-cabecera .pp-encabezado__meta { flex-direction: column; gap: var(--tc-sp-1); }
+      .rs-cabecera .pp-encabezado__meta > * + *::before { content: none; }
+      .rs-seg > * { min-height: 44px; }
+      .rs-medida { padding: var(--tc-sp-5) var(--tc-sp-4); }
+      .rs-medida__pie > div { width: 100%; }
+      .rs-medida__pie .pp-btn { flex: 1; }
+    }
+
+
+    /* ── Perfil objetivo dentro del mismo shell de Resultados (prefijo po-) ──
+       Oficio v2 (2026-09-27, unificación): barra de búsqueda persistente, chips con el modo escrito,
+       lateral plano con separadores de 1 px (sin tarjeta ni sombra), rejilla pp-rejilla-perfiles y el
+       control Obligatorio/Deseable de Resultados (obligatorio = navy lleno, deseable = tinte teal). */
+    .po-chip { position: relative; }
+    .po-chip::before { content: attr(data-origen); position: absolute; left: 0; bottom: calc(100% + var(--tc-sp-2)); z-index: 5; display: none; width: max-content; max-width: 280px; padding: var(--tc-sp-1) var(--tc-sp-2); border-radius: var(--tc-r-sm); background: var(--tc-text-h); color: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-h3); pointer-events: none; }
+    .po-chip:hover::before, .po-chip:focus-within::before { display: block; }
+
+    /* Lectura destacada (baja confianza, HU-068): ocupa el lugar de la línea de chips */
+    .po-revisar { margin-top: var(--tc-sp-4); background: var(--tc-warn-surface); border: 1px solid var(--tc-warn-border); border-radius: var(--tc-r-md); }
+    .po-revisar__cabeza { padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .po-revisar__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .po-revisar__cabeza .pp-meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+    .po-rfilas { margin: 0; padding: 0; list-style: none; }
+    .po-rfila { display: grid; grid-template-columns: 128px minmax(0, 300px) minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); border-top: 1px solid var(--tc-warn-border); }
+    .po-rfila__campo { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .po-rfila__origen { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .po-rfila__origen q { color: var(--tc-text-h); quotes: "«" "»"; }
+    .po-rfila__vacio { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .po-revisar__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-5); border-top: 1px solid var(--tc-warn-border); }
+
+    /* Avisos de página: retomada (HU-073) y bloqueo al enviar (HU-070 / HU-082), una línea */
+    .po-aviso-pagina { margin-bottom: var(--tc-sp-4); }
+    .po-aviso-pagina + .rs-busca { margin-top: 0; }
+    .rs-lectura + .po-aviso-pagina, .po-revisar + .po-aviso-pagina { margin: var(--tc-sp-4) 0 0; }
+
+    /* Lateral: el mismo rs-obj, abierto para editar */
+    .po-obj .rs-obj__cabecera { flex-wrap: wrap; align-items: center; }
+    .po-obj__nota { flex-basis: 100%; margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .po-campo { padding: var(--tc-sp-4) 0; border-bottom: 1px solid var(--tc-border); }
+    .po-campo__cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); margin-bottom: var(--tc-sp-2); }
+    .po-campo__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .po-campo__exige { display: block; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .po-campo > .pp-ayuda, .po-campo > .pp-error { margin-top: var(--tc-sp-2); }
+    .po-campo .pp-input { min-height: 36px; font-size: var(--tc-fs-small); }
+    .po-campo .pp-input--area { min-height: 104px; font-size: var(--tc-fs-small); }
+
+    /* Tecnologías en cascada (HU-085): cifras por opción, «Basta con alguna» */
+    .po-resumen { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); width: 100%; min-height: 36px; padding: 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); color: var(--tc-text-h); text-align: left; cursor: pointer; }
+    .po-resumen:hover { border-color: var(--tc-text-s); }
+    .po-resumen[aria-expanded="true"] { border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+    .po-resumen__texto { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .po-resumen .pp-icono { color: var(--tc-text-m); }
+    .po-opciones { margin: var(--tc-sp-1) 0 0; padding: var(--tc-sp-1); list-style: none; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); }
+    .po-opcion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 32px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); color: var(--tc-text-b); cursor: pointer; }
+    .po-opcion:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .po-opcion[aria-selected="true"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .po-opcion__valor { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-width: 0; }
+    .po-caja { display: grid; flex: none; place-items: center; width: 16px; height: 16px; border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-sm); background: var(--tc-card); color: var(--tc-card); font-size: var(--tc-fs-badge); font-weight: var(--tc-fw-bold); line-height: 1; }
+    .po-opcion[aria-selected="true"] .po-caja { border-color: transparent; background: var(--tc-primary-strong); }
+    .po-opcion--fuera[aria-selected="true"] .po-caja { background: var(--tc-warn-ink); }
+    .po-opcion__conteo { flex: none; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
+    .po-agregar { display: flex; gap: var(--tc-sp-2); margin-top: var(--tc-sp-2); }
+    .po-agregar .pp-input { flex: 1; min-width: 0; min-height: 32px; font-size: var(--tc-fs-small); }
+    .po-campo .pp-check { min-height: 32px; padding: var(--tc-sp-1) 0; margin-top: var(--tc-sp-1); }
+    .po-campo .pp-check__texto { font-size: var(--tc-fs-caption); color: var(--tc-text-b); }
+    .po-campo .pp-aviso { margin-top: var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-3); gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); }
+    .po-ubicacion { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: var(--tc-sp-3); }
+    .po-ubicacion .pp-campo { align-content: start; gap: var(--tc-sp-1); }
+    .po-ubicacion .pp-label { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+
+    /* Combinación vacía (HU-085): estado vacío con salida, no error */
+    .po-cero { padding: var(--tc-sp-4) 0 var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); }
+    .po-cero__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .po-soltar { margin: var(--tc-sp-2) 0 0; padding: 0; list-style: none; }
+    .po-soltar li + li { border-top: 1px solid var(--tc-border); }
+    .po-soltar__op { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); width: 100%; min-height: 44px; padding: 0; border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); color: var(--tc-text-h); text-align: left; cursor: pointer; }
+    .po-soltar__op:hover { color: var(--pp-teal-ink); }
+    .po-soltar__op:hover .po-soltar__texto { text-decoration: underline; text-underline-offset: 3px; }
+    .po-soltar__cifra { flex: none; font-variant-numeric: tabular-nums; font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+
+    /* Resultados propios de la pantalla */
+    .po-titulo--cero { color: var(--tc-text-h); }
+    .po-reto { max-width: 64ch; margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+    .po-reto__rotulo { color: var(--tc-text-m); }
+    .po-cercanos { margin: var(--tc-sp-8) 0 var(--tc-sp-3); }
+    .po-cercanos .pp-seccion__cabecera { flex-wrap: wrap; margin: 0; }
+
+    @media (max-width: 1023px) {
+      .po-obj .rs-obj__cabecera { display: flex; }
+      .po-obj .rs-obj__cuerpo { display: block; }
+      .po-rfila { grid-template-columns: 112px minmax(0, 1fr) auto; }
+      .po-rfila__origen { grid-column: 2 / -1; }
+    }
+    @media (max-width: 767px) {
+      .po-opcion, .po-soltar__op { min-height: 44px; }
+      .po-campo .pp-check { min-height: 44px; }
+      .po-campo .pp-input, .po-agregar .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); }
+      .po-campo .pp-input--area { min-height: 104px; font-size: var(--tc-fs-h3); }
+      .po-resumen { min-height: 44px; }
+      .po-rfila { grid-template-columns: minmax(0, 1fr) auto; padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .po-rfila__campo, .po-rfila__origen { grid-column: 1 / -1; }
+      .po-revisar__cabeza, .po-revisar__acciones { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+      .po-revisar__acciones .pp-btn { flex: 1 1 auto; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera -->
+  <header class="pp-topbar">
+    <a class="pp-marca" href="#buscar" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="app-shell.html">Selección para ti</a>
+      <a class="pp-navlink" href="inicio-busqueda.html" aria-current="page">Buscar</a>
+      <a class="pp-navlink" href="#invitar">Invitar a un colega</a>
+    </nav>
+    <a class="pp-equipo" href="#equipo">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">2</span><span class="pp-sr">2 perfiles en el equipo</span></a>
+  </header>
+
+  <!-- región: contenido principal -->
+  <main class="rs-main" id="contenido">
+    <form class="rs-busca" action="#" role="search">
+      <button type="button" class="rs-ambito" aria-label="Buscar en todo el banco. Cambiar dónde buscar">Todo el banco</button>
+      <div class="rs-busca__campo">
+        <svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <label for="instruccion" class="pp-sr">Qué talento necesitas</label>
+        <input class="rs-busca__input" id="instruccion" type="search" name="q" autocomplete="off" placeholder="Ej.: desarrollador backend Java con experiencia en banca" value="Desarrollador frontend senior con React para banca, híbrido en Bogotá">
+        <span class="rs-busca__atajo pp-kbd" aria-hidden="true">/</span>
+      </div>
+      <button type="submit" class="pp-btn pp-btn--primario">Buscar</button>
+    </form>
+    <section class="rs-lectura" aria-label="Cómo leímos tu instrucción">
+      <div class="rs-capas">
+        <div class="rs-capa"><span class="rs-capa__rotulo" id="rs-capa-i">Tu instrucción</span><ul class="pp-chips" aria-labelledby="rs-capa-i"><li class="pp-chip pp-chip--obligatorio po-chip" data-origen="Obligatorio · lo escribiste: «frontend»"><span class="pp-chip__valor">Desarrollador Frontend</span><span class="pp-chip__modo">obligatorio</span><span class="pp-sr">. Lo escribiste: «frontend»</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Desarrollador Frontend"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable po-chip" data-origen="Deseable · lo escribiste: «React»"><span class="pp-chip__valor">React</span><span class="pp-chip__modo">deseable</span><span class="pp-sr">. Lo escribiste: «React»</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio React"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable po-chip" data-origen="Deseable · lo escribiste: «senior»"><span class="pp-chip__valor">Senior</span><span class="pp-chip__modo">deseable</span><span class="pp-sr">. Lo escribiste: «senior»</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Senior"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable po-chip" data-origen="Deseable · lo escribiste: «banca»"><span class="pp-chip__valor">Banca</span><span class="pp-chip__modo">deseable</span><span class="pp-sr">. Lo escribiste: «banca»</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Banca"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable po-chip" data-origen="Deseable · lo escribiste: «híbrido»"><span class="pp-chip__valor">Híbrido</span><span class="pp-chip__modo">deseable</span><span class="pp-sr">. Lo escribiste: «híbrido»</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Híbrido"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul></div>
+        <div class="rs-capa"><span class="rs-capa__rotulo" id="rs-capa-f">Añadido por ti</span><ul class="pp-chips" aria-labelledby="rs-capa-f"><li class="pp-chip pp-chip--deseable po-chip" data-origen="Deseable · lo añadiste"><span class="pp-chip__valor">TypeScript</span><span class="pp-chip__modo">deseable</span><span class="pp-sr">. Lo añadiste</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio TypeScript"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--fuera po-chip" data-origen="No está en el banco · lo añadiste"><span class="pp-chip__valor">Web Components</span><span class="pp-chip__modo">no está en el banco</span><span class="pp-sr">. Lo añadiste</span><button type="button" class="pp-chip__quitar" aria-label="Quitar el criterio Web Components"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul></div>
+      </div>
+      <p class="rs-lectura__texto">«en Bogotá» quedó como ubicación de la necesidad: no filtra perfiles.</p>
+    </section>
+    <div class="pp-encabezado rs-cabecera">
+      <div class="pp-encabezado__texto">
+        <h1 id="rs-h1" class="pp-encabezado__titulo po-titulo" aria-live="polite">12 perfiles cumplen lo obligatorio</h1>
+        <p class="pp-encabezado__meta">Ordenados por cuántos de tus 4 deseables cumple cada uno</p>
+      </div>
+      <div class="pp-encabezado__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Copiar enlace</button><nav class="rs-seg" aria-label="Vista de resultados"><a href="#contenido" aria-current="page">Tarjetas</a><a href="resultados-tabla.html">Tabla</a></nav></div>
+    </div>
+    <div class="rs-cuerpo">
+      <aside class="rs-obj po-obj" id="po-panel" aria-labelledby="po-panel-t">
+        <div class="rs-obj__cabecera">
+          <h2 class="rs-obj__titulo" id="po-panel-t">Perfil objetivo</h2><span class="pp-estado pp-estado--ok">Revisado por ti</span>
+        </div>
+        <div class="rs-obj__cuerpo">
+        <section class="po-campo" aria-labelledby="po-reto-l">
+          <div class="pp-campo">
+            <label class="pp-label" id="po-reto-l" for="po-reto">¿Qué tiene que quedar funcionando al terminar el proyecto? <span class="pp-label__opcional">Opcional</span></label>
+            <textarea class="pp-input pp-input--area" id="po-reto" aria-describedby="po-reto-a" placeholder="Ej.: el portal en producción, operado por tu equipo">El portal transaccional de personas en producción, con nuestro equipo interno manteniéndolo sin acompañamiento.</textarea>
+            <p class="pp-ayuda" id="po-reto-a">No filtra perfiles; viaja con tu solicitud.</p>
+          </div>
+        </section>
+        <section class="po-campo" aria-labelledby="po-rol-l">
+          <div class="po-campo__cabeza"><label class="po-campo__nombre" id="po-rol-l" for="po-rol">Familia de rol</label><span class="rs-seg rs-seg--sm" role="group" aria-label="Familia de rol: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span></div>
+          <div class="pp-select"><select class="pp-input" id="po-rol"><option selected>Desarrollador Frontend · 12</option><option>Desarrollador Full Stack · 9</option><option>Desarrollador Backend · 14</option><option>Diseñador UX/UI · 4</option></select></div>
+          <p class="pp-ayuda">Obligatorio filtra · Deseable ordena</p>
+        </section>
+        <section class="po-campo" aria-labelledby="po-tec-l">
+          <div class="po-campo__cabeza"><span class="po-campo__nombre" id="po-tec-l">Tecnologías</span><span class="rs-seg rs-seg--sm" role="group" aria-label="Tecnologías: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span></div>
+          <button type="button" class="po-resumen" aria-expanded="true" aria-controls="po-tec-lista"><span class="po-resumen__texto">React, TypeScript, Web Components</span><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <ul class="po-opciones" id="po-tec-lista" role="listbox" aria-multiselectable="true" aria-label="Tecnologías del banco para Desarrollador Frontend">
+            <li class="po-opcion" role="option" aria-selected="true"><span class="po-opcion__valor"><span class="po-caja" aria-hidden="true">✓</span>React</span><span class="po-opcion__conteo">11</span></li>
+            <li class="po-opcion" role="option" aria-selected="true"><span class="po-opcion__valor"><span class="po-caja" aria-hidden="true">✓</span>TypeScript</span><span class="po-opcion__conteo">9</span></li>
+            <li class="po-opcion" role="option" aria-selected="false"><span class="po-opcion__valor"><span class="po-caja" aria-hidden="true"></span>Next.js</span><span class="po-opcion__conteo">5</span></li>
+            <li class="po-opcion" role="option" aria-selected="false"><span class="po-opcion__valor"><span class="po-caja" aria-hidden="true"></span>Angular</span><span class="po-opcion__conteo">3</span></li>
+            <li class="po-opcion" role="option" aria-selected="false"><span class="po-opcion__valor"><span class="po-caja" aria-hidden="true"></span>Vue.js</span><span class="po-opcion__conteo">2</span></li>
+            <li class="po-opcion po-opcion--fuera" role="option" aria-selected="true"><span class="po-opcion__valor"><span class="po-caja" aria-hidden="true">✓</span>Web Components</span><span class="po-opcion__conteo" aria-label="no está en el banco">—</span></li>
+          </ul>
+          <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Basta con alguna de las marcadas</span></label>
+          <div class="po-agregar"><input class="pp-input" type="text" aria-label="Añadir una tecnología que no está en la lista" placeholder="Otra tecnología"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Añadir</button></div>
+          <div class="pp-aviso pp-aviso--warn"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Web Components no está en el banco.</span>No filtra; viaja con tu solicitud como necesidad no cubierta.</p></div>
+        </section>
+        <section class="po-campo" aria-labelledby="po-sen-l">
+          <div class="po-campo__cabeza"><label class="po-campo__nombre" id="po-sen-l" for="po-sen">Seniority</label><span class="rs-seg rs-seg--sm" role="group" aria-label="Seniority: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span></div>
+          <div class="pp-select"><select class="pp-input" id="po-sen"><option>Sin restricción</option><option>Junior · 1</option><option>Semi-senior · 4</option><option selected>Senior · 7</option><option>Líder técnico · 2</option></select></div>
+        </section>
+        <section class="po-campo" aria-labelledby="po-sec-l">
+          <div class="po-campo__cabeza"><label class="po-campo__nombre" id="po-sec-l" for="po-sec">Sector</label><span class="rs-seg rs-seg--sm" role="group" aria-label="Sector: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span></div>
+          <div class="pp-select"><select class="pp-input" id="po-sec"><option>Sin preferencia</option><option selected>Banca · 5</option><option>Seguros · 3</option><option>Retail · 4</option><option>Telecomunicaciones · 2</option></select></div>
+        </section>
+        <section class="po-campo" aria-labelledby="po-mod-l">
+          <div class="po-campo__cabeza"><label class="po-campo__nombre" id="po-mod-l" for="po-mod">Modalidad</label><span class="rs-seg rs-seg--sm" role="group" aria-label="Modalidad: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span></div>
+          <div class="pp-select"><select class="pp-input" id="po-mod"><option>Sin restricción</option><option>Remoto · 12</option><option selected>Híbrido · 9</option><option>Presencial · 4</option></select></div>
+        </section>
+        <section class="po-campo" aria-labelledby="po-ubic-l">
+          <div class="po-campo__cabeza"><span class="po-campo__nombre" id="po-ubic-l">Ubicación de la necesidad<span class="po-campo__exige">Obligatoria con modalidad híbrida</span></span></div>
+          <div class="po-ubicacion">
+            <div class="pp-campo"><label class="pp-label" for="po-pais">País</label><div class="pp-select"><select class="pp-input" id="po-pais"><option>Elige un país</option><option selected>Colombia</option><option>México</option><option>Perú</option></select></div></div>
+            <div class="pp-campo"><label class="pp-label" for="po-ciudad">Ciudad</label><input class="pp-input" id="po-ciudad" type="text" value="Bogotá"></div>
+          </div>
+          <p class="pp-ayuda">No filtra: ves el país de cada profesional. No la tomamos de tu cuenta.</p>
+        </section>
+        <div class="rs-obj__pie"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Quitar todos los criterios</button></div>
+        </div>
+      </aside>
+      <section class="rs-res" aria-labelledby="rs-h1">
+        <div class="pp-rejilla-perfiles">
+          <article class="pp-perfil pp-perfil--en-equipo" aria-labelledby="po-p-0316">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0316"><a href="#ficha-0316">Desarrolladora frontend senior</a></h3>
+                <p class="pp-perfil__nombre">Natalia Ríos</p>
+              </div>
+              <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li>React</li><li>TypeScript</li><li>Next.js</li><li>Jest</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Banca, seguros</li><li>Híbrido</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 5 de 5</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>React · prueba técnica</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Senior · entrevista técnica</span></li></ul></div>
+              <div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 6 años</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Acepta híbrido</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="true">En el equipo</button>
+              <a class="pp-enlace pp-enlace--sutil rs-ficha" href="#ficha-0316">Ver ficha</a>
+              <span class="pp-codigo-perfil">PS-0316</span>
+            </div>
+          </article>
+          <article class="pp-perfil" aria-labelledby="po-p-0322">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0322"><a href="#ficha-0322">Desarrollador frontend senior</a></h3>
+                <p class="pp-perfil__nombre">Diego Salazar</p>
+              </div>
+              <span class="pp-badge pp-badge--banda">Disponible en 2 a 4 semanas</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li>React</li><li>Redux</li><li>Storybook</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Retail</li><li>Híbrido</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 4 de 5</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>React · prueba técnica</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Senior · entrevista técnica</span></li></ul></div>
+              <div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por el profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Acepta híbrido</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Banca</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <a class="pp-enlace pp-enlace--sutil rs-ficha" href="#ficha-0322">Ver ficha</a>
+              <span class="pp-codigo-perfil">PS-0322</span>
+            </div>
+          </article>
+          <article class="pp-perfil" aria-labelledby="po-p-0335">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0335"><a href="#ficha-0335">Desarrolladora frontend</a></h3>
+                <p class="pp-perfil__nombre">Carolina Beltrán</p>
+              </div>
+              <span class="pp-badge pp-badge--disponible">Disponible ahora</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li>TypeScript</li><li>Angular</li><li>RxJS</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Banca</li><li>Híbrido</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 4 de 5</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>TypeScript · prueba técnica</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Semi-senior · entrevista técnica (pides senior)</span></li></ul></div>
+              <div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Banca · 3 años</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Acepta híbrido</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <a class="pp-enlace pp-enlace--sutil rs-ficha" href="#ficha-0335">Ver ficha</a>
+              <span class="pp-codigo-perfil">PS-0335</span>
+            </div>
+          </article>
+          <article class="pp-perfil" aria-labelledby="po-p-0347">
+            <div class="pp-perfil__cabecera">
+              <div>
+                <h3 class="pp-perfil__rol" id="po-p-0347"><a href="#ficha-0347">Desarrollador frontend</a></h3>
+                <p class="pp-perfil__nombre">Esteban Mejía</p>
+              </div>
+              <span class="pp-badge pp-badge--banda">En proyecto · más de 2 meses</span>
+            </div>
+            <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li>Vue.js</li><li>JavaScript</li><li>Sass</li></ul>
+            <ul class="pp-perfil__meta" aria-label="Sector, modalidad y país"><li>Telecomunicaciones</li><li>Remoto</li><li>Colombia</li></ul>
+            <div class="pp-evidencia">
+              <p class="pp-evidencia__conteo">Cumple 2 de 5</p>
+              <div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Senior · entrevista técnica</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>React y TypeScript sin validar</span></li></ul></div>
+              <div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por el profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Banca</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Solo remoto</span></li></ul></div>
+            </div>
+            <div class="pp-perfil__pie">
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button>
+              <a class="pp-enlace pp-enlace--sutil rs-ficha" href="#ficha-0347">Ver ficha</a>
+              <span class="pp-codigo-perfil">PS-0347</span>
+            </div>
+          </article>
+        </div>
+        <div class="rs-mas"><button type="button" class="pp-btn pp-btn--contorno">Ver 8 perfiles más</button><span class="pp-meta">4 de 12</span></div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

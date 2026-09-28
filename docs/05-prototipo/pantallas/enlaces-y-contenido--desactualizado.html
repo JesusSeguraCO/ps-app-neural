@@ -1,0 +1,503 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla enlaces-y-contenido--desactualizado
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes que la HU exija son VARIANTES de pantalla en archivos propios
+    (enlaces-y-contenido--estado.html), no interacciones.
+  Trazabilidad: épica EP-011 · historias HU-114, HU-115 · registrada en ../manifest.json
+  Estado de ESTE archivo (enlaces-y-contenido--desactualizado): error de HU-115 — un perfil cambió después de generar el bloque: el bloque queda marcado
+  como desactualizado, no se puede copiar y se ofrece regenerarlo contra el inventario del momento.
+  Pantalla: «Enlaces y contenido» de una edición curada (una cuenta). Genera un enlace por
+  destinatario (se ve una sola vez), el bloque para copiar en Gmail o la tabla destinatario–enlace
+  para HubSpot, y registra la salida (fecha y herramienta). El portal no redacta, programa ni envía
+  el boletín (decisión del sponsor 2026-09-27, PRD v4.14 RF-18). Sustituye a programar-envio.
+  Variantes: --sin-razon · --contacto-sin-cuenta · --desactualizado · --enlace-no-visible ·
+  --excluidos · --salida-registrada · --cadencia-vencida.
+  Oficio v2 (DESIGN.md › Oficio): filas con hairline, estado punto + palabra, una primaria por
+  contexto, sin bordes laterales de color ni párrafos introductorios.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enlaces y contenido · bloque desactualizado — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+/* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+/* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+/* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+/* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+      .pp-migas a:hover { color: var(--tc-text-h); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+      /* /PP:panel */
+/* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
+/* PP:toast */
+      .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+      .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+      .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+      @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+      /* /PP:toast */
+/* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
+/* PP:tabla */
+      .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+      .pp-barra .pp-pestanas { border-bottom: 0; }
+      .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+      .pp-buscador { position: relative; width: min(300px, 100%); }
+      .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+      .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+      .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+      .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+      .pp-tabla th.pp-tabla__acciones { text-align: right; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+      @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+      /* /PP:tabla */
+/* PP:pestanas */
+      .pp-pestanas { display: flex; gap: var(--tc-sp-5); overflow-x: auto; border-bottom: 1px solid var(--tc-border); scrollbar-width: none; }
+      .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-1); border: 0; border-bottom: 2px solid transparent; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease); }
+      .pp-pestana:hover { color: var(--tc-text-h); }
+      .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-text-h); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+      .pp-pestana[aria-selected="true"] .pp-pestana__conteo { color: var(--tc-text-m); }
+      /* /PP:pestanas */
+/* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+/* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+/* PP:vacio */
+      .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+      .pp-filas .pp-vacio, .pp-tabla-marco .pp-vacio { border: 0; border-radius: 0; }
+      .pp-vacio--atencion { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-vacio h2, .pp-vacio h3 { margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+      .pp-vacio p { max-width: 56ch; margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-vacio__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
+      @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-6) var(--tc-sp-4); } }
+      /* /PP:vacio */
+
+    /* ── Composición propia de esta pantalla (prefijo ec-) ── */
+    .ec-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-2); }
+    .ec-meta > * + *::before { content: "·"; margin-right: var(--tc-sp-2); color: var(--tc-text-s); }
+    .ec-pestanas { margin-bottom: var(--tc-sp-6); }
+    .ec-principal { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-8); min-width: 0; }
+    .ec-principal > *, .ec-lateral > * { min-width: 0; }
+    .pp-fila__principal > p { min-width: 0; }
+    .ec-principal > .pp-seccion + .pp-seccion, .ec-lateral > .pp-seccion + .pp-seccion { margin-top: 0; }
+    .ec-principal > .pp-aviso { margin-bottom: calc(var(--tc-sp-4) * -1); }
+    .ec-enlace { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-b); font-variant-numeric: tabular-nums; }
+    .ec-enlace--oculto { font-family: var(--tc-font-body); color: var(--tc-text-m); }
+    .pp-fila--seleccionada .ec-enlace { color: var(--tc-text-h); }
+    .ec-confirmar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-warn-border); border-radius: var(--tc-r-md); background: var(--tc-warn-surface); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .ec-confirmar p { flex: 1 1 320px; margin: 0; }
+    .ec-confirmar strong { color: var(--tc-warn-ink); font-weight: var(--tc-fw-semibold); }
+    .ec-confirmar__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); margin-left: auto; }
+    .ec-formatos { margin-bottom: var(--tc-sp-3); }
+    .ec-bloque { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .ec-bloque__cabecera { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); min-height: 52px; padding: var(--tc-sp-2) var(--tc-sp-3) var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+    .ec-bloque__para { margin: 0; min-width: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ec-bloque__para strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ec-bloque__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+    .ec-bloque__cuerpo { padding: var(--tc-sp-5); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .ec-bloque__cuerpo > * { max-width: 68ch; }
+    .ec-bloque__cuerpo p { margin: 0; }
+    .ec-bloque__cuerpo p + p { margin-top: var(--tc-sp-3); }
+    .ec-bloque--bloqueado .ec-bloque__cuerpo { color: var(--tc-text-m); }
+    .ec-bloque--bloqueado .ec-perfil__rol { color: var(--tc-text-m); }
+    .ec-asunto { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--tc-sp-3); padding-bottom: var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .ec-asunto__rotulo { font-size: var(--tc-fs-caption); color: var(--tc-text-m); line-height: var(--tc-lh-body); }
+    .ec-asunto__texto { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ec-saludo { color: var(--tc-text-h); }
+    .ec-bloque__cuerpo strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ec-fecha-disp { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .ec-bloque__cuerpo .ec-fecha-disp { margin-top: var(--tc-sp-5); }
+    .ec-perfiles { margin: var(--tc-sp-2) 0 var(--tc-sp-5); padding: 0; list-style: none; border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); }
+    .ec-perfil { display: grid; gap: var(--tc-sp-1); padding: var(--tc-sp-4) 0; }
+    .ec-perfil + .ec-perfil { border-top: 1px solid var(--tc-border); }
+    .ec-bloque__cuerpo .ec-perfil p + p { margin-top: 0; }
+    .ec-perfil__rol { margin: 0; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
+    .ec-perfil__quien { color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .ec-perfil__quien .pp-estado { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .ec-perfil__hab { margin-top: var(--tc-sp-1); }
+    .ec-perfil__verif b { font-weight: var(--tc-fw-semibold); color: var(--tc-ok-ink); }
+    .ec-perfil__decl span { font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .ec-cta__boton { display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--tc-sp-5); border-radius: var(--tc-r-md); background: var(--tc-primary-strong); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+    .ec-nota { color: var(--tc-text-m); }
+    .ec-nota strong { color: var(--tc-text-b); }
+    .ec-nota--url { font-size: var(--tc-fs-caption); }
+    .ec-nota--url .ec-enlace { display: inline; color: var(--pp-teal-ink); overflow-wrap: anywhere; white-space: normal; }
+    .ec-nota--url .ec-enlace--oculto { color: var(--tc-text-m); }
+    .ec-fila--excluida .pp-fila__titulo { color: var(--tc-text-m); }
+    .ec-actual { display: block; margin-top: var(--tc-sp-1); color: var(--tc-text-m); font-family: var(--tc-font-body); }
+    .ec-caja .pp-form > .pp-btn, .ec-caja .ec-motivo { justify-self: end; }
+    .ec-motivo { margin: calc(var(--tc-sp-2) * -1) 0 0; text-align: right; }
+    .ec-perfil__cambio { color: var(--tc-text-h); }
+    .ec-llamado { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .ec-llamado .ec-enlace { display: inline; font-size: var(--tc-fs-small); color: var(--pp-teal-ink); overflow-wrap: anywhere; white-space: normal; }
+    .ec-llamado .ec-enlace--oculto, .pp-fila--seleccionada .ec-enlace--oculto { font-family: var(--tc-font-body); color: var(--tc-text-m); font-weight: var(--tc-fw-regular); }
+    .ec-bloque__pie { padding: var(--tc-sp-3) var(--tc-sp-5); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .ec-bloque .pp-tabla-marco { border: 0; border-radius: 0; box-shadow: none; }
+    .ec-lateral { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-8); align-content: start; min-width: 0; }
+    .ec-caja { padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+    .ec-caja .pp-seccion__cabecera { margin-bottom: var(--tc-sp-4); }
+    .ec-caja .pp-form { gap: var(--tc-sp-4); }
+    .ec-caja .pp-btn--primario { justify-self: end; }
+    .ec-dato { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); font-variant-numeric: tabular-nums; }
+    .ec-dato strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .ec-dato + .ec-dato { margin-top: var(--tc-sp-1); }
+    .ec-separador { margin: var(--tc-sp-4) 0; border: 0; border-top: 1px solid var(--tc-border); }
+    .ec-alerta { color: var(--tc-warn-ink); font-weight: var(--tc-fw-medium); }
+    .pp-seccion__cabecera .pp-meta { min-width: 0; text-align: right; }
+    :focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    @media (max-width: 767px) {
+      .ec-bloque__cabecera { padding-left: var(--tc-sp-4); }
+      .ec-bloque__cuerpo { padding: var(--tc-sp-4); }
+      .ec-asunto { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+      .ec-confirmar__acciones { width: 100%; }
+      .pp-seccion__cabecera { flex-wrap: wrap; }
+      .pp-con-lateral > .ec-lateral { display: contents; }
+      .ec-principal { order: 1; }
+      .ec-lateral > * { order: 2; }
+      .ec-lateral > #salida { order: 0; }
+      .pp-filas .pp-fila:has(.pp-btn--icono) { position: relative; padding-right: calc(var(--tc-sp-10) + var(--tc-sp-4)); }
+      .pp-fila__acciones > .pp-btn--icono { position: absolute; top: var(--tc-sp-2); right: var(--tc-sp-2); }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="pp-panel">
+    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+      <div class="pp-sidebar__marca">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Portal de perfiles</span></span>
+      </div>
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+      <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="selecciones-curadas.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">2</span></a>
+      <div class="pp-sidebar__pie">
+        <span class="pp-avatar" aria-hidden="true">PG</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Paula Giraldo</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
+      </div>
+    </nav>
+    
+
+    <div class="pp-panel__cuerpo">
+      <header class="pp-panel__topbar">
+        <ol class="pp-migas"><li><a href="selecciones-curadas.html">Envíos</a></li><li><a href="selecciones-curadas.html">Bancolombia · octubre</a></li><li aria-current="page">Enlaces y contenido</li></ol>
+        <div class="pp-panel__herramientas">
+          <span class="pp-meta">paula.giraldo@trycore.com</span>
+          <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
+        </div>
+      </header>
+
+      <main class="pp-panel__contenido" id="contenido">
+        <div class="pp-encabezado">
+          <div class="pp-encabezado__texto">
+            <h1 class="pp-encabezado__titulo">Bancolombia — Migración de pagos inmediatos</h1>
+            <p class="pp-encabezado__meta ec-meta"><span>Edición de octubre</span><span class="pp-estado pp-estado--warn">Bloque desactualizado</span><span>Dueña: Paula Giraldo</span></p>
+          </div>
+          <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno" href="bloque-curado-vista-previa.html">Vista previa</a><button type="button" class="pp-btn pp-btn--primario">Regenerar el bloque</button></div>
+        </div>
+        <div class="pp-pestanas ec-pestanas" role="tablist" aria-label="Pasos de la edición">
+          <a class="pp-pestana" role="tab" aria-selected="false" href="selecciones-curadas.html">Selección <span class="pp-pestana__conteo">3</span></a>
+          <a class="pp-pestana" role="tab" aria-selected="true" href="enlaces-y-contenido.html">Enlaces y contenido</a>
+          <a class="pp-pestana" role="tab" aria-selected="false" href="seguimiento-envios.html">Seguimiento</a>
+        </div>
+
+        <div class="pp-con-lateral">
+          <div class="ec-principal">
+          <div class="pp-aviso pp-aviso--warn" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">El bloque está desactualizado.</span>Laura Méndez pasó a Pausado el 6 oct, después de generarlo. Regenéralo para poder copiarlo; los enlaces siguen valiendo.</p></div>
+          <section class="pp-seccion" aria-labelledby="ec-dest">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ec-dest">Destinatarios</h2><span class="pp-meta">2 enlaces · generados el 5 oct · 1 excluida</span></div>
+            <ul class="pp-filas" aria-label="Destinatarios de la edición">
+              <li class="pp-fila pp-fila--seleccionada" aria-current="true">
+                <div class="pp-fila__principal">
+                  <p class="pp-fila__titulo"><a href="#bloque">Juliana Restrepo</a> <span class="pp-fila__sub">juliana.restrepo@bancolombia.com.co</span></p>
+                  <p class="pp-fila__meta"><span class="ec-enlace ec-enlace--oculto">Generado el 5 oct · ya no se muestra</span><span class="ec-actual">En la vista del texto</span></p>
+                </div>
+                <div class="pp-fila__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Juliana Restrepo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></div>
+              </li>
+              <li class="pp-fila">
+                <div class="pp-fila__principal">
+                  <p class="pp-fila__titulo"><a href="#bloque">Mauricio Cárdenas</a> <span class="pp-fila__sub">mauricio.cardenas@bancolombia.com.co</span></p>
+                  <p class="pp-fila__meta"><span class="ec-enlace ec-enlace--oculto">Generado el 5 oct · ya no se muestra</span></p>
+                </div>
+                <div class="pp-fila__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono" aria-label="Más acciones para Mauricio Cárdenas"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button></div>
+              </li>
+              <li class="pp-fila ec-fila--excluida">
+                <div class="pp-fila__principal">
+                  <p class="pp-fila__titulo">Natalia Gómez <span class="pp-fila__sub">natalia.gomez@bancolombia.com.co</span></p>
+                  <p class="pp-fila__meta">Excluida: pidió no recibir más correos · sin enlace</p>
+                </div>
+              </li>
+            </ul>
+          </section>
+          <section class="pp-seccion" aria-labelledby="ec-cont">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ec-cont">Contenido para copiar</h2><span class="pp-meta">Generado el 5 oct, 4:12 p. m.</span></div>
+            <div class="pp-pestanas ec-formatos" role="tablist" aria-label="Formato de copia">
+              <a class="pp-pestana" role="tab" aria-selected="true" href="enlaces-y-contenido.html#bloque">Texto para Gmail</a>
+              <a class="pp-pestana" role="tab" aria-selected="false" href="enlaces-y-contenido--excluidos.html#bloque">Tabla para HubSpot</a>
+            </div>
+            <div class="ec-bloque ec-bloque--bloqueado" id="bloque">
+              <div class="ec-bloque__cabecera">
+                <p class="ec-bloque__para">Para <strong>Juliana Restrepo</strong> · juliana.restrepo@bancolombia.com.co</p>
+                <div class="ec-bloque__acciones"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" disabled>Copiar texto</button></div>
+              </div>
+              <div class="ec-bloque__cuerpo">
+                <div class="ec-asunto"><span class="ec-asunto__rotulo">Asunto</span><span class="ec-asunto__texto">Tres perfiles para la migración de pagos inmediatos</span></div>
+                <p class="ec-saludo">Hola, Juliana. Tres perfiles para la <strong>migración de pagos inmediatos</strong>.</p>
+                <p><strong>Por qué estas personas.</strong> Andrés ya lideró una transición parecida en banca, Laura construyó la conciliación en Java para dos entidades y Camila automatiza pruebas de las API de pagos.</p>
+                <p class="ec-fecha-disp">Disponibilidad al 6 de octubre de 2026</p>
+                <ul class="ec-perfiles">
+                  <li class="ec-perfil">
+                    <p class="ec-perfil__rol">Gerente de proyectos ágiles</p>
+                    <p class="ec-perfil__quien">Andrés Villamizar · <span class="pp-mono">PS-0098</span> · <span class="pp-estado pp-estado--ok">Disponible ahora</span></p>
+                    <p class="ec-perfil__hab">Scrum · SAFe · gestión de riesgos · Jira</p>
+                    <p class="ec-perfil__verif"><b>✓ Verificado por Trycore:</b> lideró el paso de los pagos de un banco a un nuevo esquema interbancario sin detener la operación.</p>
+                    <p class="ec-perfil__decl"><span>Declarado por el profesional:</span> certificación PMI-ACP.</p>
+                  </li>
+                  <li class="ec-perfil">
+                    <p class="ec-perfil__rol">Desarrolladora backend Java</p>
+                    <p class="ec-perfil__quien">Laura Méndez · <span class="pp-mono">PS-0142</span> · <span class="pp-estado pp-estado--warn ec-perfil__cambio">Pausado desde el 6 oct</span></p>
+                    <p class="ec-perfil__hab">Java 17 · Spring Boot · Kafka · Oracle</p>
+                    <p class="ec-perfil__verif"><b>✓ Verificado por Trycore:</b> construyó la conciliación de pagos en Java para dos entidades financieras.</p>
+                    <p class="ec-perfil__decl"><span>Declarado por el profesional:</span> Kafka en producción.</p>
+                  </li>
+                  <li class="ec-perfil">
+                    <p class="ec-perfil__rol">Analista QA de automatización</p>
+                    <p class="ec-perfil__quien">Camila Torres · <span class="pp-mono">PS-0088</span> · <span class="pp-estado pp-estado--ok">Disponible ahora</span></p>
+                    <p class="ec-perfil__hab">Cypress · Postman · Karate · SQL</p>
+                    <p class="ec-perfil__verif"><b>✓ Verificado por Trycore:</b> automatizó las pruebas de las API de pagos de una fintech.</p>
+                    <p class="ec-perfil__decl"><span>Declarado por el profesional:</span> pruebas de carga en sistemas de alto volumen.</p>
+                  </li>
+                </ul>
+                <p class="ec-cta"><span class="ec-cta__boton">Ver la selección y armar mi equipo</span></p>
+                <p class="ec-nota">Solo funciona con <strong>juliana.restrepo@bancolombia.com.co</strong>; tus colegas necesitan su propia invitación. Vale hasta el 3 de noviembre y al abrirlo te enviamos un código a este buzón.</p>
+                <p class="ec-nota ec-nota--url">¿No abre el botón? <span class="ec-enlace ec-enlace--oculto">su enlace personal</span></p>
+              </div>
+              <p class="ec-bloque__pie">El pie con tu contacto y la salida para dejar de recibir los pone Gmail.</p>
+            </div>
+          </section>
+          </div>
+          <aside class="ec-lateral" aria-label="Salida y cadencia">
+          <section class="ec-caja" id="salida" aria-labelledby="ec-salida">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ec-salida">Registrar salida</h2></div>
+            <form class="pp-form" action="#">
+              <div class="pp-campo">
+                <label class="pp-label" for="ec-fecha">Fecha de envío</label>
+                <input class="pp-input" id="ec-fecha" type="date" value="2026-10-06">
+              </div>
+              <div class="pp-campo">
+                <label class="pp-label" for="ec-herramienta">Desde</label>
+                <div class="pp-select"><select class="pp-input" id="ec-herramienta"><option selected>Gmail</option><option>HubSpot</option></select></div>
+                <p class="pp-ayuda">Sin salida registrada, la edición no cuenta como envío.</p>
+              </div>
+              <button type="submit" class="pp-btn pp-btn--contorno" disabled aria-describedby="ec-salida-motivo">Registrar salida</button>
+              <p class="pp-meta ec-motivo" id="ec-salida-motivo">Regenera el bloque antes de registrar la salida</p>
+            </form>
+          </section>
+          <section class="pp-seccion" aria-labelledby="ec-cad">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ec-cad">Cadencia</h2><a class="pp-enlace pp-meta" href="selecciones-curadas.html">Cambiar</a></div>
+            <p class="ec-dato"><strong>Mensual</strong>, primer martes</p>
+            <p class="ec-dato">Esta edición vence el mar 6 oct; la siguiente, el mar 3 nov.</p>
+          </section>
+          <section class="pp-seccion" aria-labelledby="ec-hist">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ec-hist">Ediciones anteriores</h2><a class="pp-enlace pp-meta" href="seguimiento-envios.html">Seguimiento</a></div>
+            <ol class="pp-actividad">
+              <li class="pp-actividad__item"><span class="pp-actividad__hora">1 sep</span><p class="pp-actividad__texto"><strong>Salió por Gmail</strong> a 3 destinatarios · 2 entraron</p></li>
+              <li class="pp-actividad__item"><span class="pp-actividad__hora">4 ago</span><p class="pp-actividad__texto"><strong>Salió por HubSpot</strong> a 2 destinatarios · 1 entró</p></li>
+            </ol>
+          </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

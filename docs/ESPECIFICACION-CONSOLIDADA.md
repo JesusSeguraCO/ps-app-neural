@@ -3,7 +3,7 @@ artefacto: especificacion-consolidada
 proyecto: portal-people-service
 version: 5.5
 fecha: 2026-09-27
-prd_version: 4.13
+prd_version: 4.14
 epicas_version: 5.5
 backlog_version: 5.5
 historias_activas: 80
@@ -25,7 +25,7 @@ uso: documento de construcción, organizado por épica
 5. **Parte V — Decisiones abiertas.** Lo que todavía puede cambiar y a quién hay que preguntarle.
 6. **Parte VI — Orden de construcción.**
 
-> **Artefactos hermanos, fuera de este documento.** El **mapa de historias** (`docs/02-user-story-map/`, v3.3) ordena el alcance por recorrido y release. La **priorización** (`docs/05-priorizacion/`) ordena las historias en una matriz valor/esfuerzo. Los **flujos de navegación** (`docs/06-flows/`, uno por épica, en Mermaid) diagraman cada épica con trazabilidad a sus criterios de aceptación. Las características verificadas del **hosting** viven en `docs/01-prd/requisitos-tecnicos-hosting.md` y el **prototipo** de referencia en `docs/07-prototipo/`.
+> **Artefactos hermanos, fuera de este documento.** El **mapa de historias** (`docs/02-user-story-map/`, v3.4) ordena el alcance por recorrido y release. La **priorización** (`docs/05-priorizacion/`) ordena las historias en una matriz valor/esfuerzo. Los **flujos de navegación** (`docs/06-flows/`, uno por épica, en Mermaid) diagraman cada épica con trazabilidad a sus criterios de aceptación. Las características verificadas del **hosting** viven en `docs/01-prd/requisitos-tecnicos-hosting.md` y el **prototipo** de referencia en `docs/07-prototipo/`.
 
 ---
 
@@ -116,7 +116,7 @@ Medibles, con horizonte de dos trimestres desde el lanzamiento.
 | **P4 — Talento Humano** | [[karen]] y equipo | **Usuaria primaria del panel.** Publica, actualiza, pausa y archiva perfiles. Custodia el consentimiento de cada profesional |
 | **P5 — Comercial Trycore** | Ejecutivo dueño de la cuenta | Recibe la oportunidad en su pipeline de HubSpot. Usa el portal en vivo en reunión y comparte enlaces con filtros aplicados |
 | **P6 — Delivery** | Coordinación de Servicio (contacto de línea: Eida Tinjacá M.) | Recibe la solicitud con contexto suficiente para preparar la alineación |
-| **P7 — Mercadeo** | Dirección de Mercadeo | Construye el correo curado por cuenta, genera los enlaces parametrizados y lee la telemetría de intención |
+| **P7 — Mercadeo** | Dirección de Mercadeo | Arma en el panel la selección curada por cuenta, genera el enlace de cada destinatario y el bloque de contenido que pega en Gmail o HubSpot (RF-18), y lee la telemetría de intención |
 
 ---
 
@@ -232,7 +232,7 @@ La v1 corre en **contenedores Docker portables**, con producción en DigitalOcea
 | **Modelo de lenguaje** | Gemini por API REST, llamado desde el servidor, solo en RF-12.2.1 y RF-8.12.1 | La búsqueda no depende de él: el intérprete determinista (RF-2.6) funciona sin conexión al modelo |
 | **Acceso del cliente** | Enlace firmado + **lista nominal de correos invitados** + código al buzón; sesión de 30 días por dispositivo, acotada a la vigencia del enlace (30 días por omisión) | RF-1.2, RF-1.4. Sin proveedor de identidad |
 | **Acceso al panel** | **Lista nominal** de correos `@trycore.com` con rol + código al buzón + sesión de una jornada | RF-8.1. Mecanismo distinto del del cliente a propósito |
-| **Correo saliente** | **Mailgun**, con remitente `notify@people.trycore.com` y dominio de envío propio `mg.people.trycore.com` (SPF, DKIM y rebotes en ese subdominio, DMARC alineado en modo relajado; no puede ser el mismo nombre que el host web). `trycore.com` sigue en Google Workspace, independiente. Rebotes y quejas llegan a la aplicación por aviso firmado | El código de acceso es crítico: si cae en spam, nadie entra. Un proveedor transaccional da reputación de envío y avisa de cada rebote |
+| **Correo saliente** | **Mailgun**, con remitente `notify@people.trycore.com` y dominio de envío propio `mg.people.trycore.com` (SPF, DKIM y rebotes en ese subdominio, DMARC alineado en modo relajado; no puede ser el mismo nombre que el host web). `trycore.com` sigue en Google Workspace, independiente. Rebotes y quejas llegan a la aplicación por aviso firmado. **Solo códigos de acceso y avisos internos**: el boletín curado no sale por Mailgun, se envía desde Gmail o HubSpot (RF-18, decisión del sponsor del 2026-09-27) | El código de acceso es crítico: si cae en spam, nadie entra. Un proveedor transaccional da reputación de envío y avisa de cada rebote |
 | **Vigilancia** | Cada tarea registra su última ejecución; un monitor externo espera una señal periódica del proceso de trabajo diferido y avisa si falta; la plataforma avisa de reinicios y despliegues fallidos | Todo el escalamiento depende de ese proceso. Sin vigilancia, una caída es un fallo silencioso (RF-9.6.2) |
 | **Respaldo** | Respaldo diario de la base administrada con recuperación a un punto en el tiempo de 7 días, más **volcado semanal completo y cifrado de la base** a Google Drive de Trycore, que incluye consentimientos y auditoría (sin los eventos de telemetría). Antes de producción, restauración de prueba | Un fallo de la base se recupera con minutos de pérdida; la pérdida de la cuenta o la región queda cubierta por la exportación semanal (riesgo aceptado, §10.3) |
 | **Protección perimetral** | Cloudflare delante de los dos hosts: frena ráfagas en los puntos de token y código (el límite fino de intentos lo aplica la propia aplicación, RF-1.2.9); el servidor rechaza lo que no llega por Cloudflare | Evita la prueba masiva de tokens y que alguien se salte el borde |
@@ -5188,7 +5188,9 @@ Cubre RF-15.1 y RF-7.2. El último escenario es la defensa contra el sesgo que e
 
 ## EP-011 — Correo curado y distribución
 
-**Resumen.** Mercadeo arma la selección de perfiles de cada cuenta contra el proyecto que esa cuenta tiene en curso, genera el enlace parametrizado y envía. Después mide quién abrió, quién entró y quién nunca lo hizo.
+> **Decisión de negocio 2026-09-27 (sponsor):** «el boletín se envía desde Gmail o HubSpot, pero es una confección externa; lo que la aplicación les dará es la información curada y el link principalmente». Redactar, programar y enviar el correo, gestionar las bajas y medir la apertura **pasan a Gmail o HubSpot por decisión del sponsor**; no es un recorte de alcance (PRD v4.14).
+
+**Resumen.** Talento Humano o Mercadeo arma en el panel la selección de perfiles de cada cuenta contra el proyecto que esa cuenta tiene en curso, genera el enlace de cada destinatario y un bloque de contenido listo para pegar en Gmail o HubSpot, y registra cuándo salió. Después mide quién entró por su enlace, quién verificó y quién solicitó, y quién nunca entró.
 
 **Justificación.** Es **la fuente de todo el tráfico del portal** y hasta la v4.0 del PRD vivía como un supuesto de una línea. Especificamos con enorme detalle el destino sin haber escrito nada sobre el camino: si el correo no funciona, nada de lo demás importa.
 
@@ -5196,21 +5198,23 @@ Cubre RF-15.1 y RF-7.2. El último escenario es la defensa contra el sesgo que e
 **Capabilities:** RF-18 (completo) · RF-1.6 · RF-7.3
 **Fase:** MVP
 **Capa:** `layer: business`
-**Métrica de éxito:** 40% o más de las cuentas contactadas entran al portal, y ninguna cuenta acumula tres envíos sin abrir sin que alguien lo sepa.
-**Riesgo propio:** una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. Por eso RF-18.3 y RF-18.4 exigen construirla desde el panel, contra el inventario del momento.
+**Métrica de éxito:** 40% o más de las cuentas contactadas entran al portal, y ninguna cuenta acumula tres envíos con salida registrada sin entrar sin que alguien lo sepa.
+**Riesgo propio:** una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. Por eso RF-18.3 y RF-18.4 exigen construirla desde el panel, contra el inventario del momento, y marcar el bloque como desactualizado si un perfil cambia. Segundo riesgo, nuevo con la decisión: si nadie registra la salida, el portal no puede contar envíos ni vigilar la cadencia (RF-18.5).
 
-**Historias:** armar la selección de una cuenta · generar el enlace parametrizado · programar y enviar · ver quién abrió y quién entró · reaccionar a una cuenta que nunca abre.
+**Historias:** armar la selección de una cuenta · generar el enlace de cada destinatario · copiar el contenido curado y registrar la salida · ver quién entró por su enlace · reaccionar a una cuenta que no entra.
 
 ### Requisitos de esta épica
 
-- **RF-1.6** El enlace se genera desde el envío de correo con los tokens de personalización de la cuenta, sin construcción manual de URLs.
+- **RF-1.6** El enlace se genera desde la edición curada del panel, con un token opaco por destinatario ligado a la cuenta y al contacto, sin construcción manual de URLs. El correo que lo lleva se envía desde Gmail o HubSpot.
 
-- **RF-18.1** Cada envío lleva una **selección de perfiles construida para esa cuenta** contra el proyecto que Trycore sabe que tiene en curso, con su razón declarada. No es un boletín con el mismo contenido para todos.
-- **RF-18.2** El enlace se genera **desde el envío**, con los tokens de personalización de la cuenta y del contacto. Nadie construye URLs a mano.
+- **RF-18.1** Cada envío lleva una **selección de perfiles construida para esa cuenta** contra el proyecto que Trycore sabe que tiene en curso, con su razón declarada. «Envío» es la edición curada que se prepara en el panel; la salida ocurre fuera del portal.
+- **RF-18.2** El enlace de cada destinatario se genera **desde el envío** en el panel, con un token opaco por destinatario (ADR-0002). Nadie construye URLs a mano. **RF-18.2.1:** se muestra al generarse; si se pierde, se regenera y el anterior queda revocado.
 - **RF-18.3** La selección se arma **desde el panel**, no en una hoja aparte: quien la arma ve la disponibilidad real en ese momento y no propone perfiles que ya no están.
-- **RF-18.4 · La curaduría se genera contra el inventario del momento del envío.** Una selección fija se degrada entre que se arma y que el cliente abre el correo, y el cliente encuentra menos perfiles de los que le prometimos.
-- **RF-18.5** Cadencia definida y **dueño nominal** del envío. Un canal sin cadencia no produce el hábito que O5 necesita.
-- **RF-18.6** Se registra apertura, clic y entrada al portal, atribuidos a cuenta y contacto (RF-7.3). Una cuenta que **nunca abre en tres envíos** es una señal comercial, no un fallo de entregabilidad: se escala al ejecutivo antes de seguir enviando.
+- **RF-18.4 · La curaduría se genera contra el inventario del momento en que se genera el contenido.** Si un perfil cambia después, el bloque queda desactualizado y se regenera antes de copiarlo.
+- **RF-18.5** Cadencia definida y **dueño nominal** de la edición. Quien envía registra la salida (fecha y herramienta); el panel muestra el vencimiento de la siguiente edición y avisa al dueño si se pasa.
+- **RF-18.6** El portal mide entrada por enlace, verificación y solicitud, atribuidas a cuenta, contacto y edición (RF-7.3). **La apertura no la mide el portal** (la mide HubSpot si se usa). Una cuenta que **no entra en tres envíos con salida registrada** es una señal comercial: se avisa al ejecutivo antes de preparar la siguiente edición.
+- **RF-18.7** Bloque de contenido listo para copiar por destinatario: asunto sugerido, razón, perfiles sin tarifas y un solo enlace; en texto con formato para Gmail o tabla destinatario–enlace para HubSpot.
+- **RF-18.8** Exclusión manual con motivo; las bajas las gestiona la herramienta de envío.
 
 - **RF-7.3** Atribución de cada sesión a la cuenta, al contacto y al envío de correo que la originó.
 
@@ -5218,7 +5222,9 @@ Cubre RF-15.1 y RF-7.2. El último escenario es la defensa contra el sesgo que e
 
 #### HU-113 — Armar la selección de perfiles de una cuenta
 
-**Como** responsable de la distribución en Mercadeo,
+> **Decisión de negocio 2026-09-27 (sponsor):** el boletín se confecciona y envía desde Gmail o HubSpot; el portal entrega la selección curada, el enlace de cada destinatario y el bloque de contenido para copiar (PRD v4.14, RF-18).
+
+**Como** responsable de la distribución en Mercadeo o Talento Humano,
 **quiero** elegir desde el panel los perfiles que le voy a proponer a una cuenta, viendo su disponibilidad real,
 **para** no proponer gente que ya no está disponible cuando el cliente abra el correo.
 
@@ -5226,32 +5232,39 @@ Cubre RF-15.1 y RF-7.2. El último escenario es la defensa contra el sesgo que e
 
 ###### Happy path
 
-**Dado** que voy a armar el envío de una cuenta,
+**Dado** que preparo la edición curada de una cuenta,
 **cuando** abro la selección,
 **Entonces** veo el inventario publicado con su disponibilidad en ese momento
 **Y** elijo perfiles y escribo la razón de la selección referida al proyecto de la cuenta
 
-###### Error — un perfil seleccionado cambia antes del envío
+###### Error — un perfil seleccionado cambia antes de generar el contenido
 
-**Dado** que el perfil se pausa después de que lo elegí,
-**cuando** voy a enviar,
-**Entonces** el sistema me lo advierte antes de enviar
+**Dado** que un perfil se pausa o deja de estar publicado después de que lo elegí,
+**cuando** voy a generar los enlaces y el bloque para copiar,
+**Entonces** el panel me lo advierte antes de generarlos
 **Y** puedo reemplazarlo o quitarlo
 
 ###### Edge case — la cuenta no tiene proyecto conocido
 
-**Dado** que no sabemos en qué está trabajando,
+**Dado** que no sabemos en qué está trabajando la cuenta,
 **cuando** armo la selección,
-**Entonces** no se inventa una razón
-**Y** la selección se envía con un encuadre genérico o no se envía
+**Entonces** el panel no inventa una razón
+**Y** la edición queda en borrador hasta que el ejecutivo aporte el contexto o yo elija de forma explícita un encuadre genérico
+
+###### Edge case — perfil ya propuesto sin reacción
+
+**Dado** que un perfil ya se propuso a esta cuenta en una edición anterior y nadie entró a verlo,
+**cuando** lo vuelvo a elegir,
+**Entonces** el panel me avisa que se repite sin reacción
+**Y** puedo mantenerlo con conocimiento o cambiarlo
 
 ##### Notas
 
-Cubre RF-18.1, RF-18.3 y RF-18.4. **La selección se arma contra el inventario del momento**, no contra una hoja aparte que se degrada entre que se arma y que el cliente abre.
+Cubre RF-18.1, RF-18.3 y RF-18.4. **La selección se arma contra el inventario del momento**, no contra una hoja aparte que se degrada entre que se arma y que el cliente abre. El cuarto escenario viene del riesgo «la selección se repite entre envíos» de la spec; «sin reacción» se mide por entradas al portal (RF-18.6), porque la apertura no la mide el portal.
 
 ##### Trazabilidad
 
-Épica madre: **EP-011** · PRD v4.0
+Épica madre: **EP-011** · PRD v4.14 · spec `docs/10-specs/correo-curado.md`
 
 ##### INVEST
 
@@ -5264,42 +5277,51 @@ Cubre RF-18.1, RF-18.3 y RF-18.4. **La selección se arma contra el inventario d
 | S | Pequeña | ✓ |
 | T | Testeable | ✓ los criterios describen resultados observables |
 
-#### HU-114 — Generar el enlace de cada contacto sin construirlo a mano
+#### HU-114 — Generar el enlace de cada destinatario sin construirlo a mano
+
+> **Decisión de negocio 2026-09-27 (sponsor):** el boletín se confecciona y envía desde Gmail o HubSpot; el portal entrega la selección curada, el enlace de cada destinatario y el bloque de contenido para copiar (PRD v4.14, RF-18).
 
 **Como** responsable de la distribución,
-**quiero** que el enlace de cada destinatario se genere solo desde el envío,
-**para** no equivocarme copiando parámetros para veinte cuentas.
+**quiero** que el enlace de cada destinatario se genere desde la edición curada en el panel,
+**para** no equivocarme copiando parámetros para veinte cuentas y que cada entrada quede atribuida a quien la hizo.
 
 ##### Criterios de aceptación
 
 ###### Happy path
 
-**Dado** que preparo el envío,
-**cuando** se generan los enlaces,
-**Entonces** cada contacto recibe un enlace propio con su cuenta y su selección
+**Dado** que la selección de la cuenta está lista y tiene destinatarios invitados,
+**cuando** genero los enlaces,
+**Entonces** cada destinatario recibe un enlace propio ligado a su cuenta, a su correo invitado y a esta edición
 **Y** ninguno se construye a mano
 
-###### Error — contacto sin cuenta asociada
+###### Error — destinatario sin cuenta asociada
 
 **Dado** que un destinatario no está asociado a ninguna cuenta,
-**cuando** se prepara el envío,
-**Entonces** ese destinatario se excluye y se reporta
-**Y** no se envía un enlace sin contexto
+**cuando** genero los enlaces,
+**Entonces** ese destinatario se excluye y se reporta en pantalla con el motivo
+**Y** no se genera un enlace sin contexto
+
+###### Edge case — perdí el enlace antes de pegarlo
+
+**Dado** que cerré la pantalla antes de copiar el enlace de un destinatario,
+**cuando** vuelvo a la edición,
+**Entonces** el panel me dice que el enlace ya no se puede mostrar y me ofrece regenerarlo
+**Y** al regenerarlo el enlace anterior de ese destinatario queda revocado y deja de abrir
 
 ###### Edge case — vigencia
 
 **Dado** que el enlace se genera,
 **cuando** se define su expiración,
-**Entonces** la vigencia va atada al ciclo del envío
-**Y** un enlace de un boletín anterior ya no abre inventario
+**Entonces** la vigencia va atada al ciclo de la edición
+**Y** quien abre el enlace de una edición anterior encuentra la pantalla de renovación, no inventario ni un error
 
 ##### Notas
 
-Cubre RF-1.6 y RF-18.2.
+Cubre RF-1.6, RF-18.2 y RF-18.2.1. El enlace es el token opaco por destinatario de ADR-0002: solo se guarda su huella, por eso se muestra al generarse y se regenera si se pierde. Una fuga de la base no entrega enlaces que abran.
 
 ##### Trazabilidad
 
-Épica madre: **EP-011** · PRD v4.0
+Épica madre: **EP-011** · PRD v4.14 · spec `docs/10-specs/correo-curado.md`
 
 ##### INVEST
 
@@ -5312,42 +5334,58 @@ Cubre RF-1.6 y RF-18.2.
 | S | Pequeña | ✓ |
 | T | Testeable | ✓ los criterios describen resultados observables |
 
-#### HU-115 — Programar y enviar el boletín
+#### HU-115 — Copiar el contenido curado para enviarlo desde Gmail o HubSpot
+
+> **Decisión de negocio 2026-09-27 (sponsor):** el boletín se confecciona y envía desde Gmail o HubSpot; el portal entrega la selección curada, el enlace de cada destinatario y el bloque de contenido para copiar (PRD v4.14, RF-18).
 
 **Como** responsable de la distribución,
-**quiero** enviar con una cadencia definida y saber que salió,
-**para** que el portal tenga tráfico recurrente y no por impulsos.
+**quiero** recibir del panel el contenido curado de cada destinatario listo para pegar en Gmail o HubSpot, y registrar cuándo salió,
+**para** enviar con la herramienta que ya uso sin reescribir la selección y sostener una cadencia que el portal pueda vigilar.
 
 ##### Criterios de aceptación
 
 ###### Happy path
 
-**Dado** que la selección está lista,
-**cuando** programo el envío,
-**Entonces** el boletín sale en la fecha definida
-**Y** queda registro de a quién se envió y con qué selección
+**Dado** que la selección tiene razón declarada y los enlaces están generados,
+**cuando** abro el contenido para copiar,
+**Entonces** veo por destinatario un bloque con asunto sugerido, la línea de apertura con la razón, los perfiles con capacidad, competencias verificadas y disponibilidad, sin tarifas, y un solo enlace: el suyo
+**Y** puedo copiarlo en texto con formato para Gmail o como tabla destinatario–enlace para combinar en HubSpot
 
-###### Error — selección incompleta
+###### Error — selección sin razón
 
-**Dado** que falta la razón de la selección de alguna cuenta,
-**cuando** intento programar,
-**Entonces** el sistema lo señala
-**Y** no se envía una selección sin explicación
+**Dado** que falta la razón de la selección de la cuenta,
+**cuando** intento generar el contenido,
+**Entonces** el panel lo señala
+**Y** no genera un bloque sin explicación
 
-###### Edge case — cuenta que pidió no recibir
+###### Error — el inventario cambió después de generar el bloque
 
-**Dado** que un contacto pidió dejar de recibirlo,
-**cuando** se prepara el envío,
-**Entonces** queda excluido
-**Y** su exclusión se mantiene en envíos siguientes
+**Dado** que un perfil del bloque cambió de estado después de generarlo,
+**cuando** vuelvo al contenido para copiar,
+**Entonces** el bloque aparece marcado como desactualizado y no se puede copiar
+**Y** el panel me ofrece regenerarlo contra el inventario del momento
+
+###### Edge case — registrar la salida y la cadencia
+
+**Dado** que ya envié el correo desde Gmail o HubSpot,
+**cuando** registro la salida con fecha y herramienta,
+**Entonces** la edición queda como enviada con su dueño nominal
+**Y** el panel muestra cuándo vence la siguiente edición de esa cuenta y avisa por correo interno al dueño si se pasa
+
+###### Edge case — contacto excluido de la distribución
+
+**Dado** que un contacto pidió no recibir más y alguien lo marcó como excluido, con motivo,
+**cuando** genero enlaces y bloques de una edición nueva,
+**Entonces** a ese contacto no se le genera ni enlace ni bloque y aparece en la lista de excluidos
+**Y** la exclusión se mantiene en ediciones siguientes hasta que alguien la retire
 
 ##### Notas
 
-Cubre RF-18.5. **Sin cadencia no hay hábito, y sin hábito no hay O5.**
+Cubre RF-18.5, RF-18.7 y RF-18.8. **Sustituye a «Programar y enviar el boletín»** (PRD v4.0): redactar el correo, programarlo, enviarlo y gestionar las bajas pasan a Gmail o HubSpot por decisión del sponsor del 2026-09-27; no es un recorte de alcance. El portal no envía el boletín ni lo pasa por Mailgun. La salida registrada es lo que permite contar envíos para RF-18.6. **Sin cadencia no hay hábito, y sin hábito no hay O5.**
 
 ##### Trazabilidad
 
-Épica madre: **EP-011** · PRD v4.0
+Épica madre: **EP-011** · PRD v4.14 · spec `docs/10-specs/correo-curado.md`
 
 ##### INVEST
 
@@ -5360,41 +5398,51 @@ Cubre RF-18.5. **Sin cadencia no hay hábito, y sin hábito no hay O5.**
 | S | Pequeña | ✓ |
 | T | Testeable | ✓ los criterios describen resultados observables |
 
-#### HU-116 — Ver quién abrió y quién entró
+#### HU-116 — Ver quién entró por su enlace
+
+> **Decisión de negocio 2026-09-27 (sponsor):** el boletín se confecciona y envía desde Gmail o HubSpot; el portal entrega la selección curada, el enlace de cada destinatario y el bloque de contenido para copiar (PRD v4.14, RF-18).
 
 **Como** responsable de la distribución,
-**quiero** ver por cuenta quién abrió el correo, quién tocó el enlace y quién llegó a solicitar,
-**para** saber si el problema está en el correo, en el portal o en la oferta.
+**quiero** ver por cuenta y por destinatario quién entró por su enlace, quién verificó su correo y quién llegó a solicitar,
+**para** saber si el problema está en el portal, en la oferta o antes de llegar al portal.
 
 ##### Criterios de aceptación
 
 ###### Happy path
 
-**Dado** que hubo un envío,
-**cuando** abro el informe,
-**Entonces** veo apertura, clic y entrada por cuenta
-**Y** veo cuántas terminaron en solicitud
+**Dado** que una edición tiene la salida registrada,
+**cuando** abro el seguimiento,
+**Entonces** veo por cuenta y destinatario la entrada por el enlace, la verificación del correo y la solicitud
+**Y** veo cuántas cuentas terminaron en solicitud
 
-###### Error — envío sin datos de apertura
+###### Error — la apertura del correo no la mide el portal
 
-**Dado** que la herramienta no reporta aperturas,
-**cuando** reviso,
-**Entonces** el informe lo dice en lugar de mostrar cero
-**Y** no se confunde ausencia de dato con ausencia de apertura
+**Dado** que el correo se envió desde Gmail o HubSpot,
+**cuando** reviso el seguimiento,
+**Entonces** la apertura aparece como «no la mide el portal», con la indicación de consultarla en HubSpot si se envió desde allí
+**Y** nunca se muestra un cero que confunda ausencia de dato con ausencia de apertura
 
-###### Edge case — entra sin abrir
+###### Edge case — edición sin salida registrada
 
-**Dado** que entra un invitado del enlace que no recibió el correo del envío,
-**cuando** se registra,
-**Entonces** la entrada se atribuye al envío aunque no haya apertura propia
+**Dado** que se generaron los enlaces pero nadie registró la salida,
+**cuando** reviso el seguimiento,
+**Entonces** la edición aparece como «sin salida registrada», no como una edición sin entradas
+**Y** no cuenta para la regla de tres envíos
+
+###### Edge case — entra otro invitado del mismo enlace
+
+**Dado** que entra un invitado del enlace de la cuenta que no recibió el correo de la edición,
+**cuando** se registra su entrada,
+**Entonces** la entrada se atribuye a la edición con su propio contacto
+**Y** no se suma a la del destinatario original
 
 ##### Notas
 
-Cubre RF-18.6 y RF-7.3. La distinción del segundo escenario evita la conclusión más común y más equivocada de todo informe de correo.
+Cubre RF-18.6 y RF-7.3. **Sustituye a «Ver quién abrió y quién entró»** (PRD v4.0): la apertura del correo pasa a la herramienta de envío por decisión del sponsor del 2026-09-27 (HubSpot la mide; Gmail no). El segundo escenario evita la conclusión más común y más equivocada de todo informe de correo. Se apoya en HU-112 (atribución de sesiones a la edición).
 
 ##### Trazabilidad
 
-Épica madre: **EP-011** · PRD v4.0
+Épica madre: **EP-011** · PRD v4.14 · spec `docs/10-specs/correo-curado.md`
 
 ##### INVEST
 
@@ -5407,42 +5455,51 @@ Cubre RF-18.6 y RF-7.3. La distinción del segundo escenario evita la conclusió
 | S | Pequeña | ✓ |
 | T | Testeable | ✓ los criterios describen resultados observables |
 
-#### HU-117 — Reaccionar a una cuenta que nunca abre
+#### HU-117 — Reaccionar a una cuenta que no entra
+
+> **Decisión de negocio 2026-09-27 (sponsor):** el boletín se confecciona y envía desde Gmail o HubSpot; el portal entrega la selección curada, el enlace de cada destinatario y el bloque de contenido para copiar (PRD v4.14, RF-18).
 
 **Como** ejecutivo comercial dueño de la cuenta,
-**quiero** que me avisen cuando una de mis cuentas acumula tres envíos sin abrir,
+**quiero** que me avisen cuando una de mis cuentas acumula tres envíos con salida registrada sin que nadie entre por su enlace,
 **para** tratarlo como lo que es, una señal comercial, y no como un problema de correo.
 
 ##### Criterios de aceptación
 
 ###### Happy path
 
-**Dado** que una cuenta acumula tres envíos sin abrir,
+**Dado** que una cuenta acumula tres ediciones con salida registrada sin ninguna entrada por sus enlaces,
 **cuando** se evalúa,
-**Entonces** recibo el aviso con el histórico
-**Y** la cuenta queda marcada para revisión antes de seguir enviando
+**Entonces** recibo el aviso por correo interno con el histórico de las tres ediciones
+**Y** la cuenta queda marcada para revisión antes de preparar la siguiente edición
 
-###### Error — problema de entregabilidad
+###### Error — posible problema de entrega
 
-**Dado** que el correo ni siquiera llega,
-**cuando** se evalúa,
-**Entonces** se distingue del caso de no apertura
-**Y** se corrige el dato antes de escalar comercialmente
+**Dado** que la herramienta de envío reportó rebote para el destinatario de la cuenta,
+**cuando** quien distribuye lo registra en el panel,
+**Entonces** esa edición deja de contar para la regla de tres envíos
+**Y** se corrige el dato del destinatario antes de escalar comercialmente
 
-###### Edge case — abre pero nunca entra
+###### Edge case — entra pero nunca suma perfiles
 
-**Dado** que abre el correo y nunca toca el enlace,
+**Dado** que el destinatario entra por su enlace y nunca suma perfiles a su equipo,
 **cuando** se evalúa,
 **Entonces** se trata distinto: el problema no es el canal sino la propuesta
-**Y** la selección de esa cuenta se revisa
+**Y** la selección de esa cuenta queda señalada para revisión
+
+###### Edge case — ediciones sin salida registrada
+
+**Dado** que la cuenta tiene ediciones con enlaces generados pero sin salida registrada,
+**cuando** se evalúa,
+**Entonces** esas ediciones no cuentan como envíos
+**Y** el aviso no se dispara por ellas
 
 ##### Notas
 
-Cubre RF-18.6. El tercer escenario es el más informativo: quien abre y no entra está diciendo que la selección no le habla.
+Cubre RF-18.6. **La regla pasa de «tres envíos sin abrir» a «tres envíos sin entrar»** por decisión del sponsor del 2026-09-27: la apertura la mide la herramienta de envío, no el portal (ya lo había resuelto T-10 el 2026-09-25 por la poca fiabilidad del píxel). El caso «abre pero nunca entra» solo se puede leer en HubSpot cuando el envío salió desde allí. El tercer escenario es el más informativo que el portal puede medir: quien entra y no suma perfiles está diciendo que la selección no le habla.
 
 ##### Trazabilidad
 
-Épica madre: **EP-011** · PRD v4.0
+Épica madre: **EP-011** · PRD v4.14 · spec `docs/10-specs/correo-curado.md`
 
 ##### INVEST
 
@@ -5461,88 +5518,130 @@ Cubre RF-18.6. El tercer escenario es el más informativo: quien abre y no entra
 
 ### Especificación — Correo curado
 
+> **Decisión de negocio 2026-09-27 (sponsor):** «el boletín se envía desde Gmail o HubSpot, pero es una
+> confección externa; lo que la aplicación les dará es la información curada y el link principalmente».
+>
+> **Qué cambia en esta versión 2.0:** el portal **no compone, no programa y no envía** el boletín. El
+> panel arma la selección curada, genera el enlace de cada destinatario y un bloque de contenido listo
+> para copiar, y registra cuándo salió. Redactar el correo, programarlo, enviarlo, gestionar las bajas y
+> medir la apertura **pasan a Gmail o HubSpot por decisión del sponsor**. No es un recorte de alcance:
+> esas piezas las hace otra herramienta. Mailgun queda para códigos de acceso y avisos internos, no para
+> el boletín.
+
 #### 0. Por qué esta especificación llega tarde y por qué importa
 
 El PRD dedicó treinta y tantas versiones a especificar el portal. El correo —que es **la fuente de todo su tráfico**— vivía en una sola línea, como supuesto.
 
-Es una asimetría peligrosa: especificamos con enorme detalle el destino sin haber escrito nada sobre el camino. **Si el correo no funciona, nada de lo demás importa.** Un portal excelente al que nadie entra es un portal que no existe.
+Es una asimetría peligrosa: especificamos con enorme detalle el destino sin haber escrito nada sobre el camino. **Si el correo no funciona, nada de lo demás importa.** Un portal excelente al que nadie entra es un portal que no existe. Que el correo salga desde Gmail o HubSpot no cambia eso: cambia qué pieza pone el portal.
 
 #### 1. Qué es
 
 Un envío **construido por cuenta**, no un boletín con el mismo contenido para todos. Cada cuenta recibe una selección de perfiles elegida contra el proyecto que Trycore sabe que tiene en curso, con la razón de esa elección declarada.
 
-**No es una campaña de marketing.** Es una propuesta comercial personalizada que usa el correo como vehículo. La diferencia se nota en el tono, en la frecuencia y en qué se hace cuando alguien no lo abre.
+**No es una campaña de marketing.** Es una propuesta comercial personalizada que usa el correo como vehículo. La diferencia se nota en el tono, en la frecuencia y en qué se hace cuando alguien no entra.
+
+**Reparto de responsabilidades desde el 2026-09-27:**
+
+| Lo pone el portal (panel) | Lo pone la herramienta de envío (Gmail o HubSpot) |
+|---|---|
+| Selección curada contra el inventario del momento, con su razón | Redacción final del correo y su diseño |
+| Enlace curado por destinatario (token opaco, ADR-0002) | Programación y envío |
+| Bloque de contenido listo para copiar | Pie con el contacto del ejecutivo y la salida para dejar de recibir |
+| Registro de la salida (fecha y herramienta) y vigilancia de la cadencia | Bajas y rebotes |
+| Medición de entrada, verificación y solicitud por destinatario | Apertura del correo (solo HubSpot la mide) |
+| Exclusión manual de contactos, con motivo | — |
+
+«Envío» o **edición curada** es, en el portal, la unidad que se prepara en el panel para una cuenta: selección, destinatarios, enlaces, bloque y salida registrada.
 
 #### 2. Quién lo arma y con qué criterio
 
 | Pieza | Dueño | Insumo |
 |---|---|---|
-| Selección de perfiles por cuenta | Mercadeo, con criterio comercial | Proyecto en curso de la cuenta, aportado por el ejecutivo |
+| Selección de perfiles por cuenta | Mercadeo o Talento Humano, con criterio comercial | Proyecto en curso de la cuenta, aportado por el ejecutivo |
 | Razón de la selección | Mercadeo | Por qué esos perfiles para ese proyecto |
 | Conocimiento del proyecto de la cuenta | Ejecutivo comercial | Es el insumo que nadie más tiene |
-| Disponibilidad real | Panel de Talento Humano | En el momento de armar el envío |
+| Disponibilidad real | Panel de Talento Humano | En el momento de generar el contenido |
+| Envío del correo y registro de la salida | Dueño nominal de la edición | Gmail o HubSpot |
 
-**Si nadie sabe en qué está trabajando la cuenta, no hay curaduría posible.** Ese es el punto de falla del mecanismo, y es humano, no técnico: depende de que el ejecutivo aporte el contexto.
+**Si nadie sabe en qué está trabajando la cuenta, no hay curaduría posible.** Ese es el punto de falla del mecanismo, y es humano, no técnico: depende de que el ejecutivo aporte el contexto. Sin contexto, la edición queda en borrador hasta que llegue o hasta que alguien elija de forma explícita un encuadre genérico.
 
 #### 3. La regla que evita la decepción
 
-**La selección se arma contra el inventario del momento del envío, desde el panel.**
+**La selección se arma contra el inventario del momento, desde el panel.**
 
 Una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. El cliente entra esperando cuatro perfiles y encuentra tres, o encuentra uno que ya no está disponible. Eso no es un detalle: es la primera impresión del producto.
 
-Antes de enviar, el sistema verifica que cada perfil seleccionado siga publicado y disponible, y advierte de lo que cambió.
+Antes de generar enlaces y bloque, el panel verifica que cada perfil seleccionado siga publicado y disponible, y advierte de lo que cambió. Si un perfil cambia **después** de generar el bloque, el bloque queda marcado como **desactualizado** y no se puede copiar hasta regenerarlo. El enlace no necesita regenerarse: reevalúa el estado de cada perfil al abrirse (RF-19.2).
 
-#### 4. Estructura del envío
+#### 4. El bloque de contenido para copiar
+
+Por destinatario, el panel genera un bloque que se pega en el cuerpo del correo:
 
 | Elemento | Contenido | Por qué |
 |---|---|---|
-| **Asunto** | Referido al proyecto de la cuenta, no al producto | «Tres perfiles para la modernización del core» pesa más que «Boletín de talento» |
+| **Asunto sugerido** | Referido al proyecto de la cuenta, no al producto | «Tres perfiles para la modernización del core» pesa más que «Boletín de talento» |
 | **Apertura** | Una línea que nombra el proyecto y la razón de la selección | Es lo que separa una propuesta de un envío masivo |
 | **Perfiles** | Capacidad, competencias verificadas, disponibilidad. **Sin tarifas** (D-9) | Lo mismo que muestra la tarjeta del portal |
-| **Llamado** | Un enlace al portal, no varios | Un solo destino |
-| **Pie** | Contacto del ejecutivo de la cuenta y salida para dejar de recibirlo | Es una propuesta comercial, no una campaña |
+| **Llamado** | Un solo enlace: el del destinatario | Un solo destino, y cada entrada atribuida a quien la hizo |
 
-**No se incluye:** fotografías, nombres completos sin consentimiento nominal, tarifas, ni promesas de disponibilidad que el banco no sostenga.
+**Formatos de copia:** texto con formato para pegar en Gmail (un correo por destinatario) y **tabla destinatario–enlace** para combinar en HubSpot como propiedad del contacto. El pie (contacto del ejecutivo y salida para dejar de recibir) lo pone la herramienta de envío.
+
+**No se incluye:** fotografías, datos de la lista negra B.4, tarifas, ni promesas de disponibilidad que el banco no sostenga.
 
 #### 5. Enlace
 
-Se genera **desde el envío**, con los tokens de personalización de la cuenta y del contacto. Nadie construye URLs a mano.
+Se genera **desde la edición en el panel**: un token opaco por destinatario (modelo único de ADR-0002), ligado a la cuenta, al correo invitado y a la edición. Nadie construye URLs a mano.
 
-Lleva: cuenta, contacto, selección curada y contexto del proyecto. Su vigencia va atada al ciclo del envío: un enlace del boletín anterior ya no abre inventario, y quien lo intente encuentra la pantalla de renovación, no un error.
+- **Se ve al generarse.** El token solo se guarda como huella; el enlace completo se muestra y se copia en ese momento. Si se pierde antes de pegarlo, se **regenera** y el anterior de ese destinatario queda revocado.
+- **Destinatario sin cuenta:** se excluye y se reporta; no se genera un enlace sin contexto.
+- **Vigencia atada al ciclo de la edición:** un enlace de una edición anterior ya no abre inventario, y quien lo intente encuentra la pantalla de renovación, no un error.
+- **Reenviar el enlace no da acceso** (RF-1.2): solo entran los correos invitados.
 
-#### 6. Cadencia y dueño
+#### 6. Cadencia, dueño y registro de la salida
 
 **Cadencia definida y dueño nominal.** Un canal sin cadencia no produce el hábito que O5 necesita, y un canal sin dueño no sale.
 
-La cadencia es una decisión de Mercadeo. El criterio para elegirla: suficientemente frecuente para construir hábito, suficientemente espaciada para que la selección cambie de verdad entre un envío y otro. Enviar lo mismo dos veces destruye la credibilidad de la curaduría más rápido que no enviar.
+Como el correo sale de Gmail o HubSpot, el portal no sabe que salió hasta que alguien lo dice. Por eso el dueño **registra la salida** en el panel (fecha y herramienta). Con ese registro:
 
-#### 7. Medición, y las tres conclusiones que hay que distinguir
+- la edición cuenta como envío para la regla de §7;
+- el panel muestra cuándo vence la siguiente edición de la cuenta y avisa al dueño por **correo interno** (Mailgun, aviso interno) cuando se pasa.
 
-Se registra apertura, clic y entrada al portal, atribuidos a cuenta y contacto.
+La cadencia es una decisión de Mercadeo. El criterio para elegirla: suficientemente frecuente para construir hábito, suficientemente espaciada para que la selección cambie de verdad entre una edición y otra. Enviar lo mismo dos veces destruye la credibilidad de la curaduría más rápido que no enviar.
 
-| Lo que se observa | Qué significa | Qué se hace |
-|---|---|---|
-| **No llega** | Problema de entregabilidad | Se corrige el dato antes de sacar cualquier conclusión comercial |
-| **Llega y no se abre** | Señal comercial, no técnica | Tres envíos sin apertura escalan al ejecutivo de la cuenta antes de seguir enviando |
-| **Se abre y no se entra** | La selección no le habla | **Es el dato más informativo del mecanismo.** Se revisa el criterio de curaduría de esa cuenta, no el correo |
-| **Se entra y no se solicita** | El problema está en el portal o en la oferta | Se mira en el embudo de EP-008 |
+**Exclusión manual.** El portal no gestiona bajas: la fuente es la herramienta de envío. Quien arma la edición puede marcar a un contacto como excluido, con motivo; a un excluido no se le genera enlace ni bloque hasta que alguien retire la marca.
 
-Confundir estos cuatro casos es el error más común de cualquier informe de correo, y lleva a corregir lo que no está roto.
+#### 7. Medición, y las conclusiones que hay que distinguir
+
+El portal mide **lo que ocurre en el portal**: entrada por el enlace del destinatario (`enlace_abierto`), verificación del correo (`verificacion_ok`) y solicitud, atribuidas a cuenta, contacto y edición (ADR-0006). **La apertura del correo no la mide el portal**: la mide HubSpot si se envió desde allí; en Gmail no existe. El informe lo dice en lugar de mostrar cero.
+
+| Lo que se observa | Dónde se ve | Qué significa | Qué se hace |
+|---|---|---|---|
+| **No llega** (rebote) | Gmail o HubSpot | Problema de entregabilidad | Quien distribuye lo registra en el panel; esa edición no cuenta para la regla y se corrige el dato antes de sacar conclusiones comerciales |
+| **Llega y no se abre** | Solo HubSpot | Señal comercial, no técnica | Se lee en HubSpot; el portal no lo sabe |
+| **Se abre y no se entra** | HubSpot + portal | La selección no le habla | Solo se puede leer si el envío salió por HubSpot; se revisa el criterio de curaduría de esa cuenta |
+| **Tres envíos con salida registrada sin entrada** | Portal | Señal comercial | Aviso al ejecutivo con el histórico y cuenta marcada para revisión antes de preparar la siguiente edición |
+| **Se entra y no se suman perfiles** | Portal | La propuesta no responde a la necesidad | Se revisa la selección de esa cuenta |
+| **Se entra y no se solicita** | Portal | El problema está en el portal o en la oferta | Se mira en el embudo de EP-008 |
+
+Una edición **sin salida registrada** no cuenta como envío y aparece como tal, no como «sin entradas». Confundir estos casos es el error más común de cualquier informe de correo, y lleva a corregir lo que no está roto.
 
 #### 8. Riesgos
 
 | Riesgo | Mitigación |
 |---|---|
-| **El ejecutivo no aporta el contexto del proyecto** | Sin contexto no hay curaduría. El envío de esa cuenta se pospone antes que enviar una selección genérica disfrazada de personalizada |
-| **La selección se repite entre envíos** | El sistema advierte si un perfil ya se propuso a esa cuenta y no hubo reacción |
-| **El correo se lee como publicidad** | Tono de propuesta, un solo llamado, contacto nominal del ejecutivo en el pie |
-| **La cuenta abre y nunca entra** | Es señal de que la selección no responde a su necesidad. Se revisa la curaduría, no el asunto del correo |
+| **El ejecutivo no aporta el contexto del proyecto** | Sin contexto no hay curaduría. La edición de esa cuenta queda en borrador antes que enviar una selección genérica disfrazada de personalizada |
+| **La selección se repite entre envíos** | El panel advierte si un perfil ya se propuso a esa cuenta y nadie entró a verlo |
+| **Nadie registra la salida** | Sin registro no hay conteo de envíos ni vigilancia de cadencia. El panel muestra las ediciones con enlaces generados y sin salida registrada, y el dueño recibe el aviso de cadencia vencida |
+| **El bloque se copia desactualizado** | Un bloque cuyo inventario cambió no se puede copiar hasta regenerarlo |
+| **El enlace se pierde antes de pegarlo** | Se regenera; el anterior queda revocado |
+| **El correo se lee como publicidad** | Tono de propuesta, un solo llamado, contacto nominal del ejecutivo en el pie que pone la herramienta de envío |
+| **La cuenta entra y nunca suma perfiles** | Es señal de que la selección no responde a su necesidad. Se revisa la curaduría, no el asunto del correo |
 
 #### 9. Dónde encaja
 
-Formaliza **RF-18** del PRD. Épica **EP-011**. Historias **HU-113** a **HU-117**.
+Formaliza **RF-18** del PRD (v4.14). Épica **EP-011**. Historias **HU-113** a **HU-117**. Arquitectura: ADR-0009 (sin boletín por Mailgun), ADR-0006 (medición por entradas), ADR-0002 (token por destinatario).
 
-Depende de **HU-112** (atribución de sesiones al envío): sin esa atribución, nada de §7 se puede medir.
+Depende de **HU-112** (atribución de sesiones a la edición): sin esa atribución, nada de §7 se puede medir.
 
 ---
 

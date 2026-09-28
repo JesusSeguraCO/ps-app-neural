@@ -1,0 +1,332 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla colocados
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (colocados--estado.html), no interacciones.
+  Trazabilidad: épica EP-006 · historias HU-137 · registrada en ../manifest.json
+  Pantalla #32 «Colocados» · origen: nueva. Cubre RF-8.13, RF-8.13.1, RF-8.13.2
+  y RF-8.13.3 (disparador de la renovación anticipada V2-2). Espejo de solo lectura del sistema
+  de asignación con fecha de corte declarada; sin acciones de edición.
+  Oficio v2 (2026-09-27): tabla densa con agrupador por tramo, sin bordes laterales ni tarjetas
+  KPI; solo lectura dicho una vez (candado + meta de corte); banda como texto; fila entera
+  clicable hacia el inventario; en móvil, lista de filas con días y chevron.
+  Estado de ESTE archivo: corte-desactualizado — AC de error de HU-137: las dos últimas sincronizaciones fallaron; la tabla sigue siendo espejo de solo lectura y declara el corte de hace 2 días (25 sep 5:00 a. m.) con un aviso ámbar sobrio y acción a Fallos.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Colocados — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+    /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+      .pp-migas a:hover { color: var(--tc-text-h); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+      /* /PP:panel */
+    /* PP:shell — copia de la barra lateral y la barra superior de admin-shell.html; en móvil el destino activo va justo tras la marca para que «estás aquí» se vea al cargar */
+    .pp-sidebar :focus-visible { outline-color: var(--tc-teal-on-navy); }
+    @media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }
+    /* /PP:shell */
+    /* PP:tabla */
+      .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+      .pp-barra .pp-pestanas { border-bottom: 0; }
+      .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+      .pp-buscador { position: relative; width: min(300px, 100%); }
+      .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+      .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+      .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+      .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+      .pp-tabla th.pp-tabla__acciones { text-align: right; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+      @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+      /* /PP:tabla */
+    /* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
+    /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; margin: 0; }
+      .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+      .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+      .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+      .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+      @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
+      /* /PP:hoja */
+  </style>
+  <style>
+    /* Composición propia de colocados (prefijo cl-/ip-). Valores visuales → var(--token). */
+    .cl-contenedor { max-width: 1120px; }
+    .cl-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .cl-lectura { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .cl-atraso { color: var(--tc-warn-ink-strong); font-weight: var(--tc-fw-medium); }
+    .cl-aviso { margin-bottom: var(--tc-sp-6); }
+    .cl-marco { max-height: none; }
+    .cl-tabla { min-width: 0; }
+    .cl-tabla .cl-der { text-align: right; }
+    .cl-tabla td.cl-chev { width: 1%; padding-left: 0; text-align: right; color: var(--tc-text-s); }
+    .cl-tabla tbody tr:not(.cl-grupo) { position: relative; }
+    .cl-tabla tbody tr:not(.cl-grupo):hover .cl-chev { color: var(--tc-text-h); }
+    .cl-grupo th { padding-top: var(--tc-sp-5); padding-bottom: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .cl-grupo:first-child th { padding-top: var(--tc-sp-3); }
+    .cl-grupo th span { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .cl-tabla tbody tr.cl-grupo:hover { background: none; }
+    .cl-nombre { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); text-decoration: none; }
+    .cl-nombre::after { content: ""; position: absolute; inset: 0; }
+    .cl-nombre:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .cl-nombre:focus-visible { outline: none; }
+    .cl-nombre:focus-visible::after { outline: 2px solid var(--tc-focus-ring); outline-offset: -2px; border-radius: var(--tc-r-sm); }
+    .cl-codigo { margin-left: var(--tc-sp-2); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .cl-cuenta { color: var(--tc-text-h); }
+    .cl-fecha { color: var(--tc-text-b); }
+    .cl-faltan { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .cl-faltan--pronto { font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink-strong); }
+    .cl-banda { color: var(--tc-text-m); }
+    .cl-pie { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* hoja lateral del edge */
+    .cl-hoja-seccion { display: grid; gap: var(--tc-sp-3); }
+    .cl-hoja-seccion .pp-seccion__cabecera { margin-bottom: 0; }
+    .cl-hoja-seccion p { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cl-vista { max-width: 360px; padding: var(--tc-sp-4) var(--tc-sp-5); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); }
+    .cl-vista__rol { margin: 0; font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .cl-vista__nombre, .cl-vista__meta { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cl-vista__meta { margin-top: var(--tc-sp-3); display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .cl-chev .pp-icono { display: block; margin-left: auto; }
+    @media (max-width: 1023px) {
+      /* la tabla se vuelve lista: nombre + cuenta + fechas a la izquierda, días y chevron a la derecha */
+      .cl-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .cl-tabla, .cl-tabla tbody { display: block; }
+      .cl-tabla tbody tr:not(.cl-grupo) { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto auto; grid-template-areas: "nombre nombre nombre banda faltan chev" "cuenta cuenta cuenta banda faltan chev" "inicio vence . banda faltan chev"; column-gap: 0; row-gap: var(--tc-sp-1); align-items: center; min-height: 64px; padding: var(--tc-sp-3) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .cl-tabla tbody tr:last-child { border-bottom: 0; }
+      .cl-tabla tbody tr > * { padding: 0; border: 0; }
+      .cl-tabla tbody tr > th { grid-area: nombre; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .cl-tabla tbody tr > th .pp-tabla__sub { display: inline; margin-left: var(--tc-sp-2); }
+      .cl-tabla tbody .cl-col-cuenta { grid-area: cuenta; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .cl-tabla tbody .cl-col-inicio { grid-area: inicio; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .cl-tabla tbody .cl-col-inicio .cl-fecha, .cl-tabla tbody .cl-col-vence .cl-fecha { color: inherit; }
+      .cl-tabla tbody .cl-col-inicio::after { content: "–"; margin: 0 var(--tc-sp-1); }
+      .cl-tabla tbody .cl-col-vence { grid-area: vence; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .cl-tabla tbody .cl-col-banda { grid-area: banda; padding-left: var(--tc-sp-4); font-size: var(--tc-fs-caption); white-space: nowrap; }
+      .cl-tabla tbody .cl-col-faltan { grid-area: faltan; min-width: 72px; padding-left: var(--tc-sp-4); }
+      .cl-tabla tbody td.cl-chev { grid-area: chev; width: auto; padding-left: var(--tc-sp-2); }
+      .cl-tabla tbody tr.cl-grupo { display: block; border-bottom: 1px solid var(--tc-border); }
+      .cl-tabla tbody tr.cl-grupo > th { display: block; padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-2); }
+      .cl-tabla tbody tr.cl-grupo:first-child > th { padding-top: var(--tc-sp-3); }
+    }
+    @media (max-width: 767px) {
+      .cl-tabla tbody tr:not(.cl-grupo) { padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .cl-tabla tbody tr > th .pp-tabla__sub { display: none; }
+      /* la banda (lo que ve el cliente) sigue en la línea de fechas */
+      .cl-tabla tbody tr:not(.cl-grupo) { grid-template-columns: auto auto minmax(0, 1fr) auto auto; grid-template-areas: "nombre nombre nombre faltan chev" "cuenta cuenta cuenta faltan chev" "inicio vence . faltan chev" "banda banda banda faltan chev"; }
+      .cl-tabla tbody .cl-col-banda { min-width: 0; padding-left: 0; overflow: hidden; text-overflow: ellipsis; color: var(--tc-text-m); }
+      .cl-tabla tbody .cl-col-faltan { min-width: 0; padding-left: var(--tc-sp-3); }
+      .cl-tabla tbody tr.cl-grupo > th { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+    }
+  </style>
+</head>
+<body>
+  <div class="pp-panel">
+    <!-- región: navegación / sidebar navy (patrón PP:panel) -->
+    <nav class="pp-sidebar" aria-label="Panel de People Service">
+      <div class="pp-sidebar__marca">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Talento Humano</span></span>
+      </div>
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+      <a class="pp-sidelink" href="colocados.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="envios-curados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
+      <div class="pp-sidebar__pie">
+        <span class="pp-avatar" aria-hidden="true">KR</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
+      </div>
+    </nav>
+
+    <div class="pp-panel__cuerpo">
+      <!-- región: cabecera del contenido (migas + identidad de la sesión) -->
+      <header class="pp-panel__topbar">
+        <ol class="pp-migas"><li>Clientes</li><li aria-current="page">Colocados</li></ol>
+        <div class="pp-panel__herramientas">
+          <span class="pp-meta">karen.rodriguez@trycore.com</span>
+          <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
+        </div>
+      </header>
+
+      <!-- región: contenido principal -->
+      <main class="pp-panel__contenido" id="contenido">
+        <div class="cl-contenedor">
+        <div class="pp-encabezado">
+          <div class="pp-encabezado__texto">
+            <div class="cl-titulo"><h1 class="pp-encabezado__titulo">Colocados</h1><span class="cl-lectura"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>Solo lectura</span></div>
+            <p class="pp-encabezado__meta">9 perfiles en 7 cuentas · <span class="cl-atraso">corte <time datetime="2026-09-25T05:00">25 sep 2026, 5:00 a. m.</time></span> · próximo intento 28 sep, 5:00 a. m.</p>
+          </div>
+        </div>
+        <div class="pp-aviso pp-aviso--warn cl-aviso" role="alert"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Estas fechas tienen 2 días de atraso.</span>Las sincronizaciones del 26 y el 27 sep fallaron. Antes de hablar con una cuenta, confirma la fecha en el sistema de asignación.</p><a class="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="integraciones-fallidas.html">Ver el fallo</a></div>
+        <div class="pp-tabla-marco cl-marco" role="region" aria-label="Perfiles colocados y sus vencimientos">
+          <table class="pp-tabla cl-tabla">
+            <caption class="pp-sr">Perfiles colocados ordenados por vencimiento de la asignación; primero los que vencen dentro de 60 días. Fechas según el corte del 25 sep 2026, 5:00 a. m..</caption>
+            <thead><tr><th scope="col">Perfil</th><th scope="col" class="cl-col-cuenta">Cuenta</th><th scope="col" class="cl-col-inicio">Inicio</th><th scope="col">Vence</th><th scope="col" class="cl-der">Faltan</th><th scope="col">Banda en el portal</th><th scope="col"><span class="pp-sr">Abrir</span></th></tr></thead>
+            <tbody>
+                <tr class="cl-grupo"><th scope="rowgroup" colspan="7">Vencen en los próximos 60 días <span>· 4 · hasta el 26 nov</span></th></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Julián Pardo</a><span class="cl-codigo">PS-0056</span><span class="pp-tabla__sub">Arquitecto de datos · Líder</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Cooperativa Horizonte</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-02-03">3 feb 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2026-10-09">9 oct 2026</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan cl-faltan--pronto">12 días</span></td><td class="cl-col-banda"><span class="cl-banda">En 2 a 4 semanas</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Sofía Castaño</a><span class="cl-codigo">PS-0173</span><span class="pp-tabla__sub">Líder técnica .NET · Líder</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Banco del Valle Andino</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-01-14">14 ene 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2026-10-23">23 oct 2026</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan cl-faltan--pronto">26 días</span></td><td class="cl-col-banda"><span class="cl-banda">En 2 a 4 semanas</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Santiago Herrera</a><span class="cl-codigo">PS-0061</span><span class="pp-tabla__sub">Líder técnico Java · Líder</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Seguros Altamira</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-04-01">1 abr 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2026-11-13">13 nov 2026</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan cl-faltan--pronto">47 días</span></td><td class="cl-col-banda"><span class="cl-banda">En 1 a 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Diana Pulido</a><span class="cl-codigo">PS-0236</span><span class="pp-tabla__sub">Desarrolladora full stack · Senior</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Energía Sabana</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-05-18">18 may 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2026-11-20">20 nov 2026</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan cl-faltan--pronto">54 días</span></td><td class="cl-col-banda"><span class="cl-banda">En 1 a 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr class="cl-grupo"><th scope="rowgroup" colspan="7">Después de 60 días <span>· 5</span></th></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Camilo Ortega</a><span class="cl-codigo">PS-0192</span><span class="pp-tabla__sub">Desarrollador backend · Semi senior</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Logística Magdalena</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-07-06">6 jul 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2026-12-15">15 dic 2026</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan">79 días</span></td><td class="cl-col-banda"><span class="cl-banda">Más de 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Catalina Rojas</a><span class="cl-codigo">PS-0155</span><span class="pp-tabla__sub">Analista QA automatización · Senior</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Banco del Valle Andino</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-09-01">1 sep 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2027-01-29">29 ene 2027</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan">124 días</span></td><td class="cl-col-banda"><span class="cl-banda">Más de 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Tomás Villegas</a><span class="cl-codigo">PS-0208</span><span class="pp-tabla__sub">Ingeniero de datos · Senior</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Salud Integral Caribe</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-08-10">10 ago 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2027-02-26">26 feb 2027</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan">152 días</span></td><td class="cl-col-banda"><span class="cl-banda">Más de 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Natalia Cárdenas</a><span class="cl-codigo">PS-0134</span><span class="pp-tabla__sub">Scrum master · Senior</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Retail Nogal</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-06-15">15 jun 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2027-04-30">30 abr 2027</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan">215 días</span></td><td class="cl-col-banda"><span class="cl-banda">Más de 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+                <tr><th scope="row"><a class="cl-nombre" href="colocados--en-el-portal.html">Ricardo Muñoz</a><span class="cl-codigo">PS-0077</span><span class="pp-tabla__sub">Arquitecto cloud · Líder</span></th><td class="cl-col-cuenta"><span class="cl-cuenta">Cooperativa Horizonte</span></td><td class="cl-col-inicio pp-tabla__num"><time class="cl-fecha" datetime="2026-03-02">2 mar 2026</time></td><td class="cl-col-vence pp-tabla__num"><time class="cl-fecha" datetime="2027-06-30">30 jun 2027</time></td><td class="cl-col-faltan pp-tabla__num cl-der"><span class="cl-faltan">276 días</span></td><td class="cl-col-banda"><span class="cl-banda">Más de 2 meses</span></td><td class="cl-chev" aria-hidden="true"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="cl-pie">Las fechas se corrigen en el sistema de asignación. El cliente ve la banda, nunca la fecha ni la cuenta.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

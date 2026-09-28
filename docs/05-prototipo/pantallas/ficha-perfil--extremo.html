@@ -1,0 +1,641 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla ficha-perfil--extremo
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (ficha-perfil--estado.html), no interacciones.
+  Trazabilidad: épica EP-003 · historias HU-119, HU-120, HU-081 · registrada en ../manifest.json
+  Estado de ESTA pantalla: --extremo — último perfil del conjunto (12 de 12): «Siguiente» deshabilitado, sin salto
+  inesperado (HU-120, error). Contenido al límite: rol muy largo, nombre compuesto, 6 criterios activos,
+  12 tecnologías, 4 cargos en la trayectoria, competencias largas. Foco inicial en «Cerrar».
+  Oficio v2 (DESIGN.md › Oficio): CSS pp-* copiado literal de _patrones.html v2 (base, botones, estado, toast,
+  avisos, perfil, chips, hoja, topbar). Evidencia «Frente a tu búsqueda» como filas ✓/– por criterio, agrupadas
+  en Obligatorios / Deseables, con la fuente de cada dato a la derecha (escudo + «Verificado» en tinta teal,
+  «Declarado» apagado, «Sin dato» si no está registrado). Lo verificado va en un único bloque de tinte teal sin
+  borde (Sello Personal, validación técnica, inglés, referencias, formación, identidad, antecedentes); lo
+  declarado va sin caja. Disponibilidad como punto + texto; seniority, modalidad y ciudad como metadatos.
+  Confirmación de «Sumar al equipo» por toast encima del pie; la ficha no se cierra.
+  Recorrido: ← / → (aria-keyshortcuts ArrowLeft / ArrowRight) y Esc para cerrar, visibles como kbd en escritorio
+  y en el title de cada botón. La primera o la última flecha se deshabilita (disabled + aria-disabled).
+  Accesibilidad (se implementa en la app, no en el prototipo sin JS): role=dialog + aria-modal=true, foco
+  atrapado dentro de la hoja, foco inicial en «Cerrar», al cerrar el foco vuelve a la tarjeta de origen. El
+  anillo de foco que se ve en la captura (clase fp-foco) replica :focus-visible para revisarlo en estático.
+  Fuera de la ficha por la lista negra B.4: foto, contacto, CV, tarifa, fecha exacta de disponibilidad (solo
+  banda), motivación o proyección, DISC detallado, certificaciones. Sin porcentajes: «Cumple N de M».
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ficha de María Alejandra Villamizar — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+    /* /PP:botones */
+    /* PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
+    /* PP:toast */
+    .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+    .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+    @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+    /* /PP:toast */
+    /* PP:avisos */
+    .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+    .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+    .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-aviso__titulo::after { content: " "; }
+    .pp-aviso__accion { flex: none; align-self: center; }
+    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+    .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+    .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+    @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+    /* /PP:avisos */
+    /* PP:hoja */
+    .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+    .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+    .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+    .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+    .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+    .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .pp-datos { display: grid; margin: 0; }
+    .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+    .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+    .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+    .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
+    /* /PP:hoja */
+    /* PP:topbar */
+    .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+    .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+    .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+    .pp-marca__sep { color: var(--tc-border-s); }
+    .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+    .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+    .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+    .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
+    .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+    .pp-equipo:hover { background: var(--tc-bg-subtle); }
+    .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
+    @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+    @media (max-width: 767px) {
+    .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+    .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
+    .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+    .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+    .pp-navlink { min-height: 44px; }
+    .pp-cuenta__meta { display: none; }
+    }
+    /* /PP:topbar */
+    /* PP:chips */
+    .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+    .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 28px; padding: 0 var(--tc-sp-3); border: 1px solid transparent; border-radius: var(--tc-r-pill); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+    .pp-chip:has(.pp-chip__quitar) { padding-right: var(--tc-sp-1); }
+    .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+    .pp-chip__modo { opacity: .75; }
+    .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+    .pp-chip--fuera { background: var(--tc-warn-surface); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+    .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--tc-r-pill); background: none; color: inherit; cursor: pointer; opacity: .75; }
+    .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+    .pp-chip__quitar:hover { opacity: 1; background: color-mix(in srgb, currentColor 16%, transparent); }
+    /* /PP:chips */
+    /* PP:perfil */
+    .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: var(--tc-sp-4); }
+    .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); transition: border-color var(--tc-dur) var(--tc-ease); }
+    .pp-perfil:hover { border-color: var(--tc-border-s); }
+    .pp-perfil--en-equipo, .pp-perfil--en-equipo:hover { border-color: var(--tc-primary-surface-border); }
+    .pp-perfil--cambio { background: var(--tc-surface-quiet); }
+    .pp-perfil--cambio .pp-perfil__rol, .pp-perfil--cambio .pp-perfil__nombre { color: var(--tc-text-m); }
+    .pp-perfil__estado { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .pp-perfil__estado::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-amber); }
+    .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); flex-wrap: wrap; }
+    .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+    .pp-perfil__cabecera .pp-badge, .pp-perfil__cabecera .pp-estado { margin-top: var(--tc-sp-1); }
+    .pp-perfil__rol { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); }
+    .pp-perfil__rol a { color: inherit; text-decoration: none; }
+    .pp-perfil__rol a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-perfil__nombre { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-perfil__tecnologias > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+    .pp-perfil__tecnologias .pp-tag { padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+    .pp-perfil__meta { display: flex; flex-wrap: wrap; margin: var(--tc-sp-1) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-perfil__meta > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); }
+    .pp-evidencia { display: grid; gap: var(--tc-sp-3); margin-top: var(--tc-sp-4); }
+    .pp-evidencia__conteo { margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .pp-bloque { padding: var(--tc-sp-3); border-radius: var(--tc-r-sm); }
+    .pp-bloque--verificado { background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
+    .pp-bloque--declarado { padding-top: 0; padding-bottom: 0; background: none; color: var(--tc-text-b); }
+    .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); }
+    .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+    .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); font-weight: var(--tc-fw-medium); }
+    .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+    .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-criterio--cumple { color: var(--tc-text-h); }
+    .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+    .pp-criterio--no { color: var(--tc-text-m); }
+    .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-s); }
+    .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: auto; padding-top: var(--tc-sp-5); }
+    .pp-codigo-perfil { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .pp-perfil__pie .pp-codigo-perfil { margin-left: auto; }
+    .pp-tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 var(--tc-sp-2); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    /* /PP:perfil */
+  </style>
+
+  <style>
+    /* ── Composición propia de ficha-perfil (prefijo fp-). Solo layout y tipografía; todo valor visual es token. ──
+       En la app la hoja es position: fixed con scroll propio (PP:hoja). En el prototipo la escena la pone en flujo
+       sobre los resultados para que la captura de página completa muestre la ficha entera. El fondo no aporta altura
+       (absoluto y recortado): la página mide lo que mide la ficha. */
+    .fp-escena { position: relative; display: grid; min-height: 100vh; }
+    .fp-escena > * { grid-area: 1 / 1; min-width: 0; }
+    .fp-escena .pp-hoja-velo, .fp-escena .pp-hoja { position: relative; }
+    .fp-escena .pp-hoja { justify-self: end; }
+    .fp-fondo { position: absolute; inset: 0; overflow: hidden; }
+    .fp-resultados { max-width: 1200px; padding: var(--tc-sp-8) var(--tc-sp-6); }
+    .fp-resultados .pp-chips { margin-bottom: var(--tc-sp-6); }
+    .fp-cercanos { margin-top: var(--tc-sp-10); }
+    .fp-ver { font-size: var(--tc-fs-small); }
+    .fp-falla { color: var(--tc-warn-ink); font-weight: var(--tc-fw-semibold); }
+    .pp-perfil.fp-abierta { border-color: var(--tc-text-s); }
+
+    /* Hoja: barra de recorrido (← posición →, Esc) encima de la cabecera */
+    .fp-ficha { font-variant-numeric: tabular-nums; }
+    .fp-barra { display: flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .fp-barra__pos { margin: 0 0 0 var(--tc-sp-2); min-width: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fp-barra__pos b { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .fp-barra__fin { display: flex; align-items: center; gap: var(--tc-sp-2); margin-left: auto; }
+    .fp-atajos { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-s); white-space: nowrap; }
+    .fp-foco { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+
+    /* Cabecera: rol, persona, disponibilidad como punto + texto, metadatos apagados */
+    .fp-ficha .pp-hoja__cabecera h2 { overflow-wrap: anywhere; }
+    .fp-ficha .pp-hoja__cabecera .fp-persona { margin-top: var(--tc-sp-1); font-size: var(--tc-fs-body); color: var(--tc-text-b); }
+    .fp-linea { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-4); margin-top: var(--tc-sp-3); }
+    .fp-linea .pp-badge { font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .fp-linea .pp-perfil__meta { margin: 0; }
+
+    /* Secciones del cuerpo: h3 + hairline, sin caja por sección */
+    .fp-seccion { min-width: 0; }
+    .fp-seccion + .fp-seccion { padding-top: var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .fp-seccion__titulo { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .fp-seccion__titulo--verificado { color: var(--tc-primary-ink); }
+
+    /* Frente a tu búsqueda: una fila por criterio (✓/–), agrupada por modo */
+    .fp-grupo { margin: var(--tc-sp-4) 0 0; padding-bottom: var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .fp-grupo:first-of-type { margin-top: 0; }
+    .fp-criterios { margin: 0; padding: 0; list-style: none; }
+    .fp-criterio { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: var(--tc-sp-1) var(--tc-sp-3); align-items: baseline; padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .fp-criterio__marca { font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+    .fp-criterio--no .fp-criterio__marca { color: var(--tc-text-s); }
+    .fp-criterio__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .fp-criterio--no .fp-criterio__nombre { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .fp-criterio__dato { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .fp-fuente { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); white-space: nowrap; }
+    .fp-fuente--verificado { font-weight: var(--tc-fw-medium); color: var(--tc-primary-ink); }
+    .fp-seccion > .fp-criterios:last-of-type > .fp-criterio:last-child { border-bottom: 0; }
+    .fp-seccion .pp-aviso { margin-top: var(--tc-sp-4); }
+
+    /* Verificado (un solo tinte teal, significa algo) y declarado (sin caja) */
+    .fp-ficha .pp-bloque--verificado { padding: var(--tc-sp-4); }
+    .fp-sello { font-weight: var(--tc-fw-medium); }
+    .fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-bloque--verificado .fp-sub { color: var(--tc-primary-surface-ink); }
+    .fp-ausente { color: var(--tc-text-m); }
+    .fp-trayectoria { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
+    .fp-cargo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+
+    /* Pie: primaria a la derecha; el toast confirma encima del pie sin cerrar la ficha */
+    .fp-pie { position: relative; background: var(--tc-card); }
+    .fp-pie .pp-toast { position: absolute; left: auto; right: var(--tc-sp-6); bottom: calc(100% + var(--tc-sp-3)); }
+
+    @media (max-width: 767px) {
+      /* Teléfono: la ficha ocupa la pantalla (100dvh); barra (× y ← →) arriba y pie abajo siempre visibles; solo el cuerpo
+         hace scroll (como en la app). El contenido no se escala. */
+      .fp-fondo, .fp-escena .pp-hoja-velo { display: none; }
+      .fp-escena { min-height: 0; }
+      .fp-escena .pp-hoja { width: 100%; height: 100vh; height: 100dvh; border-left: 0; box-shadow: none; }
+      .fp-barra { padding: var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-4); }
+      .fp-barra__pos { margin-left: var(--tc-sp-1); }
+      .fp-atajos { display: none; }
+      .fp-pie .pp-btn { flex: 1; }
+      .fp-pie .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .fp-criterio { grid-template-columns: 16px minmax(0, 1fr); }
+      .fp-criterio .fp-fuente { grid-column: 2; }
+    }
+    .fp-disp { margin: var(--tc-sp-3) 0 0; }
+    .fp-disp .pp-badge { font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .fp-ficha .pp-hoja__cabecera .fp-meta { margin: var(--tc-sp-1) 0 0; }
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:campos */
+    /* ── Fondo: el mismo shell de resultados.html (prefijo rs-) bajo el velo ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--tc-bg-canvas); color: var(--tc-text-b); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); -webkit-font-smoothing: antialiased; }
+    h1, h2, h3 { color: var(--tc-text-h); font-family: var(--tc-font-heading); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    .rs-main { max-width: 1320px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-6) var(--tc-sp-10); }
+
+    /* Barra de instrucción compacta: una línea */
+    .rs-busca { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-1) var(--tc-sp-1) var(--tc-sp-1) var(--tc-sp-2); background: var(--tc-card); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); box-shadow: var(--pp-cmd-shadow); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .rs-busca:focus-within { border-color: var(--tc-primary); box-shadow: var(--pp-cmd-shadow), var(--tc-sh-focus); }
+    .rs-ambito { position: relative; display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-6) 0 var(--tc-sp-2); border: 0; border-right: 1px solid var(--tc-border); border-radius: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; cursor: pointer; }
+    .rs-ambito::after { content: ""; position: absolute; right: var(--tc-sp-3); top: 50%; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); }
+    .rs-ambito:hover { color: var(--tc-text-h); }
+    .rs-busca__campo { position: relative; display: flex; align-items: center; gap: var(--tc-sp-2); min-width: 0; color: var(--tc-text-s); }
+    .rs-busca__input { flex: 1; min-width: 0; min-height: 40px; padding: 0 var(--tc-sp-8) 0 0; border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-body); color: var(--tc-text-h); text-overflow: ellipsis; }
+    .rs-busca__input::placeholder { color: var(--tc-text-s); }
+    .rs-busca__input:focus, .rs-busca__input:focus-visible { outline: none; }
+    .rs-busca__atajo { position: absolute; right: var(--tc-sp-1); top: 50%; transform: translateY(-50%); pointer-events: none; }
+
+    /* Lectura de la instrucción + filtros: una línea de chips en dos capas */
+    .rs-lectura { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-3); padding: 0 var(--tc-sp-1); }
+    .rs-capas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .rs-capa { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); min-width: 0; }
+    .rs-capa + .rs-capa { padding-left: var(--tc-sp-3); border-left: 1px solid var(--tc-border-s); }
+    .rs-capa__rotulo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .rs-lectura__texto { max-width: 88ch; margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+
+    .rs-cabecera { margin-top: var(--tc-sp-8); }
+    .rs-cabecera .pp-encabezado__meta { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .rs-cabecera .pp-encabezado__meta > * + *::before { content: "·"; margin-right: var(--tc-sp-3); color: var(--tc-text-s); }
+    .rs-cabecera .pp-encabezado__acciones { align-items: center; }
+
+    /* Control segmentado (vista, obligatorio/deseable, respuestas) */
+    .rs-seg { display: inline-flex; flex: none; border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .rs-seg > * { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 var(--tc-sp-3); border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background var(--tc-dur-fast) var(--tc-ease), color var(--tc-dur-fast) var(--tc-ease); }
+    .rs-seg > * + * { border-left: 1px solid var(--tc-border); }
+    .rs-seg > :hover { background: var(--tc-surface-quiet); color: var(--tc-text-h); }
+    .rs-seg > [aria-pressed="true"], .rs-seg > [aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .rs-seg > .rs-seg__obl[aria-pressed="true"] { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+    .rs-seg > .rs-seg__des[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .rs-seg--sm > * { padding: 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); }
+
+    /* Cuerpo: perfil objetivo (facetas) + resultados */
+    .rs-cuerpo { display: grid; grid-template-columns: 288px minmax(0, 1fr); gap: var(--tc-sp-8); align-items: start; }
+    .rs-obj__abrir { display: none; }
+    .rs-obj__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); }
+    .rs-obj__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .rs-facetas { margin: 0; padding: 0; list-style: none; }
+    .rs-faceta { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .rs-faceta__fila { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 32px; }
+    .rs-faceta__etiqueta { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .rs-faceta--vacia .rs-faceta__etiqueta { color: var(--tc-text-m); font-weight: var(--tc-fw-regular); }
+    .rs-valor { position: relative; display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--tc-sp-8) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); color: var(--tc-text-h); text-align: left; cursor: pointer; transition: border-color var(--tc-dur) var(--tc-ease); }
+    .rs-valor:hover { border-color: var(--tc-text-s); }
+    .rs-valor::after { content: ""; position: absolute; right: var(--tc-sp-3); top: 50%; width: 5px; height: 5px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); }
+    .rs-valor span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rs-faceta--vacia { grid-template-columns: 96px minmax(0, 1fr); align-items: center; }
+    .rs-faceta--vacia .rs-valor { color: var(--tc-text-s); box-shadow: none; }
+    .rs-obj__pie { display: grid; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); }
+    .rs-obj__pie .pp-btn { justify-self: start; }
+    .rs-obj__pie .pp-input--area { min-height: 88px; font-size: var(--tc-fs-small); }
+
+    /* Rejilla de tarjetas compactas */
+    .rs-rejilla { margin: 0; padding: 0; list-style: none; }
+    .rs-rejilla > li { display: flex; min-width: 0; }
+    .rs-rejilla .pp-perfil, .rs-rejilla .rs-esqueleto { flex: 1; }
+    .rs-no { color: var(--tc-text-m); }
+    .rs-no__marca { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+    .rs-ficha { display: inline-flex; align-items: center; min-height: 32px; font-size: var(--tc-fs-small); }
+    .rs-evid { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .rs-evid > li { display: inline-flex; align-items: baseline; gap: var(--tc-sp-1); }
+    .rs-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .rs-sello { margin: var(--tc-sp-2) 0 0; padding-top: var(--tc-sp-2); border-top: 1px solid var(--tc-primary-surface-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink); }
+    .rs-sello--solo { margin-top: 0; padding-top: 0; border-top: 0; }
+    .rs-sello__rotulo { margin-right: var(--tc-sp-1); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
+    .rs-declarado { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); padding: 0 var(--tc-sp-3); }
+    .rs-declarado__rotulo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+
+    .rs-mas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-6); }
+
+    /* Preguntas de afinamiento: junto a los resultados, nunca encima */
+    .rs-afinar { margin-bottom: var(--tc-sp-5); }
+    .rs-afinar .pp-fila { align-items: center; }
+    .rs-afinar__cabecera-der { display: flex; align-items: center; gap: var(--tc-sp-3); }
+
+    /* Cargando */
+    .rs-esqueleto { display: grid; gap: var(--tc-sp-3); padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
+    .rs-barra { display: block; height: 12px; border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); animation: rs-pulso 1.6s var(--tc-ease) infinite; }
+    .rs-barra--alta { height: 16px; width: 70%; }
+    .rs-barra--40 { width: 40%; } .rs-barra--85 { width: 85%; } .rs-barra--55 { width: 55%; }
+    .rs-barra--bloque { height: 56px; }
+    @keyframes rs-pulso { 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) { .rs-barra { animation: none; } }
+
+    /* Sin reconocer: lo buscamos por ti */
+    .rs-medida { max-width: 640px; padding: var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+    .rs-medida h2 { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .rs-medida > p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .rs-medida .pp-form { margin-top: var(--tc-sp-5); }
+    .rs-medida fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+    .rs-medida legend { margin-bottom: var(--tc-sp-2); }
+    .rs-opciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .rs-medida__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    .rs-medida__pie > div { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-left: auto; }
+
+    @media (max-width: 1023px) {
+      .rs-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-4); }
+      .rs-obj__abrir { display: flex; justify-content: space-between; }
+      .rs-obj__cabecera, .rs-obj__cuerpo { display: none; }
+    }
+    @media (max-width: 767px) {
+      .rs-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
+      .rs-busca { grid-template-columns: minmax(0, 1fr) auto; padding: var(--tc-sp-1); }
+      .rs-busca__campo { grid-column: 1 / -1; order: -1; padding: 0 var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); }
+      .rs-busca__input { min-height: 44px; font-size: var(--tc-fs-h3); padding-right: 0; }
+      .rs-busca__atajo { display: none; }
+      .rs-ambito { min-height: 44px; border-right: 0; }
+      .rs-capa + .rs-capa { padding-left: 0; border-left: 0; }
+      .rs-cabecera { margin-top: var(--tc-sp-6); }
+      .rs-cabecera .pp-encabezado__meta { flex-direction: column; gap: var(--tc-sp-1); }
+      .rs-cabecera .pp-encabezado__meta > * + *::before { content: none; }
+      .rs-seg > * { min-height: 44px; }
+      .rs-medida { padding: var(--tc-sp-5) var(--tc-sp-4); }
+      .rs-medida__pie > div { width: 100%; }
+      .rs-medida__pie .pp-btn { flex: 1; }
+    }
+
+    .rs-cercanos { margin-top: var(--tc-sp-10); }
+    .rs-cercanos .pp-rejilla-perfiles { margin-top: var(--tc-sp-3); }
+    .pp-perfil.fp-abierta { border-color: var(--tc-text-s); }
+  </style>
+</head>
+<body>
+<div class="fp-escena">
+  <!-- región: resultados detrás (se conservan; la ficha se abre encima, HU-120) -->
+  <div class="fp-fondo" inert>
+  <header class="pp-topbar">
+    <a class="pp-marca" href="app-shell.html" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="app-shell.html">Selección para ti</a>
+      <a class="pp-navlink" href="inicio-busqueda.html" aria-current="page">Buscar</a>
+      <a class="pp-navlink" href="#invitar">Invitar a un colega</a>
+    </nav>
+    <a class="pp-equipo" href="mi-equipo.html">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">2</span><span class="pp-sr">2 perfiles en el equipo</span></a>
+  </header>
+
+  <main class="rs-main" id="contenido">
+    <form class="rs-busca" action="#" role="search">
+      <button type="button" class="rs-ambito" aria-label="Buscar en todo el banco. Cambiar dónde buscar">Todo el banco</button>
+      <div class="rs-busca__campo">
+        <svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <label for="instruccion" class="pp-sr">Qué talento necesitas</label>
+        <input class="rs-busca__input" id="instruccion" type="search" name="q" autocomplete="off" placeholder="Ej.: desarrollador backend Java con experiencia en banca" value="Arquitecto Java con inglés avanzado para modernizar el core, ideal con seguros">
+        <span class="rs-busca__atajo pp-kbd" aria-hidden="true">/</span>
+      </div>
+      <button type="submit" class="pp-btn pp-btn--primario">Buscar</button>
+    </form>
+    <section class="rs-lectura" aria-label="Cómo leímos tu instrucción">
+      <div class="rs-capas">
+        <div class="rs-capa"><span class="rs-capa__rotulo" id="rs-capa-i">Tu instrucción</span><ul class="pp-chips" aria-labelledby="rs-capa-i"><li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Java</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar Java"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Arquitectura de soluciones</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar Arquitectura de soluciones"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Inglés C1</span><span class="pp-chip__modo">obligatorio</span><button type="button" class="pp-chip__quitar" aria-label="Quitar Inglés C1"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Seguros</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar Seguros"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul></div>
+        <div class="rs-capa"><span class="rs-capa__rotulo" id="rs-capa-f">Añadido por ti</span><ul class="pp-chips" aria-labelledby="rs-capa-f"><li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Kafka</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar Kafka"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li><li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Terraform</span><span class="pp-chip__modo">deseable</span><button type="button" class="pp-chip__quitar" aria-label="Quitar Terraform"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li></ul></div>
+      </div>
+    </section>
+    <div class="pp-encabezado rs-cabecera">
+      <div class="pp-encabezado__texto">
+        <h1 class="pp-encabezado__titulo" id="rs-h1" aria-live="polite">12 perfiles cumplen lo obligatorio</h1>
+        <p class="pp-encabezado__meta"><span>Primero quienes también tienen Kafka, seguros y Terraform</span><span>11–12 de 12</span></p>
+      </div>
+      <div class="pp-encabezado__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Copiar enlace</button><nav class="rs-seg" aria-label="Vista de resultados"><a href="#contenido" aria-current="page">Tarjetas</a><a href="resultados-tabla.html">Tabla</a></nav></div>
+    </div>
+    <div class="rs-cuerpo">
+      <aside class="rs-obj" aria-labelledby="rs-obj-t">
+        <button type="button" class="pp-btn pp-btn--contorno pp-btn--bloque rs-obj__abrir" aria-expanded="false">Perfil objetivo<span class="pp-meta">6 criterios</span></button>
+        <div class="rs-obj__cabecera">
+          <h2 class="rs-obj__titulo" id="rs-obj-t">Perfil objetivo</h2>
+          <span class="pp-meta">6 criterios</span>
+        </div>
+        <div class="rs-obj__cuerpo">
+          <ul class="rs-facetas">
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-tecnologias">Tecnologías</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Tecnologías: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-tecnologias v-tecnologias"><span id="v-tecnologias">Java</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-rol">Rol</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Rol: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-rol v-rol"><span id="v-rol">Arquitectura de soluciones</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-idioma">Idioma</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Idioma: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="true">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="false">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-idioma v-idioma"><span id="v-idioma">Inglés C1</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-otras">Otras tecnologías</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Otras tecnologías: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-otras v-otras"><span id="v-otras">Kafka, Terraform</span></button>
+            </li>
+            <li class="rs-faceta">
+              <div class="rs-faceta__fila">
+                <span class="rs-faceta__etiqueta" id="f-sector">Sector</span>
+                <span class="rs-seg rs-seg--sm" role="group" aria-label="Sector: obligatorio o deseable"><button type="button" class="rs-seg__obl" aria-pressed="false">Obligatorio</button><button type="button" class="rs-seg__des" aria-pressed="true">Deseable</button></span>
+              </div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-sector v-sector"><span id="v-sector">Seguros</span></button>
+            </li>
+            <li class="rs-faceta rs-faceta--vacia">
+              <div class="rs-faceta__fila"><span class="rs-faceta__etiqueta" id="f-seniority">Seniority</span></div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-seniority v-seniority"><span id="v-seniority">Cualquiera</span></button>
+            </li>
+            <li class="rs-faceta rs-faceta--vacia">
+              <div class="rs-faceta__fila"><span class="rs-faceta__etiqueta" id="f-modalidad">Modalidad</span></div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-modalidad v-modalidad"><span id="v-modalidad">Cualquiera</span></button>
+            </li>
+            <li class="rs-faceta rs-faceta--vacia">
+              <div class="rs-faceta__fila"><span class="rs-faceta__etiqueta" id="f-ubicacion">Ubicación</span></div>
+              <button type="button" class="rs-valor" aria-expanded="false" aria-labelledby="f-ubicacion v-ubicacion"><span id="v-ubicacion">Cualquiera</span></button>
+            </li>
+          </ul>
+          <div class="rs-obj__pie">
+            <div class="pp-campo">
+              <label class="pp-label" for="rs-apertura">¿Qué tiene que quedar funcionando al terminar el proyecto? <span class="pp-label__opcional">Opcional</span></label>
+              <textarea class="pp-input pp-input--area" id="rs-apertura" aria-describedby="rs-apertura-ayuda" placeholder="Ej.: el core modernizado en producción"></textarea>
+              <p class="pp-ayuda" id="rs-apertura-ayuda">No filtra perfiles; viaja con tu solicitud.</p>
+            </div>
+            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Quitar todos los criterios</button>
+          </div>
+        </div>
+      </aside>
+      <section class="rs-res" aria-labelledby="rs-h1">
+        <div class="pp-rejilla-perfiles">
+        <article class="pp-perfil" aria-label="Líder técnica de microservicios · Daniela Vargas">
+          <div class="pp-perfil__cabecera"><div><h3 class="pp-perfil__rol">Líder técnica de microservicios</h3><p class="pp-perfil__nombre">Daniela Vargas</p></div><span class="pp-badge pp-badge--banda">En 1 a 2 meses</span></div>
+          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li>Kubernetes</li><li>Java</li><li>AWS</li><li>Terraform</li></ul>
+          <ul class="pp-perfil__meta"><li>Banca · Fintech</li><li>Híbrido</li><li>Medellín, Colombia</li></ul>
+          <div class="pp-evidencia"><p class="pp-evidencia__conteo">Cumple 4 de 6</p><div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Java · caso de arquitectura</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Arquitectura de soluciones · célula de arquitectura</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Inglés C1 · entrevista en inglés</span></li></ul></div><div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Kafka · sin experiencia registrada</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Seguros · sin experiencia declarada</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Terraform · 4 años</span></li></ul></div></div>
+          <div class="pp-perfil__pie"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button><a class="pp-enlace pp-enlace--sutil rs-ficha" href="#ficha">Ver ficha</a><span class="pp-codigo-perfil">PS-0292</span></div>
+        </article>
+        <article class="pp-perfil fp-abierta" aria-label="Arquitecta de soluciones de integración y modernización de core bancario · María Alejandra Villamizar" aria-current="true">
+          <div class="pp-perfil__cabecera"><div><h3 class="pp-perfil__rol">Arquitecta de soluciones de integración y modernización de core bancario</h3><p class="pp-perfil__nombre">María Alejandra Villamizar</p></div><span class="pp-badge pp-badge--por-confirmar">Por confirmar</span></div>
+          <ul class="pp-perfil__tecnologias" aria-label="Tecnologías"><li>Java</li><li>Kafka</li><li>Quarkus</li><li>IBM MQ</li><li>Oracle</li><li>OpenShift</li><li>Camunda</li><li>Apigee</li></ul>
+          <ul class="pp-perfil__meta"><li>Banca · Cooperativas</li><li>Presencial o híbrido</li><li>Bucaramanga, Colombia</li></ul>
+          <div class="pp-evidencia"><p class="pp-evidencia__conteo">Cumple 4 de 6</p><div class="pp-bloque pp-bloque--verificado"><p class="pp-bloque__rotulo"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Java · caso de arquitectura</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Arquitectura de soluciones · célula de arquitectura</span></li><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Inglés C1 · entrevista técnica en inglés</span></li></ul></div><div class="pp-bloque pp-bloque--declarado"><p class="pp-bloque__rotulo">Declarado por la profesional</p><ul class="pp-criterios"><li class="pp-criterio pp-criterio--cumple"><span class="pp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span>Kafka · 7 años</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Seguros · sin experiencia declarada</span></li><li class="pp-criterio pp-criterio--no"><span class="pp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span>Terraform · sin experiencia declarada</span></li></ul></div></div>
+          <div class="pp-perfil__pie"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-pressed="false">Sumar al equipo</button><span class="pp-meta">Ficha abierta</span><span class="pp-codigo-perfil">PS-1208</span></div>
+        </article>
+        </div>
+      </section>
+    </div>
+  </main>
+  </div>
+  <div class="pp-hoja-velo" aria-hidden="true"></div>
+  <!-- región: panel lateral (ficha) -->
+  <aside class="pp-hoja fp-ficha" role="dialog" aria-modal="true" aria-labelledby="fp-titulo" id="ficha">
+        <div class="fp-barra">
+          <nav class="fp-barra__nav" aria-label="Recorrer perfiles" style="display: contents;">
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pp-btn--icono" aria-label="Perfil anterior" title="Perfil anterior (←)" aria-keyshortcuts="ArrowLeft"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pp-btn--icono" aria-label="Perfil siguiente" title="Perfil siguiente (→)" aria-keyshortcuts="ArrowRight" disabled aria-disabled="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <p class="fp-barra__pos" aria-live="polite"><b>12 de 12</b> · resultados</p>
+          </nav>
+          <div class="fp-barra__fin">
+            <span class="fp-atajos" aria-hidden="true"><span class="pp-kbd">←</span><span class="pp-kbd">→</span> recorrer · <span class="pp-kbd">Esc</span> cerrar</span>
+            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--icono fp-foco" aria-label="Cerrar la ficha" title="Cerrar (Esc)" aria-keyshortcuts="Escape"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+        </div>
+        <header class="pp-hoja__cabecera">
+          <h2 id="fp-titulo">Arquitecta de soluciones de integración y modernización de core bancario, con migraciones de alta disponibilidad</h2>
+          <p class="fp-persona">María Alejandra Villamizar · 14 años de experiencia</p>
+          <p class="fp-disp"><span class="pp-badge pp-badge--por-confirmar">Disponibilidad por confirmar con Trycore</span></p>
+          <ul class="pp-perfil__meta fp-meta" aria-label="Datos del perfil"><li>Líder técnico</li><li>Presencial o híbrido</li><li>Bucaramanga, Colombia</li><li class="pp-mono">PS-1208</li></ul>
+        </header>
+        <div class="pp-hoja__cuerpo">
+          <section class="fp-seccion" aria-labelledby="fp-busqueda">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-busqueda">Frente a tu búsqueda</h3><span class="pp-evidencia__conteo">Cumple 4 de 6</span></div>
+            <p class="fp-grupo">Obligatorios</p>
+            <ul class="fp-criterios"><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Java</span><span class="fp-criterio__dato">Caso de arquitectura en Java, aprobado</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Arquitectura de soluciones</span><span class="fp-criterio__dato">Validada por la célula de arquitectura con un segundo arquitecto</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Inglés C1</span><span class="fp-criterio__dato">Entrevista técnica completa conducida en inglés</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li></ul>
+            <p class="fp-grupo">Deseables</p>
+            <ul class="fp-criterios"><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Kafka</span><span class="fp-criterio__dato">7 años en mensajería de eventos</span></span><span class="fp-fuente">Declarado</span></li><li class="fp-criterio fp-criterio--no"><span class="fp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span><span class="fp-criterio__nombre">Sector seguros</span><span class="fp-criterio__dato">Sin experiencia declarada en seguros</span></span><span class="fp-fuente">Declarado: sin experiencia</span></li><li class="fp-criterio fp-criterio--no"><span class="fp-criterio__marca" aria-hidden="true">–</span><span><span class="pp-sr">No cumple: </span><span class="fp-criterio__nombre">Terraform</span><span class="fp-criterio__dato">Sin experiencia declarada en infraestructura como código</span></span><span class="fp-fuente">Declarado: sin experiencia</span></li></ul>
+          </section>
+          <section class="fp-seccion" aria-labelledby="fp-verificado">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo fp-seccion__titulo fp-seccion__titulo--verificado" id="fp-verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</h3></div>
+            <div class="pp-bloque pp-bloque--verificado">
+              <dl class="pp-datos"><div class="pp-datos__fila"><dt>Sello personal</dt><dd><span class="fp-sello">Visión de arquitectura de extremo a extremo · Comunicación con comités directivos · Gestión del riesgo en migraciones críticas</span></dd></div><div class="pp-datos__fila"><dt>Validación técnica</dt><dd>Caso de arquitectura de integración para modernización de core bancario · aprobada, nivel líder técnico<span class="fp-sub">Célula de arquitectura de Trycore, con revisión de un segundo arquitecto · 8 sep 2026</span><span class="fp-sub">Evaluó estrategia de migración por etapas, consistencia eventual, patrones de integración, seguridad de datos sensibles, observabilidad y plan de reversión.</span></dd></div><div class="pp-datos__fila"><dt>Inglés</dt><dd>C1 · entrevista técnica completa conducida en inglés</dd></div><div class="pp-datos__fila"><dt>Referencias</dt><dd>4 referencias laborales contactadas, dos de proyectos de migración de core</dd></div><div class="pp-datos__fila"><dt>Formación</dt><dd>Ingeniería de Sistemas y maestría en Arquitectura de Software · títulos verificados ante las instituciones</dd></div><div class="pp-datos__fila"><dt>Identidad</dt><dd>Documento verificado · sep 2026</dd></div><div class="pp-datos__fila"><dt>Antecedentes</dt><dd>Estudio de seguridad sin hallazgos · vigente hasta mar 2027</dd></div></dl>
+            </div>
+          </section>
+          <section class="fp-seccion" aria-labelledby="fp-declarado">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-declarado">Declarado por la profesional</h3></div>
+            <dl class="pp-datos"><div class="pp-datos__fila"><dt>Trayectoria</dt><dd><ul class="fp-trayectoria"><li><span class="fp-cargo">Arquitecta de soluciones principal</span><span class="fp-sub">Banco regional · 2021–2026</span>Migración del core de depósitos a una arquitectura orientada a eventos sin ventana de indisponibilidad.</li><li><span class="fp-cargo">Arquitecta de integración</span><span class="fp-sub">Cooperativa financiera · 2017–2021</span>Bus de integración para 60 sistemas y 3 canales.</li><li><span class="fp-cargo">Líder técnica</span><span class="fp-sub">Servicios financieros · 2014–2017</span>Plataforma de recaudo con alta concurrencia.</li><li><span class="fp-cargo">Desarrolladora Java</span><span class="fp-sub">Operador de telecomunicaciones · 2012–2014</span>Facturación y mediación.</li></ul></dd></div><div class="pp-datos__fila"><dt>Stack</dt><dd>Java · Spring Boot · Quarkus · Kafka · IBM MQ · Oracle · PostgreSQL · OpenShift · Kubernetes · AWS · Camunda · Apigee</dd></div><div class="pp-datos__fila"><dt>Sectores</dt><dd>Banca · Cooperativas financieras · Servicios financieros · Telecomunicaciones</dd></div><div class="pp-datos__fila"><dt>Modalidad</dt><dd>Presencial o híbrido · Bucaramanga, Colombia · dispuesta a viajar a Bogotá</dd></div></dl>
+          </section>
+        </div>
+        <footer class="pp-hoja__pie fp-pie">
+          <button type="button" class="pp-btn pp-btn--primario" aria-pressed="false">Sumar al equipo</button>
+        </footer>
+  </aside>
+</div>
+</body>
+</html>

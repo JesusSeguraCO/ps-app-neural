@@ -1,0 +1,411 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla solicitud-equipo--correo-bloqueado
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (solicitud-equipo--(estado).html), no interacciones.
+  Trazabilidad: épica EP-005 · historias HU-097, HU-070, HU-082 · registrada en ../manifest.json
+  Estado de ESTA pantalla: correo-bloqueado — HU-097 error: intentó cambiar el correo (enfocó el correo
+  verificado para editarlo). El portal no ofrece un campo alternativo: el correo sigue siendo el de la
+  invitación, se explica en una línea junto al campo y se ofrece pedir acceso para otra persona.
+  La solicitud viaja con el correo verificado.
+  Origen: v2-adaptar (Portal de Perfiles v2.dc.html, pantalla «Solicitud de equipo»). Ajustes por las HU
+  actuales: con acceso nominal el correo de quien envía es el verificado y es de solo lectura (HU-097);
+  la especificación del Perfil Objetivo viaja con la solicitud y se marca si no fue revisada (HU-070);
+  país y ciudad del proyecto obligatorios en presencial/híbrido y sin prellenar (HU-082). Paso 2 de 3
+  (Mi equipo → Tus datos y el proyecto → Revisar y enviar): cierra con la primaria teal hacia el resumen;
+  el envío vive en resumen-solicitud.
+  Oficio v2 (2026-09-27): paso y H1 renombrados a «Tus datos y el proyecto» (la pantalla pide las tres
+  cosas); una sola superficie con bloques separados por hairline; sin campo de correo alternativo (el
+  correo no se edita; «Pedir acceso para otra persona» cubre el caso); sin columna de ✓ «Lo que recibe
+  Trycore»; especificación como dl plana con estado punto + texto; capacidades agrupadas en
+  obligatorias/deseables sin sufijo por chip; «obligatorio» en rojo retirado (solo se marca lo opcional);
+  avisos sin borde lateral; primaria a la derecha del pie; «Volver a Mi equipo» solo arriba.
+  Sin foto, contacto, CV ni tarifa del profesional; disponibilidad solo en banda.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tus datos y el proyecto (correo no editable) — solicitud de equipo — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+      /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+      /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+      /* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+      .pp-equipo:hover { background: var(--tc-bg-subtle); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+        .pp-navlink { min-height: 44px; }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+      /* PP:chips */
+      .pp-chips { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+      .pp-chip { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 28px; padding: 0 var(--tc-sp-3); border: 1px solid transparent; border-radius: var(--tc-r-pill); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-tight); }
+      .pp-chip:has(.pp-chip__quitar) { padding-right: var(--tc-sp-1); }
+      .pp-chip__valor { font-weight: var(--tc-fw-semibold); }
+      .pp-chip__modo { opacity: .75; }
+      .pp-chip--obligatorio { background: var(--tc-navy); color: var(--tc-bg-topbar); }
+      .pp-chip--deseable { background: var(--tc-card); border-color: var(--tc-primary); color: var(--pp-teal-ink); }
+      .pp-chip--fuera { background: var(--tc-warn-surface); border: 1px dashed var(--tc-warn-border); color: var(--tc-warn-ink); }
+      .pp-chip__quitar { position: relative; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--tc-r-pill); background: none; color: inherit; cursor: pointer; opacity: .75; }
+      .pp-chip__quitar::after { content: ""; position: absolute; inset: -12px; }
+      .pp-chip__quitar:hover { opacity: 1; background: color-mix(in srgb, currentColor 16%, transparent); }
+      /* /PP:chips */
+      /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+      /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+      /* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
+
+    /* ── Composición propia de solicitud-equipo (prefijo se-, solo layout sobre tokens) ── */
+    body { background: var(--tc-bg-canvas); }
+    .se-main { max-width: 1120px; margin: 0 auto; padding: var(--tc-sp-6) var(--tc-sp-6) var(--tc-sp-10); }
+    /* Stepper de la solicitud (componente compartido: solicitud-equipo*, resumen-solicitud*) */
+    .pp-pasos { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding: 0; list-style: none; font-size: var(--tc-fs-caption); color: var(--tc-text-s); }
+    .pp-paso { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .pp-paso + .pp-paso::before { content: ""; width: 16px; height: 1px; background: var(--tc-border-s); }
+    .pp-paso__num { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-paso a { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 32px; border-radius: var(--tc-r-sm); color: var(--tc-text-m); text-decoration: underline; text-decoration-color: var(--tc-border-s); text-underline-offset: 3px; }
+    .pp-paso a:hover { color: var(--tc-text-h); text-decoration-color: currentColor; }
+    .pp-paso a:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    .pp-paso[aria-current="step"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    @media (max-width: 767px) { .pp-pasos { gap: 0 var(--tc-sp-4); } .pp-paso + .pp-paso::before { display: none; } .pp-paso a { min-height: 44px; } }
+    .pp-fila__codigo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .se-avisos { display: grid; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-6); }
+    /* Formulario: una superficie, bloques separados por hairline */
+    .se-form { padding: 0; overflow: hidden; }
+    .se-bloque { padding: var(--tc-sp-6); }
+    .se-bloque + .se-bloque { border-top: 1px solid var(--tc-border); }
+    .se-bloque .pp-seccion__cabecera { margin-bottom: var(--tc-sp-4); }
+    .se-cab-derecha { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-1) var(--tc-sp-4); }
+    .se-campos { display: grid; gap: var(--tc-sp-5); }
+    .se-bloque p.pp-label, .se-bloque p.pp-meta, .se-lateral p.pp-meta { margin: 0; }
+    .se-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-4); align-items: start; }
+    .se-tres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-4); align-items: start; }
+    /* Correo verificado (lo verificado → tinte --tc-primary-surface, sin borde) */
+    .se-correo { display: flex; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border-radius: var(--tc-r-md); background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
+    .se-correo__valor { flex: 1 1 auto; min-width: 0; margin: 0; font-size: var(--tc-fs-body); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); overflow-wrap: anywhere; }
+    .se-correo__marca { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
+    .se-correo--foco { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+    .se-explica { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .se-explica strong { color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    /* Especificación declarada: dl plana con hairlines */
+    .se-spec { margin: 0; }
+    .se-spec__fila { display: grid; grid-template-columns: 176px minmax(0, 1fr); gap: var(--tc-sp-4); align-items: baseline; padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+    .se-spec__fila:first-child { border-top: 0; padding-top: 0; }
+    .se-spec dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .se-spec dd { margin: 0; min-width: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .se-spec .pp-chips { gap: var(--tc-sp-1) var(--tc-sp-2); }
+    .se-enlace-accion { display: inline-flex; align-items: center; min-height: 32px; font-size: var(--tc-fs-small); }
+    /* Pie del formulario: acciones a la derecha */
+    .se-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-3) var(--tc-sp-4); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .se-pie__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); margin-left: auto; }
+    /* Lateral: el equipo que viaja */
+    .se-lateral { position: sticky; top: calc(60px + var(--tc-sp-6)); display: grid; gap: var(--tc-sp-3); }
+    .se-lateral .pp-seccion__cabecera { margin-bottom: 0; }
+    .se-lateral__titulo { display: inline-flex; align-items: baseline; gap: var(--tc-sp-2); }
+    .se-equipo { padding: 0; }
+    .se-miembro { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); }
+    .se-miembro__principal { flex: 1 1 100%; min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .se-miembro + .se-miembro { border-top: 1px solid var(--tc-border); }
+    .se-miembro__rol { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .se-miembro__sub { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 1100px) { .se-lateral { position: static; } }
+    @media (max-width: 767px) {
+      .se-main { padding: var(--tc-sp-4) var(--tc-sp-4) var(--tc-sp-8); }
+      .se-enlace-accion { min-height: 44px; }
+      .se-bloque { padding: var(--tc-sp-5) var(--tc-sp-4); }
+      .se-dos, .se-tres { grid-template-columns: minmax(0, 1fr); }
+      .se-correo { flex-wrap: wrap; }
+      .se-spec__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+      .se-pie { padding: var(--tc-sp-4); }
+      .se-pie__acciones { width: 100%; flex-direction: column-reverse; }
+      .se-pie__acciones .pp-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera -->
+  <header class="pp-topbar">
+    <a class="pp-marca" href="aterrizaje-curado.html" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="aterrizaje-curado.html">Selección para ti</a>
+      <a class="pp-navlink" href="inicio-busqueda.html">Buscar</a>
+      <a class="pp-navlink" href="invitar-colega.html">Invitar a un colega</a>
+    </nav>
+    <a class="pp-equipo" href="mi-equipo.html">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">3 perfiles en el equipo</span></a>
+  </header>
+
+  <!-- región: contenido principal -->
+  <main class="se-main">
+    <ol class="pp-pasos" aria-label="Pasos de la solicitud">
+      <li class="pp-paso"><a href="mi-equipo.html"><span class="pp-paso__num" aria-hidden="true">1</span>Mi equipo</a></li>
+      <li class="pp-paso" aria-current="step"><span class="pp-paso__num" aria-hidden="true">2</span>Tus datos y el proyecto</li>
+      <li class="pp-paso"><span class="pp-paso__num" aria-hidden="true">3</span>Revisar y enviar</li>
+    </ol>
+    <div class="pp-encabezado">
+      <div class="pp-encabezado__texto">
+        <h1 class="pp-encabezado__titulo">Tus datos y el proyecto</h1>
+      </div>
+    </div>
+
+    <div class="pp-con-lateral">
+      <form class="pp-tarjeta se-form" action="#" aria-label="Solicitud de equipo" novalidate>
+
+        <!-- Quién pide (HU-097) -->
+        <section class="se-bloque" aria-labelledby="se-quien-titulo">
+          <div class="pp-seccion__cabecera">
+            <h2 class="pp-seccion__titulo" id="se-quien-titulo">Quién pide</h2>
+          </div>
+          <div class="se-campos">
+            <div class="pp-campo">
+              <p class="pp-label" id="se-correo-rotulo">Correo</p>
+              <div class="se-correo se-correo--foco" role="group" tabindex="0" aria-labelledby="se-correo-rotulo" aria-describedby="se-correo-ayuda">
+                <svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                <p class="se-correo__valor" id="se-correo">andres.rojas@<wbr>bancolombia.com.co</p>
+                <span class="se-correo__marca">Verificado</span>
+              </div>
+              <p class="se-explica" id="se-correo-ayuda" role="status"><strong>Este correo no se cambia.</strong> Es el de tu invitación y con él te respondemos. Si debe responder otra persona, <a class="pp-enlace" href="invitar-colega.html">pide acceso para ella</a>.</p>
+            </div>
+            <div class="se-dos">
+              <div class="pp-campo">
+                <label class="pp-label" for="se-nombre">Nombre y apellido</label>
+                <input class="pp-input" id="se-nombre" type="text" autocomplete="name" required value="Andrés Rojas">
+              </div>
+              <div class="pp-campo">
+                <label class="pp-label" for="se-cargo">Cargo</label>
+                <input class="pp-input" id="se-cargo" type="text" autocomplete="organization-title" required value="Arquitecto de soluciones">
+              </div>
+            </div>
+            <p class="pp-meta">Queda en la cuenta Bancolombia · Modernización de pagos.</p>
+          </div>
+        </section>
+
+        <!-- Qué se necesita: especificación del Perfil Objetivo (HU-070) -->
+        <section class="se-bloque" aria-labelledby="se-spec-titulo">
+          <div class="pp-seccion__cabecera">
+            <h2 class="pp-seccion__titulo" id="se-spec-titulo">Qué se necesita</h2>
+            <div class="se-cab-derecha">
+              <span class="pp-estado pp-estado--ok">Revisada por ti</span>
+              <a class="pp-enlace se-enlace-accion" href="perfil-objetivo.html">Editar<span class="pp-sr"> la especificación en el Perfil Objetivo</span></a>
+            </div>
+          </div>
+          <dl class="se-spec">
+            <div class="se-spec__fila"><dt>Familia de rol</dt><dd>Desarrollo backend</dd></div>
+            <div class="se-spec__fila"><dt>Obligatorio</dt><dd>
+              <ul class="pp-chips" aria-label="Capacidades obligatorias">
+                <li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Java</span></li>
+                <li class="pp-chip pp-chip--obligatorio"><span class="pp-chip__valor">Microservicios</span></li>
+              </ul>
+            </dd></div>
+            <div class="se-spec__fila"><dt>Deseable</dt><dd>
+              <ul class="pp-chips" aria-label="Capacidades deseables">
+                <li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Kafka</span></li>
+                <li class="pp-chip pp-chip--deseable"><span class="pp-chip__valor">Sector banca</span></li>
+              </ul>
+            </dd></div>
+            <div class="se-spec__fila"><dt>Seniority</dt><dd id="se-spec-seniority">Senior · más de 5 años</dd></div>
+            <div class="se-spec__fila"><dt>Condiciones</dt><dd id="se-spec-condiciones">Jornada completa · inicio en noviembre de 2026 · 6 meses</dd></div>
+          </dl>
+        </section>
+
+        <!-- Dónde: ubicación del proyecto (HU-082) -->
+        <section class="se-bloque" aria-labelledby="se-donde-titulo">
+          <div class="pp-seccion__cabecera">
+            <h2 class="pp-seccion__titulo" id="se-donde-titulo">Dónde se necesita</h2>
+          </div>
+          <div class="se-campos">
+            <div class="se-tres">
+              <div class="pp-campo">
+                <label class="pp-label" for="se-modalidad">Modalidad</label>
+                <div class="pp-select"><select class="pp-input" id="se-modalidad"><option>Remoto</option><option selected>Híbrido</option><option>Presencial 100%</option></select></div>
+              </div>
+              <div class="pp-campo">
+                <label class="pp-label" for="se-pais">País</label>
+                <div class="pp-select"><select class="pp-input" id="se-pais" required><option value="">Elige el país</option><option selected>Colombia</option><option>México</option><option>Perú</option></select></div>
+              </div>
+              <div class="pp-campo">
+                <label class="pp-label" for="se-ciudad">Ciudad</label>
+                <input class="pp-input" id="se-ciudad" type="text" required value="Medellín">
+              </div>
+            </div>
+            <div class="pp-campo">
+              <label class="pp-label" for="se-notas">Contexto del proyecto <span class="pp-label__opcional">(opcional)</span></label>
+              <textarea class="pp-input pp-input--area" id="se-notas" placeholder="Qué construye el equipo y cualquier restricción que debamos conocer">Migramos el motor de pagos inmediatos a una arquitectura por eventos antes del cierre contable de marzo. El equipo trabajaría con el frente de integración que ya tenemos en Medellín.</textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- región: pie / acciones -->
+        <div class="se-pie">
+          <div class="se-pie__acciones">
+            <a class="pp-btn pp-btn--primario" href="resumen-solicitud.html">Revisar antes de enviar <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </form>
+
+      <!-- región: lateral -->
+      <aside class="se-lateral" aria-labelledby="se-equipo-titulo">
+        <div class="pp-seccion__cabecera">
+          <h2 class="pp-seccion__titulo se-lateral__titulo" id="se-equipo-titulo">Tu equipo <span class="pp-meta">3 perfiles</span></h2>
+          <a class="pp-enlace se-enlace-accion" href="mi-equipo.html">Editar<span class="pp-sr"> el equipo</span></a>
+        </div>
+        <ul class="pp-lista pp-tarjeta se-equipo">
+          <li class="se-miembro">
+            <div class="se-miembro__principal">
+              <p class="se-miembro__rol">Desarrolladora backend Java <span class="pp-fila__codigo pp-mono">PS-0142</span></p>
+              <p class="pp-meta se-miembro__sub">Laura Méndez · Medellín · híbrido</p>
+            </div>
+            <span class="pp-estado pp-estado--ok">Disponible ahora</span>
+          </li>
+          <li class="se-miembro">
+            <div class="se-miembro__principal">
+              <p class="se-miembro__rol">Analista QA automatización <span class="pp-fila__codigo pp-mono">PS-0217</span></p>
+              <p class="pp-meta se-miembro__sub">Andrés Castaño · Bogotá · remoto</p>
+            </div>
+            <span class="pp-estado pp-estado--neutro">En 2 a 4 semanas</span>
+          </li>
+          <li class="se-miembro">
+            <div class="se-miembro__principal">
+              <p class="se-miembro__rol">Arquitecta de datos <span class="pp-fila__codigo pp-mono">PS-0098</span></p>
+              <p class="pp-meta se-miembro__sub">Catalina Rojas · Medellín · híbrido</p>
+            </div>
+            <span class="pp-estado pp-estado--neutro">En 4 a 6 semanas</span>
+          </li>
+        </ul>
+        <p class="pp-meta">La disponibilidad se confirma en la sesión de alineación.</p>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

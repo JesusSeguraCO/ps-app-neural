@@ -1,0 +1,433 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla lexico-busqueda
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (lexico-busqueda--estado.html), no interacciones.
+  Trazabilidad: épica EP-006 · historias HU-139 · registrada en ../manifest.json
+  Pantalla #30 «Léxico de búsqueda» · origen: nueva (sin equivalente en el v2).
+  Cubre RF-8.12 y RF-8.12.1 (D-24): el modelo PROPONE equivalencias a partir de consultas sin
+  coincidencia y Talento Humano APRUEBA; nada entra al léxico sin aprobación humana. Al modelo
+  solo viaja el texto de la consulta y la taxonomía, nunca datos de perfiles (RF-16.2).
+  Oficio v2 (DESIGN.md › Oficio): propuestas y candidatas como filas pp-filas (sin tarjetas ni
+  bordes laterales); equivalencias como texto «Rol: … · Tecnologías: …»; origen en texto apagado;
+  una sola primaria teal (Guardar en el léxico); confirmación por pp-toast.
+  Estado de ESTE archivo: base — Karen acaba de guardar «ingeniero de aplicaciones móviles» con su equivalencia (HU-139, happy path): toast de confirmación con el efecto real (la próxima búsqueda lo reconoce, sin despliegue) y fila tintada en la tabla. Arriba, 3 propuestas del modelo esperando aprobación humana.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Léxico de búsqueda — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+    /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+      .pp-migas a:hover { color: var(--tc-text-h); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+      /* /PP:panel */
+    /* PP:shell — copia de la barra lateral y la barra superior de admin-shell.html; en móvil el destino activo va justo tras la marca para que «estás aquí» se vea al cargar */
+    .pp-sidebar :focus-visible { outline-color: var(--tc-teal-on-navy); }
+    @media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }
+    /* /PP:shell */
+    /* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
+    /* PP:toast */
+      .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+      .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+      .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+      .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+      @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+      /* /PP:toast */
+    /* PP:tabla */
+      .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+      .pp-barra .pp-pestanas { border-bottom: 0; }
+      .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+      .pp-buscador { position: relative; width: min(300px, 100%); }
+      .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+      .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+      .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+      .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+      .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+      .pp-tabla th.pp-tabla__acciones { text-align: right; }
+      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+      .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+      @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+      /* /PP:tabla */
+    /* PP:pestanas */
+      .pp-pestanas { display: flex; gap: var(--tc-sp-5); overflow-x: auto; border-bottom: 1px solid var(--tc-border); scrollbar-width: none; }
+      .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-1); border: 0; border-bottom: 2px solid transparent; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease); }
+      .pp-pestana:hover { color: var(--tc-text-h); }
+      .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-text-h); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+      .pp-pestana[aria-selected="true"] .pp-pestana__conteo { color: var(--tc-text-m); }
+      /* /PP:pestanas */
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+    /* PP:select */
+      .pp-select { position: relative; }
+      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+      /* /PP:select */
+  </style>
+  <style>
+    /* Composición propia del léxico (prefijo lx-). Valores visuales → var(--token). */
+    .lx-principal { display: grid; gap: var(--tc-sp-10); min-width: 0; }
+    .lx-principal > * { min-width: 0; }
+    .lx-termino { overflow-wrap: anywhere; }
+    .lx-flecha { color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+    .lx-eq { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-h); }
+    .lx-eq__tipo { color: var(--tc-text-m); }
+    .lx-eq__sep { margin: 0 var(--tc-sp-1); color: var(--tc-text-s); }
+    .lx-ejemplo { overflow-wrap: anywhere; }
+    .lx-acciones { flex-wrap: wrap; justify-content: flex-end; }
+    .lx-garantia { margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* Tabla de términos */
+    .lx-tabla-marco { max-height: none; }
+    .lx-tabla th:nth-child(1) { width: 30%; }
+    .lx-tabla th:nth-child(3) { width: 200px; }
+    .lx-eq--bloque { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+    .lx-cabecera { flex-wrap: wrap; }
+    .lx-tabla td.pp-tabla__num { white-space: normal; }
+    .lx-tabla th:nth-child(4) { width: 80px; }
+    .lx-tabla { table-layout: fixed; }
+    .lx-tabla .lx-eq--bloque { max-width: none; }
+    .lx-fecha { white-space: nowrap; }
+    .lx-sinonimos { display: block; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .lx-origen { font-size: var(--tc-fs-caption); color: var(--tc-text-m); white-space: nowrap; }
+    .lx-editar { font-size: var(--tc-fs-caption); }
+    /* Periodo de candidatas (control compacto de la barra, como el buscador) */
+    .lx-periodo { width: min(220px, 100%); margin-bottom: var(--tc-sp-2); }
+    .lx-periodo .pp-input { min-height: 36px; font-size: var(--tc-fs-small); }
+    /* Candidatas: lo no reconocido va subrayado, sin caja */
+    .lx-consulta { overflow-wrap: anywhere; }
+    .lx-norec { text-decoration: underline; text-decoration-style: wavy; text-decoration-color: var(--tc-amber); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+    .lx-fila-resuelta .pp-fila__titulo { color: var(--tc-text-m); font-weight: var(--tc-fw-medium); }
+    /* Lateral: alta de término */
+    .lx-alta { position: sticky; top: var(--tc-sp-6); padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+    .lx-alta__titulo { margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+    .lx-alta__origen { margin: 0 0 var(--tc-sp-5); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); overflow-wrap: anywhere; }
+    .lx-alta .pp-form { gap: var(--tc-sp-4); }
+    .lx-alta .pp-form__acciones { padding-top: var(--tc-sp-4); }
+    .lx-sugerencias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+    @media (max-width: 1100px) { .lx-alta { position: static; } }
+    @media (max-width: 767px) {
+      .lx-principal { gap: var(--tc-sp-8); }
+      .lx-periodo { width: 100%; }
+      .lx-periodo .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); }
+      .lx-acciones .pp-btn { flex: 1 1 auto; }
+      .pp-panel__topbar .pp-meta { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="pp-panel">
+  <nav class="pp-sidebar" aria-label="Panel de People Service">
+      <div class="pp-sidebar__marca">
+        <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Talento Humano</span></span>
+      </div>
+      <p class="pp-sidebar__seccion">Banco de perfiles</p>
+      <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+      <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+      <a class="pp-sidelink" href="lexico-busqueda.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+      <p class="pp-sidebar__seccion">Clientes</p>
+      <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+      <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+      <p class="pp-sidebar__seccion">Operación</p>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="envios-curados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
+      <div class="pp-sidebar__pie">
+        <span class="pp-avatar" aria-hidden="true">KR</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
+      </div>
+    </nav>
+
+  <div class="pp-panel__cuerpo">
+    <header class="pp-panel__topbar">
+        <ol class="pp-migas"><li>Banco de perfiles</li><li aria-current="page">Léxico de búsqueda</li></ol>
+        <div class="pp-panel__herramientas">
+          <span class="pp-meta">karen.rodriguez@trycore.com</span>
+          <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
+        </div>
+      </header>
+
+    <main class="pp-panel__contenido" id="contenido">
+      <div class="pp-encabezado">
+        <div class="pp-encabezado__texto">
+          <h1 class="pp-encabezado__titulo">Léxico de búsqueda</h1>
+          <p class="pp-encabezado__meta">42 términos · 3 propuestas por aprobar · 11 búsquedas sin resultados en septiembre</p>
+        </div>
+      </div>
+
+      <div class="pp-con-lateral">
+      <div class="lx-principal">
+        <section aria-labelledby="lx-prop-titulo">
+          <div class="pp-seccion__cabecera lx-cabecera">
+            <h2 class="pp-seccion__titulo" id="lx-prop-titulo">Propuestas por aprobar</h2>
+            <p class="lx-garantia">El modelo solo vio el texto de las consultas y el catálogo.</p>
+          </div>
+          <ul class="pp-filas" aria-label="Propuestas del modelo por aprobar">
+            <li class="pp-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo"><span class="lx-termino">pagos en tiempo real</span></p>
+                <p class="lx-eq"><span class="lx-flecha" aria-hidden="true">→</span> <span class="lx-eq__tipo">Tecnología:</span> Kafka<span class="lx-eq__sep" aria-hidden="true">·</span><span class="lx-eq__tipo">Sector:</span> Banca</p>
+                <p class="pp-fila__meta">26 sep · 4 búsquedas · 3 cuentas</p>
+                <p class="pp-fila__meta lx-ejemplo">p. ej. «desarrollador con experiencia en pagos en tiempo real»</p>
+              </div>
+              <div class="pp-fila__acciones lx-acciones">
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Descartar</button>
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Ajustar</button>
+                <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Aprobar</button>
+              </div>
+            </li>
+            <li class="pp-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo"><span class="lx-termino">analista de calidad de software</span></p>
+                <p class="lx-eq"><span class="lx-flecha" aria-hidden="true">→</span> <span class="lx-eq__tipo">Rol:</span> Analista QA automatización</p>
+                <p class="pp-fila__meta">26 sep · 3 búsquedas · 2 cuentas</p>
+                <p class="pp-fila__meta lx-ejemplo">p. ej. «analista de calidad de software con pruebas automatizadas»</p>
+              </div>
+              <div class="pp-fila__acciones lx-acciones">
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Descartar</button>
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Ajustar</button>
+                <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Aprobar</button>
+              </div>
+            </li>
+            <li class="pp-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo"><span class="lx-termino">aseguradoras</span></p>
+                <p class="lx-eq"><span class="lx-flecha" aria-hidden="true">→</span> <span class="lx-eq__tipo">Sector:</span> Seguros</p>
+                <p class="pp-fila__meta">25 sep · 2 búsquedas · 1 cuenta</p>
+                <p class="pp-fila__meta lx-ejemplo">p. ej. «líder técnico que haya trabajado con aseguradoras»</p>
+              </div>
+              <div class="pp-fila__acciones lx-acciones">
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Descartar</button>
+                <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Ajustar</button>
+                <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Aprobar</button>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <section aria-label="Léxico y búsquedas sin coincidencia">
+          <div class="pp-barra">
+            <div class="pp-pestanas" role="tablist" aria-label="Qué ver">
+              <a class="pp-pestana" role="tab" aria-selected="true" href="lexico-busqueda.html">Términos <span class="pp-pestana__conteo">42</span></a>
+              <a class="pp-pestana" role="tab" aria-selected="false" href="lexico-busqueda--candidatas.html">Sin coincidencia <span class="pp-pestana__conteo">11</span></a>
+            </div>
+          <label class="pp-buscador"><span class="pp-sr">Buscar en el léxico</span>
+            <svg class="pp-icono pp-icono--sm pp-buscador__icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <input class="pp-input" type="search" placeholder="Término o valor del catálogo">
+            <span class="pp-kbd pp-buscador__atajo" aria-hidden="true">/</span>
+          </label>
+          </div>
+          <div class="pp-tabla-marco lx-tabla-marco" tabindex="0" role="region" aria-label="Términos del léxico">
+            <table class="pp-tabla lx-tabla">
+              <caption class="pp-sr">Términos de los clientes y su equivalencia en el catálogo</caption>
+              <thead><tr><th scope="col">Término del cliente</th><th scope="col">Equivale a</th><th scope="col">Editado · origen</th><th scope="col" class="pp-tabla__acciones"><span class="pp-sr">Acciones</span></th></tr></thead>
+              <tbody>
+                <tr aria-selected="true"><th scope="row"><span class="pp-tabla__perfil">ingeniero de aplicaciones móviles</span><span class="lx-sinonimos" title="desarrollador de apps, programador móvil, dev mobile">desarrollador de apps, programador móvil, dev mobile</span></th><td><p class="lx-eq lx-eq--bloque" title="Rol: Desarrollador móvil"><span class="lx-eq__tipo">Rol:</span> Desarrollador móvil</p><p class="lx-eq lx-eq--bloque" title="Tecnologías: Flutter, React Native, Kotlin, Swift"><span class="lx-eq__tipo">Tecnologías:</span> Flutter, React Native, Kotlin, Swift</p></td><td class="pp-tabla__num"><span class="lx-fecha">27 sep, 10:14 a. m.</span><span class="pp-tabla__sub">Karen Rodríguez · Manual</span></td><td class="pp-tabla__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm lx-editar" aria-label="Editar «ingeniero de aplicaciones móviles»">Editar</button></td></tr>
+                <tr><th scope="row"><span class="pp-tabla__perfil">científico de datos</span><span class="lx-sinonimos" title="data scientist, analista de machine learning">data scientist, analista de machine learning</span></th><td><p class="lx-eq lx-eq--bloque" title="Rol: Científico de datos"><span class="lx-eq__tipo">Rol:</span> Científico de datos</p><p class="lx-eq lx-eq--bloque" title="Tecnología: Python"><span class="lx-eq__tipo">Tecnología:</span> Python</p></td><td class="pp-tabla__num"><span class="lx-fecha">19 sep, 3:02 p. m.</span><span class="pp-tabla__sub">Karen Rodríguez · Manual</span></td><td class="pp-tabla__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm lx-editar" aria-label="Editar «científico de datos»">Editar</button></td></tr>
+                <tr><th scope="row"><span class="pp-tabla__perfil">core bancario</span><span class="lx-sinonimos" title="núcleo bancario, core financiero">núcleo bancario, core financiero</span></th><td><p class="lx-eq lx-eq--bloque" title="Sector: Banca"><span class="lx-eq__tipo">Sector:</span> Banca</p><p class="lx-eq lx-eq--bloque" title="Tecnología: Java"><span class="lx-eq__tipo">Tecnología:</span> Java</p></td><td class="pp-tabla__num"><span class="lx-fecha">12 sep, 9:40 a. m.</span><span class="pp-tabla__sub">Karen Rodríguez · Propuesta aprobada</span></td><td class="pp-tabla__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm lx-editar" aria-label="Editar «core bancario»">Editar</button></td></tr>
+                <tr><th scope="row"><span class="pp-tabla__perfil">devops</span><span class="lx-sinonimos" title="ingeniero de plataforma, SRE, site reliability">ingeniero de plataforma, SRE, site reliability</span></th><td><p class="lx-eq lx-eq--bloque" title="Rol: Ingeniero DevOps"><span class="lx-eq__tipo">Rol:</span> Ingeniero DevOps</p><p class="lx-eq lx-eq--bloque" title="Tecnología: Kubernetes"><span class="lx-eq__tipo">Tecnología:</span> Kubernetes</p></td><td class="pp-tabla__num"><span class="lx-fecha">4 sep, 11:25 a. m.</span><span class="pp-tabla__sub">Eida Tinjacá · Manual</span></td><td class="pp-tabla__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm lx-editar" aria-label="Editar «devops»">Editar</button></td></tr>
+                <tr><th scope="row"><span class="pp-tabla__perfil">retail</span><span class="lx-sinonimos" title="comercio minorista, grandes superficies, tiendas">comercio minorista, grandes superficies, tiendas</span></th><td><p class="lx-eq lx-eq--bloque" title="Sector: Comercio"><span class="lx-eq__tipo">Sector:</span> Comercio</p></td><td class="pp-tabla__num"><span class="lx-fecha">28 ago, 4:50 p. m.</span><span class="pp-tabla__sub">Karen Rodríguez · Desde candidata</span></td><td class="pp-tabla__acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm lx-editar" aria-label="Editar «retail»">Editar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pp-paginacion"><span>1–5 de 42 · más recientes primero</span><div><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" disabled>Anterior</button><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Siguiente</button></div></div>
+        </section>
+      </div>
+
+      <aside class="lx-alta" id="lx-alta" aria-labelledby="lx-alta-titulo">
+        <h2 class="lx-alta__titulo" id="lx-alta-titulo" style="margin-bottom: var(--tc-sp-5);">Agregar término</h2>
+        
+        <form class="pp-form" action="#" novalidate>
+          <div class="pp-campo">
+            <label class="pp-label" for="lx-termino">Término del cliente</label>
+            <input class="pp-input" id="lx-termino" type="text" placeholder="Ej.: pagos en tiempo real">
+          </div>
+          <div class="pp-campo">
+            <label class="pp-label" for="lx-sinonimos">Sinónimos <span class="pp-label__opcional">(opcional)</span></label>
+            <input class="pp-input" id="lx-sinonimos" type="text" placeholder="Separados por coma">
+          </div>
+          <div class="pp-campo">
+            <label class="pp-label" for="lx-tipo">Equivale a</label>
+            <div class="pp-select"><select class="pp-input" id="lx-tipo"><option selected>Rol</option><option>Tecnología</option><option>Sector</option></select></div>
+          </div>
+          <div class="pp-campo">
+            <label class="pp-label" for="lx-valor">Valor del catálogo</label>
+            <input class="pp-input" id="lx-valor" type="text" placeholder="Escribe y elige de la lista" aria-describedby="lx-valor-msg">
+            <p class="pp-ayuda" id="lx-valor-msg">Solo valores que existen en el catálogo.</p>
+          </div>
+          <div class="pp-form__acciones"><button type="submit" class="pp-btn pp-btn--primario">Guardar en el léxico</button></div>
+        </form>
+      </aside>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="pp-toast" role="status"><span class="pp-toast__marca" aria-hidden="true">✓</span><p class="pp-toast__texto">«ingeniero de aplicaciones móviles» ya está en el léxico. La próxima búsqueda lo reconoce.</p><button type="button" class="pp-toast__accion">Deshacer</button></div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla correo-enlace-renovado (Correo con el enlace nuevo)
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: sin variantes. El correo solo existe en el caso invitado + cuenta activa (HU-092,
+    escenario 2); en los demás casos no se genera enlace y no hay correo al cliente. El aviso al
+    propietario de la cuenta inactiva vive en correo-aviso-interno.
+  - El enlace nuevo solo aparece aquí, en el buzón del correo invitado; nunca en la pantalla.
+  Trazabilidad: épica EP-001 · historias HU-092 · registrada en ../manifest.json
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Correo con el enlace nuevo — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    /* /PP:base */
+
+    /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
+    .pp-correo-fondo { width: 100%; background: var(--tc-bg-canvas); }
+    .pp-correo { width: 100%; max-width: 600px; margin: 0 auto; }
+    .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
+    /* /PP:correo */
+
+    /* Composición propia (prefijo cc-): el sobre que enmarca la vista previa. No se envía. */
+    body { background: var(--tc-bg-canvas); }
+    .cc-marco { max-width: 624px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-3) 0; }
+    .cc-previa { margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .cc-sobre { margin: 0; display: grid; grid-template-columns: 64px 1fr; gap: var(--tc-sp-1) var(--tc-sp-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .cc-sobre dt { color: var(--tc-text-m); }
+    .cc-sobre dd { margin: 0; min-width: 0; color: var(--tc-text-b); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cc-sobre__asunto { color: var(--tc-text-h) !important; font-weight: var(--tc-fw-semibold); }
+    .cc-sobre__dir { color: var(--tc-text-m); }
+    .cc-sobre__fecha { font-variant-numeric: tabular-nums; }
+    .cc-cuerpo-correo .pp-correo-fondo > tbody > tr > td { padding-top: var(--tc-sp-4) !important; }
+    @media (max-width: 480px) {
+      .cc-marco { padding: var(--tc-sp-5) var(--tc-sp-4) 0; }
+      .cc-sobre { grid-template-columns: 52px 1fr; }
+      .cc-cuerpo-correo .pp-correo-fondo > tbody > tr > td { padding-left: var(--tc-sp-4) !important; padding-right: var(--tc-sp-4) !important; }
+      .cc-cuerpo-correo .pp-correo__cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
+      .cc-cuerpo-correo .pp-correo__cabecera,
+      .cc-cuerpo-correo .pp-correo__pie { padding: var(--tc-sp-4) var(--tc-sp-5) !important; }
+    }
+    .pp-correo__boton:focus-visible { outline: none; box-shadow: var(--tc-focus-ring); }
+    @media (max-width: 480px) { .cr-boton { display: block !important; text-align: center; } }
+  </style>
+</head>
+<body>
+  <!-- región: cabecera — contexto de bandeja para la revisión -->
+  <header class="cc-marco">
+    <p class="cc-previa">Vista previa · sin imágenes remotas ni píxel de seguimiento</p>
+    <dl class="cc-sobre" aria-label="Datos del mensaje">
+      <dt>De</dt><dd>Portal de perfiles · Trycore <span class="cc-sobre__dir">&lt;no-responder@portal.trycore.com&gt;</span></dd>
+      <dt>Para</dt><dd>mariana.ospina@bancolombia.com.co</dd>
+      <dt>Asunto</dt><dd class="cc-sobre__asunto">Tu enlace nuevo al portal de perfiles</dd>
+      <dt>Fecha</dt><dd class="cc-sobre__fecha">27 sep 2026, 10:42 a. m.</dd>
+    </dl>
+  </header>
+
+  <!-- región: contenido principal — cuerpo del correo (PP:correo) -->
+  <main class="cc-cuerpo-correo">
+    <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
+      <tr><td style="padding: var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-10);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); border-collapse: separate; overflow: hidden; font-family: var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border);">
+            <span style="font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-text-h);">trycore</span>
+            <span style="font-size: var(--tc-fs-small); color: var(--tc-text-m);">&nbsp;/&nbsp;Portal de perfiles</span>
+          </td></tr>
+          <tr><td class="pp-correo__cuerpo cr-cuerpo" style="padding: var(--tc-sp-8); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-2); font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Tu enlace nuevo</p>
+            <p style="margin: 0 0 var(--tc-sp-6);">Para la selección de perfiles de <strong style="font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Bancolombia · Modernización de pagos</strong>.</p>
+
+            <p style="margin: 0 0 var(--tc-sp-3);"><a class="pp-correo__boton cr-boton" href="#abrir" style="display: inline-block; padding: var(--tc-sp-3) var(--tc-sp-5); background: var(--tc-primary-strong); border-radius: var(--tc-r-md); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-body); color: var(--tc-bg-topbar); text-decoration: none;">Abrir la selección</a></p>
+            <p style="margin: 0 0 var(--tc-sp-8); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m); font-variant-numeric: tabular-nums;">Vence el 27 oct 2026. Solo funciona con <span style="color: var(--tc-text-h); overflow-wrap: anywhere;">mariana.ospina@bancolombia.com.co</span>; al abrirlo te llega un código a este buzón.</p>
+
+            <p style="margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); color: var(--tc-text-m);">Si el botón no funciona, copia esta dirección:</p>
+            <p style="margin: 0 0 var(--tc-sp-8); padding: var(--tc-sp-2) var(--tc-sp-3); background: var(--tc-bg-subtle); border-radius: var(--tc-r-sm); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-h); overflow-wrap: anywhere; word-break: break-all;">portal.trycore.com/e/k7Qm2xR9vT4pLw8N</p>
+
+            <p style="margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m);">El enlace es personal: reenviarlo no le da acceso a nadie más. Si no lo pediste, ignora este mensaje.</p>
+          </td></tr>
+          <tr><td class="pp-correo__pie cr-franja" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+            People Service · Trycore · Bogotá. Recibes este correo porque se pidió un enlace nuevo al Portal de perfiles con tu dirección.
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </main>
+</body>
+</html>

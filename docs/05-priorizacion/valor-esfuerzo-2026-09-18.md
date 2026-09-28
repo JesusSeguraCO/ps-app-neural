@@ -16,6 +16,8 @@ historias_descartadas: 1
 > **Framework**: Valor / Esfuerzo (matriz 2×2)
 > **Fecha**: 2026-09-18
 > **Participantes**: sesión asistida sobre el backlog v4.0. **Pendiente de validación** con Jesús Segura (Mercadeo), Karen (Talento Humano) y Jonathan (CTO).
+>
+> **Nota 2026-09-27 — decisión del sponsor (PRD v4.14, RF-18).** El portal no compone, programa ni envía el boletín: se confecciona y envía desde Gmail o HubSpot. El panel arma la selección curada, genera el enlace de cada destinatario y un bloque de contenido listo para copiar, y el portal mide entradas por enlace, no aperturas. Se actualizaron solo los títulos de HU-114 a HU-117 y la nota del paso 7 del orden de construcción. **La priorización no cambia**: cuadrantes, puntos y orden quedan como estaban; HU-115 y HU-116 sustituyen a «Programar y enviar el boletín» y «Ver quién abrió y quién entró» con la misma complejidad.
 
 ## Contexto de la sesión
 
@@ -93,8 +95,8 @@ Se buscaban tres decisiones: **qué entra al MVP**, **qué historias no justific
 | **HU-069** | Corregir la interpretación sin volver a escribir | EP-009 | S | borrador |
 | **HU-072** | Seguir usando el portal cuando la interpretación falla | EP-009 | S | borrador |
 | **HU-082** | Decir en qué país y ciudad necesito el perfil | EP-009 | S | borrador |
-| **HU-114** | Generar el enlace de cada contacto sin construirlo a mano | EP-011 | S | borrador |
-| **HU-116** | Ver quién abrió y quién entró | EP-011 | S | borrador |
+| **HU-114** | Generar el enlace de cada destinatario sin construirlo a mano | EP-011 | S | borrador |
+| **HU-116** | Ver quién entró por su enlace | EP-011 | S | borrador |
 
 ## Big bets — 26 historias · 83 pts (48% del esfuerzo)
 
@@ -127,7 +129,7 @@ Se buscaban tres decisiones: **qué entra al MVP**, **qué historias no justific
 | **HU-077** | Pedir el perfil que no existe todavía | EP-010 | M | borrador |
 | **HU-078** | Saber qué están pidiendo las cuentas y no tenemos | EP-010 | M | borrador |
 | **HU-113** | Armar la selección de perfiles de una cuenta | EP-011 | M | borrador |
-| **HU-115** | Programar y enviar el boletín | EP-011 | M | borrador |
+| **HU-115** | Copiar el contenido curado para enviarlo desde Gmail o HubSpot | EP-011 | M | borrador |
 
 ## Cuestionar — 16 historias · 53 pts (31% del esfuerzo)
 
@@ -165,7 +167,7 @@ Se buscaban tres decisiones: **qué entra al MVP**, **qué historias no justific
 | **HU-124** | Consultar el banco sin poder modificarlo | EP-006 | S | borrador |
 | **HU-135** | Archivar un perfil sin perder su rastro | EP-006 | S | borrador |
 | **HU-142** | Corregir solo las filas que fallaron | EP-006 | S | borrador |
-| **HU-117** | Reaccionar a una cuenta que nunca abre | EP-011 | S | borrador |
+| **HU-117** | Reaccionar a una cuenta que no entra | EP-011 | S | borrador |
 ---
 
 ## Lo que la matriz muestra
@@ -252,7 +254,7 @@ No reemplaza el Anexo A del PRD (fases para agentes); lo complementa ordenando *
 | **4** | Big bets de EP-009 y EP-010 (HU-065, 070, 083, 085, 118, 075, 076, 077, 078) | 29 | El núcleo de la Fase 2. Se construye con la regla asimétrica de §14.7 a la vista |
 | **5** | Quick wins de EP-001 y EP-005 (HU-091, 092, 094, 097, 098) + HU-126 y HU-129 | 9 | Cierran el recorrido de extremo a extremo y la edición segura del panel |
 | **6** | EP-007 (HU-102, 103, 105, 104, 106, 107) | 12 | La solicitud llega al comercial con cola de reintento. HU-107 cierra RF-17.4 y hace medible O3 |
-| **7** | EP-011 completo (HU-113, 114, 115, 116, 117) | 9 | El correo es la fuente de todo el tráfico. Sin él el portal no recibe visitas |
+| **7** | EP-011 completo (HU-113, 114, 115, 116, 117) | 9 | El correo es la fuente de todo el tráfico. Sin él el portal no recibe visitas. El panel prepara selección, enlaces y bloque para copiar; el envío sale de Gmail o HubSpot (PRD v4.14) |
 | **8** | EP-003 y EP-002 (HU-081, 119, 120, 074, 121) | 10 | Evidencia y refinamiento. Ya prototipados en Mid-Fi |
 | **9** | Auditoría y catálogos (HU-138, HU-089, HU-139, HU-124, HU-135) + HU-131 (adjuntar artefacto) | 19 | Gobierno del banco. HU-138 exige HU-123 hecha |
 | **10** | Telemetría (HU-109, 110→078, 112) y v1.1 (HU-108, 111, 099, 067, 071) | 20 | El tablero llega después de que haya datos que mirar |

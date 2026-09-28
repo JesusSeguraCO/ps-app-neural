@@ -1,0 +1,103 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla correo-codigo-acceso
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (correo-codigo-acceso--<estado>.html), no interacciones.
+  Variante base: correo del código de un uso para la cara cliente (HU-090). Misma plantilla que
+  la variante del panel (correo-codigo-acceso--panel.html, HU-123); solo cambian los textos.
+  Plantilla de correo en tablas de 600 px (PP:correo v2), sin imágenes remotas ni píxel de
+  seguimiento, sin enlace ni botón que dé acceso: el código se escribe en la pestaña donde se
+  pidió. El código se parte en dos grupos con espacio visual (padding), no con un carácter: al
+  copiarlo se pega «482913». El marco «Vista previa» es contexto del prototipo; no se implementa.
+  Oficio v2: cabecera blanca con hairline (sin filo teal), una sola frase de seguridad, metadatos
+  a 13 px apagados, pie sin caja gris.
+  Trazabilidad: épica EP-001 · historias HU-090, HU-123 · registrada en ../manifest.json
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Correo con código de un uso — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:correo — solo lo que los clientes de correo toleran en <style>; lo esencial va en línea */
+    .pp-correo-fondo { width: 100%; background: var(--tc-bg-canvas); }
+    .pp-correo { width: 100%; max-width: 600px; margin: 0 auto; }
+    .pp-correo__boton:hover { background: var(--tc-primary-strong-hover); }
+    /* /PP:correo */
+
+    /* Composición propia (prefijo cc-): el sobre que enmarca la vista previa. No se envía. */
+    body { background: var(--tc-bg-canvas); }
+    .cc-marco { max-width: 624px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-3) 0; }
+    .cc-previa { margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .cc-sobre { margin: 0; display: grid; grid-template-columns: 64px 1fr; gap: var(--tc-sp-1) var(--tc-sp-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .cc-sobre dt { color: var(--tc-text-m); }
+    .cc-sobre dd { margin: 0; min-width: 0; color: var(--tc-text-b); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cc-sobre__asunto { color: var(--tc-text-h) !important; font-weight: var(--tc-fw-semibold); }
+    .cc-sobre__dir { color: var(--tc-text-m); }
+    .cc-sobre__fecha { font-variant-numeric: tabular-nums; }
+    .cc-cuerpo-correo .pp-correo-fondo > tbody > tr > td { padding-top: var(--tc-sp-4) !important; }
+    @media (max-width: 480px) {
+      .cc-marco { padding: var(--tc-sp-5) var(--tc-sp-4) 0; }
+      .cc-sobre { grid-template-columns: 52px 1fr; }
+      .cc-cuerpo-correo .pp-correo-fondo > tbody > tr > td { padding-left: var(--tc-sp-4) !important; padding-right: var(--tc-sp-4) !important; }
+      .cc-cuerpo-correo .pp-correo__cuerpo { padding: var(--tc-sp-6) var(--tc-sp-5) !important; }
+      .cc-cuerpo-correo .pp-correo__cabecera,
+      .cc-cuerpo-correo .pp-correo__pie { padding: var(--tc-sp-4) var(--tc-sp-5) !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera — sobre del cliente de correo (contexto de la vista previa, no se implementa) -->
+  <header class="cc-marco">
+    <p class="cc-previa">Vista previa · el código no va en el asunto, para que no se lea en la notificación</p>
+    <dl class="cc-sobre" aria-label="Datos del mensaje">
+      <dt>De</dt><dd>Portal de perfiles · Trycore <span class="cc-sobre__dir">&lt;no-responder@portal.trycore.com&gt;</span></dd>
+      <dt>Para</dt><dd>mariana.ospina@bancolombia.com.co</dd>
+      <dt>Asunto</dt><dd class="cc-sobre__asunto">Tu código para entrar al Portal de perfiles</dd>
+      <dt>Fecha</dt><dd class="cc-sobre__fecha">27 sep 2026, 10:42 a. m.</dd>
+    </dl>
+  </header>
+
+  <!-- región: contenido principal — el correo tal como se envía (tablas de 600 px, estilos en línea) -->
+  <main class="cc-cuerpo-correo">
+    <!-- PP:correo -->
+    <table class="pp-correo-fondo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: var(--tc-bg-canvas);">
+      <tr><td style="padding: var(--tc-sp-10) var(--tc-sp-3);">
+        <table class="pp-correo" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); border-collapse: separate; overflow: hidden; font-family: var(--tc-font-body); color: var(--tc-text-b);">
+          <tr><td class="pp-correo__cabecera" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border);">
+            <span style="font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); color: var(--tc-text-h);">trycore</span>
+            <span style="font-size: var(--tc-fs-small); color: var(--tc-text-m);">&nbsp;/&nbsp;Portal de perfiles</span>
+          </td></tr>
+          <tr><td class="pp-correo__cuerpo" style="padding: var(--tc-sp-8); font-size: var(--tc-fs-body); line-height: var(--tc-lh-body);">
+            <p style="margin: 0 0 var(--tc-sp-2); font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h);">Tu código para entrar</p>
+            <p style="margin: 0 0 var(--tc-sp-5);">Escríbelo en la página donde lo pediste. Vence en 15 minutos y sirve una vez.</p>
+            <p class="pp-correo__codigo" aria-label="Código: 4 8 2 9 1 3" style="margin: 0 0 var(--tc-sp-6); padding: var(--tc-sp-4); background: var(--tc-bg-subtle); border-radius: var(--tc-r-md); text-align: center; font-family: var(--pp-mono); font-variant-numeric: tabular-nums; font-size: var(--tc-fs-h1); line-height: var(--tc-lh-tight); font-weight: var(--tc-fw-medium); letter-spacing: var(--tc-ls-label); color: var(--tc-text-h);"><span>482</span><span style="padding-left: var(--tc-sp-3);">913</span></p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 var(--tc-sp-6); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m);">
+              <tr>
+                <td width="64" style="padding: 0 var(--tc-sp-3) var(--tc-sp-1) 0; white-space: nowrap; vertical-align: top;">Enlace</td>
+                <td style="padding: 0 0 var(--tc-sp-1); color: var(--tc-text-b);">Bancolombia · Modernización de pagos</td>
+              </tr>
+              <tr>
+                <td width="64" style="padding: 0 var(--tc-sp-3) 0 0; white-space: nowrap; vertical-align: top;">Pedido</td>
+                <td style="padding: 0; color: var(--tc-text-b); font-variant-numeric: tabular-nums;">27 sep 2026, 10:42 a.&nbsp;m. (hora de Colombia)</td>
+              </tr>
+            </table>
+            <p style="margin: 0; padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-small); color: var(--tc-text-m);">Si no pediste este código, ignora el mensaje. Reenviarlo no da acceso a otra persona.</p>
+          </td></tr>
+          <tr><td class="pp-correo__pie" style="padding: var(--tc-sp-5) var(--tc-sp-8); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-s);">
+            People Service · Trycore · Bogotá. Recibes este correo porque se pidió un código de acceso al Portal de perfiles con esta dirección.
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+    <!-- /PP:correo -->
+  </main>
+</body>
+</html>

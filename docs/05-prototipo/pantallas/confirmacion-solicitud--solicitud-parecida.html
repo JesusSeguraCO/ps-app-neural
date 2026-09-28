@@ -1,0 +1,302 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla confirmacion-solicitud
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (confirmacion-solicitud con sufijo de estado), no interacciones.
+  Trazabilidad: épica EP-005 · historias HU-098 · registrada en ../manifest.json
+  Origen: v2-existe (data-screen-label «Confirmación» del v2). Se concreta lo que exige HU-098:
+  el paso siguiente es la sesión de alineación con Delivery, el plazo de 10 días hábiles con su
+  hora de inicio y su vencimiento, y un resumen de lo enviado.
+  Estado de este archivo: variante solicitud-parecida (HU-098 edge case). Andrés Rojas intenta
+  enviar, el jueves 1 de octubre, un equipo casi igual al de SOL-2026-0318 (en curso desde el
+  lunes 28 de septiembre). El portal todavía no registra la nueva: le muestra la solicitud en
+  curso con su fecha y su plazo, qué perfiles coinciden (marcas por perfil, sin porcentajes) y le
+  ofrece añadir el contexto nuevo a la existente en lugar de duplicarla. Enviarla como nueva
+  sigue siendo posible y queda como acción secundaria.
+  Oficio v2 (2026-09-27): las tres cajas grises iguales (Enviada / Plazo / Sesión) pasan a filas
+  etiqueta/valor con hairline; sin píldoras «Todavía no la registramos» ni «En curso» (el H1 lo
+  dice); sin tarjetas; decisión con la primaria «Añadir a SOL-2026-0318» a la derecha y
+  «Es otra necesidad: enviarla como nueva» como contorno a la izquierda. Mismo nombre del acto
+  («sesión de alineación») y misma responsable (Eida Tinjacá) que la base y Agendar.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmación de la solicitud · solicitud parecida — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+    /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+    /* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
+    /* PP:topbar */
+      .pp-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: var(--tc-sp-4); min-height: 60px; padding: var(--tc-sp-2) var(--tc-sp-6); background: var(--pp-header); backdrop-filter: blur(12px) saturate(1.5); border-bottom: 1px solid var(--tc-border); }
+      .pp-marca { display: flex; flex: none; align-items: center; gap: var(--tc-sp-2); text-decoration: none; }
+      .pp-marca__palabra { font-family: var(--tc-font-heading); font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-bold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); }
+      .pp-marca__sep { color: var(--tc-border-s); }
+      .pp-marca__producto { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+      .pp-cuenta { flex: 1; min-width: 0; padding-left: var(--tc-sp-4); border-left: 1px solid var(--tc-border); }
+      .pp-cuenta__nombre, .pp-cuenta__meta { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: var(--tc-lh-h3); }
+      .pp-cuenta__nombre { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-cuenta__meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-topbar__nav { display: flex; flex: none; align-items: center; gap: var(--tc-sp-1); }
+      .pp-navlink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--tc-sp-3); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; }
+      .pp-navlink:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-navlink[aria-current="page"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+      .pp-equipo { display: inline-flex; flex: none; align-items: center; gap: var(--tc-sp-2); min-height: 36px; padding: 0 var(--tc-sp-1) 0 var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-pill); background: var(--tc-card); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); text-decoration: none; white-space: nowrap; box-shadow: var(--tc-sh-1); }
+      .pp-equipo:hover { background: var(--tc-bg-subtle); }
+      .pp-equipo__conteo { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-pill); background: var(--tc-navy); color: var(--tc-bg-topbar); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); font-variant-numeric: tabular-nums; }
+      @media (max-width: 900px) { .pp-marca__sep, .pp-marca__producto { display: none; } }
+      @media (max-width: 767px) {
+        .pp-topbar { flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-3); padding: var(--tc-sp-2) var(--tc-sp-4) 0; }
+        .pp-equipo { order: 1; margin-left: auto; min-height: 44px; }
+        .pp-cuenta { order: 2; flex-basis: 100%; padding-left: 0; border-left: 0; }
+        .pp-topbar__nav { order: 3; width: 100%; overflow-x: auto; padding: var(--tc-sp-1) 0; border-top: 1px solid var(--tc-border); }
+        .pp-navlink { min-height: 44px; }
+        .pp-cuenta__meta { display: none; }
+      }
+      /* /PP:topbar */
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+  </style>
+  <style>
+    /* Estilos propios de esta pantalla (prefijo cf-): SOLO composición/layout.
+       Valores visuales (color, fuente, spacing, radio, sombra) → var(--token). */
+    .cf-main { max-width: 720px; margin: 0 auto; padding: var(--tc-sp-10) var(--tc-sp-6); }
+
+    .cf-cabecera__texto { margin: var(--tc-sp-3) 0 0; max-width: 60ch; color: var(--tc-text-b); }
+
+    .cf-seccion { margin-top: var(--tc-sp-10); }
+    .cf-seccion--primera { margin-top: var(--tc-sp-8); }
+    .cf-encurso-meta { white-space: nowrap; }
+    .cf-seccion__sub { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+
+    .cf-datos { display: grid; margin: 0; border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); }
+    .cf-datos div { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; }
+    .cf-datos div + div { border-top: 1px solid var(--tc-border); }
+    .cf-datos dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cf-datos dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .cf-datos__extra { color: var(--tc-text-m); }
+
+    .cf-cruce { grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .cf-cruce:hover { background: none; }
+    .cf-cruce__marca { font-weight: var(--tc-fw-bold); text-align: center; color: var(--tc-text-s); }
+    .cf-cruce--si .cf-cruce__marca { color: var(--tc-ok-mark); }
+    .cf-cruce__donde { font-size: var(--tc-fs-caption); color: var(--tc-text-m); text-align: right; white-space: nowrap; }
+    .cf-cruce--no .cf-cruce__donde { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-fila__codigo { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+
+    .cf-form { gap: var(--tc-sp-4); }
+    .cf-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); }
+    .cf-acciones__nota { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); text-align: right; }
+
+    .pp-btn:focus-visible, .pp-navlink:focus-visible, .pp-equipo:focus-visible, .pp-marca:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+
+    @media (max-width: 767px) {
+      .cf-main { padding: var(--tc-sp-8) var(--tc-sp-4) var(--tc-sp-10); }
+      .cf-datos div { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+      .cf-cruce { grid-template-columns: 16px minmax(0, 1fr); }
+      .cf-cruce__marca { grid-row: 1; align-self: start; }
+      .cf-cruce .pp-fila__principal { grid-column: 2; grid-row: 1; }
+      .cf-cruce__donde { grid-column: 2 / -1; grid-row: 2; text-align: left; }
+      .cf-acciones { flex-direction: column-reverse; align-items: stretch; }
+      .cf-acciones .pp-btn { width: 100%; white-space: normal; text-align: center; }
+      .cf-acciones__nota { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <!-- región: navegación / cabecera -->
+  <header class="pp-topbar">
+    <a class="pp-marca" href="aterrizaje-curado.html" aria-label="Trycore · Portal de perfiles">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span class="pp-marca__palabra">trycore</span>
+      <span class="pp-marca__sep" aria-hidden="true">/</span>
+      <span class="pp-marca__producto">Portal de perfiles</span>
+    </a>
+    <div class="pp-cuenta">
+      <p class="pp-cuenta__nombre">Bancolombia · Modernización de pagos</p>
+      <p class="pp-cuenta__meta">Acceso hasta el 24 oct 2026</p>
+    </div>
+    <nav class="pp-topbar__nav" aria-label="Portal">
+      <a class="pp-navlink" href="aterrizaje-curado.html">Selección para ti</a>
+      <a class="pp-navlink" href="inicio-busqueda.html">Buscar</a>
+      <a class="pp-navlink" href="invitar-colega.html">Invitar a un colega</a>
+    </nav>
+    <a class="pp-equipo" href="mi-equipo.html">Mi equipo <span class="pp-equipo__conteo" aria-hidden="true">3</span><span class="pp-sr">3 perfiles en el equipo, sin enviar</span></a>
+  </header>
+
+  <!-- región: contenido principal -->
+  <main class="cf-main" data-screen-label="Confirmación">
+    <header class="cf-cabecera">
+      <h1 class="pp-encabezado__titulo">Ya tienes una solicitud parecida en curso</h1>
+      <p class="cf-cabecera__texto">Todavía no registramos la nueva. Si le añades lo nuevo a la que está en curso, Eida lo revisa todo junto y el plazo no vuelve a empezar.</p>
+    </header>
+
+    <section class="cf-seccion cf-seccion--primera" aria-labelledby="cf-encurso-titulo">
+      <div class="pp-seccion__cabecera">
+        <h2 class="pp-seccion__titulo" id="cf-encurso-titulo"><span class="pp-mono">SOL-2026-0318</span> <span class="cf-seccion__sub">· Modernización de pagos inmediatos</span></h2>
+      </div>
+      <dl class="cf-datos">
+        <div><dt>Enviada</dt><dd>lun 28 sep 2026, 10:42 a. m. <span class="cf-datos__extra">· por Andrés Rojas</span></dd></div>
+        <div><dt>Plazo</dt><dd>día 3 de 10 hábiles <span class="cf-datos__extra">· vence mar 13 oct</span></dd></div>
+        <div><dt>Sesión de alineación</dt><dd>mar 29 sep, 10:00 a. m. <span class="cf-datos__extra">· con Eida Tinjacá</span></dd></div>
+      </dl>
+    </section>
+
+    <section class="cf-seccion" aria-labelledby="cf-cruce-titulo">
+      <div class="pp-seccion__cabecera">
+        <h2 class="pp-seccion__titulo" id="cf-cruce-titulo">Tu nuevo equipo</h2>
+        <span class="pp-meta cf-encurso-meta">coinciden 2 de 3</span>
+      </div>
+      <ul class="pp-filas">
+        <li class="pp-fila cf-cruce cf-cruce--si">
+          <span class="cf-cruce__marca" aria-hidden="true">✓</span>
+          <div class="pp-fila__principal"><p class="pp-fila__titulo">Desarrolladora backend Java <span class="pp-fila__codigo pp-mono">PS-0142</span></p><p class="pp-fila__meta">Laura Méndez · Medellín · híbrido</p></div>
+          <span class="cf-cruce__donde">Ya está en la solicitud</span>
+        </li>
+        <li class="pp-fila cf-cruce cf-cruce--si">
+          <span class="cf-cruce__marca" aria-hidden="true">✓</span>
+          <div class="pp-fila__principal"><p class="pp-fila__titulo">Arquitecta de datos <span class="pp-fila__codigo pp-mono">PS-0098</span></p><p class="pp-fila__meta">Catalina Rojas · Medellín · híbrido</p></div>
+          <span class="cf-cruce__donde">Ya está en la solicitud</span>
+        </li>
+        <li class="pp-fila cf-cruce cf-cruce--no">
+          <span class="cf-cruce__marca" aria-hidden="true">–</span>
+          <div class="pp-fila__principal"><p class="pp-fila__titulo">Desarrollador frontend React <span class="pp-fila__codigo pp-mono">PS-0233</span></p><p class="pp-fila__meta">Felipe Arango · Bogotá · remoto</p></div>
+          <span class="cf-cruce__donde">No está en la solicitud</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="cf-seccion" aria-labelledby="cf-anadir-titulo">
+      <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="cf-anadir-titulo">Añadir a la solicitud en curso</h2></div>
+      <form class="pp-form cf-form" action="#">
+        <div class="pp-campo">
+          <label class="pp-label" for="cf-contexto">Qué cambió o qué quieres añadir</label>
+          <textarea class="pp-input pp-input--area" id="cf-contexto">Además del backend, necesitamos rehacer la app web de conciliación. Por eso sumo un perfil de frontend.</textarea>
+        </div>
+        <div>
+          <div class="cf-acciones">
+            <a class="pp-btn pp-btn--contorno" href="confirmacion-solicitud.html">Es otra necesidad: enviarla como nueva</a>
+            <button type="submit" class="pp-btn pp-btn--primario">Añadir a SOL-2026-0318</button>
+          </div>
+          <p class="cf-acciones__nota">Como nueva tendrá su propio número y su plazo de 10 días hábiles.</p>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla ficha-perfil--movil
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (ficha-perfil--estado.html), no interacciones.
+  Trazabilidad: épica EP-003 · historias HU-119, HU-120, HU-081 · registrada en ../manifest.json
+  Estado de ESTA pantalla: --movil — en un teléfono la ficha ocupa la pantalla completa: barra de recorrido (← posición →)
+  y «Cerrar» fija arriba, pie con la acción fijo abajo y el cuerpo con scroll propio, sin escalar el contenido
+  (HU-120, edge). Primer perfil (1 de 8, Laura Méndez): «Anterior» deshabilitado; recién sumada al equipo,
+  confirmada por toast. En escritorio y tableta se enmarca a 390 × 844 px para revisarla igual.
+  Oficio v2 (DESIGN.md › Oficio): CSS pp-* copiado literal de _patrones.html v2 (base, botones, estado, toast,
+  avisos, perfil, chips, hoja, topbar). Evidencia «Frente a tu búsqueda» como filas ✓/– por criterio, agrupadas
+  en Obligatorios / Deseables, con la fuente de cada dato a la derecha (escudo + «Verificado» en tinta teal,
+  «Declarado» apagado, «Sin dato» si no está registrado). Lo verificado va en un único bloque de tinte teal sin
+  borde (Sello Personal, validación técnica, inglés, referencias, formación, identidad, antecedentes); lo
+  declarado va sin caja. Disponibilidad como punto + texto; seniority, modalidad y ciudad como metadatos.
+  Confirmación de «Sumar al equipo» por toast encima del pie; la ficha no se cierra.
+  Recorrido: ← / → (aria-keyshortcuts ArrowLeft / ArrowRight) y Esc para cerrar, visibles como kbd en escritorio
+  y en el title de cada botón. La primera o la última flecha se deshabilita (disabled + aria-disabled).
+  Accesibilidad (se implementa en la app, no en el prototipo sin JS): role=dialog + aria-modal=true, foco
+  atrapado dentro de la hoja, foco inicial en «Cerrar», al cerrar el foco vuelve a la tarjeta de origen. El
+  anillo de foco que se ve en la captura (clase fp-foco) replica :focus-visible para revisarlo en estático.
+  Fuera de la ficha por la lista negra B.4: foto, contacto, CV, tarifa, fecha exacta de disponibilidad (solo
+  banda), motivación o proyección, DISC detallado, certificaciones. Sin porcentajes: «Cumple N de M».
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ficha de Laura Méndez en el teléfono — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+    /* PP:botones */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+    /* /PP:botones */
+    /* PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
+    /* PP:toast */
+    .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+    .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+    @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+    /* /PP:toast */
+    /* PP:avisos */
+    .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+    .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+    .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-aviso__titulo::after { content: " "; }
+    .pp-aviso__accion { flex: none; align-self: center; }
+    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+    .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+    .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+    @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+    /* /PP:avisos */
+    /* PP:hoja */
+    .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+    .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+    .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+    .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+    .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+    .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+    .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .pp-datos { display: grid; margin: 0; }
+    .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+    .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+    .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+    .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
+    /* /PP:hoja */
+    /* PP:perfil */
+    .pp-rejilla-perfiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: var(--tc-sp-4); }
+    .pp-perfil { display: flex; flex-direction: column; min-width: 0; padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); transition: border-color var(--tc-dur) var(--tc-ease); }
+    .pp-perfil:hover { border-color: var(--tc-border-s); }
+    .pp-perfil--en-equipo, .pp-perfil--en-equipo:hover { border-color: var(--tc-primary-surface-border); }
+    .pp-perfil--cambio { background: var(--tc-surface-quiet); }
+    .pp-perfil--cambio .pp-perfil__rol, .pp-perfil--cambio .pp-perfil__nombre { color: var(--tc-text-m); }
+    .pp-perfil__estado { display: flex; align-items: center; gap: var(--tc-sp-2); margin: 0 0 var(--tc-sp-3); padding-bottom: var(--tc-sp-3); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .pp-perfil__estado::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-amber); }
+    .pp-perfil__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-3); flex-wrap: wrap; }
+    .pp-perfil__cabecera > :first-child { flex: 1 1 180px; min-width: 0; }
+    .pp-perfil__cabecera .pp-badge, .pp-perfil__cabecera .pp-estado { margin-top: var(--tc-sp-1); }
+    .pp-perfil__rol { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); }
+    .pp-perfil__rol a { color: inherit; text-decoration: none; }
+    .pp-perfil__rol a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-perfil__nombre { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-perfil__tecnologias { display: flex; flex-wrap: wrap; margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-perfil__tecnologias > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+    .pp-perfil__tecnologias .pp-tag { padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+    .pp-perfil__meta { display: flex; flex-wrap: wrap; margin: var(--tc-sp-1) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-perfil__meta > li + li::before { content: "·"; margin: 0 var(--tc-sp-2); color: var(--tc-text-s); }
+    .pp-evidencia { display: grid; gap: var(--tc-sp-3); margin-top: var(--tc-sp-4); }
+    .pp-evidencia__conteo { margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .pp-bloque { padding: var(--tc-sp-3); border-radius: var(--tc-r-sm); }
+    .pp-bloque--verificado { background: var(--tc-primary-surface); color: var(--tc-primary-surface-ink); }
+    .pp-bloque--declarado { padding-top: 0; padding-bottom: 0; background: none; color: var(--tc-text-b); }
+    .pp-bloque__rotulo { display: flex; align-items: center; gap: var(--tc-sp-1); margin: 0 0 var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); }
+    .pp-bloque--verificado .pp-bloque__rotulo { color: var(--tc-primary-ink); }
+    .pp-bloque--declarado .pp-bloque__rotulo { color: var(--tc-text-m); font-weight: var(--tc-fw-medium); }
+    .pp-criterios { display: grid; gap: var(--tc-sp-1); margin: 0; padding: 0; list-style: none; }
+    .pp-criterio { display: flex; align-items: flex-start; gap: var(--tc-sp-2); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-criterio__marca { width: 12px; flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-criterio--cumple { color: var(--tc-text-h); }
+    .pp-criterio--cumple .pp-criterio__marca { color: var(--tc-ok-mark); }
+    .pp-criterio--no { color: var(--tc-text-m); }
+    .pp-criterio--no .pp-criterio__marca { color: var(--tc-text-s); }
+    .pp-perfil__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: auto; padding-top: var(--tc-sp-5); }
+    .pp-codigo-perfil { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .pp-perfil__pie .pp-codigo-perfil { margin-left: auto; }
+    .pp-tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 var(--tc-sp-2); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    /* /PP:perfil */
+  </style>
+
+  <style>
+    /* ── Composición propia de ficha-perfil (prefijo fp-). Solo layout y tipografía; todo valor visual es token. ──
+       En la app la hoja es position: fixed con scroll propio (PP:hoja). En el prototipo la escena la pone en flujo
+       sobre los resultados para que la captura de página completa muestre la ficha entera. El fondo no aporta altura
+       (absoluto y recortado): la página mide lo que mide la ficha. */
+    .fp-escena { position: relative; display: grid; min-height: 100vh; }
+    .fp-escena > * { grid-area: 1 / 1; min-width: 0; }
+    .fp-escena .pp-hoja-velo, .fp-escena .pp-hoja { position: relative; }
+    .fp-escena .pp-hoja { justify-self: end; }
+    .fp-fondo { position: absolute; inset: 0; overflow: hidden; }
+    .fp-resultados { max-width: 1200px; padding: var(--tc-sp-8) var(--tc-sp-6); }
+    .fp-resultados .pp-chips { margin-bottom: var(--tc-sp-6); }
+    .fp-cercanos { margin-top: var(--tc-sp-10); }
+    .fp-ver { font-size: var(--tc-fs-small); }
+    .fp-falla { color: var(--tc-warn-ink); font-weight: var(--tc-fw-semibold); }
+    .pp-perfil.fp-abierta { border-color: var(--tc-text-s); }
+
+    /* Hoja: barra de recorrido (← posición →, Esc) encima de la cabecera */
+    .fp-ficha { font-variant-numeric: tabular-nums; }
+    .fp-barra { display: flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .fp-barra__pos { margin: 0 0 0 var(--tc-sp-2); min-width: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fp-barra__pos b { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .fp-barra__fin { display: flex; align-items: center; gap: var(--tc-sp-2); margin-left: auto; }
+    .fp-atajos { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-s); white-space: nowrap; }
+    .fp-foco { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+
+    /* Cabecera: rol, persona, disponibilidad como punto + texto, metadatos apagados */
+    .fp-ficha .pp-hoja__cabecera h2 { overflow-wrap: anywhere; }
+    .fp-ficha .pp-hoja__cabecera .fp-persona { margin-top: var(--tc-sp-1); font-size: var(--tc-fs-body); color: var(--tc-text-b); }
+    .fp-linea { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-4); margin-top: var(--tc-sp-3); }
+    .fp-linea .pp-badge { font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .fp-linea .pp-perfil__meta { margin: 0; }
+
+    /* Secciones del cuerpo: h3 + hairline, sin caja por sección */
+    .fp-seccion { min-width: 0; }
+    .fp-seccion + .fp-seccion { padding-top: var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+    .fp-seccion__titulo { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+    .fp-seccion__titulo--verificado { color: var(--tc-primary-ink); }
+
+    /* Frente a tu búsqueda: una fila por criterio (✓/–), agrupada por modo */
+    .fp-grupo { margin: var(--tc-sp-4) 0 0; padding-bottom: var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .fp-grupo:first-of-type { margin-top: 0; }
+    .fp-criterios { margin: 0; padding: 0; list-style: none; }
+    .fp-criterio { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: var(--tc-sp-1) var(--tc-sp-3); align-items: baseline; padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+    .fp-criterio__marca { font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+    .fp-criterio--no .fp-criterio__marca { color: var(--tc-text-s); }
+    .fp-criterio__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .fp-criterio--no .fp-criterio__nombre { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .fp-criterio__dato { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .fp-fuente { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); white-space: nowrap; }
+    .fp-fuente--verificado { font-weight: var(--tc-fw-medium); color: var(--tc-primary-ink); }
+    .fp-seccion > .fp-criterios:last-of-type > .fp-criterio:last-child { border-bottom: 0; }
+    .fp-seccion .pp-aviso { margin-top: var(--tc-sp-4); }
+
+    /* Verificado (un solo tinte teal, significa algo) y declarado (sin caja) */
+    .fp-ficha .pp-bloque--verificado { padding: var(--tc-sp-4); }
+    .fp-sello { font-weight: var(--tc-fw-medium); }
+    .fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-bloque--verificado .fp-sub { color: var(--tc-primary-surface-ink); }
+    .fp-ausente { color: var(--tc-text-m); }
+    .fp-trayectoria { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
+    .fp-cargo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+
+    /* Pie: primaria a la derecha; el toast confirma encima del pie sin cerrar la ficha */
+    .fp-pie { position: relative; background: var(--tc-card); }
+    .fp-pie .pp-toast { position: absolute; left: auto; right: var(--tc-sp-6); bottom: calc(100% + var(--tc-sp-3)); }
+
+    @media (max-width: 767px) {
+      /* Teléfono: la ficha ocupa la pantalla (100dvh); barra (× y ← →) arriba y pie abajo siempre visibles; solo el cuerpo
+         hace scroll (como en la app). El contenido no se escala. */
+      .fp-fondo, .fp-escena .pp-hoja-velo { display: none; }
+      .fp-escena { min-height: 0; }
+      .fp-escena .pp-hoja { width: 100%; height: 100vh; height: 100dvh; border-left: 0; box-shadow: none; }
+      .fp-barra { padding: var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-4); }
+      .fp-barra__pos { margin-left: var(--tc-sp-1); }
+      .fp-atajos { display: none; }
+      .fp-pie .pp-btn { flex: 1; }
+      .fp-pie .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .fp-criterio { grid-template-columns: 16px minmax(0, 1fr); }
+      .fp-criterio .fp-fuente { grid-column: 2; }
+    }
+  </style>
+
+  <style>
+    /* ── Variante móvil: marco de teléfono de 390 × 844 en escritorio y tableta; pantalla completa en el teléfono.
+       La hoja llena el marco: barra arriba, pie abajo y el cuerpo con scroll propio (como en la app). ── */
+    body { background: var(--tc-bg-canvas); }
+    .fp-telefono { position: relative; width: 390px; height: 844px; margin: var(--tc-sp-8) auto; overflow: hidden; border: 1px solid var(--tc-border); border-radius: var(--tc-r-lg); box-shadow: var(--tc-sh-1); }
+    .fp-telefono .pp-hoja { position: absolute; width: 100%; border-left: 0; box-shadow: none; }
+    .fp-telefono .fp-barra { padding: var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-4); }
+    .fp-telefono .fp-atajos { display: none; }
+    .fp-telefono .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-4) var(--tc-sp-4); }
+    .fp-telefono .pp-hoja__cuerpo, .fp-telefono .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+    .fp-telefono .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+    .fp-telefono .fp-criterio { grid-template-columns: 16px minmax(0, 1fr); }
+    .fp-telefono .fp-criterio .fp-fuente { grid-column: 2; }
+    .fp-telefono .fp-pie .pp-btn { flex: 1; min-height: 44px; }
+    .fp-telefono .fp-barra .pp-btn { min-height: 44px; }
+    .fp-telefono .fp-barra .pp-btn--icono { width: 44px; }
+    .fp-telefono .fp-pie .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); max-width: none; }
+    .fp-telefono .fp-pie .pp-toast__accion { min-height: 44px; }
+    @media (max-width: 767px) {
+      .fp-telefono { width: 100%; height: 100vh; height: 100dvh; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="fp-telefono">
+  <!-- región: panel lateral (ficha) -->
+  <aside class="pp-hoja fp-ficha" role="dialog" aria-modal="true" aria-labelledby="fp-titulo" id="ficha">
+        <div class="fp-barra">
+          <nav class="fp-barra__nav" aria-label="Recorrer perfiles" style="display: contents;">
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pp-btn--icono" aria-label="Perfil anterior" title="Perfil anterior (←)" aria-keyshortcuts="ArrowLeft" disabled aria-disabled="true"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm pp-btn--icono" aria-label="Perfil siguiente" title="Perfil siguiente (→)" aria-keyshortcuts="ArrowRight"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <p class="fp-barra__pos" aria-live="polite"><b>1 de 8</b> · resultados</p>
+          </nav>
+          <div class="fp-barra__fin">
+            <span class="fp-atajos" aria-hidden="true"><span class="pp-kbd">←</span><span class="pp-kbd">→</span> recorrer · <span class="pp-kbd">Esc</span> cerrar</span>
+            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--icono" aria-label="Cerrar la ficha" title="Cerrar (Esc)" aria-keyshortcuts="Escape"><svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+        </div>
+        <header class="pp-hoja__cabecera">
+          <h2 id="fp-titulo">Desarrolladora backend Java</h2>
+          <p class="fp-persona">Laura Méndez · 8 años de experiencia en banca</p>
+          <div class="fp-linea"><span class="pp-badge pp-badge--disponible">Disponible ahora</span><ul class="pp-perfil__meta" aria-label="Datos del perfil"><li>Senior</li><li>Híbrido</li><li>Medellín, Colombia</li><li class="pp-mono">PS-0142</li></ul></div>
+        </header>
+        <div class="pp-hoja__cuerpo">
+          <section class="fp-seccion" aria-labelledby="fp-busqueda">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-busqueda">Frente a tu búsqueda</h3><span class="pp-evidencia__conteo">Cumple 4 de 4</span></div>
+            <p class="fp-grupo">Obligatorios</p>
+            <ul class="fp-criterios"><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Java</span><span class="fp-criterio__dato">Prueba técnica de Java y Spring Boot, aprobada</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Inglés B2</span><span class="fp-criterio__dato">Entrevista conducida en inglés</span></span><span class="fp-fuente fp-fuente--verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado</span></li></ul>
+            <p class="fp-grupo">Deseables</p>
+            <ul class="fp-criterios"><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Sector banca</span><span class="fp-criterio__dato">8 años en pagos inmediatos</span></span><span class="fp-fuente">Declarado</span></li><li class="fp-criterio"><span class="fp-criterio__marca" aria-hidden="true">✓</span><span><span class="pp-sr">Cumple: </span><span class="fp-criterio__nombre">Kafka</span><span class="fp-criterio__dato">3 años en mensajería de pagos</span></span><span class="fp-fuente">Declarado</span></li></ul>
+          </section>
+          <section class="fp-seccion" aria-labelledby="fp-verificado">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo fp-seccion__titulo fp-seccion__titulo--verificado" id="fp-verificado"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Verificado por Trycore</h3></div>
+            <div class="pp-bloque pp-bloque--verificado">
+              <dl class="pp-datos"><div class="pp-datos__fila"><dt>Sello Personal</dt><dd><span class="fp-sello">Comunicación directa con negocio · Rigor en la documentación · Calma bajo presión</span></dd></div><div class="pp-datos__fila"><dt>Validación técnica</dt><dd>Prueba backend Java · aprobada, nivel senior<span class="fp-sub">Célula de arquitectura de Trycore · 20 ago 2026</span><span class="fp-sub">Evaluó diseño de APIs, concurrencia, pruebas automatizadas y manejo de datos sensibles.</span></dd></div><div class="pp-datos__fila"><dt>Inglés</dt><dd>B2 · entrevista conducida en inglés</dd></div><div class="pp-datos__fila"><dt>Referencias</dt><dd>2 referencias laborales contactadas</dd></div><div class="pp-datos__fila"><dt>Formación</dt><dd>Ingeniería de Sistemas · título verificado ante la institución</dd></div><div class="pp-datos__fila"><dt>Identidad</dt><dd>Documento verificado · ago 2026</dd></div><div class="pp-datos__fila"><dt>Antecedentes</dt><dd>Estudio de seguridad sin hallazgos · vigente hasta feb 2027</dd></div></dl>
+            </div>
+          </section>
+          <section class="fp-seccion" aria-labelledby="fp-declarado">
+            <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-declarado">Declarado por la profesional</h3></div>
+            <dl class="pp-datos"><div class="pp-datos__fila"><dt>Trayectoria</dt><dd><ul class="fp-trayectoria"><li><span class="fp-cargo">Desarrolladora backend</span><span class="fp-sub">Banco nacional · 2021–2026</span>Pagos inmediatos y conciliación diaria.</li><li><span class="fp-cargo">Desarrolladora Java</span><span class="fp-sub">Aseguradora · 2018–2021</span>Integración de pólizas con canales digitales.</li></ul></dd></div><div class="pp-datos__fila"><dt>Stack</dt><dd>Java 17 · Spring Boot · Kafka · PostgreSQL · OpenShift</dd></div><div class="pp-datos__fila"><dt>Sectores</dt><dd>Banca · Seguros</dd></div><div class="pp-datos__fila"><dt>Modalidad</dt><dd>Híbrido · Medellín, Colombia</dd></div></dl>
+          </section>
+        </div>
+        <footer class="pp-hoja__pie fp-pie">
+          <div class="pp-toast" role="status"><span class="pp-toast__marca" aria-hidden="true">✓</span><p class="pp-toast__texto">Laura Méndez está en tu equipo.</p><button type="button" class="pp-toast__accion">Deshacer</button></div>
+          <button type="button" class="pp-btn pp-btn--contorno fp-foco" aria-pressed="true" title="Quitar del equipo">En el equipo</button>
+        </footer>
+  </aside>
+</div>
+</body>
+</html>

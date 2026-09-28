@@ -1,0 +1,473 @@
+<!doctype html>
+<!--
+  Prototipo de referencia — pantalla integraciones-fallidas
+  Reglas duras del artefacto (NO negociables):
+  - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
+    Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
+  - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
+    ../tokens.css. Cero valores mágicos fuera de tokens.
+  - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
+  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
+    de pantalla en archivos propios (integraciones-fallidas--estado.html), no interacciones.
+  Trazabilidad: épica EP-007 · historias HU-105 · registrada en ../manifest.json
+  Pantalla #34 «Bandeja de fallos con HubSpot» · origen: nueva. Cubre RF-9.6, RF-9.6.1 y RF-9.6.2.
+  Regla de producto: el reintento NO se agota. La solicitud se guarda antes de enviarse; el proceso
+  de trabajo diferido reintenta con espera creciente hasta un tope de 55 min, sin límite de intentos.
+  Desde el 3.er fallo la solicitud se vuelve visible en esta bandeja y se avisa por correo al
+  responsable nominal (Jonathan, Tecnología), sin dejar de reintentar. Sale de la bandeja sola
+  cuando HubSpot confirma el negocio.
+  Estado de ESTE archivo: base — 27 sep 2026, 12:41 p. m. Dos solicitudes en la bandeja con todos sus
+  datos (SOL-2026-0318, caída de HubSpot, 5 fallos; SOL-2026-0322, dato rechazado, 3 fallos), cada una
+  con confirmación al cliente, aviso nominal, bitácora de intentos y comprobación de no duplicado.
+  Abajo, «Salieron de la bandeja» recoge el edge de HU-105: SOL-2026-0311 salió porque el reintento
+  encontró el negocio que HubSpot sí había creado sin confirmar, y lo reconoció sin crear otro.
+  Del profesional solo nombre + primer apellido, código y banda; nunca foto, contacto, CV, tarifa ni fecha exacta.
+  Oficio v2 (2026-09-27): sin bordes laterales de color, sin tarjetas por dato, sin párrafo introductorio
+  ni lista de ✓ que explica el sistema; cifras en franja con hairlines; estado = punto + palabra.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fallos con HubSpot — prototipo</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
+    .pp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .pp-mono { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; }
+    .pp-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-lista { list-style: none; margin: 0; padding: 0; }
+    .pp-icono { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .pp-icono--sm { width: 14px; height: 14px; }
+    .pp-simbolo { width: 28px; height: 28px; flex: none; }
+    .pp-simbolo__base { fill: var(--tc-logo-dark); }
+    .pp-simbolo__linea { fill: none; stroke: var(--tc-logo-cyan); stroke-width: 2.4; stroke-linecap: round; }
+    .pp-simbolo__nodo { fill: var(--tc-logo-cyan); }
+    .pp-enlace { color: var(--pp-teal-ink); text-decoration: underline; text-decoration-color: var(--tc-primary-surface-border); text-underline-offset: 3px; font-weight: var(--tc-fw-medium); }
+    .pp-enlace:hover { text-decoration-color: currentColor; }
+    .pp-enlace--sutil { color: var(--tc-text-h); text-decoration: none; }
+    .pp-enlace--sutil:hover { text-decoration: underline; }
+    .pp-kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--tc-sp-1); border: 1px solid var(--tc-border); border-radius: var(--tc-r-sm); background: var(--tc-card); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); line-height: 1; color: var(--tc-text-m); }
+    .pp-encabezado { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-6); }
+    .pp-encabezado__texto { min-width: 0; }
+    .pp-encabezado__titulo { margin: 0; font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); }
+    .pp-encabezado__meta { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-encabezado__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
+    .pp-seccion + .pp-seccion { margin-top: var(--tc-sp-8); }
+    .pp-seccion__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .pp-seccion__titulo { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); }
+    .pp-con-lateral { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--tc-sp-8); align-items: start; }
+    .pp-tarjeta { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-5); }
+    @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:base */
+      /* PP:botones */
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+      .pp-btn--fantasma { color: var(--tc-text-b); }
+      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+      .pp-btn--icono { width: 40px; padding: 0; }
+      .pp-btn--sm.pp-btn--icono { width: 32px; }
+      .pp-btn--bloque { width: 100%; }
+      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+      /* /PP:botones */
+      /* PP:estado */
+      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+      /* /PP:estado */
+      /* PP:panel */
+      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+      .pp-migas a:hover { color: var(--tc-text-h); }
+      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+      @media (max-width: 1023px) {
+        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+      }
+      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+      /* /PP:panel */
+      /* PP:filas */
+      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+      .pp-fila:hover { background: var(--tc-surface-quiet); }
+      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+      .pp-fila--enlace { cursor: pointer; }
+      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+      .pp-fila__principal > p { margin: 0; }
+      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+      .pp-fila__titulo a { color: inherit; text-decoration: none; }
+      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+      @media (max-width: 767px) {
+        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+        .pp-fila__acciones { justify-content: flex-end; }
+        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+      }
+      /* /PP:filas */
+      /* PP:avisos */
+      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+      .pp-aviso__titulo::after { content: " "; }
+      .pp-aviso__accion { flex: none; align-self: center; }
+      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+      /* /PP:avisos */
+      /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; margin: 0; }
+      .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+      .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+      .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+      .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+      @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
+      /* /PP:hoja */
+  </style>
+  <style>
+    /* Composición propia de la bandeja de fallos (prefijo if-). Valores visuales → var(--token). */
+    .if-contenedor { max-width: 1120px; }
+    .if-contenedor .pp-encabezado__acciones { gap: var(--tc-sp-2) var(--tc-sp-5); padding-bottom: var(--tc-sp-1); }
+    .if-cifra a { display: flex; align-items: baseline; gap: var(--tc-sp-2); }
+    /* Franja de cifras: en línea, divisores hairline, tabular-nums (no tarjetas KPI). */
+    .if-cifras { display: flex; flex-wrap: wrap; margin: 0 0 var(--tc-sp-8); padding: 0; }
+    .if-cifra { display: grid; gap: var(--tc-sp-1); padding: 0 var(--tc-sp-8); }
+    .if-cifra:first-child { padding-left: 0; }
+    .if-cifra + .if-cifra { border-left: 1px solid var(--tc-border); }
+    .if-cifra dt { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .if-cifra dd { margin: 0; display: flex; align-items: baseline; gap: var(--tc-sp-2); }
+    .if-cifra__valor { font-size: var(--tc-fs-h2); line-height: var(--tc-lh-h2); font-weight: var(--tc-fw-semibold); font-variant-numeric: tabular-nums; color: var(--tc-text-h); }
+    .if-cifra__nota { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .if-cifra a { color: inherit; text-decoration: none; }
+    .if-cifra a:hover .if-cifra__nota { color: var(--tc-text-h); text-decoration: underline; text-underline-offset: 3px; }
+    /* Caso: una fila expandida dentro de la lista (pp-filas), no una tarjeta por caso. */
+    .if-caso { padding: var(--tc-sp-6); }
+    .if-caso + .if-caso { border-top: 1px solid var(--tc-border); }
+    .if-caso__cab { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--tc-sp-3) var(--tc-sp-8); align-items: start; }
+    .if-caso__id { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+    .if-caso__id > p { margin: 0; }
+    .if-caso__linea { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .if-codigo { font-family: var(--pp-mono); font-variant-numeric: tabular-nums; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .if-caso__titulo { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .if-caso__motivo { font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .if-proximo { display: grid; gap: 0; justify-items: end; text-align: right; }
+    .if-proximo__rotulo { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .if-proximo__hora { font-variant-numeric: tabular-nums; font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); white-space: nowrap; }
+    .if-hechos { display: flex; flex-wrap: wrap; gap: var(--tc-sp-1) var(--tc-sp-4); margin: var(--tc-sp-3) 0 0; padding: 0; list-style: none; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .if-hechos li { display: inline-flex; align-items: center; gap: var(--tc-sp-1); }
+    .if-hechos .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .if-caso__aviso { margin-top: var(--tc-sp-4); }
+    .if-cuerpo { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--tc-sp-8); margin-top: var(--tc-sp-6); }
+    .if-bloque { min-width: 0; }
+    .if-subtitulo { margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .if-bloque .pp-datos__fila { grid-template-columns: 136px minmax(0, 1fr); padding: var(--tc-sp-2) 0; }
+    .if-bloque .pp-datos__fila:first-child { padding-top: 0; }
+    .if-perfiles { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--tc-sp-1); }
+    .if-perfiles .pp-mono { font-size: var(--tc-fs-caption); color: var(--tc-text-m); margin-left: var(--tc-sp-1); }
+    .if-num { font-variant-numeric: tabular-nums; }
+    .if-correo { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .if-intentos { margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); }
+    .if-intento { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: var(--tc-sp-3); padding: var(--tc-sp-2) 0; border-top: 1px solid var(--tc-border); }
+    .if-intento:first-child { border-top: 0; padding-top: 0; }
+    .if-intento__hora { font-variant-numeric: tabular-nums; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); white-space: nowrap; }
+    .if-intento__que { min-width: 0; color: var(--tc-text-h); line-height: var(--tc-lh-body); }
+    .if-intento__extra { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .if-intento--programado .if-intento__que { color: var(--tc-text-m); }
+    .if-caso__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); margin-top: var(--tc-sp-6); padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); }
+    .if-salidas { margin-top: var(--tc-sp-10); }
+    .if-salida { grid-template-columns: 112px minmax(0, 1fr); align-items: baseline; }
+    .if-salida__fecha { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+    @media (max-width: 1023px) {
+      .if-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-6); }
+    }
+    @media (max-width: 767px) {
+      .pp-panel__topbar { gap: var(--tc-sp-2); }
+      .if-cifras { display: grid; grid-template-columns: minmax(0, 1fr); margin-bottom: var(--tc-sp-6); border-top: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); }
+      .if-cifra, .if-cifra:first-child { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: var(--tc-sp-3); padding: var(--tc-sp-3) 0; }
+      .if-cifra + .if-cifra { border-left: 0; border-top: 1px solid var(--tc-border); }
+      .if-cifra dt { font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+      .if-cifra dd { justify-content: flex-end; }
+      .if-cifra__valor { font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .if-caso { padding: var(--tc-sp-5) var(--tc-sp-4); }
+      .if-caso__cab { grid-template-columns: minmax(0, 1fr); }
+      .if-caso__titulo { white-space: normal; }
+      .if-proximo { justify-items: start; text-align: left; grid-template-columns: auto auto; column-gap: var(--tc-sp-2); align-items: baseline; justify-content: start; }
+      .if-proximo .pp-meta { grid-column: 1 / -1; }
+      .if-bloque .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .if-caso__acciones .pp-btn { flex: 1 1 auto; }
+      .if-salidas { margin-top: var(--tc-sp-8); }
+      .if-salida { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+    }
+  </style>
+</head>
+<body>
+<div class="pp-panel">
+  <!-- región: navegación / sidebar del panel -->
+  <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <div class="pp-sidebar__marca">
+      <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
+      <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Portal de perfiles</span></span>
+    </div>
+    <p class="pp-sidebar__seccion">Banco de perfiles</p>
+    <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
+    <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
+    <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+    <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
+    <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
+    <p class="pp-sidebar__seccion">Clientes</p>
+    <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
+    <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
+    <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
+    <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
+    <p class="pp-sidebar__seccion">Operación</p>
+    <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+    <a class="pp-sidelink" href="selecciones-curadas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+    <a class="pp-sidelink" href="integraciones-fallidas.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">2</span></a>
+    <div class="pp-sidebar__pie">
+      <span class="pp-avatar" aria-hidden="true">KR</span>
+      <span class="pp-persona"><span class="pp-persona__nombre">Karen Rodríguez</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
+    </div>
+  </nav>
+  
+  <div class="pp-panel__cuerpo">
+    <!-- región: cabecera con migas + sesión -->
+    <header class="pp-panel__topbar">
+      <ol class="pp-migas"><li><a href="#">Operación</a></li><li aria-current="page">Fallos con HubSpot</li></ol>
+      <div class="pp-panel__herramientas">
+        <span class="pp-meta">karen.rodriguez@trycore.com</span>
+        <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Cerrar sesión</button>
+      </div>
+    </header>
+    <!-- región: contenido principal -->
+    <main class="pp-panel__contenido">
+      <div class="if-contenedor">
+      <!-- IF:encabezado -->
+      <div class="pp-encabezado">
+        <div class="pp-encabezado__texto">
+          <h1 class="pp-encabezado__titulo">Fallos con HubSpot</h1>
+          <p class="pp-encabezado__meta">Solicitudes que HubSpot no ha confirmado tras 3 intentos. Se siguen reintentando.</p>
+        </div>
+        <div class="pp-encabezado__acciones">
+          <span class="pp-estado pp-estado--ok">Reintento activo · hace 1 min</span>
+          <span class="pp-estado pp-estado--ok">0 negocios duplicados</span>
+        </div>
+      </div>
+      <!-- /IF:encabezado -->
+
+      <!-- IF:cifras -->
+      <dl class="if-cifras" aria-label="Resumen de la integración con HubSpot">
+        <div class="if-cifra"><dt>En la bandeja</dt><dd><span class="if-cifra__valor">2</span></dd></div>
+        <div class="if-cifra"><dt>En reintento inicial</dt><dd><span class="if-cifra__valor">1</span><span class="if-cifra__nota">1–2 fallos, sin aviso</span></dd></div>
+        <div class="if-cifra"><dt>Salieron en 7 días</dt><dd><a href="#salidas"><span class="if-cifra__valor">3</span> <span class="if-cifra__nota">ver cuáles</span></a></dd></div>
+      </dl>
+      <!-- /IF:cifras -->
+
+      <!-- IF:casos -->
+      <section aria-labelledby="if-g1">
+        <h2 class="pp-sr" id="if-g1">Solicitudes sin confirmar en HubSpot</h2>
+        <ul class="pp-filas" aria-label="Solicitudes en la bandeja, la más antigua primero">
+
+          <!-- Caso 1: HubSpot caído (503). Reintento en curso, 5 fallos. -->
+          <li class="if-caso" aria-labelledby="if-c1">
+            <div class="if-caso__cab">
+              <div class="if-caso__id">
+                <p class="if-caso__linea"><span class="if-codigo">SOL-2026-0318</span><span class="pp-estado pp-estado--danger">5 fallos seguidos</span></p>
+                <h3 class="if-caso__titulo" id="if-c1">Bancolombia · Migración de pagos inmediatos</h3>
+                <p class="if-caso__motivo">HubSpot responde <span class="pp-mono">503</span>, servicio no disponible, desde las <span class="if-num">10:42 a. m.</span></p>
+              </div>
+              <div class="if-proximo">
+                <span class="if-proximo__rotulo">Próximo intento</span>
+                <span class="if-proximo__hora">12:52 p. m.</span>
+                <span class="pp-meta">intento 6 · espera máxima, 55 min</span>
+              </div>
+            </div>
+            <ul class="if-hechos" aria-label="Ya resuelto">
+              <li><span class="pp-si" aria-hidden="true">✓</span>Cliente confirmado <span class="if-num">10:42</span></li>
+              <li><span class="pp-si" aria-hidden="true">✓</span>Jonathan avisado <span class="if-num">11:02</span></li>
+              <li><span class="pp-si" aria-hidden="true">✓</span>Sin negocio en HubSpot: el intento 6 lo crea</li>
+            </ul>
+
+            <div class="if-cuerpo">
+              <div class="if-bloque">
+                <h4 class="if-subtitulo">Solicitud</h4>
+                <dl class="pp-datos">
+                  <div class="pp-datos__fila"><dt>Recibida</dt><dd class="if-num">27 sep 2026 · 10:42 a. m.</dd></div>
+                  <div class="pp-datos__fila"><dt>Quién solicita</dt><dd>Juliana Ortiz<span class="if-correo">juliana.ortiz@bancolombia.com.co</span></dd></div>
+                  <div class="pp-datos__fila"><dt>Perfiles</dt><dd>
+                    <ul class="if-perfiles">
+                      <li>Laura Méndez<span class="pp-mono">PS-0142</span></li>
+                      <li>Andrés Rojas<span class="pp-mono">PS-0217</span></li>
+                      <li>Camila Torres<span class="pp-mono">PS-0088</span></li>
+                    </ul>
+                  </dd></div>
+                  <div class="pp-datos__fila"><dt>Incorporación</dt><dd>Primera quincena de noviembre</dd></div>
+                  <div class="pp-datos__fila"><dt>Nota del cliente</dt><dd>«Necesitamos arrancar con el backend antes del congelamiento de diciembre.»</dd></div>
+                  <div class="pp-datos__fila"><dt>Propietario</dt><dd>Mateo Gómez<span class="if-correo">recibe el aviso cuando HubSpot confirme</span></dd></div>
+                </dl>
+              </div>
+              <div class="if-bloque">
+                <h4 class="if-subtitulo">Intentos</h4>
+                <ol class="if-intentos" aria-label="Intentos de SOL-2026-0318">
+                  <li class="if-intento"><span class="if-intento__hora">10:42 a. m.</span><span class="if-intento__que">Sin respuesta en 30 s</span></li>
+                  <li class="if-intento"><span class="if-intento__hora">10:47 a. m.</span><span class="if-intento__que">503 · no disponible</span></li>
+                  <li class="if-intento"><span class="if-intento__hora">11:02 a. m.</span><span class="if-intento__que">503 · no disponible<span class="if-intento__extra">Entró a la bandeja · aviso a Jonathan</span></span></li>
+                  <li class="if-intento"><span class="if-intento__hora">11:32 a. m.</span><span class="if-intento__que">503 · no disponible</span></li>
+                  <li class="if-intento"><span class="if-intento__hora">11:57 a. m.</span><span class="if-intento__que">503 · no disponible</span></li>
+                  <li class="if-intento if-intento--programado"><span class="if-intento__hora">12:52 p. m.</span><span class="if-intento__que">Intento 6, programado</span></li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="if-caso__acciones">
+              <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Ya lo creé en HubSpot…</button>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" title="Adelanta el intento 6. Busca antes la referencia en HubSpot, así que no duplica el negocio.">Reintentar ahora</button>
+            </div>
+          </li>
+
+          <!-- Caso 2: HubSpot rechaza un dato (400). Se repetirá igual hasta que alguien lo corrija. -->
+          <li class="if-caso" aria-labelledby="if-c2">
+            <div class="if-caso__cab">
+              <div class="if-caso__id">
+                <p class="if-caso__linea"><span class="if-codigo">SOL-2026-0322</span><span class="pp-estado pp-estado--warn">3 fallos, mismo error</span></p>
+                <h3 class="if-caso__titulo" id="if-c2">Grupo Éxito · Plataforma de fidelización</h3>
+                <p class="if-caso__motivo">HubSpot responde <span class="pp-mono">400</span>: la etapa «Solicitud del portal» no existe en el pipeline People Service.</p>
+              </div>
+              <div class="if-proximo">
+                <span class="if-proximo__rotulo">Próximo intento</span>
+                <span class="if-proximo__hora">12:58 p. m.</span>
+                <span class="pp-meta">intento 4 · espera de 30 min</span>
+              </div>
+            </div>
+            <ul class="if-hechos" aria-label="Ya resuelto">
+              <li><span class="pp-si" aria-hidden="true">✓</span>Cliente confirmado <span class="if-num">11:15</span></li>
+              <li><span class="pp-si" aria-hidden="true">✓</span>Jonathan avisado <span class="if-num">11:58</span></li>
+              <li><span class="pp-si" aria-hidden="true">✓</span>Sin negocio en HubSpot</li>
+            </ul>
+
+            <div class="pp-aviso pp-aviso--warn if-caso__aviso" role="status"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">Este error no se arregla solo.</span>Restaura la etapa en el pipeline de HubSpot y luego reintenta. Jonathan tiene el detalle técnico.</p></div>
+
+            <div class="if-cuerpo">
+              <div class="if-bloque">
+                <h4 class="if-subtitulo">Solicitud</h4>
+                <dl class="pp-datos">
+                  <div class="pp-datos__fila"><dt>Recibida</dt><dd class="if-num">27 sep 2026 · 11:15 a. m.</dd></div>
+                  <div class="pp-datos__fila"><dt>Quién solicita</dt><dd>Santiago Ruiz<span class="if-correo">santiago.ruiz@grupo-exito.com</span></dd></div>
+                  <div class="pp-datos__fila"><dt>Especificación</dt><dd>2 desarrolladores frontend React · semi senior · inglés B2 · híbrido en Medellín</dd></div>
+                  <div class="pp-datos__fila"><dt>Incorporación</dt><dd>En 1 a 2 meses</dd></div>
+                  <div class="pp-datos__fila"><dt>Propietario</dt><dd>Paula Quintero<span class="if-correo">recibe el aviso cuando HubSpot confirme</span></dd></div>
+                </dl>
+              </div>
+              <div class="if-bloque">
+                <h4 class="if-subtitulo">Intentos</h4>
+                <ol class="if-intentos" aria-label="Intentos de SOL-2026-0322">
+                  <li class="if-intento"><span class="if-intento__hora">11:15 a. m.</span><span class="if-intento__que">400 · etapa inexistente</span></li>
+                  <li class="if-intento"><span class="if-intento__hora">11:23 a. m.</span><span class="if-intento__que">400 · etapa inexistente</span></li>
+                  <li class="if-intento"><span class="if-intento__hora">11:58 a. m.</span><span class="if-intento__que">400 · etapa inexistente<span class="if-intento__extra">Entró a la bandeja · aviso a Jonathan</span></span></li>
+                  <li class="if-intento if-intento--programado"><span class="if-intento__hora">12:58 p. m.</span><span class="if-intento__que">Intento 4, programado</span></li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="if-caso__acciones">
+              <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Ya lo creé en HubSpot…</button>
+              <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" title="Adelanta el intento 4. Busca antes la referencia en HubSpot, así que no duplica el negocio.">Reintentar ahora</button>
+            </div>
+          </li>
+        </ul>
+      </section>
+      <!-- /IF:casos -->
+
+      <!-- IF:salidas — edge de HU-105: el negocio existía y el reintento lo reconoció sin duplicar -->
+      <section class="pp-seccion if-salidas" id="salidas" aria-labelledby="if-s">
+        <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="if-s">Salieron de la bandeja</h2><span class="pp-meta">Últimos 7 días</span></div>
+        <ul class="pp-filas" aria-label="Solicitudes que salieron de la bandeja">
+          <li class="pp-fila if-salida">
+            <span class="if-salida__fecha">Hoy 11:40</span>
+            <div class="pp-fila__principal"><p class="pp-fila__titulo">SOL-2026-0311 · Postobón — Analítica comercial</p><p class="pp-fila__meta">El negocio ya existía en HubSpot, creado el viernes sin confirmar. Se enlazó; no se creó otro.</p></div>
+          </li>
+          <li class="pp-fila if-salida">
+            <span class="if-salida__fecha">26 sep 16:05</span>
+            <div class="pp-fila__principal"><p class="pp-fila__titulo">SOL-2026-0297 · Sura — Analítica de siniestros</p><p class="pp-fila__meta">HubSpot confirmó en el intento 4.</p></div>
+          </li>
+          <li class="pp-fila if-salida">
+            <span class="if-salida__fecha">24 sep 09:12</span>
+            <div class="pp-fila__principal"><p class="pp-fila__titulo">SOL-2026-0280 · Davivienda — Core bancario</p><p class="pp-fila__meta">Karen Rodríguez lo enlazó al negocio <span class="pp-mono">18236</span>, creado a mano.</p></div>
+          </li>
+        </ul>
+      </section>
+      <!-- /IF:salidas -->
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>
