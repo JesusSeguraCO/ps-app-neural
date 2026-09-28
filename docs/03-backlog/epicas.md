@@ -25,6 +25,9 @@ prd_version_alineada: 4.13
 **Capabilities:** RF-1 (completo) · RF-2.1 · RF-2.2 · RF-19 (completo) · RF-8.1 en lo que exige la entrada al panel (vía HU-123)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: foundational`
+
+**Alcance asumido en el DoR (2026-09-28, decisión del PO).** Además de sus historias, EP-001 construye el mínimo que estas necesitan: un «Mi equipo» por invitado en el servidor (vacío al entrar, aislado entre invitados, no alterado al volver a la selección; sumar y quitar es de EP-004) y un adaptador de **solo lectura** de HubSpot para la empresa (cuenta activa y propietario, HU-092) con doble en CI y fallo cerrado.
+
 **Métrica de éxito:** el 100% de los aterrizajes con parámetros muestran el conjunto curado sin pasos intermedios; tasa de rebote en el aterrizaje por debajo del 30%.
 **Riesgo asociado:** enlace firmado que circula fuera de la empresa del cliente (§10.3 del PRD).
 

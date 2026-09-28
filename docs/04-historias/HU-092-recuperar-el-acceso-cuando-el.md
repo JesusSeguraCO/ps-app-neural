@@ -50,22 +50,23 @@ depende_de: [HU-090]
 **Entonces** veo el mensaje «Si tu correo estaba invitado, te enviamos un enlace nuevo a tu buzón»
 **Y** no se genera ni se envía ningún enlace
 
-### Edge case — la cuenta ya no está activa
+### Edge case — no se puede confirmar que la cuenta está activa
+
+**Esquema del escenario:** la renovación automática no procede
 
 **Dado** que estoy en la pantalla del enlace vencido con un correo que estaba invitado
-**Y** que la empresa de mi cuenta no figura como cuenta activa en HubSpot
+**Y** que <estado_de_la_cuenta>
 **Cuando** pido un enlace nuevo
 **Entonces** no se genera ningún enlace automáticamente
-**Y** el propietario de la empresa en HubSpot recibe un correo con la petición
+**Y** <destinatario> recibe un correo con la petición
 **Y** veo que alguien de Trycore me contactará
 
-### Edge case — HubSpot no responde al comprobar la cuenta
+**Ejemplos:**
 
-**Dado** que estoy en la pantalla del enlace vencido con un correo que estaba invitado
-**Y** que HubSpot no responde al comprobar si la cuenta está activa
-**Cuando** pido un enlace nuevo
-**Entonces** no se genera ningún enlace automáticamente
-**Y** veo que alguien de Trycore me contactará
+| estado_de_la_cuenta | destinatario |
+|---|---|
+| la empresa de mi cuenta no figura como cuenta activa en HubSpot | el propietario de la empresa en HubSpot |
+| HubSpot no responde al comprobar si la cuenta está activa | Talento Humano |
 
 ## Notas
 
@@ -83,7 +84,7 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 - Con acceso nominal, ¿la renovación para una cuenta activa sigue siendo automática, o Talento Humano debe confirmarla como confirma los invitados de un enlace nuevo (RF-1.2.7, RF-19.3)? Los criterios conservan la resolución vigente —automática para cuentas activas—.
 - ¿El enlace renovado conserva la misma selección, o se reevalúa y se ofrece la selección vigente? RF-19.2 garantiza, en cualquier caso, que se ve el estado real de cada perfil al abrir.
 - ~~¿Cuál es la fuente de verdad de «cuenta activa»?~~ **Resuelta el 2026-09-28:** la propiedad de la empresa en HubSpot (ver arriba).
-- Si HubSpot no responde al pedir un enlace nuevo, ¿a quién llega la petición para atenderla a mano? Los criterios fijan lo mínimo —no se renueva automáticamente y la persona ve que alguien de Trycore la contactará—; el destinatario del aviso en ese caso queda por confirmar (propuesta: Talento Humano, como los avisos de ADR-0006).
+- ~~Si HubSpot no responde, ¿a quién llega la petición?~~ **Resuelta el 2026-09-28 por el PO:** a Talento Humano, como los avisos de ADR-0006 (ver el esquema del escenario «no se puede confirmar que la cuenta está activa»).
 
 ## Trazabilidad
 
@@ -98,4 +99,4 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 | V | Valiosa | ✓ recupera la intención de compra del cliente que vuelve tarde |
 | E | Estimable | ✓ el canal del aviso reutiliza RF-9.5/RF-9.7.1; la fuente de «cuenta activa» quedó resuelta el 2026-09-28 (propiedad de la empresa en HubSpot, adaptador de solo lectura con doble en CI); las preguntas abiertas restantes no cambian los criterios; falta la cifra del equipo |
 | S | Pequeña | ✓ S: una pantalla de renovación y una petición |
-| T | Testeable | ✓ enlaces vencidos sembrados, con correo invitado y no invitado y con cuenta activa e inactiva, dan resultados observables |
+| T | Testeable | ✓ cinco escenarios (uno es un esquema con dos ejemplos: cuenta no activa y HubSpot sin respuesta); enlaces vencidos sembrados, con correo invitado y no invitado, cuenta activa e inactiva y HubSpot simulado caído, dan resultados observables |
