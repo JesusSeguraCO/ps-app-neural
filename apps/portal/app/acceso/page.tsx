@@ -1,18 +1,35 @@
-// Pública (ADR-0002 H5): pantalla sin datos. Explica cada motivo en lenguaje llano; las pantallas
-// definitivas de vencido, revocado y renovación llegan en el sub-slice 5 de EP-001.
-const MENSAJES: Record<string, string> = {
-  enlace_revocado: "Este enlace ya no está disponible. Pide uno nuevo a tu contacto en Trycore.",
-  enlace_vencido: "Este enlace venció. Pide uno nuevo desde el enlace que recibiste en tu correo.",
-  sesion_expirada: "Tu sesión terminó. Abre de nuevo el enlace que recibiste en tu correo.",
-};
+// Pública (ADR-0002 H5): a dónde redirige la guarda sin sesión válida. Sin datos: explica qué hacer.
+//  - enlace_revocado → «Este enlace ya no abre» (HU-144)
+//  - enlace_vencido  → pantalla de renovación (HU-092); la sesión vencida identifica el enlace
+//  - sesion_expirada o sin motivo → «abre el enlace de tu correo»
+import { cookies } from "next/headers";
+import { COOKIE_PORTAL } from "@ps/dominio/acceso/sesion";
+import { poolDe } from "@ps/infra/postgres/pool";
+import { buscarSesionPortal } from "@ps/infra/postgres/sesiones";
+import { AbreTuEnlace, EnlaceRevocado, Tarjeta } from "../../src/acceso/Pantallas";
+import { PuertaCliente } from "../../src/acceso/PuertaCliente";
+import "../acceso.css";
 
 export default async function Acceso({ searchParams }: { searchParams: Promise<{ motivo?: string }> }) {
   const { motivo } = await searchParams;
-  const mensaje = (motivo && MENSAJES[motivo]) ?? "Abre el enlace que recibiste en tu correo para ver tu selección de perfiles.";
+  if (motivo === "enlace_revocado")
+    return (
+      <Tarjeta>
+        <EnlaceRevocado />
+      </Tarjeta>
+    );
+  if (motivo === "enlace_vencido") {
+    const id = (await cookies()).get(COOKIE_PORTAL)?.value;
+    const fila = id ? await buscarSesionPortal(poolDe("portal"), id).catch(() => null) : null;
+    return (
+      <Tarjeta>
+        <PuertaCliente inicial="vencido" vencio={fila?.enlaceVigenteHasta.toISOString() ?? null} />
+      </Tarjeta>
+    );
+  }
   return (
-    <main className="mx-auto max-w-xl p-6">
-      <h1 className="text-h2 font-semibold text-text-h">Portal de Perfiles People Service</h1>
-      <p className="text-body text-text-b">{mensaje}</p>
-    </main>
+    <Tarjeta>
+      <AbreTuEnlace sesionTerminada={motivo === "sesion_expirada"} />
+    </Tarjeta>
   );
 }

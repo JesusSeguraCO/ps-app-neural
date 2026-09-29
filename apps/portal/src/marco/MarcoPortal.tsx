@@ -4,6 +4,7 @@
 import type { ReactNode } from "react";
 import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
 import { PiezasMarca } from "./Marca";
+import { TemaToggle } from "./TemaToggle";
 
 export function MarcoPortal(props: {
   cuenta: string;
@@ -38,6 +39,7 @@ export function MarcoPortal(props: {
           Mi equipo <span className="pp-equipo__conteo" aria-hidden="true">0</span>
           <span className="pp-sr">0 perfiles en el equipo</span>
         </span>
+        <TemaToggle />
       </header>
       <main className="ac-main" id="contenido">
         {props.children}

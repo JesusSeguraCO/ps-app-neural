@@ -14,7 +14,8 @@ export default async function Inicio() {
   const sesion = await exigirSesion();
   const a = await aterrizajeDelEnlace(poolDe("portal"), sesion);
   const { items, cambiaron, ningunoPublicado } = a.seleccion;
-  const desde = fechaDeColombia(a.generadoEn);
+  const enviado = fechaDeColombia(a.generadoEn);
+  const desde = enviado.replace(/ \d{4}$/, ""); // «22 sep», como el prototipo
   const aviso = avisoCambios(cambiaron, items.length, desde);
   const familias = resumenFamilias(
     items.map((i) => (i.tipo === "disponible" ? i.perfil.familia : (i.resumen?.familia ?? null))),
@@ -27,7 +28,7 @@ export default async function Inicio() {
           {tituloSeleccion(items.length, a.cuenta, a.proyecto)}
         </h1>
         <p className="pp-franja__texto">{a.razon}</p>
-        <p className="pp-franja__firma">{`Seleccionados el ${desde}`}</p>
+        <p className="pp-franja__firma">{`Seleccionados el ${enviado}`}</p>
       </section>
 
       {ningunoPublicado && (

@@ -108,7 +108,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("aterrizaje curado (HU-144, HU-0
     expect(tarjetas[4]).not.toContain(escapar(perfil("PS-0099").nombre));
     expect(tarjetas[5]).toContain("No publicado");
     expect(tarjetas[5]).not.toContain(escapar(perfil("PS-0160").nombre));
-    expect(html).toContain("Cuatro perfiles cambiaron desde el 22 sep 2026.");
+    expect(html).toContain("Cuatro perfiles cambiaron desde el 22 sep.");
   });
 
   it("ningún perfil sigue publicado → la lista completa con su estado y la invitación a explorar el banco", async () => {

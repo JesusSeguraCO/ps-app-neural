@@ -179,6 +179,7 @@ export function PuertaPanel({
                     value={d}
                     onChange={(e) => escribirDigito(i, e.target.value)}
                     onKeyDown={(e) => teclaDigito(i, e)}
+                onFocus={(e) => e.target.select()}
                     onPaste={pegarCodigo}
                   />
                 ))}
