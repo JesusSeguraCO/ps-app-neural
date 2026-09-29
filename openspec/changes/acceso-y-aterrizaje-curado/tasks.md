@@ -50,11 +50,11 @@
 
 ## 6. Sub-slice 6a — Selección, encuadre y retorno (HU-091, HU-093, HU-094)
 
-- [ ] 6.1 Selección idéntica al correo con razón referida al proyecto; perfil pausado en su lugar con etiqueta; todos no publicados → lista completa con estados e invitación a explorar con contexto; verificar los tres escenarios de HU-091
-- [ ] 6.2 Encuadre sin selección con roles y categorías publicados, filtrar por una opción, seguir sin elegir, opción vacía con «ampliar la búsqueda»; encabezado sin contexto inventado; verificar los cinco escenarios de HU-093
-- [ ] 6.3 «Mi equipo» mínimo por invitado (`equipos`/`equipo_perfiles`, único por invitado y enlace, vacío al primer ingreso, solo lectura en EP-001); verificar aislamiento entre dos invitados con datos sembrados
-- [ ] 6.4 Ampliar la búsqueda al banco completo y «Volver a la selección» sin alterar «Mi equipo»; archivados con etiqueta; sin la opción cuando no hubo selección; verificar los tres escenarios de HU-094
-- [ ] 6.5 Pantallas según el prototipo; verificar fidelidad con captura MCP y journey smoke
+- [x] 6.1 Selección idéntica al correo con razón referida al proyecto; perfil pausado en su lugar con etiqueta; todos no publicados → lista completa con estados e invitación a explorar con contexto; verificar los tres escenarios de HU-091
+- [x] 6.2 Encuadre sin selección con roles y categorías publicados, filtrar por una opción, seguir sin elegir, opción vacía con «ampliar la búsqueda»; encabezado sin contexto inventado; verificar los cinco escenarios de HU-093
+- [x] 6.3 «Mi equipo» mínimo por invitado (`equipos`/`equipo_perfiles`, único por invitado y enlace, vacío al primer ingreso, solo lectura en EP-001); verificar aislamiento entre dos invitados con datos sembrados
+- [x] 6.4 Ampliar la búsqueda al banco completo y «Volver a la selección» sin alterar «Mi equipo»; archivados con etiqueta; sin la opción cuando no hubo selección; verificar los tres escenarios de HU-094
+- [x] 6.5 Pantallas según el prototipo; verificar fidelidad con captura MCP y journey smoke
 
 ## 7. Sub-slice 6b — Invitar a un colega (HU-095, HU-145)
 

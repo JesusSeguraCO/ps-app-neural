@@ -72,6 +72,13 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 - **Renovación (decisión 2 aplicada)**: la pantalla tras pedir un enlace nuevo («Revisa tu buzón» o «Recibimos tu petición») depende solo del estado de la cuenta en HubSpot, que el worker consulta siempre, esté o no invitado el correo; el portal la consulta por `GET /api/v1/acceso/renovar/{id}`. Ventana de espera de 15 min por enlace y correo. El enlace renovado copia cuenta, proyecto, razón y selección, con vigencia nueva de 30 días y solo el invitado que lo pidió.
 - **HubSpot por nombre**: como la cuenta se escribe a mano (HU-122 escenario 4, enmienda del 2026-09-28), `estadoDeEmpresa` busca la empresa por nombre exacto cuando el enlace no tiene `cuenta_ref`; cero o varias coincidencias = «desconocido» (fallo cerrado → Talento Humano). No existe en HubSpot una propiedad «cuenta activa»: se configura con `HUBSPOT_PROP_CUENTA_ACTIVA` y `HUBSPOT_VALOR_CUENTA_ACTIVA` (en desarrollo, `lifecyclestage` = `customer`). Variables nuevas del worker: `PORTAL_ORIGEN`, `HUBSPOT_PROP_CUENTA_ACTIVA`, `HUBSPOT_VALOR_CUENTA_ACTIVA`, `CORREO_TALENTO_HUMANO` (enmienda de ADR-0010 §3.3, a registrar con la de ADR-0009 en la tarea 8.2).
 
+### Sub-slice 6a (selección, encuadre y retorno)
+
+- **Encuadre**: categorías y roles activos del catálogo con su conteo de publicados, incluidos los de 0 (vista `operacion.taxonomia_banco`, migración 0010); sin «Pedir el perfil a medida» (EP-010, HU-093).
+- **Banco («Buscar»)**: el banco completo o filtrado por una sola opción; sin buscador de texto (EP-002) ni bloques de evidencia y acciones en las tarjetas (EP-006/EP-004). Una opción sin perfiles vuelve al encuadre con el aviso y «Ampliar la búsqueda».
+- **Ninguno publicado**: el contexto que se ofrece al explorar son las categorías de la selección y se aplica como filtro; el prototipo muestra criterios «deseables», que dependen del motor de criterios (EP-002/EP-009). La categoría de un perfil que dejó de estar publicado no es dato personal y la vista la expone siempre.
+- **Mi equipo**: `identidad.equipos` / `equipo_perfiles`, creado vacío al primer ingreso (al verificar el código y, si faltara, al cargar la página); `ps_portal` sin escritura de perfiles hasta EP-004. La barra muestra su conteo; la página de Mi equipo llega con EP-004.
+
 ## Risks / Trade-offs
 
 - [EP-001 es muy grande: 7 sub-slices y casi todo el monorepo] → un sub-slice por vez, checkpoint en el hub al cerrar cada uno y `journey_smoke` verde entre ellos; el `files_scope` amplio es aceptable porque es épica fundacional y nunca va en paralelo.
