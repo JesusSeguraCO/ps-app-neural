@@ -97,6 +97,46 @@ describe.skipIf(!HAY_BD)("procesos contra una BD real (V8-11)", () => {
     expect(JSON.parse(segunda.stdout.trim().split("\n").at(-1)!).aplicadas).toEqual([]);
   });
 
+  it("el worker empaquetado siembra PANEL_ADMIN_INICIAL al arrancar con el panel vacío", async () => {
+    const entorno: Record<string, string> = {
+      ...entornoDev("worker"),
+      APP_ENV: "ci",
+      DATABASE_URL: bd.urlDe("ps_worker"),
+      DATABASE_DIRECT_URL: bd.urlDe("ps_worker", { directa: true }),
+    };
+    const hijo = spawn(process.execPath, [WORKER], {
+      env: { PATH: process.env.PATH ?? "", ...entorno },
+    });
+    let salida = "";
+    hijo.stdout.on("data", (d) => (salida += String(d)));
+    const cerrado = new Promise<number | null>((res) => hijo.on("exit", res));
+    await new Promise<void>((res, rej) => {
+      const fin = Date.now() + 5_000;
+      const t = setInterval(() => {
+        if (/worker_arrancado/.test(salida)) {
+          clearInterval(t);
+          res();
+        } else if (Date.now() > fin) {
+          clearInterval(t);
+          rej(new Error(`el worker no arrancó: ${salida}`));
+        }
+      }, 50);
+    });
+    hijo.kill("SIGTERM");
+    expect(await cerrado).toBe(0);
+
+    expect(salida).toContain("admin_inicial_sembrado");
+    const u = await bd.instalacion.query(`SELECT correo, rol FROM identidad_panel.usuarios_panel`);
+    expect(u.rows).toEqual([
+      { correo: entorno.PANEL_ADMIN_INICIAL!.toLowerCase(), rol: "administrador" },
+    ]);
+    const a = await bd.instalacion.query(
+      `SELECT origen FROM auditoria.auditoria WHERE entidad = 'usuarios_panel'`,
+    );
+    expect(a.rows).toEqual([{ origen: "migracion" }]);
+    await bd.instalacion.query(`DELETE FROM identidad_panel.usuarios_panel`);
+  }, 30_000);
+
   it("el worker empaquetado despacha un código por NOTIFY y se apaga limpio con SIGTERM", async () => {
     const i = bd.instalacion;
     const u = await i.query(

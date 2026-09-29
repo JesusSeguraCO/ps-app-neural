@@ -6,6 +6,7 @@ import pg from "pg";
 import { doblesDe, exigirConfiguracion } from "@ps/infra/config";
 import { DobleCorreo, enviadorMailgun, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { vuelta, type ContextoDespacho } from "./despacho";
+import { sembrarAdminInicial } from "./sembrar";
 
 const registrar = (e: Record<string, unknown>) =>
   console.log(JSON.stringify({ ts: new Date().toISOString(), ...e }));
@@ -68,6 +69,15 @@ async function arrancar(): Promise<void> {
   await escucha.connect();
   escucha.on("notification", () => despertar?.());
   await escucha.query("LISTEN trabajos");
+  await sembrarAdminInicial(
+    {
+      bd,
+      auditoria: { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! },
+      emailHmac: config.EMAIL_HMAC_KEY!,
+      registrar,
+    },
+    config.PANEL_ADMIN_INICIAL!,
+  );
   registrar({ evento: "worker_arrancado", pid: process.pid, pausado, dobles: [...doblesDe(config)] });
   await bucle();
 }
