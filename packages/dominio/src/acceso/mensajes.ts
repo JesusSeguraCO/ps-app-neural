@@ -32,7 +32,7 @@ const T = {
   b: "#3B4256",
   m: "#5C6377",
   s: "#6B7285",
-  cuerpo: "Geist,'Segoe UI',Arial,sans-serif",
+  cuerpo: "Geist,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif",
   mono: "'Geist Mono',Menlo,monospace",
 };
 
@@ -82,7 +82,7 @@ export function mensajeCodigo(
         `<tr><td width="64" style="padding:0 12px ${i < filas.length - 1 ? 4 : 0}px 0;white-space:nowrap;vertical-align:top">${escapar(k)}</td><td style="padding:0 0 ${i < filas.length - 1 ? 4 : 0}px;color:${T.b};font-variant-numeric:tabular-nums">${escapar(v)}</td></tr>`,
     )
     .join("");
-  const html = `<!doctype html><html lang="es"><body style="margin:0;background:${T.canvas}">
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapar(asunto)}</title></head><body style="margin:0;background:${T.canvas}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${T.canvas}"><tr><td style="padding:40px 12px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;margin:0 auto;background:${T.card};border:1px solid ${T.borde};border-radius:10px;border-collapse:separate;overflow:hidden;font-family:${T.cuerpo};color:${T.b}">
 <tr><td style="padding:18px 32px;border-bottom:1px solid ${T.borde}"><span style="font-size:17px;font-weight:700;color:${T.h}">trycore</span><span style="font-size:13px;color:${T.m}">&nbsp;/&nbsp;${escapar(producto)}</span></td></tr>

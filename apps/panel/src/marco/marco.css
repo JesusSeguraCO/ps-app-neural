@@ -2,3 +2,6 @@
 .mp-seccion { display: contents; }
 .mp-sidelink--inactivo { cursor: default; opacity: 0.55; }
 .mp-sidelink--inactivo:hover { background: none; color: var(--tc-navy-ink); }
+/* Ancla los textos solo para lector (.pp-sr, absolutos) dentro del menú: sin ella escapan del menú
+   horizontal con scroll en móvil y ensanchan todo el documento. */
+.pp-sidebar { position: relative; }

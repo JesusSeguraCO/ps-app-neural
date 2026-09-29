@@ -42,6 +42,17 @@ Las decisiones de arquitectura ya están tomadas y aceptadas; este diseño **no 
 
 8. **Pantallas** desde `docs/05-prototipo/` (37 pantallas de EP-001 aprobadas) con los tokens y componentes de `packages/ui`; fidelidad verificada por captura real con MCP chrome-devtools en la fase smoke de cada sub-slice con UI.
 
+## Desviaciones intencionales del prototipo (fidelidad del sub-slice 2)
+
+Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-28):
+
+- **Menú del panel**: los doce destinos se ven siempre y van deshabilitados hasta que su épica los entregue (decisión del sponsor, 2026-09-28). Sin conteos mientras no haya datos.
+- **Inicio del panel**: encabezado, no la tabla de Inventario (pertenece a otra épica).
+- **Pie de la barra lateral**: rol y hora de fin de la jornada en lugar del nombre; `usuarios_panel` no guarda nombre (el correo ya va en la barra superior).
+- **Vigencia del código**: 10 minutos (ADR-0002); el prototipo dice 15.
+- **Sesión caducada**: sin «Al entrar vuelves a …»; no hay `?volver=` (redirector abierto, ADR-0002).
+- **Pie de la puerta en móvil**: objetivo táctil de 44 px (M-2) baja el pie unos 12 px.
+
 ## Risks / Trade-offs
 
 - [EP-001 es muy grande: 7 sub-slices y casi todo el monorepo] → un sub-slice por vez, checkpoint en el hub al cerrar cada uno y `journey_smoke` verde entre ellos; el `files_scope` amplio es aceptable porque es épica fundacional y nunca va en paralelo.

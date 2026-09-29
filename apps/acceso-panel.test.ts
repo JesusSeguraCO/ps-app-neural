@@ -117,7 +117,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
     ];
     for (const d of destinos) expect(html, d).toMatch(new RegExp(`aria-disabled="true"[^>]*>(<svg[\\s\\S]*?</svg>)?${d}<`));
     expect(html.match(/class="pp-sidelink[^"]*"[^>]*aria-disabled="true"/g)?.length).toBe(12);
-    expect(html).toContain("Administración de inventario");
+    expect(html).toContain(">Administración<");
     expect(html).toMatch(/Sesión hasta las \d{1,2}:\d{2}(\s|&nbsp;)[ap]\. m\./);
     expect(html).toContain("Cerrar sesión");
     // El código sirve una vez.
@@ -303,7 +303,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
       headers: { cookie: `__Host-pp=${id}` },
     });
     const html = await puerta.text();
-    expect(html).toMatch(/Entraste (hoy|el [^<]+) a las \d{1,2}:\d{2}/);
+    expect(html).toMatch(/Entraste (hoy|el [^<]+) a las <span class="pa-num">\d{1,2}:\d{2}/);
     expect(html).toContain("y la sesión dura 12 horas");
     expect(html).toMatch(/value="ana@trycore\.com"/);
     // Sin cookie: texto general y campo vacío.

@@ -22,6 +22,7 @@ describe("correo del código (prototipo correo-codigo-acceso y --panel)", () => 
     expect(m.html).toContain("background:#F1F3F7"); // caja del código (bg-subtle)
     expect(m.html).toContain("text-align:center");
     expect(m.html).not.toMatch(/<a\s|href=/);
+    expect(m.html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1">');
     expect(m.texto).not.toContain(" a el ");
   });
 

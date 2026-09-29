@@ -205,10 +205,6 @@
       
 /* /PP:hoja */
 
-/* PP:nombre */
- ... 
-/* /PP:nombre */
-
 /* PP:panel */
       .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
       .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }

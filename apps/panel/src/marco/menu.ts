@@ -93,7 +93,7 @@ export const MENU_PANEL: SeccionMenu[] = [
 ];
 
 export const ROL_ETIQUETA = {
-  administrador: "Administración de inventario",
+  administrador: "Administración",
   observador: "Consulta",
 } as const;
 

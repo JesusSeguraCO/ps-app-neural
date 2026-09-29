@@ -10,6 +10,19 @@ type Paso = { tipo: "correo" } | { tipo: "codigo"; correo: string };
 
 const CONTACTO = "talento.humano@trycore.com";
 
+// La hora de entrada va resaltada como en el prototipo (pa-num: color de título, cifras tabulares).
+function conHoraResaltada(texto: string) {
+  const m = texto.match(/\d{1,2}:\d{2} [ap]\. m\./);
+  if (!m || m.index === undefined) return texto;
+  return (
+    <>
+      {texto.slice(0, m.index)}
+      <span className="pa-num">{m[0]}</span>
+      {texto.slice(m.index + m[0].length)}
+    </>
+  );
+}
+
 export function PuertaPanel({
   sesionTerminada,
   explicacion,
@@ -98,8 +111,10 @@ export function PuertaPanel({
             <h1>{sesionTerminada ? "Tu sesión terminó" : "Entra al panel"}</h1>
             <p className="pa-lead" role="status">
               {sesionTerminada
-                ? (explicacion ??
-                  "La sesión dura 12 horas y se cierra tras 60 minutos sin actividad. Pide un código nuevo para seguir.")
+                ? conHoraResaltada(
+                    explicacion ??
+                      "La sesión dura 12 horas y se cierra tras 60 minutos sin actividad. Pide un código nuevo para seguir.",
+                  )
                 : "Te enviamos un código de un solo uso. Sin contraseña."}
             </p>
             <div className="pp-campo pa-form">
