@@ -1,5 +1,6 @@
 // Frontera `otp-mail` (build-config.json): Mailgun por su API HTTP, solo desde el servidor
 // (ADR-0009). Llave de envío de dominio por componente; `fetch` con timeout; sin seguimiento de clics.
+import "server-only";
 import { clasificarEnvio, type ResultadoEnvio } from "@ps/dominio/acceso/codigo";
 
 export interface Mensaje {

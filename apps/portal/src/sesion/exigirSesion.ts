@@ -5,12 +5,16 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { COOKIE_PORTAL, destinoSinSesion, validarSesionPortal } from "@ps/dominio/acceso/sesion";
+import {
+  COOKIE_PORTAL,
+  destinoSinSesion,
+  validarSesionPortal,
+  type SesionPortalVerificada,
+} from "@ps/dominio/acceso/sesion";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { buscarSesionPortal } from "@ps/infra/postgres/sesiones";
 
-declare const marca: unique symbol;
-export type SesionVerificada = { readonly enlaceId: string; readonly invitadoId: string; readonly [marca]: true };
+export type SesionVerificada = SesionPortalVerificada;
 
 export const exigirSesion = cache(async (): Promise<SesionVerificada> => {
   const id = (await cookies()).get(COOKIE_PORTAL)?.value;

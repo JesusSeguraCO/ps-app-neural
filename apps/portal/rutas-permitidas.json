@@ -1,4 +1,1 @@
-{
-  "_comentario": "Lista positiva de rutas del portal (V8-1, ADR-0008). Toda ruta del manifiesto de la build que no esté aquí hace fallar CI. Se revisa en cada PR que la toque.",
-  "rutas": ["/", "/_not-found", "/acceso", "/e", "/api/v1/salud/lista", "/api/v1/salud/vivo"]
-}
+{"_comentario": "Lista positiva de rutas del portal (V8-1, ADR-0008). Toda ruta del manifiesto de la build que no esté aquí hace fallar CI. Se revisa en cada PR que la toque.", "rutas": ["/", "/_not-found", "/acceso", "/e", "/api/v1/salud/lista", "/api/v1/salud/vivo", "/api/v1/catalogo"]}

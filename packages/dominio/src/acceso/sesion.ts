@@ -104,3 +104,12 @@ export function explicarFinDeSesion(
   const cuando = dia === hoy ? `hoy a las ${hora}` : `el ${dia} a las ${hora}`;
   return `Entraste ${cuando} y la sesión dura 12 horas. ${seguir}`;
 }
+
+// Sesión del portal ya revalidada en BD (la construyen solo `exigirSesion` del portal y
+// `conSesionPortal`). La proyección del catálogo la exige como argumento (ADR-0008 fila UC-4).
+declare const marcaSesionPortal: unique symbol;
+export type SesionPortalVerificada = {
+  readonly enlaceId: string;
+  readonly invitadoId: string;
+  readonly [marcaSesionPortal]: true;
+};

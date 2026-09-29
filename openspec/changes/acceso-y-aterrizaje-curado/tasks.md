@@ -28,7 +28,7 @@
 
 - [x] 3.1 Tablas mínimas de perfil y consentimiento con estados (publicado, borrador, pausado, archivado, colocado con fecha de liberación), rol y categoría; vista `catalogo_publicable` y vista de estados por código sin campos B.4; verificar V8-10 (no devuelve perfiles sin publicar ni sin consentimiento; `ps_portal` no lee `perfiles`)
 - [x] 3.2 Siembra de perfiles ficticios solo en local, CI y staging (bloqueada con `APP_ENV=produccion`); verificar que la siembra falla en producción
-- [ ] 3.3 `GET /api/v1/catalogo` con sesión y esquema estricto; verificar V8-4 (401 sin sesión, campos extra fallan, rastreo de HTML/RSC sin campos B.4, `server-only`)
+- [x] 3.3 `GET /api/v1/catalogo` con sesión y esquema estricto; verificar V8-4 (401 sin sesión, campos extra fallan, rastreo de HTML/RSC sin campos B.4, `server-only`)
 
 ## 4. Sub-slice 4 — Generación del enlace (HU-122)
 

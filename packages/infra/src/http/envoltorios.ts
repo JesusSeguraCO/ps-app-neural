@@ -5,10 +5,19 @@
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { esAccion, puede, type AccionPanel } from "@ps/dominio/acceso/permisos";
-import { CABECERA_CSRF, COOKIE_CSRF, COOKIE_PANEL, validarSesionPanel, type RolPanel } from "@ps/dominio/acceso/sesion";
+import {
+  CABECERA_CSRF,
+  COOKIE_CSRF,
+  COOKIE_PANEL,
+  COOKIE_PORTAL,
+  validarSesionPanel,
+  validarSesionPortal,
+  type RolPanel,
+  type SesionPortalVerificada,
+} from "@ps/dominio/acceso/sesion";
 import { CABECERA_BORDE, bordeValido } from "../perimetro";
 import { poolDe } from "../postgres/pool";
-import { buscarSesionPanel, refrescarActividadPanel } from "../postgres/sesiones";
+import { buscarSesionPanel, buscarSesionPortal, refrescarActividadPanel } from "../postgres/sesiones";
 
 export { CABECERA_CSRF, COOKIE_CSRF };
 
@@ -96,6 +105,20 @@ export function conSesionPanel(
     if (!r.ok) return json(401, { motivo: r.motivo === "sin_sesion" ? "sin_sesion" : r.motivo });
     if (r.refrescarActividad) await refrescarActividadPanel(bd, id!);
     return h(req, { usuarioId: r.usuarioId, correo: r.correo, rol: r.rol, idCookie: id! });
+  };
+}
+
+// Portal: revalida en BD enlace activo y vigente e invitado activo (misma regla que la guarda de
+// página); sin sesión válida, 401 sin cuerpo de datos.
+export function conSesionPortal(
+  h: (req: Request, sesion: SesionPortalVerificada) => Promise<Response> | Response,
+): Manejador<unknown> {
+  return async (req) => {
+    const id = leerCookie(req, COOKIE_PORTAL);
+    const fila = id ? await buscarSesionPortal(poolDe("portal"), id) : null;
+    const r = validarSesionPortal(fila, new Date());
+    if (!r.ok) return json(401, { motivo: r.motivo });
+    return h(req, { enlaceId: r.enlaceId, invitadoId: r.invitadoId } as SesionPortalVerificada);
   };
 }
 

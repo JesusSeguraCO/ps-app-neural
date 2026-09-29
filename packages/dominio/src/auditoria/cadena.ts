@@ -1,6 +1,7 @@
 // Cadena de auditoría (ADR-0003 «Revisión adversarial» H1, H42): el hash cubre metadatos y el
 // compromiso HMAC(clave_titular, valor) de antes y después; los valores viven cifrados aparte con la
 // clave del titular (AES-256-GCM), envuelta con AUDIT_KEK. Cálculo puro, sin BD.
+import "server-only";
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from "node:crypto";
 
 export type OrigenAuditoria =
