@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { bordeValido, decidirPerimetro, politicaCsp, type EntradaPerimetro } from "./perimetro";
+import {
+  bordeValido,
+  decidirPerimetro,
+  politicaCsp,
+  urlDeRedireccion,
+  type EntradaPerimetro,
+} from "./perimetro";
 
 const SECRETO = "b".repeat(48);
 const ANTERIOR = "a".repeat(48);
@@ -135,5 +141,36 @@ describe("politicaCsp (ADR-0010 fila QA-5, UC-14)", () => {
     });
     expect(panel).toContain("connect-src 'self' https://ps-evidencias.nyc3.digitaloceanspaces.com");
     expect(politicaCsp("N", { host: "portal" })).not.toContain("digitaloceanspaces");
+  });
+});
+
+describe("urlDeRedireccion (Location con el host público)", () => {
+  const cab = (h: Record<string, string>) => new Headers(h);
+  it("usa el Host de la petición y el protocolo de x-forwarded-proto, no el host de escucha", () => {
+    expect(
+      urlDeRedireccion(
+        "/acceso",
+        cab({ host: "panel.people.trycore.com", "x-forwarded-proto": "https" }),
+        "http://localhost:8080/",
+      ),
+    ).toBe("https://panel.people.trycore.com/acceso");
+  });
+  it("sin x-forwarded-proto conserva el protocolo de la petición", () => {
+    expect(urlDeRedireccion("/acceso", cab({ host: "127.0.0.1:3101" }), "http://localhost:3101/")).toBe(
+      "http://127.0.0.1:3101/acceso",
+    );
+  });
+  it("un Host o protocolo malformado no se usa: cae al de la petición", () => {
+    expect(
+      urlDeRedireccion(
+        "/acceso",
+        cab({ host: "evil.com/x@", "x-forwarded-proto": "javascript" }),
+        "http://localhost:3101/",
+      ),
+    ).toBe("http://localhost:3101/acceso");
+  });
+  it("solo acepta rutas propias como destino", () => {
+    expect(() => urlDeRedireccion("//evil.com", cab({ host: "a.b" }), "http://a.b/")).toThrow();
+    expect(() => urlDeRedireccion("https://evil.com", cab({ host: "a.b" }), "http://a.b/")).toThrow();
   });
 });

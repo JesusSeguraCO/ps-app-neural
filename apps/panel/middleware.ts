@@ -3,7 +3,7 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE_CSRF, COOKIE_PANEL } from "@ps/dominio/acceso/sesion";
-import { decidirPerimetro } from "@ps/infra/perimetro";
+import { decidirPerimetro, urlDeRedireccion } from "@ps/infra/perimetro";
 import rutasPublicas from "./rutas-publicas.json";
 
 export const config = {
@@ -23,7 +23,8 @@ export function middleware(req: NextRequest) {
     hayCookieSesion: req.cookies.has(COOKIE_PANEL),
   });
   if (decision.tipo === "rechazar") return new NextResponse(null, { status: 403 });
-  if (decision.tipo === "redirigir") return NextResponse.redirect(new URL(decision.a, req.url), 307);
+  if (decision.tipo === "redirigir")
+    return NextResponse.redirect(urlDeRedireccion(decision.a, req.headers, req.url), 307);
 
   // Next toma el nonce de la CSP de la petición y lo aplica a sus scripts.
   const cabeceras = new Headers(req.headers);

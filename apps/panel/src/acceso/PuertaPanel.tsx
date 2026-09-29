@@ -146,6 +146,8 @@ export function PuertaPanel({ sesionTerminada }: { sesionTerminada: boolean }) {
                       casillas.current[i] = el;
                     }}
                     className="pp-codigo__casilla"
+                    id={`pa-codigo-${i + 1}`}
+                    name={`codigo-${i + 1}`}
                     inputMode="numeric"
                     autoComplete={i === 0 ? "one-time-code" : "off"}
                     maxLength={1}

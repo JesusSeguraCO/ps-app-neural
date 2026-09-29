@@ -3,6 +3,7 @@
 // por manifiesto (V2-1) y lista positiva de rutas (V8-1).
 import { createHash, randomBytes } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
+import http from "node:http";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { OPCIONALES, VARIABLES } from "@ps/infra/config";
@@ -229,6 +230,36 @@ describe.skipIf(!HAY_BD || !APPS.every(hayBuild)).each(APPS)("esqueleto de %s", 
         }
       }
     }, 60_000);
+
+    it("la redirección del middleware lleva el host público de la petición, nunca el de escucha", async () => {
+      // Detrás de App Platform: Host público y x-forwarded-proto=https. Con `req.url` (host de
+      // escucha del standalone) el navegador acababa en http://localhost:PORT/acceso.
+      const publico = app === "portal" ? "people.trycore.com" : "panel.people.trycore.com";
+      // `fetch` no deja fijar Host: petición HTTP directa.
+      const r = await new Promise<{ status?: number; location?: string }>((res, rej) => {
+        const u = new URL(srv.url);
+        http
+          .get(
+            {
+              hostname: u.hostname,
+              port: u.port,
+              path: "/",
+              headers: {
+                host: publico,
+                "x-forwarded-proto": "https",
+                "x-ps-edge": entorno.EDGE_SECRET ?? "",
+              },
+            },
+            (m) => {
+              m.resume();
+              res({ status: m.statusCode, location: m.headers.location });
+            },
+          )
+          .on("error", rej);
+      });
+      expect(r.status).toBe(307);
+      expect(r.location).toBe(`https://${publico}/acceso`);
+    });
 
     it("cada page.tsx protegida llama a exigirSesion antes de cualquier otro await", () => {
       const carpeta = `${RAIZ}apps/${app}/app`;

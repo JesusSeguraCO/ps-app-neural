@@ -91,3 +91,20 @@ export function decidirPerimetro(
     csp: politicaCsp(nonce, { host: e.host, origenSpaces: opciones.origenSpaces }),
   };
 }
+
+// URL absoluta para un 307 del middleware (Next exige absoluta). `req.url` del servidor standalone
+// lleva el host de escucha (`localhost:PORT`), así que se usa el Host de la petición —el mismo que
+// `conCsrf` compara con el Origin— y el protocolo de `x-forwarded-proto` (App Platform). Si alguno
+// no tiene forma válida se cae al de `req.url`. El destino solo puede ser una ruta propia.
+const HOST_VALIDO = /^[a-z0-9.-]+(:\d{1,5})?$/i;
+
+export function urlDeRedireccion(destino: string, cabeceras: Headers, urlPeticion: string): string {
+  if (!/^\/(?!\/)/.test(destino)) throw new Error(`destino de redirección no propio: ${destino}`);
+  const peticion = new URL(urlPeticion);
+  const host = cabeceras.get("host");
+  const proto = cabeceras.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const origen = `${proto === "https" || proto === "http" ? proto : peticion.protocol.slice(0, -1)}://${
+    host && HOST_VALIDO.test(host) ? host : peticion.host
+  }`;
+  return new URL(destino, origen).toString();
+}
