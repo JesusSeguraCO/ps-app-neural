@@ -33,8 +33,12 @@ export async function procesarCodigoPropio(opciones: {
       [opciones.trabajoId, reclamo],
     );
     const fila = r.rows[0] as { id: string; payload: { ref: string | null } } | undefined;
-    if (!fila) return; // la tomó el worker o ya no está pendiente
+    if (!fila) {
+      registrar({ evento: "degradado_sin_fila", trabajo: opciones.trabajoId });
+      return; // la tomó el worker o ya no está pendiente
+    }
     if (fila.payload.ref === null) {
+      registrar({ evento: "degradado_sin_efecto", trabajo: opciones.trabajoId });
       await opciones.bd.query(`SELECT operacion.cerrar_propio($1, $2, 'sin_efecto')`, [
         fila.id,
         reclamo,
