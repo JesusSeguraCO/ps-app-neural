@@ -8,31 +8,64 @@ import { hmacCorreo } from "@ps/dominio/acceso/codigo";
 import { dominioDistinto, situacionPeticion, type MarcaPeticion } from "@ps/dominio/enlaces/invitaciones";
 import { conAuditoria, type CambioAuditado, type ClavesAuditoria } from "./auditoria";
 
+export interface EnlacePeticion {
+  codigo: string;
+  cuenta: string;
+  proyecto: string | null;
+  estado: "vigente" | "vencido" | "revocado";
+  desde: Date | null;
+}
+
+export interface InvitadoEnlace {
+  correo: string;
+  origen: "inicial" | "invitacion_aprobada";
+  desde: Date;
+}
+
 export interface PeticionPanel {
   id: string;
   correo: string;
   nombre: string | null;
   paraQue: string | null;
   pideCorreo: string;
-  enlace: { codigo: string; cuenta: string; proyecto: string | null; estado: "vigente" | "vencido" | "revocado"; desde: Date | null };
+  enlace: EnlacePeticion;
   pedidaEn: Date;
   dominioDistinto: boolean;
   marca: MarcaPeticion;
   puedeAprobar: boolean;
   puedeRechazar: boolean;
+  // Solo si el correo ya está invitado: la lista del enlace para la hoja «ya tiene acceso».
+  invitados: InvitadoEnlace[] | null;
 }
 
-export interface DecisionReciente {
+export interface DecisionPanel {
+  id: string;
   estado: "aprobada" | "rechazada";
   correo: string;
-  enlace: string;
+  nombre: string | null;
+  paraQue: string | null;
+  pideCorreo: string;
+  enlace: { codigo: string; cuenta: string; proyecto: string | null };
   motivo: string | null;
+  pedidaEn: Date;
   resueltaEn: Date;
+  resueltaPor: { id: string; correo: string };
 }
 
-export async function listarPeticiones(bd: pg.Pool, ahora: Date = new Date()): Promise<{ pendientes: PeticionPanel[]; resueltas: number; recientes: DecisionReciente[] }> {
+const estadoDe = (f: { estado: string; vigente_hasta: Date }, ahora: Date) =>
+  f.estado === "revocado" ? "revocado" : f.vigente_hasta <= ahora ? "vencido" : "vigente";
+
+export async function contarPeticionesPendientes(bd: pg.Pool): Promise<number> {
+  const r = await bd.query(`SELECT count(*)::int n FROM identidad.invitaciones_solicitadas WHERE estado = 'pendiente'`);
+  return r.rows[0].n;
+}
+
+export async function listarPeticiones(
+  bd: pg.Pool,
+  ahora: Date = new Date(),
+): Promise<{ pendientes: PeticionPanel[]; resueltas: number; recientes: DecisionPanel[] }> {
   const r = await bd.query(
-    `SELECT s.id, s.correo_propuesto, s.nombre_propuesto, s.para_que, s.creado_en, p.correo AS pide,
+    `SELECT s.id, s.enlace_id, s.correo_propuesto, s.nombre_propuesto, s.para_que, s.creado_en, p.correo AS pide,
             e.codigo, e.cuenta_nombre, e.proyecto, e.estado, e.vigente_hasta, e.revocado_en,
             EXISTS (SELECT 1 FROM identidad.enlace_invitados i WHERE i.enlace_id = s.enlace_id AND i.correo_hmac = s.correo_hmac AND i.activo) AS ya
        FROM identidad.invitaciones_solicitadas s
@@ -40,8 +73,16 @@ export async function listarPeticiones(bd: pg.Pool, ahora: Date = new Date()): P
        JOIN identidad.enlace_invitados p ON p.id = s.solicitado_por
       WHERE s.estado = 'pendiente' ORDER BY s.creado_en DESC`,
   );
+  const conInvitados = r.rows.filter((f) => f.ya).map((f) => f.enlace_id);
+  const inv = conInvitados.length
+    ? await bd.query(
+        `SELECT enlace_id, correo, origen, creado_en FROM identidad.enlace_invitados
+          WHERE enlace_id = ANY($1::uuid[]) AND activo ORDER BY creado_en`,
+        [conInvitados],
+      )
+    : { rows: [] };
   const pendientes = r.rows.map((f): PeticionPanel => {
-    const estado = f.estado === "revocado" ? "revocado" : f.vigente_hasta <= ahora ? "vencido" : "vigente";
+    const estado = estadoDe(f, ahora);
     const s = situacionPeticion({ estadoEnlace: estado, yaInvitado: f.ya });
     return {
       id: f.id,
@@ -59,25 +100,42 @@ export async function listarPeticiones(bd: pg.Pool, ahora: Date = new Date()): P
       pedidaEn: f.creado_en,
       dominioDistinto: dominioDistinto(f.pide, f.correo_propuesto),
       ...s,
+      invitados: f.ya
+        ? inv.rows
+            .filter((i) => i.enlace_id === f.enlace_id)
+            .map((i) => ({ correo: i.correo, origen: i.origen, desde: i.creado_en }))
+        : null,
     };
   });
   const n = await bd.query(`SELECT count(*)::int n FROM identidad.invitaciones_solicitadas WHERE estado <> 'pendiente'`);
+  return { pendientes, resueltas: n.rows[0].n, recientes: await listarDecisiones(bd, 3) };
+}
+
+// Peticiones resueltas, la más reciente primero, con quién decidió (pestaña «Resueltas»).
+export async function listarDecisiones(bd: pg.Pool, limite = 200): Promise<DecisionPanel[]> {
   const u = await bd.query(
-    `SELECT s.estado, s.correo_propuesto, s.motivo, s.resuelto_en, e.cuenta_nombre, e.proyecto
-       FROM identidad.invitaciones_solicitadas s JOIN identidad.enlaces e ON e.id = s.enlace_id
-      WHERE s.estado <> 'pendiente' ORDER BY s.resuelto_en DESC LIMIT 5`,
+    `SELECT s.id, s.estado, s.correo_propuesto, s.nombre_propuesto, s.para_que, s.motivo, s.creado_en, s.resuelto_en,
+            p.correo AS pide, e.codigo, e.cuenta_nombre, e.proyecto, s.resuelto_por, u.correo AS resolvio
+       FROM identidad.invitaciones_solicitadas s
+       JOIN identidad.enlaces e ON e.id = s.enlace_id
+       JOIN identidad.enlace_invitados p ON p.id = s.solicitado_por
+       JOIN identidad_panel.usuarios_panel u ON u.id = s.resuelto_por
+      WHERE s.estado <> 'pendiente' ORDER BY s.resuelto_en DESC LIMIT $1`,
+    [limite],
   );
-  return {
-    pendientes,
-    resueltas: n.rows[0].n,
-    recientes: u.rows.map((f) => ({
-      estado: f.estado,
-      correo: f.correo_propuesto,
-      enlace: f.proyecto ? `${f.cuenta_nombre} · ${f.proyecto}` : f.cuenta_nombre,
-      motivo: f.motivo,
-      resueltaEn: f.resuelto_en,
-    })),
-  };
+  return u.rows.map((f) => ({
+    id: f.id,
+    estado: f.estado,
+    correo: f.correo_propuesto,
+    nombre: f.nombre_propuesto,
+    paraQue: f.para_que,
+    pideCorreo: f.pide,
+    enlace: { codigo: f.codigo, cuenta: f.cuenta_nombre, proyecto: f.proyecto },
+    motivo: f.motivo,
+    pedidaEn: f.creado_en,
+    resueltaEn: f.resuelto_en,
+    resueltaPor: { id: f.resuelto_por, correo: f.resolvio },
+  }));
 }
 
 export type ResultadoDecision =
@@ -104,7 +162,7 @@ export async function decidirPeticion(
     const f = r.rows[0];
     if (!f) return { resultado: { ok: false, motivo: "no_existe" }, cambios: [] };
     if (f.peticion !== "pendiente") return { resultado: { ok: false, motivo: "ya_resuelta" }, cambios: [] };
-    const estado = f.estado === "revocado" ? "revocado" : f.vigente_hasta <= ahora ? "vencido" : "vigente";
+    const estado = estadoDe(f, ahora);
     const correoHmac = hmacCorreo(f.correo_propuesto, secretos.emailHmac);
     const ya = await tx.query(
       `SELECT 1 FROM identidad.enlace_invitados WHERE enlace_id = $1 AND correo_hmac = $2 AND activo`,

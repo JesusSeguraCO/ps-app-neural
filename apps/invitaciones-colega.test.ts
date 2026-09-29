@@ -87,7 +87,6 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
       };
     }
 
-
     async function panelSesion(rol: "administrador" | "observador") {
       const correoPanel = `${rol}-${randomBytes(2).toString("hex")}@trycore.com`;
       const u = await bd.instalacion.query(
@@ -288,6 +287,19 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
       });
       await new Promise((res) => setTimeout(res, 800));
       expect(portal.salida()).not.toMatch(/correo_doble[^\n]*sebastian@nexoconsultores\.co/);
+      // Panel: la pestaña «Resueltas» la lista con quién decidió y el motivo; el menú cuenta las pendientes.
+      const resueltas = await (
+        await panel.pedir("/peticiones?vista=resueltas", { headers: { cookie: cookiePanel } })
+      ).text();
+      expect(resueltas).toMatch(
+        /Sebastián Mora[\s\S]*Rechazada[\s\S]*por ti[\s\S]*Motivo: Correo de una empresa externa\./,
+      );
+      const pendientes = await bd.instalacion.query(
+        `SELECT count(*)::int n FROM identidad.invitaciones_solicitadas WHERE estado = 'pendiente'`,
+      );
+      const conteo = resueltas.match(/Peticiones<span class="pp-sidelink__conteo">(\d+)/);
+      if (pendientes.rows[0].n === 0) expect(conteo).toBeNull();
+      else expect(Number(conteo?.[1])).toBe(pendientes.rows[0].n);
     });
 
     it("HU-145: en un enlace vencido o revocado la petición se marca y no se puede aprobar", async () => {
@@ -312,6 +324,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
         ).text();
         expect(lista).toMatch(o.estado ? /Enlace revocado el/ : /Enlace vencido el/);
         expect(lista).toContain("No se puede aprobar mientras el enlace no esté vigente.");
+        expect(lista).toContain(`href="/enlaces?enlace=${e.codigo}">Ver enlace`);
       }
     });
 

@@ -67,6 +67,10 @@ async function abrirSesion(
 }
 
 async function sinIncidenciasGraves(page: Page) {
+  // Tras cambiar de tema los botones transicionan su color: axe mediría un color intermedio.
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== "running"),
+  );
   const r = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
@@ -176,7 +180,10 @@ test.describe("cara cliente", () => {
     await expect(page.locator(".pp-perfil")).toHaveCount(3);
     const bd = new pg.Client({ connectionString: INSTALACION });
     await bd.connect();
-    await bd.query(`UPDATE identidad.enlaces SET estado = 'revocado', revocado_en = now() WHERE id = $1`, [enlaceId]);
+    await bd.query(
+      `UPDATE identidad.enlaces SET estado = 'revocado', revocado_en = now() WHERE id = $1`,
+      [enlaceId],
+    );
     await bd.end();
     await page.reload();
     await expect(page).toHaveURL(/\/acceso\?motivo=enlace_revocado$/);

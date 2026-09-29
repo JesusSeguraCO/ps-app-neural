@@ -1,7 +1,11 @@
 /* Pantalla peticiones-invitacion del prototipo (prefijo pi-). */
 .pi-cuerpo { margin-top: var(--tc-sp-6); }
+.pi-enlace { color: inherit; text-decoration: underline; text-decoration-color: var(--tc-border-s); text-underline-offset: 3px; }
+.pi-enlace:hover { color: var(--tc-text-h); text-decoration-color: currentColor; }
 .pi-cita { font-style: normal; quotes: "«" "»"; }
+.pi-hora { line-height: var(--tc-lh-body); white-space: nowrap; }
 .pi-texto { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-.pi-rechazo { display: grid; gap: var(--tc-sp-2); min-width: 280px; }
-.pi-rechazo__acciones { display: flex; justify-content: flex-end; gap: var(--tc-sp-2); }
-.pi-recientes { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
+.pi-texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+.pi-invitados .pp-fila { align-items: center; }
+/* Con la hoja abierta el fondo no desplaza: la pantalla mide lo que el viewport. */
+.pi-con-hoja .pp-panel { height: 100vh; overflow: hidden; }

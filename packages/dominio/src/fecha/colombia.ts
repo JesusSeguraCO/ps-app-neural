@@ -26,3 +26,34 @@ export function fechaCivil(aaaammdd: string): string {
   const [a, m, d] = aaaammdd.split("-").map(Number);
   return `${d} ${MESES[m! - 1]} ${a}`;
 }
+
+const bogota = (fecha: Date) => new Date(fecha.getTime() - 5 * 3_600_000);
+const mismoDia = (a: Date, b: Date) =>
+  a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCDate() === b.getUTCDate();
+
+// «26 sep» (día civil en America/Bogota, sin año).
+export function diaCortoDeColombia(fecha: Date): string {
+  const d = bogota(fecha);
+  return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
+}
+
+// Día relativo a `ahora`: «hoy», «26 sep» o, en otro año, «30 dic 2025».
+function diaRelativo(fecha: Date, ahora: Date): string {
+  const d = bogota(fecha);
+  const a = bogota(ahora);
+  if (mismoDia(d, a)) return "hoy";
+  return d.getUTCFullYear() === a.getUTCFullYear() ? diaCortoDeColombia(fecha) : fechaDeColombia(fecha);
+}
+
+// «hoy, 9:14 a. m.» · «26 sep, 11:02 a. m.» · «30 dic 2025, 12:00 p. m.» (filas del panel).
+export function momentoDeColombia(fecha: Date, ahora: Date = new Date()): string {
+  return `${diaRelativo(fecha, ahora)}, ${horaCortaDeColombia(fecha)}`;
+}
+
+// «hoy 10:42» · «26 sep 16:05» (actividad del panel, 24 h).
+export function momentoCortoDeColombia(fecha: Date, ahora: Date = new Date()): string {
+  const d = bogota(fecha);
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${diaRelativo(fecha, ahora)} ${hh}:${mm}`;
+}
