@@ -62,7 +62,7 @@
 - [x] 7.2 Panel: lista de peticiones por enlace; aprobar (alta con origen «invitación aprobada», sin duplicar) y rechazar con motivo; auditoría de ambas; sin aprobar en enlaces no vigentes; verificar los cuatro escenarios de HU-145
 - [x] 7.3 Colega aprobado entra a la misma selección con su «Mi equipo» vacío y aislado; colega sin invitación recibe la respuesta neutra; verificar escenarios «aprobada» y «sin estar invitado» de HU-095
 - [x] 7.4 Prueba integrada pedir → aprobar → entrar y pedir → rechazar → sin acceso (recomendación INVEST); verificar de punta a punta con el runner `integration-check`
-- [ ] 7.5 Pantallas del portal y del panel según el prototipo; verificar fidelidad con captura MCP
+- [x] 7.5 Pantallas del portal y del panel según el prototipo; verificar fidelidad con captura MCP
 
 ## 8. Cierre de la épica caparazón
 
