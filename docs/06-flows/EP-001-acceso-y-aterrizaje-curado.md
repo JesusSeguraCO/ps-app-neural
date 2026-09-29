@@ -1,7 +1,7 @@
 ---
 id: flow-001-acceso-y-aterrizaje-curado
 epica: EP-001
-historias_cubiertas: [HU-090, HU-091, HU-092, HU-093, HU-094, HU-095, HU-122, HU-144]
+historias_cubiertas: [HU-090, HU-091, HU-092, HU-093, HU-094, HU-095, HU-122, HU-144, HU-146]
 ---
 
 # Flow 001 — Acceso y aterrizaje curado
@@ -70,6 +70,10 @@ sequenceDiagram
     C->>P: Solicita renovación
     %% HU-092
     P-->>C: Pantalla de renovación con contacto, nunca error crudo
+    %% HU-092
+    P-->>C: Enlace nuevo solo al buzón de un correo invitado; respuesta neutra igual para todos
+    %% HU-146
+    P-->>TH: Aviso por correo y fila en la bandeja de renovaciones (también si no estaba invitado)
   end
 
   %% HU-093
@@ -109,6 +113,7 @@ sequenceDiagram
 | Perfil no disponible en la selección | HU-091 | AC-2 (error) |
 | Enlace manipulado | HU-090 | AC-2 (error) |
 | Enlace vencido o revocado | HU-092 | AC-1 (happy) · HU-144 AC-2 (error) |
+| Aviso de la renovación a Talento Humano | HU-146 | AC-1 (happy) · AC-2 (error) |
 | Aterrizaje sin curaduría | HU-093 | AC-1 (happy) |
 | Ampliar y volver | HU-094 | AC-1 (happy) |
 | Invitar a un colega | HU-095 | AC-1 (happy) |

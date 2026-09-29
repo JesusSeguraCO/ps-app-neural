@@ -28,7 +28,7 @@ prd_version_alineada: 4.13
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: foundational`
 
-**Alcance asumido en el DoR (2026-09-28, decisión del PO).** Además de sus historias, EP-001 construye el mínimo que estas necesitan: un «Mi equipo» por invitado en el servidor (vacío al entrar, aislado entre invitados, no alterado al volver a la selección; sumar y quitar es de EP-004) y un adaptador de **solo lectura** de HubSpot para la empresa (cuenta activa y propietario, HU-092) con doble en CI y fallo cerrado.
+**Alcance asumido en el DoR (2026-09-28, decisión del PO).** Además de sus historias, EP-001 construye el mínimo que estas necesitan: un «Mi equipo» por invitado en el servidor (vacío al entrar, aislado entre invitados, no alterado al volver a la selección; sumar y quitar es de EP-004) ~~y un adaptador de **solo lectura** de HubSpot para la empresa (cuenta activa y propietario, HU-092) con doble en CI y fallo cerrado~~ *(retirado el 2026-09-29 por el sponsor: la renovación de un enlace vencido ya no consulta HubSpot; toda petición de enlace nuevo avisa a Talento Humano por correo y en una bandeja del panel, **HU-146**)*, y un modelo mínimo de perfil publicable (perfil, consentimiento y vista `catalogo_publicable`) con perfiles ficticios, que exige HU-122 (ADR-0008, sub-slice 3).
 
 **Métrica de éxito:** el 100% de los aterrizajes con parámetros muestran el conjunto curado sin pasos intermedios; tasa de rebote en el aterrizaje por debajo del 30%.
 **Riesgo asociado:** enlace firmado que circula fuera de la empresa del cliente (§10.3 del PRD).

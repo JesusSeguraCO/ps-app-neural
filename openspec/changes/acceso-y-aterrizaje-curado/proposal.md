@@ -12,7 +12,7 @@ El portal convierte un correo curado en una conversación comercial, y todo empi
 - **Acceso nominal del cliente**: la puerta explica por qué pide el correo, envía un código de un uso solo a correos invitados con respuesta idéntica para no invitados, limita intentos, abre una sesión de 30 días acotada al enlace y al dispositivo, y permite renovar un enlace vencido solo al buzón de un invitado cuando la cuenta está activa en HubSpot (si no se puede confirmar, avisa a una persona de Trycore).
 - **Aterrizaje curado**: el cliente ve la selección con su razón, el estado real de cada perfil (nunca omitido), el encuadre cuando no hay selección, la ampliación al banco completo y el retorno a la selección; enlaces revocados o alterados muestran una salida en lenguaje llano; nada del portal se indexa ni sirve nombres sin sesión.
 - **Invitar a un colega**: el cliente pide desde el portal la invitación de un colega; Talento Humano la aprueba o rechaza en el panel, con auditoría; el colega entra con su propio «Mi equipo», vacío y aislado.
-- **Mínimos que las historias necesitan** (decisión del PO en el DoR): un «Mi equipo» por invitado en el servidor (sin sumar ni quitar, que es de EP-004), un modelo mínimo de perfil publicable con perfiles ficticios, y un adaptador de solo lectura de HubSpot (contacto de la cuenta, cuenta activa y propietario) con doble en CI.
+- **Mínimos que las historias necesitan** (decisión del PO en el DoR): un «Mi equipo» por invitado en el servidor (sin sumar ni quitar, que es de EP-004), un modelo mínimo de perfil publicable con perfiles ficticios y la bandeja de renovaciones del panel (HU-146). *El adaptador de solo lectura de HubSpot se retiró el 2026-09-29 (sponsor): la renovación ya no consulta si la cuenta está activa.*
 
 Se construye en siete sub-slices, de uno en uno y con el recorrido verde entre cada uno, en el orden normativo de ADR-0008: 1 esqueleto andante · 2 login del panel · 3 modelo mínimo de perfil publicable · 4 generación del enlace · 5 aterrizaje y acceso del cliente · 6a selección, encuadre y retorno · 6b invitar a un colega.
 
@@ -35,14 +35,14 @@ Se construye en siete sub-slices, de uno en uno y con el recorrido verde entre c
 
 - **Código**: `apps/portal`, `apps/panel`, `apps/worker`, `packages/{dominio,infra,contratos,motor,ui}`, migraciones y `roles.sql`, `docker/`, `docker-compose.yml`, `.github/` (CI mínimo de ADR-0008/0010).
 - **Datos**: esquemas `identidad` e `identidad_panel`, cola `trabajos`, enlaces, invitados y peticiones, «Mi equipo» por invitado, modelo mínimo de perfil publicable y vista `catalogo_publicable`, auditoría del panel (ADR-0003).
-- **Fronteras externas (solo servidor)**: Mailgun para los códigos y avisos (doble declarado en CI); HubSpot en solo lectura (doble en CI). Gemini no interviene.
+- **Fronteras externas (solo servidor)**: Mailgun para los códigos y avisos (doble declarado en CI). HubSpot no interviene desde el 2026-09-29; Gemini tampoco.
 - **Seguridad y datos personales**: Ley 1581; lista negra B.4 nunca cruza al portal; sin proveedor de identidad; secretos solo en variables `SECRET` por componente.
 - **Dependencias**: dentro de `.claude/config/stack-allowlist.json` (vigilado por `stack-guard.sh`).
 
 ## Trazabilidad
 
 - Épica: EP-001
-- Historias: HU-090, HU-091, HU-092, HU-093, HU-094, HU-095, HU-122, HU-123, HU-144, HU-145
+- Historias: HU-090, HU-091, HU-092, HU-093, HU-094, HU-095, HU-122, HU-123, HU-144, HU-145, HU-146
 - Discovery: docs/03-backlog/epicas.md#ep-001--acceso-y-aterrizaje-curado
 - Arquitectura: docs/adr/0002, 0003, 0008, 0009, 0010 (orden de sub-slices: ADR-0008 «Esqueleto andante y orden de construcción de la épica caparazón»)
 - Diseño: docs/05-prototipo/manifest.json (pantallas de EP-001 aprobadas)

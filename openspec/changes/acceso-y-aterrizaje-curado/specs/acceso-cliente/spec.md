@@ -59,11 +59,11 @@ Al abrir un enlace vencido, el portal SHALL explicar en lenguaje llano que venci
 - **WHEN** abro un enlace que venció
 - **THEN** veo la explicación y el campo para pedir un enlace nuevo
 
-### Requirement: Renovación solo al buzón de un invitado con cuenta activa
-Al pedir un enlace nuevo, el portal SHALL responder siempre «Si tu correo estaba invitado, te enviamos un enlace nuevo a tu buzón». Solo si el correo estaba invitado y la empresa de la cuenta figura como activa en HubSpot SHALL generarse un enlace nuevo, que SHALL llegar únicamente al buzón y nunca mostrarse en pantalla. Dentro de la ventana de espera no SHALL generarse un segundo enlace.
+### Requirement: Renovación solo al buzón de un invitado
+Al pedir un enlace nuevo, el portal SHALL responder siempre «Si tu correo estaba invitado, te enviamos un enlace nuevo a tu buzón». Si el correo estaba invitado SHALL generarse un enlace nuevo, sin consultar sistemas externos, que SHALL llegar únicamente al buzón y nunca mostrarse en pantalla. Dentro de la ventana de espera no SHALL generarse un segundo enlace. *(2026-09-29, sponsor: ya no se consulta si la cuenta está activa en HubSpot; toda petición avisa a Talento Humano, ver «Aviso de renovaciones a Talento Humano».)*
 
-#### Scenario: Invitado con cuenta activa
-- **GIVEN** un correo invitado en el enlace vencido y la empresa activa en HubSpot
+#### Scenario: Invitado pide un enlace nuevo
+- **GIVEN** un correo invitado en el enlace vencido
 - **WHEN** pide un enlace nuevo
 - **THEN** ve el mensaje neutro, el enlace nuevo llega a su buzón y nunca aparece en pantalla
 
@@ -77,15 +77,35 @@ Al pedir un enlace nuevo, el portal SHALL responder siempre «Si tu correo estab
 - **WHEN** ese correo pide un enlace nuevo
 - **THEN** ve el mensaje neutro y no se genera ni se envía ningún enlace
 
-### Requirement: Renovación no confirmable pasa a una persona
-Si la cuenta no figura como activa en HubSpot, o HubSpot no responde al comprobarlo, no SHALL generarse ningún enlace automáticamente (fallo cerrado); SHALL enviarse la petición por correo al propietario de la empresa en HubSpot (cuenta no activa) o a Talento Humano (HubSpot sin respuesta), y la persona SHALL ver que alguien de Trycore la contactará.
+#### Scenario: Vuelvo con la sesión de un enlace vencido
+- **GIVEN** una sesión de este dispositivo cuyo enlace venció
+- **WHEN** abro el portal sin el enlace del correo
+- **THEN** veo la explicación del vencimiento con su fecha y puedo pedir un enlace nuevo con el mismo resultado
 
-#### Scenario: Cuenta no activa
-- **GIVEN** un correo invitado y la empresa sin marca de cuenta activa en HubSpot
-- **WHEN** pide un enlace nuevo
-- **THEN** no se genera enlace, el propietario de la empresa en HubSpot recibe la petición y la persona ve que Trycore la contactará
+### Requirement: Aviso de renovaciones a Talento Humano
+Cada petición de enlace nuevo SHALL avisarse a Talento Humano por correo y SHALL quedar en la bandeja de renovaciones del panel con la cuenta, el proyecto, el correo de quien la pidió, cuándo, el enlace vencido y su resultado («Enlace nuevo enviado» con el código del enlace nuevo, «No estaba invitado · no se envió enlace» o «No se pudo enviar el enlace nuevo»). Una petición repetida dentro de la ventana de espera no SHALL crear otra fila ni otro correo. La respuesta al cliente SHALL seguir siendo la misma para invitados y no invitados. (HU-146)
 
-#### Scenario: HubSpot no responde
-- **GIVEN** un correo invitado y HubSpot sin respuesta al comprobar la cuenta
-- **WHEN** pide un enlace nuevo
-- **THEN** no se genera enlace, Talento Humano recibe la petición y la persona ve que Trycore la contactará
+#### Scenario: Aviso de un invitado
+- **GIVEN** una persona invitada que pidió un enlace nuevo y lo recibió
+- **WHEN** Talento Humano abre la bandeja de renovaciones
+- **THEN** ve la petición marcada «Enlace nuevo enviado» con el código del enlace nuevo, y recibió un correo con esos datos
+
+#### Scenario: Aviso de quien no estaba invitado
+- **GIVEN** alguien cuyo correo no está invitado que pidió un enlace nuevo
+- **WHEN** Talento Humano abre la bandeja
+- **THEN** ve la petición marcada «No estaba invitado · no se envió enlace» con el correo que escribió, y recibió un correo que lo dice
+
+#### Scenario: Entrega fallida
+- **GIVEN** un enlace nuevo cuyo correo no se pudo entregar
+- **WHEN** Talento Humano abre la bandeja
+- **THEN** ve la petición marcada «No se pudo enviar el enlace nuevo»
+
+#### Scenario: Petición repetida
+- **GIVEN** una petición dentro de la ventana de espera
+- **WHEN** la misma persona vuelve a pedir
+- **THEN** la bandeja sigue con una sola fila y no llega un segundo correo
+
+#### Scenario: Revocar desde la bandeja
+- **GIVEN** una petición con «Enlace nuevo enviado»
+- **WHEN** la administradora revoca el enlace nuevo desde esa petición, con motivo opcional
+- **THEN** la petición muestra «Enlace revocado», quien lo tenga abierto pierde el acceso en su siguiente petición y queda en la auditoría con quién, cuándo, qué enlace y el motivo
