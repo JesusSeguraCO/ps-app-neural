@@ -12,7 +12,8 @@ const DIA_MS = 86_400_000;
 const CORREO = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export interface EntradaEnlace {
-  cuenta: { ref: string; nombre: string } | null;
+  // Por su nombre (HU-122: la generación no lee HubSpot); `ref` queda para un ID opcional del CRM.
+  cuenta: { nombre: string; ref?: string | null } | null;
   proyecto?: string | null;
   razon: string;
   codigos: string[];
@@ -21,7 +22,7 @@ export interface EntradaEnlace {
 }
 
 export interface EnlaceNuevo {
-  cuentaRef: string;
+  cuentaRef: string | null;
   cuentaNombre: string;
   proyecto: string | null;
   razon: string;
@@ -49,7 +50,7 @@ export function crearEnlace(
   ahora: Date,
 ): ResultadoEnlace {
   const errores: ErrorEnlace[] = [];
-  if (!e.cuenta?.ref.trim()) errores.push({ tipo: "sin_cuenta", mensaje: "Elige la cuenta a la que va el enlace." });
+  if (!e.cuenta?.nombre.trim()) errores.push({ tipo: "sin_cuenta", mensaje: "Elige la cuenta a la que va el enlace." });
 
   const razon = e.razon.trim();
   if (!razon)
@@ -81,7 +82,7 @@ export function crearEnlace(
   return {
     ok: true,
     enlace: {
-      cuentaRef: e.cuenta!.ref.trim(),
+      cuentaRef: e.cuenta!.ref?.trim() || null,
       cuentaNombre: e.cuenta!.nombre.trim(),
       proyecto: e.proyecto?.trim() || null,
       razon,

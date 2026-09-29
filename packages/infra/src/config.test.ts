@@ -18,6 +18,7 @@ function entornoCompleto(proceso: Proceso): Record<string, string> {
     LATIDO_URL: "https://latido.example/ping",
     EXPORT_AGE_RECIPIENT: "age1ejemplo",
     PANEL_ADMIN_INICIAL: "admin@trycore.com",
+    PORTAL_ORIGEN: "https://people.trycore.com",
     WORKER_PAUSADO: "0",
   };
   const entorno: Record<string, string> = {};

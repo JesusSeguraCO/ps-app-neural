@@ -27,6 +27,7 @@ case "$PROCESO" in
     comun
     echo "export DATABASE_URL=$(printf "$POOL" panel)"
     echo "export OTP_PEPPER_PANEL=$(s pepper-panel)"
+    echo "export PORTAL_ORIGEN=http://127.0.0.1:3100"
     echo "export AUDIT_HMAC_KEY=$(s auditoria)"
     echo "export AUDIT_KEK=$(s kek)"
     ;;

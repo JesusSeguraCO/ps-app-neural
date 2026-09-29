@@ -40,6 +40,7 @@ export const VARIABLES: Record<Proceso, readonly string[]> = {
     "MAILGUN_WEBHOOK_SIGNING_KEY",
     "MAILGUN_WEBHOOK_SIGNING_KEY_PREV",
     "SALUD_TOKEN",
+    "PORTAL_ORIGEN",
   ],
   worker: [
     "APP_ENV",
@@ -107,6 +108,8 @@ const FORMATO: Record<string, z.ZodType<string>> = {
   LATIDO_URL: z.url(),
   EXPORT_AGE_RECIPIENT: z.string().regex(/^age1/),
   PANEL_ADMIN_INICIAL: correoTrycore,
+  // Origen público del portal con el que el panel compone el enlace `/e/#t=` (config, no secreto).
+  PORTAL_ORIGEN: z.string().regex(/^https?:\/\/[^/\s]+$/),
   WORKER_PAUSADO: z.enum(["0", "1"]),
 };
 

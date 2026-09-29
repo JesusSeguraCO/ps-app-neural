@@ -7,6 +7,7 @@ import * as m0002 from "./0002_claves_y_admin_inicial";
 import * as m0003 from "./0003_un_codigo_vigente";
 import * as m0004 from "./0004_tope_emision";
 import * as m0005 from "./0005_inventario_minimo";
+import * as m0006 from "./0006_enlaces_panel";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -14,4 +15,5 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0003_un_codigo_vigente": m0003,
   "0004_tope_emision": m0004,
   "0005_inventario_minimo": m0005,
+  "0006_enlaces_panel": m0006,
 };

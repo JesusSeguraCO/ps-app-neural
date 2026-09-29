@@ -11,7 +11,7 @@ const ESTADOS = new Map<string, EstadoPublico>([
   ["PS-0151", "pausado"],
 ]);
 const base = {
-  cuenta: { ref: "hs-123", nombre: "Bancolombia" },
+  cuenta: { nombre: "Bancolombia" },
   proyecto: "Modernización de pagos",
   razon: "Equipo para el core de pagos: backend, QA y DevOps",
   codigos: ["PS-0142", "PS-0201", "PS-0230"],
@@ -25,7 +25,7 @@ describe("crearEnlace (HU-122, RF-19.4)", () => {
     if (!r.ok) return;
     expect(r.enlace.codigos).toEqual(["PS-0142", "PS-0201", "PS-0230"]);
     expect(r.enlace.vigenteHasta.getTime() - AHORA.getTime()).toBe(VIGENCIA_POR_OMISION_DIAS * 86_400_000);
-    expect(r.enlace).toMatchObject({ cuentaRef: "hs-123", cuentaNombre: "Bancolombia", razon: base.razon });
+    expect(r.enlace).toMatchObject({ cuentaRef: null, cuentaNombre: "Bancolombia", razon: base.razon });
   });
 
   it("la vigencia es editable", () => {
@@ -82,8 +82,8 @@ describe("crearEnlace (HU-122, RF-19.4)", () => {
     expect(!r.ok && r.errores[0]).toMatchObject({ tipo: "correo_invalido", correos: ["lider@bancolombia"] });
   });
 
-  it("sin cuenta destinataria no se emite (RF-19.4)", () => {
-    const r = crearEnlace({ ...base, cuenta: null }, ESTADOS, AHORA);
+  it.each([null, { nombre: "  " }])("sin cuenta destinataria no se emite (RF-19.4): %j", (cuenta) => {
+    const r = crearEnlace({ ...base, cuenta }, ESTADOS, AHORA);
     expect(!r.ok && r.errores.map((e) => e.tipo)).toEqual(["sin_cuenta"]);
   });
 
