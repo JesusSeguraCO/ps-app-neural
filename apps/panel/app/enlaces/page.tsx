@@ -146,6 +146,10 @@ export default async function Enlaces({
           <label className="pp-sr" htmlFor="ea-buscar">
             Buscar enlaces
           </label>
+          <svg className="pp-icono pp-icono--sm pp-buscador__icono" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-4-4" />
+          </svg>
           <input
             className="pp-input"
             id="ea-buscar"

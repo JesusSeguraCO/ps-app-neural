@@ -359,6 +359,7 @@ export function GeneradorEnlace({
                         <button
                           type="button"
                           className="pp-btn pp-btn--contorno pp-btn--sm"
+                          aria-label={`Añadir a ${p.nombre}`}
                           onClick={() => setElegidos([...elegidos, p])}
                         >
                           Añadir
