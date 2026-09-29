@@ -11,7 +11,7 @@ import "../enlaces.css";
 
 export default async function NuevoEnlace() {
   const sesion = await exigirSesion();
-  const migas = ["Clientes", "Enlaces", "Nuevo enlace"];
+  const migas = ["Clientes", { texto: "Enlaces de acceso", href: "/enlaces" }, "Nuevo enlace"];
   if (!puede(sesion.rol, "enlaces.generar")) {
     return (
       <MarcoPanel sesion={sesion} activo="enlaces" migas={migas}>

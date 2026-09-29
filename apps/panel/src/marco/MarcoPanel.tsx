@@ -23,7 +23,7 @@ export function MarcoPanel({
 }: {
   sesion: SesionVerificada;
   activo?: string;
-  migas: string[];
+  migas: Array<string | { texto: string; href: string }>;
   children: ReactNode;
 }) {
   return (
@@ -78,11 +78,14 @@ export function MarcoPanel({
       <div className="pp-panel__cuerpo">
         <header className="pp-panel__topbar">
           <ol className="pp-migas">
-            {migas.map((m, i) => (
-              <li key={m} aria-current={i === migas.length - 1 ? "page" : undefined}>
-                {m}
-              </li>
-            ))}
+            {migas.map((m, i) => {
+              const texto = typeof m === "string" ? m : m.texto;
+              return (
+                <li key={texto} aria-current={i === migas.length - 1 ? "page" : undefined}>
+                  {typeof m === "string" || i === migas.length - 1 ? texto : <a href={m.href}>{texto}</a>}
+                </li>
+              );
+            })}
           </ol>
           <div className="pp-panel__herramientas">
             <span className="pp-meta">{sesion.correo}</span>

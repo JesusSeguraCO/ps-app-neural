@@ -11,6 +11,7 @@ import {
   type ErrorEnlace,
   type EstadoPublico,
 } from "@ps/dominio/enlaces/crear";
+import { bandaDeDisponibilidad, type Banda } from "@ps/dominio/catalogo/banda";
 import { conAuditoria, type CambioAuditado, type ClavesAuditoria } from "./auditoria";
 
 export interface Autora {
@@ -109,9 +110,9 @@ export async function revocarEnlace(
     if (!e) return { resultado: { ok: false, motivo: "no_existe" }, cambios: [] };
     if (e.estado === "revocado") return { resultado: { ok: false, motivo: "ya_revocado" }, cambios: [] };
     const u = await tx.query(
-      `UPDATE identidad.enlaces SET estado = 'revocado', revocado_por = $2, revocado_en = now()
+      `UPDATE identidad.enlaces SET estado = 'revocado', revocado_por = $2, revocado_en = now(), motivo_revocacion = $3
         WHERE id = $1 RETURNING revocado_en`,
-      [e.id, autora.usuarioId],
+      [e.id, autora.usuarioId, motivo?.trim() || null],
     );
     await tx.query(
       `UPDATE identidad.enlace_tokens SET revocado_en = now() WHERE enlace_id = $1 AND revocado_en IS NULL`,
@@ -162,6 +163,7 @@ export interface FilaEnlace {
   estado: EstadoEnlace;
   revocadoEn: Date | null;
   revocadoPor: string | null;
+  motivoRevocacion: string | null;
 }
 
 export interface PerfilDeEnlace {
@@ -169,6 +171,7 @@ export interface PerfilDeEnlace {
   nombre: string | null;
   rol: string | null;
   estado: EstadoPublico | "desconocido";
+  banda: Banda | null; // solo para los disponibles (RF-3.13)
 }
 
 export interface DetalleEnlace extends FilaEnlace {
@@ -181,7 +184,7 @@ const SELECT_ENLACE = `
          COALESCE((SELECT array_agg(i.correo ORDER BY i.creado_en, i.correo) FROM identidad.enlace_invitados i
                     WHERE i.enlace_id = e.id AND i.activo), '{}') AS invitados,
          g.correo AS generado_por, e.creado_en AS generado_en, e.vigente_desde, e.vigente_hasta, e.revocado_en,
-         r.correo AS revocado_por, e.razon, e.codigos_perfil,
+         r.correo AS revocado_por, e.motivo_revocacion, e.razon, e.codigos_perfil,
          CASE WHEN e.estado = 'revocado' THEN 'revocado' WHEN e.vigente_hasta <= now() THEN 'vencido' ELSE 'vigente' END AS estado
     FROM identidad.enlaces e
     JOIN identidad_panel.usuarios_panel g ON g.id = e.generado_por
@@ -201,6 +204,7 @@ function aFila(f: Record<string, unknown>): FilaEnlace {
     estado: f.estado as EstadoEnlace,
     revocadoEn: f.revocado_en as Date | null,
     revocadoPor: f.revocado_por as string | null,
+    motivoRevocacion: f.motivo_revocacion as string | null,
   };
 }
 
@@ -219,12 +223,25 @@ export async function detalleEnlace(bd: pg.Pool, codigo: string): Promise<Detall
     `SELECT c.codigo, pf.nombre || ' ' || pf.primer_apellido AS nombre,
             (SELECT cr.nombre FROM inventario.perfil_roles pr JOIN inventario.catalogo_roles cr ON cr.id = pr.valor_id
               WHERE pr.perfil_id = pf.id ORDER BY pr.orden LIMIT 1) AS rol,
-            COALESCE(ee.estado, 'desconocido') AS estado
+            COALESCE(ee.estado, 'desconocido') AS estado,
+            cp.disponibilidad_fecha::text AS disponibilidad_fecha, cp.disponibilidad_actualizada_en
        FROM unnest($1::text[]) WITH ORDINALITY AS c(codigo, orden)
        LEFT JOIN inventario.perfiles pf ON pf.codigo = c.codigo
        LEFT JOIN operacion.estado_enlace_perfil ee ON ee.codigo = c.codigo
+       LEFT JOIN operacion.catalogo_publicable cp ON cp.codigo = c.codigo
       ORDER BY c.orden`,
     [codigos],
   );
-  return { ...aFila(f), razon: f.razon as string, perfiles: p.rows as PerfilDeEnlace[] };
+  const ahora = new Date();
+  const perfiles = p.rows.map((x) => ({
+    codigo: x.codigo as string,
+    nombre: x.nombre as string | null,
+    rol: x.rol as string | null,
+    estado: x.estado as PerfilDeEnlace["estado"],
+    banda:
+      x.estado === "disponible"
+        ? bandaDeDisponibilidad({ fecha: x.disponibilidad_fecha, actualizadaEn: x.disponibilidad_actualizada_en }, ahora)
+        : null,
+  }));
+  return { ...aFila(f), razon: f.razon as string, perfiles };
 }

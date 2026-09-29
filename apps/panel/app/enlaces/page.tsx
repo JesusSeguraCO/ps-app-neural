@@ -2,6 +2,7 @@
 // y el detalle del elegido con «Revocar» (tarea 4.4). Protegida: la guarda va en la primera línea.
 // Las aperturas por invitado llegan con el acceso del cliente (sub-slice 5).
 import { puede } from "@ps/dominio/acceso/permisos";
+import { ROTULO_BANDA } from "@ps/dominio/catalogo/banda";
 import { horaDeColombia } from "@ps/dominio/fecha/colombia";
 import {
   detalleEnlace,
@@ -108,7 +109,7 @@ export default async function Enlaces({
   };
 
   return (
-    <MarcoPanel sesion={sesion} activo="enlaces" migas={["Clientes", "Enlaces"]}>
+    <MarcoPanel sesion={sesion} activo="enlaces" migas={["Clientes", "Enlaces de acceso"]}>
       <div className="pp-encabezado">
         <div className="pp-encabezado__texto">
           <h1 className="pp-encabezado__titulo">Enlaces de acceso</h1>
@@ -318,8 +319,8 @@ export default async function Enlaces({
                           {p.rol && <p className="pp-fila__sub">{p.rol}</p>}
                         </div>
                         <div className="ea-fila__lado">
-                          <span className={`pp-estado ${PERFIL_CLASE[p.estado]}`}>
-                            {PERFIL_TEXTO[p.estado]}
+                          <span className={`pp-estado ${p.banda && p.banda !== "inmediato" ? "pp-estado--neutro" : PERFIL_CLASE[p.estado]}`}>
+                            {p.banda ? ROTULO_BANDA[p.banda] : PERFIL_TEXTO[p.estado]}
                           </span>
                         </div>
                       </li>
@@ -362,7 +363,14 @@ export default async function Enlaces({
                   <RevocarEnlace codigo={detalle.codigo} />
                 </section>
               ) : detalle.estado === "revocado" ? (
-                <p className="ea-revocar__texto">{`Revocado el ${horaDeColombia(detalle.revocadoEn!)}${detalle.revocadoPor ? ` por ${detalle.revocadoPor}` : ""}. Nadie puede entrar con este enlace.`}</p>
+                <p className="ea-revocar__texto">{`Revocado el ${horaDeColombia(detalle.revocadoEn!)}${detalle.revocadoPor ? ` por ${detalle.revocadoPor}` : ""}. Nadie puede entrar con este enlace.`}
+                  {detalle.motivoRevocacion && (
+                    <>
+                      <br />
+                      {`Motivo: ${detalle.motivoRevocacion}`}
+                    </>
+                  )}
+                </p>
               ) : null}
             </aside>
           </div>

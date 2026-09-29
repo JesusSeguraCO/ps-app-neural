@@ -263,6 +263,10 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("generar enlace desde el panel (H
         [e.id],
       );
       expect(m.rows[0].n).toBe(1);
+      // El detalle del panel muestra el estado y el motivo de la revocación.
+      const detalle = await (await srv.pedir(`/enlaces?enlace=${enlace.codigo}`, { headers: { cookie: sesionAdmin } })).text();
+      expect(detalle).toContain("Motivo: La cuenta pausó el proyecto");
+      expect(detalle).toContain("Nadie puede entrar con este enlace.");
     });
 
     it("revocar dos veces no audita de nuevo (409)", async () => {

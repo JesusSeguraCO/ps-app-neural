@@ -3,7 +3,7 @@
 // --perfil-no-publicado, --sin-invitados y --emitido; HU-122). La cuenta se escribe por su nombre y
 // los invitados a mano (sin lectura de HubSpot). Las reglas las decide el servidor (crearEnlace): la
 // pantalla solo pinta los motivos que devuelve.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ErrorEnlace } from "@ps/dominio/enlaces/crear";
 import { ROTULO_BANDA, type Banda } from "@ps/dominio/catalogo/banda";
 import { horaDeColombia } from "@ps/dominio/fecha/colombia";
@@ -84,7 +84,42 @@ export function GeneradorEnlace({
   const [fallo, setFallo] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [emitido, setEmitido] = useState<Emitido | null>(null);
-  const [copiado, setCopiado] = useState(false);
+  const [copia, setCopia] = useState<"pendiente" | "copiado" | "manual">("pendiente");
+  const titulo = useRef<HTMLHeadingElement>(null);
+  const urlTexto = useRef<HTMLSpanElement>(null);
+
+  // Foco (accesibilidad): al emitir, al título; tras un rechazo, al primer campo con error.
+  useEffect(() => {
+    if (emitido) titulo.current?.focus();
+  }, [emitido]);
+  useEffect(() => {
+    if (!errores?.length) return;
+    const orden: Array<[ErrorEnlace["tipo"], string]> = [
+      ["sin_cuenta", "ge-cuenta"],
+      ["no_publicado", "ge-perfiles-primer-error"],
+      ["sin_razon", "ge-razon"],
+      ["sin_invitados", "ge-correo-nuevo"],
+      ["correo_invalido", "ge-correo-nuevo"],
+      ["vigencia_invalida", "ge-vigencia"],
+    ];
+    const primero = orden.find(([t]) => errores.some((e) => e.tipo === t));
+    if (primero) document.getElementById(primero[1])?.focus();
+  }, [errores]);
+
+  async function copiar(url: string) {
+    try {
+      if (!navigator.clipboard) throw new Error("sin portapapeles");
+      await navigator.clipboard.writeText(url);
+      setCopia("copiado");
+    } catch {
+      // Sin portapapeles (p. ej. un origen http que no es localhost): se deja seleccionado.
+      const r = document.createRange();
+      if (urlTexto.current) r.selectNodeContents(urlTexto.current);
+      window.getSelection()?.removeAllRanges();
+      window.getSelection()?.addRange(r);
+      setCopia("manual");
+    }
+  }
 
   const error = <T extends ErrorEnlace["tipo"]>(tipo: T) =>
     errores?.find((e) => e.tipo === tipo) as Extract<ErrorEnlace, { tipo: T }> | undefined;
@@ -118,6 +153,7 @@ export function GeneradorEnlace({
 
   async function generar(ev: React.FormEvent) {
     ev.preventDefault();
+    if (enviando) return;
     setEnviando(true);
     setFallo(null);
     try {
@@ -153,7 +189,7 @@ export function GeneradorEnlace({
 
   if (emitido) {
     const porCodigo = new Map(elegidos.map((p) => [p.codigo, p]));
-    const titulo = [cuenta.trim(), proyecto.trim()].filter(Boolean).join(" · ");
+    const tituloEmitido = [cuenta.trim(), proyecto.trim()].filter(Boolean).join(" · ");
     const diasVigencia = Math.round(
       (Date.parse(emitido.vigenteHasta) - emitido.generadoEn.getTime()) / DIA_MS,
     );
@@ -161,7 +197,7 @@ export function GeneradorEnlace({
       <>
         <div className="pp-encabezado">
           <div className="pp-encabezado__texto">
-            <h1 className="pp-encabezado__titulo">{titulo}</h1>
+            <h1 className="pp-encabezado__titulo" ref={titulo} tabIndex={-1}>{tituloEmitido}</h1>
             <p className="pp-encabezado__meta">
               <span className="pp-mono">{emitido.codigo}</span> ·{" "}
               <span className="pp-estado pp-estado--ok">Vigente</span>
@@ -174,19 +210,19 @@ export function GeneradorEnlace({
               <dt>Enlace</dt>
               <dd>
                 <div className="ge-url">
-                  <span className="ge-url__texto">{emitido.url}</span>
+                  <span className="ge-url__texto" ref={urlTexto}>{emitido.url}</span>
                   <button
                     type="button"
                     className="pp-btn pp-btn--primario"
-                    onClick={async () => {
-                      await navigator.clipboard?.writeText(emitido.url).catch(() => {});
-                      setCopiado(true);
-                    }}
-                  >
-                    {copiado ? "Copiado" : "Copiar enlace"}
+                    onClick={() => copiar(emitido.url)}>
+                    {copia === "copiado" ? "Copiado" : "Copiar enlace"}
                   </button>
                 </div>
-                <p className="pp-ayuda">Cópialo ahora: por seguridad no se vuelve a mostrar.</p>
+                <p className="pp-ayuda" role="status">
+                  {copia === "manual"
+                    ? "No se pudo copiar solo: el enlace quedó seleccionado, cópialo con Ctrl+C (⌘C en Mac)."
+                    : "Cópialo ahora: por seguridad no se vuelve a mostrar."}
+                </p>
               </dd>
             </div>
             <div className="pp-datos__fila">
@@ -318,12 +354,15 @@ export function GeneradorEnlace({
             <div className="pp-filas">
               <div className="pp-filas__cabecera">
                 <span className="pp-meta">
-                  {elegidos.length
+                  {noPublicados.size
+                    ? `${noPublicados.size} de ${elegidos.length} sin publicar`
+                    : elegidos.length
                     ? `${elegidos.length} ${elegidos.length === 1 ? "perfil" : "perfiles"} · ${familias} ${familias === 1 ? "familia" : "familias"}`
                     : "Sin perfiles: el cliente entra al encuadre del banco"}
                 </span>
                 <button
                   type="button"
+                  id="ge-anadir-inventario"
                   className="ge-accion pp-enlace pp-meta"
                   aria-expanded={selector}
                   onClick={() => setSelector(!selector)}
@@ -360,7 +399,10 @@ export function GeneradorEnlace({
                           type="button"
                           className="pp-btn pp-btn--contorno pp-btn--sm"
                           aria-label={`Añadir a ${p.nombre}`}
-                          onClick={() => setElegidos([...elegidos, p])}
+                          onClick={() => {
+                            setElegidos([...elegidos, p]);
+                            document.getElementById("ge-buscar")?.focus();
+                          }}
                         >
                           Añadir
                         </button>
@@ -376,6 +418,8 @@ export function GeneradorEnlace({
                     return (
                       <li
                         key={p.codigo}
+                        id={mal && p.codigo === [...noPublicados][0] ? "ge-perfiles-primer-error" : undefined}
+                        tabIndex={mal && p.codigo === [...noPublicados][0] ? -1 : undefined}
                         className={`pp-fila${mal ? " ge-fila--error" : ""}`}
                         aria-describedby={mal ? `ge-error-${p.codigo}` : undefined}
                       >
@@ -398,10 +442,19 @@ export function GeneradorEnlace({
                           <button
                             type="button"
                             className="pp-btn pp-btn--fantasma pp-btn--sm"
+                            id={`ge-quitar-${p.codigo}`}
                             aria-label={`Quitar a ${p.nombre} de la selección`}
-                            onClick={() =>
-                              setElegidos(elegidos.filter((x) => x.codigo !== p.codigo))
-                            }
+                            onClick={() => {
+                              const i = elegidos.findIndex((x) => x.codigo === p.codigo);
+                              const resto = elegidos.filter((x) => x.codigo !== p.codigo);
+                              setElegidos(resto);
+                              const siguiente = resto[Math.min(i, resto.length - 1)];
+                              requestAnimationFrame(() =>
+                                document
+                                  .getElementById(siguiente ? `ge-quitar-${siguiente.codigo}` : "ge-anadir-inventario")
+                                  ?.focus(),
+                              );
+                            }}
                           >
                             <IconoQuitar />
                             Quitar
@@ -455,6 +508,14 @@ export function GeneradorEnlace({
             <p className="pp-ayuda">Solo ellos podrán entrar. Reenviar el enlace no da acceso.</p>
           </div>
           <div className="pp-form-fila__control">
+            {invitados.length === 0 && error("sin_invitados") && (
+              <div className="pp-filas">
+                <div className="pp-vacio">
+                  <p>Sin correos invitados.</p>
+                  <p className="pp-ayuda">Añade al menos un correo abajo: solo los invitados podrán entrar.</p>
+                </div>
+              </div>
+            )}
             {invitados.length > 0 && (
               <div className="pp-filas">
                 <ul className="pp-lista" aria-label="Correos invitados">
@@ -470,7 +531,10 @@ export function GeneradorEnlace({
                           type="button"
                           className="pp-btn pp-btn--fantasma pp-btn--sm"
                           aria-label={`Quitar ${c}`}
-                          onClick={() => setInvitados(invitados.filter((x) => x !== c))}
+                          onClick={() => {
+                            setInvitados(invitados.filter((x) => x !== c));
+                            document.getElementById("ge-correo-nuevo")?.focus();
+                          }}
                         >
                           <IconoQuitar />
                           Quitar
@@ -553,7 +617,7 @@ export function GeneradorEnlace({
           <a className="pp-btn pp-btn--fantasma" href="/enlaces">
             Cancelar
           </a>
-          <button type="submit" className="pp-btn pp-btn--primario" disabled={enviando}>
+          <button type="submit" className="pp-btn pp-btn--primario" aria-disabled={enviando || undefined}>
             Generar enlace
           </button>
         </div>
