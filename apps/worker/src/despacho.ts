@@ -12,10 +12,12 @@ import { mensajeCodigo } from "@ps/dominio/acceso/mensajes";
 import {
   ESQUEMAS_PAYLOAD,
   type PayloadEnviarCodigo,
+  type PayloadNotificar,
   type PayloadRenovarEnlace,
   type TipoConManejador,
 } from "@ps/contratos/trabajos";
 import { VIGENCIA_POR_OMISION_DIAS, generarTokenEnlace } from "@ps/dominio/enlaces/crear";
+import { mensajeAvisoPeticion } from "@ps/dominio/enlaces/invitaciones";
 import {
   decidirRenovacion,
   mensajeAvisoRenovacion,
@@ -52,7 +54,7 @@ interface Trabajo {
 }
 
 const tiposDe = (ctx: ContextoDespacho): TipoConManejador[] =>
-  ctx.renovacion ? ["enviar_codigo", "renovar_enlace"] : ["enviar_codigo"];
+  ctx.renovacion ? ["enviar_codigo", "renovar_enlace", "notificar"] : ["enviar_codigo"];
 
 const SQL_RECLAMAR = `
 UPDATE operacion.trabajos SET estado = 'en_curso', locked_by = $1, locked_until = now() + interval '10 minutes',
@@ -252,6 +254,33 @@ async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenova
   await cerrar(ctx, t.id, { estado: "hecho" });
 }
 
+// Aviso a Talento Humano de una petición de invitación nueva (HU-095, `notificar` de ADR-0006/0009).
+async function notificar(ctx: ContextoDespacho, t: Trabajo, p: PayloadNotificar): Promise<void> {
+  const deps = ctx.renovacion!;
+  const r = await ctx.bd.query(
+    `SELECT s.correo_propuesto, s.nombre_propuesto, s.para_que, s.estado, i.correo AS pide, e.codigo, e.cuenta_nombre, e.proyecto
+       FROM identidad.invitaciones_solicitadas s
+       JOIN identidad.enlace_invitados i ON i.id = s.solicitado_por
+       JOIN identidad.enlaces e ON e.id = s.enlace_id
+      WHERE s.id = $1`,
+    [p.ref],
+  );
+  const f = r.rows[0];
+  if (!f || f.estado !== "pendiente") {
+    await cerrar(ctx, t.id, { estado: "hecho" });
+    return;
+  }
+  const m = mensajeAvisoPeticion({
+    pide: f.pide,
+    correo: f.correo_propuesto,
+    nombre: f.nombre_propuesto,
+    paraQue: f.para_que,
+    enlace: [f.codigo, f.cuenta_nombre, f.proyecto].filter(Boolean).join(" · "),
+  });
+  const { resultado } = await ctx.correo.enviar({ para: deps.correoTalentoHumano, asunto: m.asunto, texto: m.texto, html: m.html });
+  await cerrarSegunResultado(ctx, t, resultado);
+}
+
 async function cerrarSegunResultado(
   ctx: ContextoDespacho,
   t: Trabajo,
@@ -307,6 +336,7 @@ async function ejecutar(ctx: ContextoDespacho, t: Trabajo): Promise<void> {
     return;
   }
   if (t.tipo === "renovar_enlace") await renovarEnlace(ctx, t, payload.data as PayloadRenovarEnlace);
+  else if (t.tipo === "notificar") await notificar(ctx, t, payload.data as PayloadNotificar);
   else await enviarCodigo(ctx, t, payload.data as PayloadEnviarCodigo);
 }
 

@@ -1,0 +1,7 @@
+/* Pantalla peticiones-invitacion del prototipo (prefijo pi-). */
+.pi-cuerpo { margin-top: var(--tc-sp-6); }
+.pi-cita { font-style: normal; quotes: "«" "»"; }
+.pi-texto { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.pi-rechazo { display: grid; gap: var(--tc-sp-2); min-width: 280px; }
+.pi-rechazo__acciones { display: flex; justify-content: flex-end; gap: var(--tc-sp-2); }
+.pi-recientes { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }

@@ -1,7 +1,7 @@
 // Marco del portal (PP:topbar del prototipo app-shell / aterrizaje-curado): marca, cuenta y proyecto
 // del enlace, vigencia del acceso, navegación y «Mi equipo» con su conteo. «Selección para ti» solo
-// existe si el enlace trae selección (HU-094: sin selección no hay a dónde volver). Invitar a un colega
-// (sub-slice 6b) y la página de Mi equipo (EP-004) se ven y van deshabilitados hasta que existan.
+// existe si el enlace trae selección (HU-094: sin selección no hay a dónde volver). La página de Mi
+// equipo (EP-004) se ve con su conteo y va deshabilitada hasta que exista.
 import type { ReactNode } from "react";
 import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
 import { PiezasMarca } from "./Marca";
@@ -12,11 +12,11 @@ export function MarcoPortal(props: {
   proyecto: string | null;
   accesoHasta: Date;
   conSeleccion: boolean;
-  activo: "seleccion" | "buscar";
+  activo: "seleccion" | "buscar" | "invitar";
   enEquipo: number;
   children: ReactNode;
 }) {
-  const actual = (a: "seleccion" | "buscar") => (props.activo === a ? ("page" as const) : undefined);
+  const actual = (a: "seleccion" | "buscar" | "invitar") => (props.activo === a ? ("page" as const) : undefined);
   return (
     <>
       <header className="pp-topbar">
@@ -36,9 +36,9 @@ export function MarcoPortal(props: {
           <a className="pp-navlink" href="/banco" aria-current={actual("buscar")}>
             Buscar
           </a>
-          <span className="pp-navlink" aria-disabled="true">
+          <a className="pp-navlink" href="/invitar" aria-current={actual("invitar")}>
             Invitar a un colega
-          </span>
+          </a>
         </nav>
         <span className="pp-equipo" aria-disabled="true">
           {"Mi equipo "}

@@ -45,7 +45,7 @@ test.describe("marco del panel con sesión", () => {
     await abrirSesion(context, baseURL!);
   });
 
-  test("escritorio 1440: barra lateral y contenido en dos columnas, 11 destinos deshabilitados y Enlaces activo", async ({
+  test("escritorio 1440: barra lateral y contenido en dos columnas, 10 destinos deshabilitados; Enlaces y Peticiones activos", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,8 +71,8 @@ test.describe("marco del panel con sesión", () => {
     expect(m.display).toBe("grid");
     expect(m.lateralAncho).toBeLessThan(400);
     expect(m.cuerpoALaDerecha).toBe(true);
-    expect(m.inactivos).toBe(11);
-    expect(m.conHref).toBe(1); // Enlaces (EP-001 sub-slice 4)
+    expect(m.inactivos).toBe(10);
+    expect(m.conHref).toBe(2); // Enlaces (sub-slice 4) y Peticiones (sub-slice 6b)
     expect(m.scroll).toBe(0);
     expect(errores).toEqual([]);
   });

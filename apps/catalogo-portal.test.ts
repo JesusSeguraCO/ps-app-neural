@@ -17,7 +17,8 @@ import {
 import { PERFILES_FICTICIOS, sembrarFicticios } from "./worker/src/sembrar-ficticios";
 
 // Claves de la lista negra B.4 y de lo que la proyección recorta (fecha y ciudad), en forma de clave
-// JSON: así no chocan con el texto de la interfaz («tu correo corporativo»).
+// JSON (`"clave":`, también escapada `\"clave\":` en el payload RSC): así no chocan con el texto de la
+// interfaz («tu correo corporativo») ni con atributos HTML (`type="email"`), que no son datos.
 const CLAVES_PROHIBIDAS = [
   "foto",
   "fotografia",
@@ -41,6 +42,8 @@ const CLAVES_PROHIBIDAS = [
   "primer_apellido",
   "tarifa",
 ];
+
+const comoClave = (clave: string) => new RegExp(`\\\\?"${clave}\\\\?"\\s*:`);
 
 function listar(dir: string): string[] {
   const salida: string[] = [];
@@ -137,7 +140,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("catálogo tras sesión (V8-4)",
     expect(datos.perfiles.map((p) => p.codigo)).toEqual(publicados);
     for (const p of datos.perfiles)
       expect(Object.keys(p).sort()).toEqual([...CAMPOS_PERFIL_CATALOGO].sort());
-    for (const clave of CLAVES_PROHIBIDAS) expect(cuerpo, clave).not.toContain(`"${clave}"`);
+    for (const clave of CLAVES_PROHIBIDAS) expect(cuerpo, clave).not.toMatch(comoClave(clave));
     for (const fecha of fechasSembradas) expect(cuerpo, fecha).not.toContain(fecha);
     for (const p of PERFILES_FICTICIOS.filter((x) => x.estado === "publicado"))
       expect(cuerpo, p.ciudad).not.toContain(`"${p.ciudad}"`);
@@ -175,7 +178,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("catálogo tras sesión (V8-4)",
         const cuerpo = await (await srv.pedir(pagina, { headers })).text();
         const donde = `${pagina} RSC=${rsc}`;
         for (const clave of CLAVES_PROHIBIDAS)
-          expect(cuerpo, `${donde} ${clave}`).not.toContain(`"${clave}"`);
+          expect(cuerpo, `${donde} ${clave}`).not.toMatch(comoClave(clave));
         for (const fecha of fechasSembradas)
           expect(cuerpo, `${donde} ${fecha}`).not.toContain(fecha);
       }

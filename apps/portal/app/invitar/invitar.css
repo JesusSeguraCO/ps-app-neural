@@ -1,0 +1,16 @@
+/* Pantalla invitar-colega del prototipo (prefijo ic-). */
+.ic-columna { max-width: 720px; }
+.ic-columna > .pp-aviso { margin-bottom: var(--tc-sp-6); }
+.ic-aviso__correo { overflow-wrap: anywhere; }
+.ic-aviso__linea { display: block; margin-top: var(--tc-sp-1); }
+.ic-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-5); align-items: start; }
+.ic-form .pp-form__acciones { align-items: center; }
+.ic-form__nota { flex: 1 1 240px; margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+.ic-peticiones { margin-top: var(--tc-sp-10); }
+.ic-peticiones .pp-fila__acciones { padding-top: var(--tc-sp-1); }
+.pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+@media (max-width: 767px) {
+  .ic-dos { grid-template-columns: minmax(0, 1fr); }
+  .ic-form .pp-form__acciones .pp-btn { width: 100%; }
+  .ic-peticiones .pp-fila { grid-template-columns: minmax(0, 1fr) auto; }
+}

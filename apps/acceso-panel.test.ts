@@ -115,8 +115,8 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
       "Enlaces", "Peticiones", "Colocados", "Demanda",
       "Medición", "Envíos", "Fallos",
     ];
-    for (const d of destinos.filter((x) => x !== "Enlaces")) expect(html, d).toMatch(new RegExp(`aria-disabled="true"[^>]*>(<svg[\\s\\S]*?</svg>)?${d}<`));
-    expect(html.match(/class="pp-sidelink[^"]*"[^>]*aria-disabled="true"/g)?.length).toBe(11);
+    for (const d of destinos.filter((x) => x !== "Enlaces" && x !== "Peticiones")) expect(html, d).toMatch(new RegExp(`aria-disabled="true"[^>]*>(<svg[\\s\\S]*?</svg>)?${d}<`));
+    expect(html.match(/class="pp-sidelink[^"]*"[^>]*aria-disabled="true"/g)?.length).toBe(10);
     expect(html).toMatch(/<a class="pp-sidelink" href="\/enlaces">/);
     expect(html).toContain(">Administración<");
     expect(html).toMatch(/Sesión hasta las \d{1,2}:\d{2}(\s|&nbsp;)[ap]\. m\./);
