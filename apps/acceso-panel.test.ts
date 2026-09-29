@@ -119,6 +119,19 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
     expect((await srv.pedir("/", { headers: { cookie: sesion } })).status).toBe(307);
   }, 30_000);
 
+  it("R-85: pedir códigos en bucle no pasa del tope de emisión y la respuesta sigue siendo neutra", async () => {
+    await bd.instalacion.query(
+      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ('bucle@trycore.com', $1, 'observador')`,
+      [hmacCorreo("bucle@trycore.com", entorno.EMAIL_HMAC_KEY!)],
+    );
+    const respuestas = [];
+    for (let i = 0; i < 5; i++) respuestas.push(await (await post("/api/v1/acceso/codigo", { correo: "bucle@trycore.com" })).text());
+    expect(new Set(respuestas).size).toBe(1);
+    await new Promise((r) => setTimeout(r, 2_000));
+    const enviados = srv.salida().split("\n").filter((l) => l.includes('"correo_doble"') && l.includes("bucle@trycore.com"));
+    expect(enviados.length).toBe(3);
+  }, 30_000);
+
   it("HU-123 correo sin inscribir: misma respuesta que uno inscrito, sin código ni datos", async () => {
     const inscrito = await post("/api/v1/acceso/codigo", { correo: "ana@trycore.com" });
     const noInscrito = await post("/api/v1/acceso/codigo", { correo: "nadie@trycore.com" });

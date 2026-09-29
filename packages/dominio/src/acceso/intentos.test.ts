@@ -59,3 +59,23 @@ describe("PoliticaIntentos (ADR-0002: 5 en 15 min, 20 en 24 h → bloqueo de 24 
     expect(e.fallosDia).toBe(3);
   });
 });
+
+describe("tope de emisión por sujeto (R-85)", () => {
+  it("≤ 3 envíos cada 15 min", async () => {
+    const { puedeEmitir, registrarEmision } = await import("./intentos");
+    let e = estadoInicial(T0);
+    for (let i = 0; i < 3; i++) {
+      expect(puedeEmitir(e, min(i))).toBe(true);
+      e = registrarEmision(e, min(i));
+    }
+    expect(puedeEmitir(e, min(3))).toBe(false);
+    expect(puedeEmitir(e, min(15))).toBe(true);
+  });
+  it("≤ 10 envíos al día aunque se repartan en ventanas", async () => {
+    const { puedeEmitir, registrarEmision } = await import("./intentos");
+    let e = estadoInicial(T0);
+    for (let i = 0; i < 10; i++) e = registrarEmision(e, min(i * 16));
+    expect(puedeEmitir(e, min(10 * 16))).toBe(false);
+    expect(e.bloqueadoHasta).toBeNull();
+  });
+});

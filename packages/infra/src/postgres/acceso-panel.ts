@@ -10,6 +10,8 @@ import { hmacCodigo, hmacCorreo, normalizarCorreo } from "@ps/dominio/acceso/cod
 import {
   estadoInicial,
   evaluarIntentos,
+  puedeEmitir,
+  registrarEmision,
   registrarAcierto,
   registrarFallo,
   type EstadoIntentos,
@@ -23,12 +25,14 @@ export interface SecretosAccesoPanel {
 
 export const RANURAS = 3;
 const esTrycore = (correo: string) => /^[^@\s]+@trycore\.com$/.test(correo);
+const claveEmision = (correoHmac: Buffer, s: SecretosAccesoPanel) =>
+  createHmac("sha256", s.emailHmac).update("emision:").update(correoHmac).digest();
 const claveIp = (ip: string, s: SecretosAccesoPanel) =>
   createHmac("sha256", s.emailHmac).update(`ip:${ip}`).digest();
 
 type Tx = pg.PoolClient;
 
-async function leerIntentos(tx: Tx, clave: Buffer, tipo: "par" | "ip"): Promise<EstadoIntentos> {
+async function leerIntentos(tx: Tx, clave: Buffer, tipo: "par" | "ip" | "emision"): Promise<EstadoIntentos> {
   await tx.query(
     `INSERT INTO identidad_panel.intentos_panel (clave, tipo) VALUES ($1, $2) ON CONFLICT (clave) DO NOTHING`,
     [clave, tipo],
@@ -81,14 +85,17 @@ export interface SolicitudCodigo {
 export async function solicitarCodigoPanel(
   bd: pg.Pool,
   s: SecretosAccesoPanel,
-  entrada: { correo: string; ip: string },
+  entrada: { correo: string; ip: string | null },
 ): Promise<SolicitudCodigo> {
   const correo = normalizarCorreo(entrada.correo);
   const correoHmac = hmacCorreo(correo, s.emailHmac);
   return enTransaccion(bd, async (tx) => {
     // Mismas lecturas y escrituras en ambas ramas.
     const par = await leerIntentos(tx, correoHmac, "par");
-    const porIp = await leerIntentos(tx, claveIp(entrada.ip, s), "ip");
+    // Sin IP conocida no hay capa por IP (R-86): nunca se agrupa a todos en un solo contador.
+    const porIp = entrada.ip ? await leerIntentos(tx, claveIp(entrada.ip, s), "ip") : estadoInicial(new Date());
+    const claveEmi = claveEmision(correoHmac, s);
+    const emision = await leerIntentos(tx, claveEmi, "emision");
     const u = await tx.query(
       `SELECT id, activo FROM identidad_panel.usuarios_panel WHERE correo_hmac = $1`,
       [correoHmac],
@@ -97,7 +104,10 @@ export async function solicitarCodigoPanel(
     const ahora = new Date();
     const bloqueado =
       !evaluarIntentos(par, ahora).permitido || !evaluarIntentos(porIp, ahora).permitido;
-    const ref = usuario?.activo && esTrycore(correo) && !bloqueado ? usuario.id : null;
+    // Tope de emisión por sujeto (R-85): se cuenta en ambas ramas, así que no revela la inscripción.
+    const emitir = puedeEmitir(emision, ahora);
+    await guardarIntentos(tx, claveEmi, emitir ? registrarEmision(emision, ahora) : emision);
+    const ref = usuario?.activo && esTrycore(correo) && !bloqueado && emitir ? usuario.id : null;
     await tx.query(
       `INSERT INTO identidad.accesos_log (host, ambito, evento, correo_hash, ip) VALUES ('panel', 'panel', 'codigo_pedido', $1, $2)`,
       [correoHmac, entrada.ip],
@@ -118,7 +128,7 @@ const RELLENO = Array.from({ length: RANURAS }, () => randomBytes(32));
 export async function verificarCodigoPanel(
   bd: pg.Pool,
   s: SecretosAccesoPanel,
-  entrada: { correo: string; codigo: string; ip: string },
+  entrada: { correo: string; codigo: string; ip: string | null },
 ): Promise<ResultadoVerificacion> {
   const correo = normalizarCorreo(entrada.correo);
   const correoHmac = hmacCorreo(correo, s.emailHmac);
@@ -126,9 +136,9 @@ export async function verificarCodigoPanel(
   return enTransaccion(bd, async (tx) => {
     const ahora = new Date();
     const clavePar = correoHmac;
-    const claveDeIp = claveIp(entrada.ip, s);
+    const claveDeIp = entrada.ip ? claveIp(entrada.ip, s) : null;
     const par = await leerIntentos(tx, clavePar, "par");
-    const porIp = await leerIntentos(tx, claveDeIp, "ip");
+    const porIp = claveDeIp ? await leerIntentos(tx, claveDeIp, "ip") : estadoInicial(ahora);
     const u = await tx.query(
       `SELECT id, activo FROM identidad_panel.usuarios_panel WHERE correo_hmac = $1`,
       [correoHmac],
@@ -182,7 +192,7 @@ export async function verificarCodigoPanel(
     if (!invalidadoPorSistema && permitido) {
       const rPar = registrarFallo(par, ahora);
       await guardarIntentos(tx, clavePar, rPar.estado);
-      await guardarIntentos(tx, claveDeIp, registrarFallo(porIp, ahora).estado);
+      if (claveDeIp) await guardarIntentos(tx, claveDeIp, registrarFallo(porIp, ahora).estado);
       if (rPar.alerta) {
         await tx.query(
           `INSERT INTO identidad.accesos_log (host, ambito, evento, correo_hash, ip) VALUES ('panel', 'panel', 'bloqueo', $1, $2)`,

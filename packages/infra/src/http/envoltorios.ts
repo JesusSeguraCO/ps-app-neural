@@ -14,16 +14,12 @@ export { CABECERA_CSRF, COOKIE_CSRF };
 
 // IP del cliente para los límites (ADR-0002): la del borde solo si hay borde configurado; si no, la que
 // fija App Platform (`do-connecting-ip`) o el primer salto de x-forwarded-for.
-export function ipDelCliente(req: Request): string {
+export function ipDelCliente(req: Request): string | null {
   if (process.env.EDGE_SECRET) {
     const cf = req.headers.get("cf-connecting-ip");
     if (cf) return cf;
   }
-  return (
-    req.headers.get("do-connecting-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "desconocida"
-  );
+  return req.headers.get("do-connecting-ip") ?? (req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null);
 }
 
 type Manejador<C> = (req: Request, ctx: C) => Promise<Response> | Response;
@@ -50,6 +46,8 @@ function iguales(a: string, b: string): boolean {
 
 export function conBorde<C>(h: Manejador<C>): Manejador<C> {
   return (req, ctx) => {
+    // Segunda barrera frente a CVE-2025-29927, independiente del middleware (R-89).
+    if (req.headers.has("x-middleware-subrequest")) return json(403);
     const secretos = [process.env.EDGE_SECRET, process.env.EDGE_SECRET_PREV].filter(
       (s): s is string => Boolean(s),
     );

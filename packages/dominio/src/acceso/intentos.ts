@@ -60,3 +60,21 @@ export function registrarFallo(
 export function registrarAcierto(e: EstadoIntentos): EstadoIntentos {
   return { ...e, fallosVentana: 0 };
 }
+
+// Tope de EMISIÓN de códigos por (ámbito, sujeto), independiente de la IP (R-85): con un solo código
+// vigente (T-31), pedir códigos en bucle invalidaría el del usuario legítimo. ≤ 3 cada 15 min y ≤ 10
+// al día (propuesta técnica a validar). Por encima no se envía nada y la respuesta sigue siendo neutra.
+export const EMISIONES_VENTANA = 3;
+export const EMISIONES_DIA = 10;
+
+export function puedeEmitir(e: EstadoIntentos, ahora: Date): boolean {
+  const t = ahora.getTime();
+  const enVentana = t < e.ventanaInicio.getTime() + VENTANA_MS ? e.fallosVentana : 0;
+  const enDia = t < e.diaInicio.getTime() + DIA_MS ? e.fallosDia : 0;
+  return enVentana < EMISIONES_VENTANA && enDia < EMISIONES_DIA;
+}
+
+export function registrarEmision(e: EstadoIntentos, ahora: Date): EstadoIntentos {
+  const { estado } = registrarFallo({ ...e, bloqueadoHasta: null }, ahora);
+  return { ...estado, bloqueadoHasta: null };
+}

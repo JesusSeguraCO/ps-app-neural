@@ -51,7 +51,7 @@ tags:
 >
 > **Consolidación (2026-09-26):** QA-2 es la fuente única de las metas de rendimiento en producción en
 > oscuro (TTFB P75 ≤ 800 ms, catálogo P95 ≤ 500 ms, *a validar*); V10-15 las mide y V8-6 (c) la cita
-> (I-9, resuelta). QA-3 remite a T-31 el número de códigos vigentes.
+> (I-9, resuelta). QA-3 remite a T-31 el número de códigos vigentes. *Sustituida por la enmienda del 2026-09-28*
 
 ## Cómo se usa este documento en ADD
 
@@ -125,9 +125,9 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Fuente:** cliente que llega desde el correo.
 - **Estímulo:** abre el enlace (primera visita o retorno con sesión).
 - **Artefacto:** HTML renderizado por Next en el servidor con el bloque curado del enlace en el primer HTML (SSR por la proyección), aterrizaje `/e/#t=` y `GET /api/v1/catalogo` para revalidar.
-- **Entorno:** red 4G (perfil «Slow 4G») desde Colombia; Cloudflare delante (sin caché de borde para el HTML, que lleva nonce); origen en App Platform `nyc`.
+- **Entorno:** red 4G (perfil «Slow 4G») desde Colombia; Cloudflare delante (sin caché de borde para el HTML, que lleva nonce); origen en App Platform `nyc`. *Sustituida en parte por la enmienda del 2026-09-28*
 - **Respuesta:** ve la selección curada con su razón.
-- **Medida:** LCP < 2,5 s en P75 (§8); JS inicial ≤ 200 KB comprimido (*a validar*); TTFB P75 del HTML ≤ 800 ms (*a validar*); catálogo P95 ≤ 500 ms (*a validar*). LCP, TTFB y catálogo se miden **en producción en oscuro** tras Cloudflare desde Colombia (V10-15, V8-6 c); Lighthouse contra el contenedor en CI es regresión, no evidencia de la medida.
+- **Medida:** LCP < 2,5 s en P75 (§8); JS inicial ≤ 200 KB comprimido (*a validar*); TTFB P75 del HTML ≤ 800 ms (*a validar*); catálogo P95 ≤ 500 ms (*a validar*). LCP, TTFB y catálogo se miden **en producción en oscuro** tras Cloudflare desde Colombia (V10-15, V8-6 c); Lighthouse contra el contenedor en CI es regresión, no evidencia de la medida. *Sustituida en parte por la enmienda del 2026-09-28*
 
 ### QA-3 — Seguridad del acceso del cliente · (A, A)
 - **Fuente:** atacante con el enlace o colega no invitado.
@@ -135,7 +135,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Artefacto:** puerta de acceso, endpoints de token y código.
 - **Entorno:** sin sesión.
 - **Respuesta:** rechaza, aplica espera y no revela quién está invitado.
-- **Medida:** 0 accesos con correo no invitado; tope de 5 intentos por enlace y por dirección (RF-1.2.9) en la aplicación, con la regla de Cloudflare solo como mitigación de ráfagas; tiempo de respuesta indistinguible entre invitado y no invitado también en modo degradado (worker caído); código de 6 dígitos, un uso, vigente ≤ 10 min (*a validar*; cuántos códigos pueden estar vigentes a la vez por persona tras un envío ambiguo, 1 o hasta 3, lo decide negocio en T-31); enlace manipulado → 0 bytes de inventario (HU-090); revocación efectiva en la siguiente petición (≤ 60 s, *a validar*).
+- **Medida:** 0 accesos con correo no invitado; tope de 5 intentos por enlace y por dirección (RF-1.2.9) en la aplicación, con la regla de Cloudflare solo como mitigación de ráfagas; tiempo de respuesta indistinguible entre invitado y no invitado también en modo degradado (worker caído); código de 6 dígitos, un uso, vigente ≤ 10 min (*a validar*; cuántos códigos pueden estar vigentes a la vez por persona tras un envío ambiguo, 1 o hasta 3, lo decide negocio en T-31); enlace manipulado → 0 bytes de inventario (HU-090); revocación efectiva en la siguiente petición (≤ 60 s, *a validar*). *Sustituida en parte por la enmienda del 2026-09-28*
 
 ### QA-4 — Autorización del panel · (A, A)
 - **Fuente:** observador, o tercero con correo `@trycore.com` no inscrito.
@@ -176,7 +176,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 - **Artefacto:** adaptador de correo (`packages/infra`), trabajos de envío y webhook de eventos de Mailgun.
 - **Entorno:** IP de envío de Mailgun; destinatarios en Google Workspace y buzones corporativos de clientes, con listas grises; envíos con resultado ambiguo (timeout o 5xx).
 - **Respuesta:** llega a la bandeja de entrada; rebotes y quejas llegan por webhook firmado y se clasifican aparte.
-- **Medida:** SPF y DKIM en pass para el dominio de envío y DMARC en pass alineado en modo relajado en el 100 %; 0 registros DNS en conflicto con el host web; código de acceso en bandeja P95 ≤ 60 s (*a validar*); ≥ 95 % en bandeja principal en prueba con buzones reales antes del primer envío (*a validar*); tras un envío ambiguo, el primer código entregado sigue siendo válido; 0 envíos por SMTP o `sendmail` (grep en CI).
+- **Medida:** SPF y DKIM en pass para el dominio de envío y DMARC en pass alineado en modo relajado en el 100 %; 0 registros DNS en conflicto con el host web; código de acceso en bandeja P95 ≤ 60 s (*a validar*); ≥ 95 % en bandeja principal en prueba con buzones reales antes del primer envío (*a validar*); ~~tras un envío ambiguo, el primer código entregado sigue siendo válido~~ *tras un envío ambiguo solo el último código emitido es válido; uno invalidado responde igual y no suma fallo (T-31; enmienda del 2026-09-28)*; 0 envíos por SMTP o `sendmail` (grep en CI).
 
 ### QA-9 — Integridad transaccional de la importación · (A, A)
 - **Fuente:** administradora de inventario.
@@ -299,7 +299,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-3 | ⛔ **Reemplazada en la iteración 8 por CON-18** (despliegue por imagen, ADR-0010). Texto original: Despliegue Local → GitHub → *Update from Remote* → *Deploy* con `.cpanel.yml`; árbol del servidor limpio; **nunca `node_modules`** (inodos al 20 %) | §8.3, hosting §3–§4 |
 | CON-4 | Acceso sin proveedor de identidad: cliente por lista nominal de invitados + código; panel por lista nominal `@trycore.com` + código + sesión ≤ 12 h / 60 min | D-4, D-22, RF-1.2, RF-8.1 |
 | CON-5 | ⛔ **Reemplazada en la iteración 8 por CON-20**. Texto original: Correo solo por SMTP autenticado de `notify@people.trycore.com`; `sendmail` prohibido; `trycore.com` sigue en Google Workspace | §8.3, hosting §7 |
-| CON-6 | Secretos solo en servidor. **Vigente (revisión 2026-09-26):** variables `SECRET` de App Platform por componente y con mínimo privilegio (cada proceso recibe solo las que usa), nunca en repositorio ni imagen: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `MAILGUN_SENDING_KEY` (una por componente), `MAILGUN_SUPPRESSIONS_KEY` (solo worker), `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `AUDIT_KEK`, `EMAIL_HMAC_KEY`, `OTP_PEPPER_CLIENTE` y `OTP_PEPPER_PANEL`, `EVENTOS_SEUDONIMO_SAL`, `SPACES_*`, `LATIDO_URL`, `SALUD_TOKEN` y una cadena de conexión por usuario de BD; copia cifrada de los secretos y de la llave privada `age` custodiada fuera de DO (T-24). Salen `SMTP_PASSWORD`, `MAILGUN_API_KEY` (llave de cuenta, en custodia) y `LINK_SIGNING_SECRET` (modelo de token opaco, ADR-0002). Iteración 8 (ya sustituido): añadía `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `SPACES_*`, `LATIDO_URL`. Texto original: en configuración PHP fuera de la carpeta pública: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `SMTP_PASSWORD`, `LINK_SIGNING_SECRET`, secreto de códigos, credenciales de BD | §8.3 |
+| CON-6 | Secretos solo en servidor. **Vigente (revisión 2026-09-26):** variables `SECRET` de App Platform por componente y con mínimo privilegio (cada proceso recibe solo las que usa), nunca en repositorio ni imagen: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `MAILGUN_SENDING_KEY` (una por componente), `MAILGUN_SUPPRESSIONS_KEY` (solo worker), `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET` (*opcional desde la enmienda del 2026-09-28: solo con proxy de borde; staging la configura, producción no*), `AUDIT_HMAC_KEY`, `AUDIT_KEK`, `EMAIL_HMAC_KEY`, `OTP_PEPPER_CLIENTE` y `OTP_PEPPER_PANEL`, `EVENTOS_SEUDONIMO_SAL`, `SPACES_*`, `LATIDO_URL`, `SALUD_TOKEN` y una cadena de conexión por usuario de BD; copia cifrada de los secretos y de la llave privada `age` custodiada fuera de DO (T-24). Salen `SMTP_PASSWORD`, `MAILGUN_API_KEY` (llave de cuenta, en custodia) y `LINK_SIGNING_SECRET` (modelo de token opaco, ADR-0002). Iteración 8 (ya sustituido): añadía `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`, `EDGE_SECRET`, `AUDIT_HMAC_KEY`, `SPACES_*`, `LATIDO_URL`. Texto original: en configuración PHP fuera de la carpeta pública: `HUBSPOT_PRIVATE_APP_TOKEN`, `GEMINI_API_KEY`, `SMTP_PASSWORD`, `LINK_SIGNING_SECRET`, secreto de códigos, credenciales de BD | §8.3 |
 | CON-7 | ⛔ **Reemplazada en la iteración 8 por CON-21**. Texto original: Llamadas externas solo con `curl`; nunca `file_get_contents` con URL del usuario | hosting §2 |
 | CON-8 | Gemini solo en RF-12.2.1 y RF-8.12.1; recibe consulta y taxonomía, **nunca datos de perfiles**; no redacta sobre personas; desarrollo con token personal y solo datos ficticios | RF-16, D-24 |
 | CON-9 | El portal solo lee; la única escritura del inventario es el panel; catálogo solo tras sesión, como proyección desde la BD por la API autenticada; nunca API abierta | §8, §8.3 |
@@ -315,7 +315,7 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 | CON-19 | **PostgreSQL administrado** (respaldos y PITR fuera de los contenedores) | D-23 revisada, PRD v4.12 §8.3 |
 | CON-20 | Correo transaccional (códigos y avisos internos) **solo por Mailgun** (*el boletín sale por Gmail o HubSpot desde el 2026-09-27, decisión de negocio*), con **dominio de envío `mg.people.trycore.com`** (staging: `mg.people-staging.trycore.com`), subdominio sin host web para que SPF, DKIM, MX de rebotes y CNAME de seguimiento no choquen con el CNAME del portal; remitente visible `notify@people.trycore.com` con alineación DMARC relajada; `trycore.com` sigue en Google Workspace | PRD v4.12 §8.3 (sustituye a CON-5); revisión adversarial H2 |
 | CON-21 | Llamadas externas **solo desde el servidor**, por adaptadores con timeout; nunca a URL aportadas por el usuario | Derivada de CON-7 y de la frontera de `build-config.json` (iteración 8) |
-| CON-22 | **Cloudflare delante** de los 4 hosts (proxy, caché de estáticos, límite de peticiones en el acceso) y el origen no alcanzable saltándose Cloudflare | Derivada de CON-15 (iteración 8) |
+| CON-22 | **Cloudflare delante** de los 4 hosts (proxy, caché de estáticos, límite de peticiones en el acceso) y el origen no alcanzable saltándose Cloudflare | Derivada de CON-15 (iteración 8) — *Sustituida por la enmienda del 2026-09-28* |
 
 ## 5. Concerns / preocupaciones del proyecto (CRN)
 
@@ -364,3 +364,14 @@ Fuente: [docs/01-prd/portal-people-service.md](../01-prd/portal-people-service.m
 
 > Los cuadrantes superiores (alta importancia × alto impacto) son los **ASRs críticos**: se atacan
 > primero o se mitiga su riesgo lo antes posible.
+
+### Enmienda 2026-09-28 — sin proxy de borde (propuesta)
+
+> **Estado: `proposed`.** Decisión del sponsor del 2026-09-28 (backlog E-1, T-31), detallada en las
+> enmiendas homónimas de ADR-0010, ADR-0008 y ADR-0002. **CON-22** se reformula: «Perímetro sin proxy de
+> borde obligatorio; si se configura uno, el origen solo le atiende a él (`EDGE_SECRET` opcional)».
+> **QA-2**: el entorno y la medida de V10-15 son directos contra App Platform, sin Cloudflare. **QA-3**:
+> tope de intentos solo en la aplicación (capas 1 y 2 de ADR-0002 y tope de emisión por sujeto, R-85; la regla
+> de Cloudflare se retira) y **un solo código vigente** por sujeto (T-31 resuelta). **QA-8**: tras un envío
+> ambiguo solo el último código emitido es válido; uno invalidado responde igual y no suma fallo. **CON-6**:
+> `EDGE_SECRET` opcional (staging sí, producción no).

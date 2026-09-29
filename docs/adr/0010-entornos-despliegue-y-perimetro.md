@@ -38,14 +38,14 @@ add:
 > la aplicación, CSP estricta con test de Playwright que falla ante cualquier violación, fuentes
 > autoalojadas, `noindex` global, un único artefacto promovido de staging a producción, migraciones
 > expand/contract, monitor externo, RPO 24 h / RTO 4 h como techo y la exportación semanal cifrada a
-> Google Drive (decisión del sponsor). Cambia todo lo que era cPanel.
+> Google Drive (decisión del sponsor). Cambia todo lo que era cPanel. *Sustituida en parte por la enmienda del 2026-09-28*
 
 ## 1. Objetivo de la iteración y drivers seleccionados (Pasos 2–3)
 
 - **Objetivo de la iteración:** definir cómo se construye, verifica, despliega, protege, vigila y
   recupera el sistema de ADR-0008 en DigitalOcean App Platform con imágenes Docker portables, sin
   medio sitio viejo y medio nuevo, con vuelta atrás rápida y sin que el origen sea alcanzable
-  saltándose Cloudflare.
+  saltándose Cloudflare. *Sustituida en parte por la enmienda del 2026-09-28*
 - **Elemento(s) a refinar:** asignación física (entornos, Apps, BD, almacenamiento), pipeline de
   GitHub Actions, especificaciones `.do/`, perímetro (Cloudflare, middleware, cabeceras, CSP) y
   operación (logs, salud, alertas, respaldo, restauración).
@@ -56,7 +56,7 @@ add:
   - Restricciones: **CON-18** (contenedores portables, destino DO App Platform), **CON-19**
     (PostgreSQL administrado), **CON-22** (Cloudflare delante; reemplaza a CON-15 sin ModSecurity ni
     listado de directorios, que ya no existen), CON-6 (secretos solo en servidor), CON-9 (mínimo
-    privilegio en BD, aprovisionamiento). Reemplaza el tratamiento de CON-3 y CON-16.
+    privilegio en BD, aprovisionamiento). Reemplaza el tratamiento de CON-3 y CON-16. *Sustituida en parte por la enmienda del 2026-09-28*
   - Concerns: CRN-9 (pérdida del servidor → pérdida de la región o de la cuenta), CRN-17 (sin SLO),
     CRN-5 (webhooks de correo), CRN-10 (retención de logs y copias). CRN-18 (ModSecurity) deja de
     aplicar.
@@ -75,11 +75,11 @@ add:
 | CON-3 (reemplazada) | **Migraciones en el job `PRE_DEPLOY` de la App del panel** (solo *expand*), con `ps_migrador` y conexión directa; si fallan, App Platform aborta el despliegue y la versión anterior sigue sirviendo. Orden: App del panel (migrar → panel + worker) y después App del portal. **Compatibilidad N/N-1** entre portal, panel y worker (incluidos los `payload` de trabajos: un worker N-1 ignora tipos que no conoce y los devuelve sin sumar intentos). *Contract* solo cuando ninguno de los **3 últimos digests promovidos** (§3.2, poda) depende de lo borrado. Reglas de `migrar` (H3, H25): proveedor de migraciones **estático** (índice TS que importa cada migración; nada se lee del disco en ejecución); **falla** si conoce 0 migraciones o si las aplicadas en `kysely_migration` no empiezan por las que conoce (hueco o nombre distinto); admite que la BD vaya **por delante** (rollback: migraciones posteriores a la última conocida) y lo registra; `SET lock_timeout = '5s'` con 3 reintentos y después falla (el despliegue aborta sin colgar el sitio); toma el candado consultivo `mantenimiento_esquema` con la política única de ADR-0003 (espera como máximo 10 min a que termine `exportar_banco` y después falla); las migraciones **solo cambian esquema**: los cambios de datos sobre tablas auditadas son trabajos del worker con origen `migracion` (CI aplica la **regla de migraciones sin DML de ADR-0003**, fila «Migraciones» de su revisión adversarial, que es su única definición: DML de nivel superior sobre tablas de datos rechazado, cuerpos de `CREATE FUNCTION` ignorados, excepciones enumeradas allí; carpeta única `packages/infra/migraciones`). `migrar` **no** crea particiones de `eventos`: las iniciales las crea el script de roles y las futuras la tarea `retencion_eventos` con `mantener_eventos(sal)` (ADR-0006). *Sustituye al texto anterior («crea por adelantado las particiones … porque es el único proceso dueño», carpeta `infra/migraciones`; I-4)*. Esta regla de BD por delante rige también sobre ADR-0008 (V8-11 alineada) | Migrar desde CI contra la BD de producción (expondría la BD fuera de *trusted sources*); migrar al arrancar cada contenedor (carreras entre réplicas); `FileMigrationProvider` (con el worker empaquetado en un fichero no encuentra migraciones y termina en verde sin aplicar nada) | Un único ejecutor de migraciones, dentro del perímetro de la BD, que bloquea el despliegue si falla y no puede pasar en verde en vacío ni dejar el sitio esperando un bloqueo |
 | QA-12, CRN-9 | **Protección contra borrado**: el token de DO que usa CI tiene alcance limitado (registro de contenedores, incluida la poda, y actualización de Apps; **sin** permisos sobre la BD ni Spaces) y el clúster de producción tiene la protección contra borrado activada. Si se borrara el clúster, sus respaldos y el PITR podrían perderse con él (*a verificar* en V10-3) y solo quedaría la exportación semanal | Token de CI con acceso total | Un token de CI filtrado no puede destruir la BD ni sus respaldos |
 | QA-12 | **Despliegue sin corte con chequeo de preparación real** (H29): App Platform arranca la nueva versión de cada componente y solo retira la anterior cuando `GET /api/v1/salud/lista` responde 200: esa ruta, sin *query string*, hace `SELECT 1` con el rol del propio componente (por su pool) y comprueba que la versión de esquema aplicada es ≥ la que exige el código, con 2 s de tope. Es el `health_check` (preparación); `GET /api/v1/salud/vivo` (sin BD) es el `liveness_health_check`, para que una caída de la BD no reinicie en bucle los contenedores. Entre las dos Apps el cambio **no es atómico**: por eso rige N/N-1, y si el despliegue del portal falla, `deploy.yml` revierte la App del panel a los digests anteriores. **Rollback** = redesplegar los digests de un sha anterior, conservados por la **poda explícita** de §3.2 (DOCR no tiene etiquetas protegidas frente a la recolección de basura, H30) | Chequeo que no consulta nada (un despliegue con credenciales o pool mal enlazados, esquema atrasado o TLS roto pasaría y dejaría el sitio caído); ruta con `?ligera=1` (depende de que `http_path` admita *query string*); enlace simbólico + `releases/` (plataforma anterior) | La plataforma da el cambio atómico por componente y ahora solo cambia a una versión que llega a su BD; la BD compatible hacia atrás (expand/contract) permite volver sin tocarla |
-| QA-2 | **Desfase de chunks tras un despliegue**: `deploymentId = sha` en `next.config`; los `/_next/static/*` se cachean inmutables en Cloudflare **solo para respuestas 200** (un 404 transitorio no queda en caché); si un navegador pide un chunk que ya no existe, el router hace una navegación completa y un manejador de `ChunkLoadError` recarga la página. Como el estado de búsqueda está en la URL y «Mi equipo» en el servidor, la recarga **no pierde nada** | Subir los estáticos de cada build a un bucket con `assetPrefix` y conservar 3 versiones (un host y una pieza más) | Coste mínimo; la consecuencia (una recarga) es aceptable porque el estado sobrevive |
+| QA-2 | **Desfase de chunks tras un despliegue**: `deploymentId = sha` en `next.config`; los `/_next/static/*` se cachean inmutables en Cloudflare **solo para respuestas 200** (un 404 transitorio no queda en caché); si un navegador pide un chunk que ya no existe, el router hace una navegación completa y un manejador de `ChunkLoadError` recarga la página. Como el estado de búsqueda está en la URL y «Mi equipo» en el servidor, la recarga **no pierde nada** | Subir los estáticos de cada build a un bucket con `assetPrefix` y conservar 3 versiones (un host y una pieza más) | Coste mínimo; la consecuencia (una recarga) es aceptable porque el estado sobrevive — *Sustituida en parte por la enmienda del 2026-09-28* |
 | CON-22, QA-3, QA-5 | **Cloudflare como único camino al origen mediante cabecera secreta de borde, comprobada en dos capas**: una *Transform Rule* de Cloudflare añade `X-PS-Edge: <secreto>` y **elimina** `x-middleware-subrequest` en toda petición hacia los 4 hosts; el `middleware.ts` (runtime `nodejs`, `next ≥ 15.5`, V8-2) responde 403 si la cabecera falta o no coincide (tiempo constante, admite `EDGE_SECRET` y `EDGE_SECRET_PREV` durante una rotación), y **`conSesion` y el envoltorio de los endpoints sin sesión la vuelven a comprobar** dentro del Route Handler, por si el middleware se saltara. Excepciones por ruta exacta normalizada y método `GET`: `/api/v1/salud/vivo` y `/api/v1/salud/lista`, que solo devuelven `200`/`503` sin cuerpo informativo; y, **solo si se activa el plan B de V10-13**, `POST /api/v1/webhooks/mailgun` del panel. La IP del cliente sale de `CF-Connecting-IP` solo con cabecera de borde válida (qué cabecera llega realmente tras la capa propia de App Platform se verifica en V10-11). En local y CI la cabecera la pone un borde emulado (§3.2): **no existe ninguna opción que desactive la comprobación** | Filtrar por rangos IP de Cloudflare (App Platform no permite reglas de entrada por IP); *Authenticated Origin Pulls* (mTLS no configurable en App Platform); dejar abierto el dominio `*.ondigitalocean.app`; bandera de configuración que desactive la comprobación en desarrollo (podría llegar a producción) | El dominio por defecto de App Platform siempre existe y no se puede apagar: sin la cabecera cualquiera saltaría Cloudflare (y su límite de tasa) pegando a `…ondigitalocean.app`. Sustituye a `Require ip` (se cierra R-11 en su forma anterior; nace R-45) |
-| CON-22 | **TLS**: Universal SSL de Cloudflare en el borde (hosts de un nivel) + certificado de App Platform en el origen para cada dominio personalizado, con Cloudflare en *Full (strict)*; el monitor externo vigila la caducidad del certificado del origen y alerta a 20 días. **Plan B de emisión**: si App Platform no valida o no activa el dominio con el proxy activo, el registro pasa a solo DNS durante la validación y se reactiva el proxy tras la emisión (con la cabecera de borde el origen sigue cerrado mientras tanto). **Plan B de renovación**: dominio en *Full* (no estricto) temporalmente con alerta, mientras se resuelve | *Flexible* (tráfico sin cifrar hasta el origen) | Cifrado de extremo a extremo sin certificados de pago; App Platform no admite subir un Origin CA, por eso la emisión, la activación y la renovación se verifican (V10-1) y se vigilan |
+| CON-22 | **TLS**: Universal SSL de Cloudflare en el borde (hosts de un nivel) + certificado de App Platform en el origen para cada dominio personalizado, con Cloudflare en *Full (strict)*; el monitor externo vigila la caducidad del certificado del origen y alerta a 20 días. **Plan B de emisión**: si App Platform no valida o no activa el dominio con el proxy activo, el registro pasa a solo DNS durante la validación y se reactiva el proxy tras la emisión (con la cabecera de borde el origen sigue cerrado mientras tanto). **Plan B de renovación**: dominio en *Full* (no estricto) temporalmente con alerta, mientras se resuelve | *Flexible* (tráfico sin cifrar hasta el origen) | Cifrado de extremo a extremo sin certificados de pago; App Platform no admite subir un Origin CA, por eso la emisión, la activación y la renovación se verifican (V10-1) y se vigilan — *Sustituida por la enmienda del 2026-09-28* |
 | CON-22, QA-3 | **Límite de tasa en dos capas**: **una** regla gratuita de Cloudflare sobre las rutas de acceso de portal y panel, que en el plan gratuito filtra por ruta y por IP (sin host ni método si el plan no los da) con periodo y bloqueo cortos: es una **mitigación de ráfagas**, no la defensa frente a la prueba masiva de tokens (H27). Esa defensa es de la aplicación: tokens de ≥ 128 bits (ADR-0002), limitador propio por IP + endpoint en la tabla `limites` de PostgreSQL (acceso, `/api/v1/eventos`, solicitudes, requerimiento pegado, voto) y respuesta neutra | Regla de Cloudflare por endpoint (de pago); presentar la regla gratuita como control principal | La entropía del token hace inviable la enumeración aunque la regla del borde falte; la regla solo abarata las ráfagas |
-| CRN-5, QA-13 | **Plan B frente al modo antibots de la zona compartida** (H27): *Bot Fight Mode* gratuito se aplica a toda la zona sin excepciones por ruta. Si V10-13 muestra desafíos a Mailgun o al monitor: (1) el webhook se registra en Mailgun contra `https://<panel>.ondigitalocean.app/api/v1/webhooks/mailgun`, única ruta de negocio exenta de la cabecera de borde, autenticada por firma HMAC de Mailgun (`MAILGUN_WEBHOOK_SIGNING_KEY`), marca de tiempo de ±5 min, token de un solo uso (`webhooks_vistos`), cuerpo ≤ 64 KB y limitador propio; (2) el monitor sondea `GET /api/v1/salud/lista` directamente en los dos `…ondigitalocean.app` (exenta por diseño) y el `GET /api/v1/salud` completo por Cloudflare solo como segunda señal; el latido sale del worker y no cruza Cloudflare | Aceptar la pérdida silenciosa de rebotes, quejas y bajas (CRN-5, R-53) o de la vigilancia (QA-13); depender de un cambio de plan o de zona que no controlamos | Bajas y rebotes no pueden perderse por un desafío: la ruta directa se autentica por sí misma y no expone nada si la firma no es válida |
+| CRN-5, QA-13 | **Plan B frente al modo antibots de la zona compartida** (H27): *Bot Fight Mode* gratuito se aplica a toda la zona sin excepciones por ruta. Si V10-13 muestra desafíos a Mailgun o al monitor: (1) el webhook se registra en Mailgun contra `https://<panel>.ondigitalocean.app/api/v1/webhooks/mailgun`, única ruta de negocio exenta de la cabecera de borde, autenticada por firma HMAC de Mailgun (`MAILGUN_WEBHOOK_SIGNING_KEY`), marca de tiempo de ±5 min, token de un solo uso (`webhooks_vistos`), cuerpo ≤ 64 KB y limitador propio; (2) el monitor sondea `GET /api/v1/salud/lista` directamente en los dos `…ondigitalocean.app` (exenta por diseño) y el `GET /api/v1/salud` completo por Cloudflare solo como segunda señal; el latido sale del worker y no cruza Cloudflare | Aceptar la pérdida silenciosa de rebotes, quejas y bajas (CRN-5, R-53) o de la vigilancia (QA-13); depender de un cambio de plan o de zona que no controlamos | Bajas y rebotes no pueden perderse por un desafío: la ruta directa se autentica por sí misma y no expone nada si la firma no es válida — *Sustituida por la enmienda del 2026-09-28* |
 | QA-5, UC-14 | **CSP con nonce por petición**: `middleware.ts` genera un nonce y fija `default-src 'self'; script-src 'self' 'nonce-…' 'strict-dynamic'; style-src 'self' 'nonce-…'; style-src-elem 'self' 'nonce-…'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'` (**en el panel** además `https://<bucket>.<región>.digitaloceanspaces.com` para la subida prefirmada) `; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'`; lo pasa a Next y a `next-themes`. El HTML sale con `Cache-Control: private, no-store` (un HTML cacheado reutilizaría el nonce) y todo el árbol es dinámico (ADR-0008). Test de Playwright que falla ante cualquier `securitypolicyviolation`, en CI y en staging tras Cloudflare, **con un menú de Radix abierto y, desde la épica que la introduce, una subida real de evidencia** (§3.2) | Hashes en el build (ya no hay HTML estático); `'unsafe-inline'` en `style-src` (el navegador lo ignora cuando hay nonce); prohibir todo `style=""` (React SSR y las librerías de posicionamiento los emiten) | El nonce cubre scripts y elementos `<style>`; los atributos `style` se permiten solo vía `style-src-attr` (no ejecutan código; riesgo residual: inyección de CSS en atributos, acotada porque `img-src`/`font-src`/`connect-src` siguen cerrados) |
 | QA-5 | **Fuentes autoalojadas con `next/font/local`**: Geist se versiona como `woff2` en `packages/ui/fuentes/` (licencia OFL incluida), sin la dependencia `geist` ni `next/font/google` (el handoff del prototipo que usa `next/font/google` queda sustituido por esta decisión, H20); 0 CDNs; Rocket Loader, ofuscación de correos y Web Analytics de Cloudflare desactivados por *Configuration Rule* en los 4 hosts | Google Fonts; paquete `geist` (dependencia más, fuera del stack permitido) | Sin peticiones a terceros y sin ampliar la lista de dependencias |
 | QA-5, CON-10 | **Cabeceras globales** desde `headers()` de `next.config` (cubren también `/_next/static`, que el middleware excluye): `Strict-Transport-Security: max-age=31536000`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin`, `X-Content-Type-Options: nosniff`, `X-Robots-Tag: noindex, nofollow` en **todas** las respuestas; `Cache-Control: private, no-store` en `/api/*` salvo lo que ADR-0003 fija para el catálogo | `.htaccess` (plataforma anterior) | Un único punto, probado por test |
@@ -113,6 +113,7 @@ webhooks de su cuenta de Mailgun), distintos de los de producción.
   | Verificación | Se activa con |
   |--------------|---------------|
   | lint (reglas de ADR-0008: sin Server Actions, sin Edge, sin imports cruzados, `fetch` solo en `infra`) · typecheck · Vitest de lo existente · grep de secretos · V8-1 · V8-2 · V8-9 (configuración incompleta) | primer slice (EP-001, caparazón) |
+  | **V10-19** (perímetro en las dos ramas del borde, `x-middleware-subrequest` en toda ruta, `ipDelCliente`) · *añadida por la enmienda del 2026-09-28* | EP-001 · 1 |
   | build de las 3 imágenes + **arranque del bundle del worker** y de `migrar` contra BD vacía (falla si aplica 0 migraciones) | primer slice (EP-001 ya encola `enviar_codigo`) |
   | integración de `infra` y Route Handlers contra PostgreSQL 16 **con el script de roles de ADR-0008 y PgBouncer en modo transacción** · test de permisos por rol (V8-10) · test de redacción del logger (`23505`) | primera migración (EP-001) |
   | Playwright de humo + **test de CSP del shell** (portal y panel, menú de Radix abierto) · axe · Lighthouse CI sobre las páginas existentes | primer slice con UI (EP-001) |
@@ -126,7 +127,7 @@ webhooks de su cuenta de Mailgun), distintos de los de producción.
   Playwright entra siempre por él. La configuración se valida con `zod` por proceso y por `APP_ENV`
   (`local`, `ci`, `staging`, `produccion`): en `local`/`ci` los adaptadores de correo, HubSpot y Gemini
   admiten dobles; `EDGE_SECRET` y las credenciales de BD son obligatorias en todos; en `produccion` falta
-  cualquiera → el proceso sale con código ≠ 0.
+  cualquiera → el proceso sale con código ≠ 0. *Sustituida por la enmienda del 2026-09-28*
 - `deploy.yml`:
   - en merge a `main`: build y push de `portal`, `panel`, `worker` a DOCR con etiqueta = sha; firma
     `cosign` sin llave de cada digest; mueve la etiqueta `staging`. El agente `ps-despliegue` del
@@ -156,7 +157,7 @@ webhooks de su cuenta de Mailgun), distintos de los de producción.
   sobre las rutas de acceso (lista exacta del contrato de ADR-0002; sin filtro por método si el plan
   gratuito no lo permite); registros de Mailgun **bajo `mg.people.trycore.com` y
   `mg.people-staging.trycore.com`** en modo solo DNS (SPF, DKIM, CNAME de seguimiento, MX de rebotes), sin
-  tocar los CNAME con proxy de los hosts web.
+  tocar los CNAME con proxy de los hosts web. *Sustituida por la enmienda del 2026-09-28*
 - **Salud:** `GET /api/v1/salud/vivo` → `200` sin consultar nada (*liveness*);
   `GET /api/v1/salud/lista` → `200` si `SELECT 1` con el rol del componente y versión de esquema ≥ la
   requerida en ≤ 2 s, si no `503`, sin cuerpo informativo (*readiness* y chequeo del despliegue);
@@ -227,23 +228,23 @@ webhooks de su cuenta de Mailgun), distintos de los de producción.
 
 | # | Verificación | Dónde | Por qué | Cómo se mide |
 |---|--------------|-------|---------|--------------|
-| V10-1 | Emisión, **activación** y renovación del certificado de App Platform con el proxy de Cloudflare activo | spike + prod en oscuro | *Full (strict)* exige certificado válido en el origen (R-54) | Alta de `people.trycore.com` y `people-panel.trycore.com` en las Apps de producción con proxy; `curl -v` al origen; fecha de caducidad y alerta a 20 días en el monitor; si no activa, se aplica y documenta el plan B de emisión |
-| V10-2 | Cabecera de borde efectiva | staging por el túnel + prod en oscuro | R-45 | Petición a los dos `…ondigitalocean.app` sin la cabecera → 403 en todas las rutas salvo las excepciones exactas; con `x-middleware-subrequest` → 403; por el host de producción tras Cloudflare → 200 |
+| V10-1 | Emisión, **activación** y renovación del certificado de App Platform con el proxy de Cloudflare activo | spike + prod en oscuro | *Full (strict)* exige certificado válido en el origen (R-54) | Alta de `people.trycore.com` y `people-panel.trycore.com` en las Apps de producción con proxy; `curl -v` al origen; fecha de caducidad y alerta a 20 días en el monitor; si no activa, se aplica y documenta el plan B de emisión — *Sustituida por la enmienda del 2026-09-28* |
+| V10-2 | Cabecera de borde efectiva | staging por el túnel + prod en oscuro | R-45 | Petición a los dos `…ondigitalocean.app` sin la cabecera → 403 en todas las rutas salvo las excepciones exactas; con `x-middleware-subrequest` → 403; por el host de producción tras Cloudflare → 200 — *Sustituida por la enmienda del 2026-09-28* |
 | V10-3 | Restauración de prueba cronometrada con el **runbook de §3.5**, alcance de los respaldos y **custodia** | prod en oscuro | QA-12, CRN-9 (R-7) | PITR a un clúster nuevo; re-enlazar Apps, *trusted sources*, usuarios y pools; worker en pausa; conciliación; medir de extremo a extremo (≤ 4 h, objetivo < 1 h). Restaurar la exportación semanal **desde un equipo sin acceso a DO**, con la llave privada `age` y la `AUDIT_HMAC_KEY` sacadas de la custodia, y verificar la cadena de auditoría y los consentimientos al 100 %. Confirmar si borrar un clúster borra sus respaldos. Criterio: 0 reenvíos a bajas, 0 negocios huérfanos |
 | V10-4 | SPF, DKIM y DMARC en *pass* para `mg.people.trycore.com`, colocación en bandeja y alcance de las llaves | prod en oscuro (buzones internos) + staging | QA-8 | Cabeceras `Authentication-Results` de un código enviado a Gmail y a un buzón corporativo; `dig` de `people.trycore.com` y `mg.people.trycore.com` sin registros en conflicto con el CNAME del host; la llave del portal recibe 401/403 contra `/suppressions` y `/webhooks`; la de staging no puede enviar desde el dominio de producción; retención de mensajes anotada |
 | V10-5 | Webhooks de Mailgun | staging | CRN-5 | Rebote forzado → `eventos_correo` y `bajas` actualizados; firma inválida, marca de tiempo vencida o token repetido → 401 |
 | V10-6 | `LISTEN/NOTIFY` por la conexión directa del clúster administrado | prod en oscuro (+ staging como regresión) | ADR-0009 | Latencia inserción → reclamo < 1 s; reconexión tras reinicio o mantenimiento del clúster; comprobar que ningún `LISTEN` sale por un pool |
 | V10-7 | Job `PRE_DEPLOY` que falla aborta el despliegue | prod en oscuro | Migraciones | Imagen de prueba cuyo `migrar` sale con código ≠ 0 desplegada en `ps-prod-panel` → la versión anterior sigue activa; `migrar` con bloqueo retenido por otra sesión → agota `lock_timeout` y aborta sin colgar el sitio |
 | V10-8 | Tiempo de rollback con digests conservados por la poda | prod en oscuro | QA-12 | Poda en seco (lista de conservados = en uso + 3 *releases* `prod-*`), después redespliegue del sha anterior en las dos Apps, cronometrado |
-| V10-9 | Reglas gratuitas disponibles en la zona compartida `trycore.com` (límite de tasa y su alcance real, *Transform Rule*, *Configuration Rule*) | spike | La zona la comparte el sitio corporativo (R-12) | Lista de reglas de Cloudflare y prueba de cada una sobre el host de prueba; si la regla de tasa ya está usada, se anota y rige solo el limitador propio |
+| V10-9 | Reglas gratuitas disponibles en la zona compartida `trycore.com` (límite de tasa y su alcance real, *Transform Rule*, *Configuration Rule*) | spike | La zona la comparte el sitio corporativo (R-12) | Lista de reglas de Cloudflare y prueba de cada una sobre el host de prueba; si la regla de tasa ya está usada, se anota y rige solo el limitador propio — *Sustituida por la enmienda del 2026-09-28* |
 | V10-10 | Usuarios `ps_*` creados con `doctl`, enlazados a sus componentes (los **3 usuarios de la App del panel** incluidos), pools por usuario, arranque sin superusuario para la aplicación, permisos y presupuesto de conexiones | prod en oscuro (+ CI y staging como regresión) | CON-9, ADR-0003, ADR-0008; cierre de R-1 | Baterías de V8-10, V2-2 y V3-2 (incluidas las pruebas negativas de H0: `ps_portal` no toca `usuarios_panel`, no crea sesiones del panel, no encola tipos fuera de la lista de ADR-0002) ejecutadas con las credenciales reales; `auditoria` rechaza `UPDATE`/`DELETE`; como `ps_panel` y `ps_worker`, `auditoria.registrar(...)` escribe y avanza la cabeza y un `SELECT … FOR UPDATE` o `UPDATE` directo sobre `auditoria_cabeza` falla; `auditoria.suprimir_titular(perfil_id)` funciona como `ps_panel` y falla como `ps_worker`; `UPDATE` directo sobre `identidad.claves_titular` falla para ambos (casos de V3-1 y V3-3 con credenciales reales); `ps_migrador` no puede `DISABLE TRIGGER` ni hacer `DROP`/`ALTER` sobre `auditoria.*` ni `telemetria.eventos` (error de permisos); ningún componente conecta como `doadmin`; `pg_stat_activity` durante un despliegue sin corte ≤ presupuesto (fórmula de ADR-0008); se decide si la cadena del pool se enlaza o va como `SECRET` |
-| V10-11 | Cabecera real con la IP del cliente tras Cloudflare y la capa propia de App Platform (`CF-Connecting-IP` o `do-connecting-ip`) | prod en oscuro + staging por el túnel | El limitador depende de ella | Despliegue de prueba que registra (sin persistir, redactado) las cabeceras candidatas; se retira después y un test de CI falla si el registro sigue en el código |
+| V10-11 | Cabecera real con la IP del cliente tras Cloudflare y la capa propia de App Platform (`CF-Connecting-IP` o `do-connecting-ip`) | prod en oscuro + staging por el túnel | El limitador depende de ella | Despliegue de prueba que registra (sin persistir, redactado) las cabeceras candidatas; se retira después y un test de CI falla si el registro sigue en el código — *Sustituida por la enmienda del 2026-09-28* |
 | V10-12 | Periodo de gracia de `SIGTERM` en App Platform y devolución de filas del worker | prod en oscuro | ADR-0009 | Despliegue de `ps-prod-panel` con un trabajo largo de prueba en curso: la fila vuelve a `pendiente` o termina dentro de la gracia |
-| V10-13 | Modo antibots (*Bot Fight Mode*) de la zona compartida frente a los webhooks de Mailgun y al monitor externo | spike + prod en oscuro | CRN-5, QA-13 | Webhook de prueba firmado desde Mailgun y sondeo del monitor al host de producción; **si hay desafío, se activa el plan B de §2** y se repite la prueba contra la ruta directa |
+| V10-13 | Modo antibots (*Bot Fight Mode*) de la zona compartida frente a los webhooks de Mailgun y al monitor externo | spike + prod en oscuro | CRN-5, QA-13 | Webhook de prueba firmado desde Mailgun y sondeo del monitor al host de producción; **si hay desafío, se activa el plan B de §2** y se repite la prueba contra la ruta directa — *Sustituida por la enmienda del 2026-09-28* |
 | V10-14 | El chequeo de preparación impide retirar la versión buena | prod en oscuro | QA-12 (H29) | Despliegue con `DATABASE_URL` rota y otro con imagen que exige un esquema superior → App Platform no retira la versión anterior |
-| V10-15 | **Rendimiento desde Colombia** (H31): LCP P75 y TTFB P75 del HTML, P95 de `GET /api/v1/catalogo` | prod en oscuro | QA-2 (R-41); sustituye la medición en staging de V8-6 | WebPageTest desde Bogotá (o 4G real en Colombia) vía Cloudflare contra `ps-prod-portal` con sesión y 300 perfiles ficticios; metas: LCP < 2,5 s, TTFB ≤ 800 ms, catálogo ≤ 500 ms; instancias de ≥ 1 GB |
+| V10-15 | **Rendimiento desde Colombia** (H31): LCP P75 y TTFB P75 del HTML, P95 de `GET /api/v1/catalogo` | prod en oscuro | QA-2 (R-41); sustituye la medición en staging de V8-6 | WebPageTest desde Bogotá (o 4G real en Colombia) vía Cloudflare contra `ps-prod-portal` con sesión y 300 perfiles ficticios; metas: LCP < 2,5 s, TTFB ≤ 800 ms, catálogo ≤ 500 ms; instancias de ≥ 1 GB — *Sustituida en parte por la enmienda del 2026-09-28* |
 | V10-16 | E2E de URL de estado de búsqueda de 2 000 caracteres (QA-16) contra los límites de cabecera de Cloudflare y App Platform, y `verificar-salidas` de ADR-0004 | prod en oscuro | QA-16; condición de entrada de EP-009 (R-2) | Playwright contra el host de producción; `verificar-salidas` ejecutado desde la consola del componente `worker` de `ps-prod-panel` |
-| V10-17 | Logs sin datos personales en el proveedor | prod en oscuro | CRN-10 (H40) | Provocar un `23505` con un correo ficticio y un error no controlado: no aparece en los logs de App Platform ni en el de la BD administrada; retención de App Platform y Cloudflare anotada en CRN-10 |
+| V10-17 | Logs sin datos personales en el proveedor | prod en oscuro | CRN-10 (H40) | Provocar un `23505` con un correo ficticio y un error no controlado: no aparece en los logs de App Platform ni en el de la BD administrada; retención de App Platform y Cloudflare anotada en CRN-10 — *Sustituida en parte por la enmienda del 2026-09-28* |
 | V10-18 | **Validación legal de la transferencia internacional y de la transmisión a encargados** (DO, Mailgun, Cloudflare, HubSpot, Google Drive) | — | CON-10, Ley 1581 (R-44) | **Bloquea la primera importación de datos reales**: sin constancia escrita del área legal no se carga ningún dato real en producción. El contenido de la validación es negocio/legal (§6) |
 
 ### 3.5 Restauración y custodia
@@ -287,6 +288,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
+  %% Sustituida por la enmienda del 2026-09-28
   U[Navegador] -->|HTTPS · Universal SSL| CF[Cloudflare: proxy · 1 regla de tasa en acceso · Transform Rule X-PS-Edge · caché /_next/static · bypass /api y HTML]
   X[Petición directa a …ondigitalocean.app] -.->|403 sin cabecera de borde salvo /salud/vivo y /salud/lista| MW
   CF -->|HTTPS · Full strict| MW[middleware.ts runtime nodejs: cabecera de borde · nonce CSP · cabeceras]
@@ -322,16 +324,16 @@ gracias a una cabecera secreta de borde, con plan B para webhook y monitor; CSP 
 evidencias en Spaces con URL prefirmadas; secretos como variables `SECRET` por componente con custodia
 fuera de DO; PostgreSQL administrado con PITR de 7 días, runbook de restauración y exportación semanal
 `pg_dump` cifrada a Drive; observabilidad con logger que redacta, salud, alertas del proveedor y monitor
-externo.
+externo. *Sustituida en parte por la enmienda del 2026-09-28*
 
 **Trade-offs aceptados:**
 - Dependencia operativa de DigitalOcean (registro, Apps, BD, Spaces), mitigada por imágenes portables
   y especificaciones versionadas; mover de proveedor exige reescribir solo `.do/` y la conexión a
   almacenamiento S3-compatible.
 - La cabecera secreta de borde es un secreto compartido con Cloudflare: si se filtra, el origen queda
-  alcanzable sin límite de tasa del borde hasta rotarla (el limitador propio sigue activo).
+  alcanzable sin límite de tasa del borde hasta rotarla (el limitador propio sigue activo). *Sustituida por la enmienda del 2026-09-28*
 - Sin ModSecurity: el filtrado de aplicación web queda en el conjunto gestionado gratuito de
-  Cloudflare y en la validación `zod` de cada entrada.
+  Cloudflare y en la validación `zod` de cada entrada. *Sustituida en parte por la enmienda del 2026-09-28*
 - La promoción a producción sigue siendo un clic humano.
 - Logs con la retención del proveedor, sin reenvío externo en v1.
 - El agente y el `compose.yaml` de staging se reinstalan a mano cuando cambian (a cambio, el servidor no
@@ -345,21 +347,21 @@ externo.
 | CON-19 | ⚠️ | BD administrada, *trusted sources*, TLS, PITR, usuarios por componente con `doctl`, pools por usuario, script de roles, protección contra borrado | V10-10 en producción (enlace de los 3 usuarios, pool como variable o `SECRET`); presupuesto de conexiones (R-49) |
 | CON-9 (apoyo) | ⚠️ | Roles creados antes de la primera migración; auditoría con dueño sin login; exportación con usuario de solo lectura | R-1 solo se cierra con V10-10 en producción en oscuro, no con staging |
 | CON-6 | ✅ | Secretos `SECRET` por componente, peppers por ámbito, llaves de Mailgun de envío por componente, llaves de Spaces por bucket, CI que conserva los `EV[…]`, grep en imagen, custodia fuera de DO | Rotación del secreto de borde exige convivir con el anterior (`EDGE_SECRET_PREV`); custodios sin nombrar (§6) |
-| CON-22 | ⚠️ | Proxy en los 4 hosts; cabecera de borde comprobada en middleware (runtime `nodejs`) y en cada Route Handler; `x-middleware-subrequest` eliminada en el borde y en el borde emulado; *Full (strict)* con planes B de emisión y renovación; regla de tasa como mitigación de ráfagas | V10-1, V10-9 y V10-13 (spike); V10-2 y V10-11 en oscuro; zona compartida (R-12) |
+| CON-22 | ⚠️ | Proxy en los 4 hosts; cabecera de borde comprobada en middleware (runtime `nodejs`) y en cada Route Handler; `x-middleware-subrequest` eliminada en el borde y en el borde emulado; *Full (strict)* con planes B de emisión y renovación; regla de tasa como mitigación de ráfagas | V10-1, V10-9 y V10-13 (spike); V10-2 y V10-11 en oscuro; zona compartida (R-12) — *Sustituida por la enmienda del 2026-09-28* |
 | QA-12 | ⚠️ | Respaldo diario + PITR 7 días con runbook (0 reenvíos a bajas, 0 negocios huérfanos); `pg_dump` semanal completo y cifrado fuera del proveedor que restituye consentimientos y auditoría, verificable con la custodia; protección contra borrado; chequeo de preparación que consulta la BD; N/N-1 y reversión del panel; 3 *releases* conservadas por la poda | Restauración y rollback sin cronometrar (V10-3, V10-8, V10-14; R-7); evidencias de Spaces sin copia fuera del proveedor (T-16) |
-| QA-13 | ⚠️ | Salud (`vivo`, `lista`, completa) + alertas de App Platform + latido externo (ADR-0009) + plan B del monitor sin Cloudflare | Monitor externo sin elegir (R-24); V10-13 |
+| QA-13 | ⚠️ | Salud (`vivo`, `lista`, completa) + alertas de App Platform + latido externo (ADR-0009) + plan B del monitor sin Cloudflare | Monitor externo sin elegir (R-24); V10-13 — *Sustituida en parte por la enmienda del 2026-09-28* |
 | QA-3 (apoyo) | ⚠️ | Limitador propio y entropía del token como defensa; regla de Cloudflare como mitigación de ráfagas; IP del cliente confiable solo con cabecera de borde válida | Umbrales frente a NAT corporativos (R-13); V10-11 |
 | QA-5 (apoyo) | ✅ | CSP con nonce (`style-src-attr` para atributos, Spaces en `connect-src` del panel) y test que falla ante violaciones con Radix abierto y, desde EP-006, subida real (CI y staging); HTML `no-store`; `noindex` global; fuentes versionadas; secretos solo en variables `SECRET` con mínimo privilegio; grep en imagen; evidencias solo por URL prefirmada del panel | Función de Cloudflare activada a mano que inyecte scripts: la detecta el humo de staging |
-| QA-2 (apoyo) | ⚠️ | Lighthouse CI contra el contenedor; chunks inmutables en Cloudflare; V10-15 mide LCP y TTFB desde Colombia contra producción en oscuro | Hasta V10-15, TTFB del HTML dinámico en `nyc` sin medir (R-41: su mitigación depende de V10-15, no de staging) |
+| QA-2 (apoyo) | ⚠️ | Lighthouse CI contra el contenedor; chunks inmutables en Cloudflare; V10-15 mide LCP y TTFB desde Colombia contra producción en oscuro | Hasta V10-15, TTFB del HTML dinámico en `nyc` sin medir (R-41: su mitigación depende de V10-15, no de staging) — *Sustituida en parte por la enmienda del 2026-09-28* |
 | QA-8 (apoyo) | ⚠️ | Dominio de envío `mg.people.trycore.com` sin conflicto con el host web; registros solo DNS; llaves de envío por dominio; staging en cuenta separada | V10-4 sin hacer |
-| CRN-5 | ⚠️ | Webhook firmado con token de un uso; plan B directo si hay desafíos | V10-5, V10-13 |
+| CRN-5 | ⚠️ | Webhook firmado con token de un uso; plan B directo si hay desafíos | V10-5, V10-13 — *Sustituida en parte por la enmienda del 2026-09-28* |
 | CRN-9 | ⚠️ | La pérdida de un contenedor no pierde nada (sin estado); pérdida de la BD → PITR + runbook; pérdida de cuenta o región → exportación semanal (hasta 7 días) + custodia de secretos fuera de DO | Aceptar 7 días ante pérdida de cuenta/región y evidencias sin copia es decisión de negocio (T-16); exportación manual depende del responsable técnico (R-8); custodios (§6) |
 | CRN-10 | ⚠️ | Logger con redacción y test; logs de la BD sin sentencias; retención documentada | V10-17; retención en Drive y transferencia (V10-18) son legales (§6) |
 | CRN-17 | ⚠️ | Hueco declarado; RPO/RTO techo aceptado | Sin SLO ni ventana de mantenimiento |
 
 **Drivers no resueltos en esta iteración:** SLO (CRN-17); V10-1…V10-18 son tareas previas al primer
 envío real (V10-1, V10-9 y V10-13 como spike inmediato; V10-18 antes de la primera carga de datos
-reales); elección del monitor externo (R-24).
+reales); elección del monitor externo (R-24). *Sustituida en parte por la enmienda del 2026-09-28*
 
 ## 6. Consecuencias
 
@@ -378,15 +380,15 @@ reales); elección del monitor externo (R-24).
   - Coste mensual de plataforma (Apps, BD, Spaces, Mailgun, DOCR dimensionado) frente a un hosting ya
     pagado.
   - Configuración de Cloudflare más delicada: si la *Transform Rule* se borra, los 4 hosts responden
-    403 (falla cerrado; lo detecta el monitor externo en minutos).
-  - Dependencia de un segundo proveedor de nube además de Cloudflare.
+    403 (falla cerrado; lo detecta el monitor externo en minutos). *Sustituida por la enmienda del 2026-09-28*
+  - Dependencia de un segundo proveedor de nube además de Cloudflare. *Sustituida por la enmienda del 2026-09-28*
   - Operación manual adicional: script de roles de la BD, reinstalación del agente de staging,
     rotación de credenciales de pool si no se pueden enlazar, custodia de secretos.
-  - El plan B del webhook abre una ruta de negocio sin cabecera de borde (autenticada por firma).
+  - El plan B del webhook abre una ruta de negocio sin cabecera de borde (autenticada por firma). *Sustituida por la enmienda del 2026-09-28*
 - **Riesgos:** R-12 (zona compartida), R-24 (monitor), R-41 (TTFB), R-42 (portabilidad), R-45
   (cabecera de borde filtrada o regla borrada), R-46 (retención corta de logs), R-7 (restauración sin
   ensayar), R-54 (certificado del origen con el proxy activo sin renovación probada), R-55 (despliegue
-  no atómico entre las dos Apps). **Nuevos, sin numerar** (los numera el backlog):
+  no atómico entre las dos Apps). **Nuevos, sin numerar** (los numera el backlog): *Sustituida en parte por la enmienda del 2026-09-28*
   - Firma de imágenes: si la identidad OIDC de `cosign` o su verificación se configura mal, staging deja
     de desplegar (falla cerrado) o aceptaría imágenes de otra rama; se prueba con una imagen firmada
     desde una rama que el agente debe rechazar.
@@ -423,7 +425,7 @@ reales); elección del monitor externo (R-24).
     (regla de tasa ya usada, *Bot Fight Mode* no desactivable), elegir entre zona propia para el portal,
     plan Pro de Cloudflare o acuerdo con quien administra el sitio corporativo para desactivar *Bot Fight
     Mode*; mientras tanto rige el plan B técnico. El PRD §8.3 debe dejar de presentar la regla gratuita
-    como defensa frente a la prueba masiva de tokens (corrección de discovery).
+    como defensa frente a la prueba masiva de tokens (corrección de discovery). *Sustituida por la enmienda del 2026-09-28*
   - **Trade-off de negocio pendiente (H13, legal, T-27):** retención en Google Drive de la exportación
     `pg_dump` completa (identidad, consentimientos y auditoría; sin datos de telemetría: Ley 1581);
     propuesta por defecto: 4 copias semanales, no aplicada hasta que T-27 se decida; la retención interina
@@ -433,13 +435,13 @@ reales); elección del monitor externo (R-24).
     con los 5 usuarios `ps_*` y sus pools, script de roles de ADR-0008 (que se ejecuta a mano con `doadmin` una vez por entorno al aprovisionarlo y de nuevo (idempotente, con dos personas) cada vez que cambian sus objetos (`auditoria`, `telemetria`, vistas `v_*`) o una migración añade objetos que requieren `GRANT` nuevos emitidos por él), 2 buckets de Spaces,
     alertas de App Platform al responsable técnico. Staging no crea nada en DO salvo su bucket.
   - Crear en Cloudflare: 4 registros CNAME con proxy, *Transform Rule* por entorno, *Configuration
-    Rule*, la regla de tasa, los registros de Mailgun bajo `mg.*` y el túnel de staging.
+    Rule*, la regla de tasa, los registros de Mailgun bajo `mg.*` y el túnel de staging. *Sustituida en parte por la enmienda del 2026-09-28*
   - Crear en Mailgun: dominio `mg.people.trycore.com` con llaves de envío por componente y llave de
     supresiones; cuenta o subcuenta de staging con `mg.people-staging.trycore.com`.
   - Servidor de staging: segmento aislado, agente `ps-despliegue` y `compose.yaml` instalados a mano.
   - Custodia: copia cifrada de secretos y llave privada `age` fuera de DO antes del primer despliegue.
   - Ejecutar V10-1, V10-9 y V10-13 como spike ahora; V10-18 antes de la primera carga de datos reales;
-    el resto de V10-1…V10-17 y dejar el resultado por escrito antes del primer envío real.
+    el resto de V10-1…V10-17 y dejar el resultado por escrito antes del primer envío real. *Sustituida en parte por la enmienda del 2026-09-28*
   - `scripts/diagnostico-hosting.sh` queda obsoleto (verificaba el hosting cPanel).
 
 ## 7. Trazabilidad
@@ -462,3 +464,103 @@ reales); elección del monitor externo (R-24).
 - Stack operacionalizado en: `.claude/config/stack-allowlist.json` — `@aws-sdk/client-s3`,
   `@aws-sdk/s3-request-presigner` (Spaces); herramientas de CI; Docker, `doctl`, `cosign` y la imagen de
   nginx del borde emulado como herramientas de CI/infraestructura, no dependencias de código.
+
+### Enmienda 2026-09-28 — sin proxy de borde (propuesta)
+
+> **Estado: `proposed`** (un humano la promueve a `accepted`). Recoge la decisión del sponsor del
+> 2026-09-28 durante la construcción de EP-001 (E-1 del backlog): **Cloudflare deja de ser criterio**
+> (era para el hosting cPanel anterior) y **no hay proxy de borde obligatorio**. Incorpora las
+> correcciones de la evaluación ATAM-lite de la propia enmienda (mismo día). El código ya la aplica:
+> `EDGE_SECRET` y `EDGE_SECRET_PREV` están en `OPCIONALES` (`packages/infra/src/config.ts`);
+> `decidirPerimetro` (`packages/infra/src/perimetro.ts`), `conBorde` e `ipDelCliente`
+> (`packages/infra/src/http/envoltorios.ts`). Rige sobre el cuerpo, la «Revisión adversarial» y la
+> «Consolidación» donde los contradiga; las filas afectadas llevan la nota *Sustituida por la enmienda
+> del 2026-09-28*.
+>
+> **Decisión por entorno:** **producción va sin secreto de borde** (rama sin secreto: los 2 hosts de
+> producción, solo DNS hacia App Platform); **staging mantiene `EDGE_SECRET`** (rama con secreto),
+> porque el túnel `cloudflared` de §3.1 exige que los 2 hosts de staging tengan proxy en la zona de
+> Cloudflare. Así cada rama del perímetro se ejercita en un entorno real, además de en CI (V10-19).
+
+| Mecanismo (texto anterior) | Vigente con la enmienda | Efecto |
+|----------------------------|-------------------------|--------|
+| **CON-22** «Cloudflare delante; origen no alcanzable sin él» | CON-22 se reformula: **perímetro sin proxy de borde obligatorio; si se configura uno, el origen solo le atiende a él**. Producción: los 2 hosts apuntan por DNS (sin proxy) a las Apps de App Platform. Staging: sin cambio (túnel, con proxy y con secreto) | El origen de producción es el punto de entrada público |
+| Cabecera secreta de borde `X-PS-Edge` siempre exigida; «no existe ninguna opción que desactive la comprobación» | **`EDGE_SECRET` opcional.** Si está configurada, `middleware.ts` y `conBorde` exigen `X-PS-Edge` en tiempo constante (`timingSafeEqual`, con `EDGE_SECRET_PREV` durante una rotación), exactamente como antes; si no, no se exige. La ausencia del secreto **es** el interruptor: no hay otra bandera. Compatible **sin cambio de código solo con Cloudflare**, porque con secreto la IP sale de `cf-connecting-ip`; cualquier otro proxy exige configurar su cabecera de IP de confianza (trabajo futuro, R-88) | Staging la usa; producción no (R-84) |
+| La *Transform Rule* elimina `x-middleware-subrequest` | **Rechazo siempre con 403** de `x-middleware-subrequest` llegada desde fuera, **en toda ruta sin excepción (salud incluida)** y haya o no secreto de borde, en **dos barreras**: `middleware.ts` (`decidirPerimetro`) y, dentro del Route Handler, `conBorde`; más `next ≥ 15.5` (V8-2). Las rutas `GET /api/v1/salud/vivo` y `GET /api/v1/salud/lista` están exentas **solo de la cabecera de borde** (devuelven `200`/`503` sin cuerpo informativo) | La defensa frente a CVE-2025-29927 deja de depender del borde y no descansa en una sola capa (R-89) |
+| IP del cliente de `CF-Connecting-IP` con cabecera de borde válida | `ipDelCliente`: `cf-connecting-ip` **solo si hay borde configurado** (staging); si no, `do-connecting-ip` (App Platform) y, en su defecto, el primer salto de `x-forwarded-for`; si no hay ninguna, `desconocida`, que **no cuenta como IP** para el limitador y dispara alerta (R-86) | El limitador por IP depende de que el cliente no pueda fijar esas cabeceras (R-83, V10-11) |
+| Límite de tasa en dos capas (regla gratuita de Cloudflare + aplicación) | **Solo la aplicación.** En el acceso: capas 1 y 2 de ADR-0002 (5 fallos / 15 min por par enlace+correo y 5 por IP; 20 fallos / día por par → bloqueo 24 h + alerta) y **tope de emisión por ámbito + sujeto, independiente de la IP** (≤ 3 envíos de código / 15 min y ≤ 10 / día, respuesta neutra; R-85, planificado en EP-001: sub-slice 2 para el panel, sub-slice 5 para el cliente), que es el freno por sujeto real. El limitador genérico por IP + endpoint en la tabla `limites` (eventos, solicitudes, requerimiento pegado, voto) está **planificado, no implementado** (R-87). La regla de Cloudflare se retira | La regla del borde ya era solo mitigación de ráfagas (H27); se pierde el freno de volumen antes del origen (R-82) |
+| TLS: Universal SSL de Cloudflare + certificado de App Platform en *Full (strict)*, con planes B de emisión y renovación | **Producción: TLS lo termina App Platform** con su certificado gestionado para cada dominio personalizado; se retiran allí *Full (strict)*, Universal SSL y los dos planes B. Staging: TLS del borde de Cloudflare por el túnel, sin cambio. Se conserva la alerta de caducidad a 20 días del monitor externo | Una pieza menos en producción (V10-1 modificada) |
+| Hosts de un solo nivel bajo `trycore.com` (condicionados por el certificado de Cloudflare) | Se **conservan los mismos nombres** (RF-8.1.4, cookies `__Host-` por host, ADR-0008); en staging el certificado de Cloudflare sigue exigiendo un solo nivel. Esta enmienda no propone renombrar | Sin cambio visible |
+| Caché inmutable de `/_next/static/*` en Cloudflare, *bypass* de `/api/*` y del HTML | **Producción sin caché de borde**: los chunks los sirve el contenedor con las cabeceras de caché de Next; el HTML sigue `no-store`. El manejo del desfase de chunks (`deploymentId = sha`, recarga ante `ChunkLoadError`) no cambia | Algo más de carga y latencia en el origen; lo mide V10-15 |
+| Plan B frente a *Bot Fight Mode* de la zona compartida | **Producción: retirado** (sin zona delante no hay desafíos; el webhook de Mailgun va al dominio propio del panel y el monitor sondea los dominios propios). **Staging: sigue en la zona compartida** por el túnel, y *Bot Fight Mode* puede desafiar el webhook de Mailgun de staging (V10-5): R-12 queda reabierto para staging y V10-13 se conserva allí | — |
+| *Configuration Rule* sin scripts inyectados (Rocket Loader) | No aplica en producción. En staging se mantiene. El test de CSP en CI y en el humo de staging sigue siendo la barrera | — |
+| Filtrado de aplicación web por el conjunto gestionado gratuito de Cloudflare | **Producción sin WAF.** El filtrado queda en la validación `zod` de cada entrada, los límites de tamaño por endpoint y los límites de aplicación. Contratar un WAF o un proxy es decisión de negocio (T-33) | Riesgo registrado (R-82) |
+| Dominio por defecto `*.ondigitalocean.app` cerrado por la cabecera de borde | Producción: sin secreto, el dominio por defecto de cada App queda **expuesto igual que el dominio propio** (mismas guardas, límites y CSP). Cerrarlo sin proxy con una lista de hosts permitidos es un trade-off técnico propuesto, no decidido (R-90) | Sin borde no hay diferencia entre los dos dominios (R-82) |
+| Variables `EDGE_SECRET` y `EDGE_SECRET_PREV` obligatorias en la lista normativa de §3.3 | Siguen en la lista de portal y panel, marcadas **opcionales**: se configuran en staging y no en producción; V8-9 prueba su ausencia y su presencia | — |
+| Borde emulado `borde-local` obligatorio en local y CI | Pasa a ser **opcional**: CI prueba las **dos ramas** (sin secreto, y con secreto a través de `borde-local`) en V10-19, desde EP-001 · 1 (tabla de activación de §3.2) | Se sigue probando la rama de staging y de un proxy futuro |
+| V10-18: Cloudflare entre los encargados de la transmisión | **No se afirma que la lista de encargados se reduzca.** Cloudflare sigue en staging (túnel, solo datos ficticios); en producción, qué encargados y subencargados intervienen (incluidos los que pueda usar App Platform) queda **a validar por legal** | Sin cambio en el alcance de V10-18 |
+
+**Verificaciones retiradas o modificadas:**
+
+| # | Estado | Nuevo texto / motivo |
+|---|--------|----------------------|
+| V10-1 | **Modificada** | Producción: emisión, activación y renovación del certificado gestionado de App Platform para `people.trycore.com` y `people-panel.trycore.com` con DNS **sin proxy**; `curl -v` a cada host; caducidad y alerta a 20 días en el monitor. Se retiran *Full (strict)* y el plan B de emisión |
+| V10-2 | **Modificada** | **Producción (sin `EDGE_SECRET`)**: petición al dominio propio y a `…ondigitalocean.app` → mismo comportamiento (guardas, límites, CSP). **Staging (con `EDGE_SECRET`)**: petición al origen sin la cabecera → 403 en toda ruta salvo las de salud exentas de la cabecera; por el túnel → 200. **En los dos**: con `x-middleware-subrequest` → 403 en **toda** ruta, salud incluida |
+| V10-9 | **Retirada** | Reglas gratuitas de la zona compartida para producción: no aplica. Revive si se configura Cloudflare como proxy de producción |
+| V10-11 | **Modificada** | Producción sin proxy: confirmar que App Platform fija `do-connecting-ip` y que **sobrescribe** (no concatena) un `do-connecting-ip` o `x-forwarded-for` enviado por el cliente; petición con esas cabeceras falsificadas → la IP registrada (redactada, sin persistir) es la real. Staging: la IP llega por `cf-connecting-ip` del túnel. Si App Platform no las sobrescribe, R-83 bloquea usar la capa por IP como defensa y se reabre el diseño |
+| V10-13 | **Modificada** | Solo **staging**: *Bot Fight Mode* de la zona frente al webhook de Mailgun de staging (V10-5) y al monitor, si lo hubiera. Para producción, condicionada a que se configure un proxy con modo antibots |
+| V10-15 | **Modificada** | Medición desde Colombia **directa contra App Platform** (sin «vía Cloudflare»), incluidos los estáticos servidos por el contenedor |
+| V10-16 | **Modificada** | Producción: solo los límites de cabecera de App Platform (y los del proxy si se configura uno) |
+| V10-17 | **Modificada** | Producción: retención de App Platform y de la BD; la de Cloudflare solo si se configura un proxy |
+| V10-18 | **Modificada** | Sin cambio de alcance: encargados y subencargados de producción, incluidos los de App Platform, a validar por legal |
+| V10-19 | **Nueva** (CI, bloqueante, desde EP-001 · 1) | Perímetro en las dos ramas: (a) sin `EDGE_SECRET`, sin `X-PS-Edge` → no 403 por borde; (b) con `EDGE_SECRET`, sin cabecera o con valor erróneo → 403 en middleware **y** en `conBorde`, con `EDGE_SECRET_PREV` aceptado, salud exenta de la cabecera; (c) `x-middleware-subrequest` → 403 en las dos ramas, en **toda** ruta (salud incluida), en middleware **y** en `conBorde`; (d) `ipDelCliente` ignora `cf-connecting-ip` sin secreto y la usa con él; `desconocida` no cuenta como IP |
+| V10-20 | **Nueva** (CI + prod en oscuro) | **Alerta de volumen de acceso** por la tarea `vigilar` del worker (ADR-0009, QA-13) sobre `accesos_log`, **por host**: umbral inicial *a validar* (propuesta técnica: > 200 `codigo_pedido` / 10 min o > 50 `verificacion_fallida` / 10 min por host) → alerta al responsable técnico. En CI, test con filas sintéticas por encima y por debajo del umbral; en oscuro, ráfaga sintética con datos ficticios (mitigación de R-82) |
+
+La tabla de §3.4 y los diagramas de §4 describen el perímetro anterior; donde difieran, rigen estas
+dos tablas. Diagrama vigente del perímetro de producción:
+
+```mermaid
+flowchart TB
+  U[Navegador] -->|HTTPS · TLS de App Platform| MW[middleware.ts runtime nodejs: 403 a x-middleware-subrequest en toda ruta · X-PS-Edge solo si EDGE_SECRET · nonce CSP · cabeceras]
+  X[Petición a …ondigitalocean.app] -->|mismo trato que el dominio propio sin EDGE_SECRET| MW
+  P[Proxy futuro opcional · sin cambio de código solo Cloudflare] -.->|X-PS-Edge si se configura EDGE_SECRET| MW
+  MW --> RH[Route Handlers · conBorde repite el 403 a x-middleware-subrequest · conSesion · conCsrf · conAutorizacion · topes por sujeto e IP]
+  MON[Monitor externo] -->|GET /api/v1/salud por dominio propio| MW
+```
+
+**Veredictos que cambian en §5:**
+
+| Driver | Antes | Ahora | Evidencia / riesgo residual |
+|--------|-------|-------|-----------------------------|
+| CON-22 (reformulada) | ⚠️ | ⚠️ | Rechazo incondicional de `x-middleware-subrequest` en dos barreras, borde opcional con doble comprobación, staging con secreto y producción sin él, V10-19 en CI. Residual: V10-1 y V10-11 en oscuro; R-82, R-83, R-84, R-88, R-90; R-12 en staging |
+| QA-3 (apoyo) | ⚠️ | ⚠️ | Topes por sujeto (R-85) y por par, entropía del token, IP `desconocida` sin contar (R-86). Residual: limitador genérico por IP planificado (R-87), V10-11 (R-83), sin freno de volumen previo al origen (R-82), NAT (R-13) |
+| QA-13 | ⚠️ | ⚠️ | `vigilar` suma la alerta de volumen (V10-20); monitor externo sin elegir (R-24) |
+| QA-2 (apoyo) | ⚠️ | ⚠️ | Estáticos sin CDN en producción; V10-15 directa contra App Platform (R-41) |
+| QA-5 (apoyo) | ✅ | ✅ | En producción desaparece el riesgo de scripts inyectados por el borde; en staging lo cubre el test de CSP |
+| CRN-5 | ⚠️ | ⚠️ | Webhook de producción por dominio propio sin desafíos; en staging, V10-5 + V10-13 (R-12) |
+
+**Consecuencias:**
+
+- **Positivas:** en producción, una pieza menos de configuración y un secreto compartido menos; R-54
+  queda reformulado y T-21 sin objeto; el origen de producción ya no puede quedarse en 403 por una regla
+  borrada; la defensa frente a `x-middleware-subrequest` es de la aplicación y doble.
+- **Negativas:** sin WAF ni límite de tasa antes del origen de producción; el dominio por defecto de
+  App Platform es tan público como el propio; la capa por IP depende de las cabeceras de App Platform;
+  con borde opcional, un proxy futuro mal configurado falla **abierto**; staging y producción ejercitan
+  ramas distintas del perímetro (buscado, pero el humo de staging ya no prueba la rama de producción:
+  la cubre V10-19 en CI y V10-2 en oscuro).
+- **Riesgos** (numerados en el backlog): R-82 a R-90; R-12 reabierto solo para staging; R-45
+  condicionado a staging y a un proxy futuro.
+- **Trade-off de negocio pendiente:** **T-33** — contratar un WAF o un proxy de borde, o aceptar el
+  perímetro sin borde con los límites de aplicación. Propuesta para el sponsor: decidirlo **antes del
+  primer envío real**. No lo decide la arquitectura.
+- **Operacionales:** en el DNS de `trycore.com`, solo los **2 hosts de producción** pasan a solo DNS
+  hacia App Platform; los 2 de staging siguen con proxy por el túnel, con *Transform Rule* de
+  `X-PS-Edge` (secreto de staging) y *Configuration Rule*. No se crea regla de tasa ni se provisiona
+  `EDGE_SECRET` en producción mientras no haya proxy. Los registros de Mailgun bajo `mg.*` no cambian.
+
+**Trazabilidad:** decisión del sponsor 2026-09-28; evaluación ATAM-lite de esta enmienda (mismo día);
+backlog E-1 y E-3, R-82…R-90, T-33; ADR-0002, ADR-0008 y ADR-0009 (enmiendas del mismo día); código
+`packages/infra/src/config.ts`, `perimetro.ts`, `http/envoltorios.ts`. Pendiente fuera de `docs/adr/`
+(corrección de discovery, T-30): PRD §8.3 / D-23 y el bloque de dominio de `CLAUDE.md` siguen
+describiendo `EDGE_SECRET` como «cabecera de borde de Cloudflare».

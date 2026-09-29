@@ -67,9 +67,10 @@ export function decidirPerimetro(
   e: EntradaPerimetro,
   opciones: { origenSpaces?: string } = {},
 ): DecisionPerimetro {
+  // La cabecera interna de Next nunca se acepta desde fuera, tampoco en salud (CVE-2025-29927).
+  if (e.cabeceras.has("x-middleware-subrequest")) return { tipo: "rechazar", status: 403 };
   const saludExenta = e.metodo === "GET" && SALUD_EXENTA.has(e.ruta);
   if (!saludExenta) {
-    if (e.cabeceras.has("x-middleware-subrequest")) return { tipo: "rechazar", status: 403 };
     // Sin secreto configurado no hay borde que comprobar (Cloudflare fuera de criterio, 2026-09-28).
     if (e.secretosBorde.length > 0 && !bordeValido(e.cabeceras.get(CABECERA_BORDE), e.secretosBorde))
       return { tipo: "rechazar", status: 403 };

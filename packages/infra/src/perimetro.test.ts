@@ -44,6 +44,11 @@ describe("decidirPerimetro", () => {
     });
   });
 
+  it("x-middleware-subrequest → 403 también en las rutas de salud", () => {
+    const cabeceras = new Headers({ "x-middleware-subrequest": "m" });
+    expect(decidirPerimetro(entrada({ ruta: "/api/v1/salud/vivo", cabeceras }))).toEqual({ tipo: "rechazar", status: 403 });
+  });
+
   it("con x-middleware-subrequest desde fuera → 403 aunque el borde sea válido", () => {
     const cabeceras = new Headers({
       "x-ps-edge": SECRETO,
