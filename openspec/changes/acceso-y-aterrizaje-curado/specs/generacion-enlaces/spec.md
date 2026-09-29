@@ -30,22 +30,18 @@ El sistema no SHALL emitir un enlace que incluya un perfil no publicado y SHALL 
 - **WHEN** la administradora intenta generar el enlace
 - **THEN** el sistema indica qué perfil no está publicado y no emite el enlace
 
-### Requirement: Invitados propuestos desde el CRM y ampliables
-Al preparar los invitados, el sistema SHALL proponer el correo del contacto de la cuenta en el CRM (lectura de HubSpot) y SHALL permitir añadir otros correos; no SHALL emitirse un enlace sin al menos un correo invitado.
+### Requirement: Invitados escritos a mano, sin duplicar
+Al preparar los invitados, la administradora SHALL escribir uno o más correos; el sistema SHALL normalizarlos y guardarlos una sola vez, y no SHALL emitirse un enlace sin al menos un correo invitado. La generación no SHALL depender de HubSpot: la cuenta se identifica por su nombre.
 
-#### Scenario: La cuenta tiene contacto en el CRM
-- **GIVEN** una cuenta con un contacto en el CRM
-- **WHEN** la administradora prepara los correos invitados
-- **THEN** el sistema propone el correo del contacto y deja añadir otro, como el del arquitecto de la cuenta
+#### Scenario: Varios correos de la cuenta
+- **GIVEN** la administradora escribió el correo del contacto de la cuenta
+- **WHEN** añade otro correo, como el del arquitecto de la cuenta
+- **THEN** el enlace queda con los dos correos invitados, cada uno una sola vez
 
 #### Scenario: Ningún correo invitado
-- **GIVEN** una cuenta sin contacto en el CRM y sin correos añadidos
+- **GIVEN** no se añadió ningún correo invitado
 - **WHEN** la administradora intenta generar el enlace
 - **THEN** el enlace no se emite y se indica que necesita al menos un correo invitado
-
-#### Scenario: HubSpot no responde al proponer el contacto
-- **WHEN** la lectura del contacto en HubSpot falla o excede su tiempo
-- **THEN** la administradora puede escribir los invitados a mano y la generación no se bloquea por la caída
 
 ### Requirement: El token del enlace nunca se guarda en claro
 El enlace SHALL identificarse por un token aleatorio opaco que viaja en el fragmento de la URL (`/e/#t=…`); la base de datos SHALL guardar solo su hash.
