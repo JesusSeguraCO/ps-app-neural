@@ -1,7 +1,7 @@
 "use client";
 // Formulario de «Invitar a un colega» (HU-095; prototipo invitar-colega): correo obligatorio, nombre y
 // «para qué» opcionales. Tras pedirla, la página se recarga con la petición pendiente en la lista.
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { enviarJson } from "../acceso/cliente";
 
 const ERRORES: Record<string, string> = {
@@ -25,6 +25,10 @@ export function FormularioInvitacion() {
     }).catch(() => null);
     setEnviando(false);
     if (r?.status === 201) {
+      const quien = String(f.get("nombre") ?? "").trim() || String(f.get("colega") ?? "").trim();
+      try {
+        sessionStorage.setItem("ps-invitacion-pedida", quien);
+      } catch {}
       window.location.reload();
       return;
     }
@@ -69,5 +73,27 @@ export function FormularioInvitacion() {
         </button>
       </div>
     </form>
+  );
+}
+
+// Confirmación tras pedir (prototipo invitar-colega--pendiente, PP:toast): el nombre viaja en
+// sessionStorage de esta pestaña, nunca en la URL.
+export function AvisoPedida() {
+  const [quien, setQuien] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const v = sessionStorage.getItem("ps-invitacion-pedida");
+      sessionStorage.removeItem("ps-invitacion-pedida");
+      if (v) setQuien(v);
+    } catch {}
+  }, []);
+  if (!quien) return null;
+  return (
+    <div className="pp-toast" role="status">
+      <span className="pp-toast__marca" aria-hidden="true">
+        ✓
+      </span>
+      <p className="pp-toast__texto">{`Pediste la invitación de ${quien}. Te avisamos cuando Talento Humano decida.`}</p>
+    </div>
   );
 }

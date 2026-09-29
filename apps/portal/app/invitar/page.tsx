@@ -6,7 +6,7 @@ import { peticionesDelInvitado } from "@ps/infra/postgres/invitaciones-cliente";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { CONTACTO } from "../../src/acceso/Pantallas";
 import { datosDelEnlace } from "../../src/banco/datos";
-import { FormularioInvitacion } from "../../src/invitar/FormularioInvitacion";
+import { AvisoPedida, FormularioInvitacion } from "../../src/invitar/FormularioInvitacion";
 import { MarcoPortal } from "../../src/marco/MarcoPortal";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
 import "../acceso.css";
@@ -79,7 +79,7 @@ export default async function Invitar() {
                     <p className="pp-fila__meta">{`Pedida el ${fechaDeColombia(p.pedidaEn)}`}</p>
                   </div>
                   <div className="pp-fila__acciones">
-                    {p.estado === "pendiente" && <span className="pp-estado pp-estado--neutro">Pendiente</span>}
+                    {p.estado === "pendiente" && <span className="pp-estado pp-estado--warn">Pendiente</span>}
                     {p.estado === "aprobada" && <span className="pp-estado pp-estado--ok">{`Aprobada · ${corta(p.resueltaEn!)}`}</span>}
                     {p.estado === "rechazada" && <span className="pp-estado pp-estado--danger">{`No aprobada · ${corta(p.resueltaEn!)}`}</span>}
                   </div>
@@ -89,6 +89,7 @@ export default async function Invitar() {
           </section>
         )}
       </div>
+      <AvisoPedida />
     </MarcoPortal>
   );
 }
