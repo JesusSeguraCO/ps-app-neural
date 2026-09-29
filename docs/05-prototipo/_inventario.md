@@ -22,6 +22,7 @@
 | 12 | enlaces-acceso | Registro de enlaces y revocación | EP-001 | 122, 144 | v2-adaptar | — |
 | 13 | generador-enlace | Generar enlace curado | EP-001 | 122 | v2-adaptar | --sin-razon, --perfil-no-publicado, --sin-invitados, --emitido |
 | 14 | peticiones-invitacion | Peticiones de invitación | EP-001 | 145 | nueva | --rechazo-motivo, --enlace-no-vigente, --ya-invitado |
+| 14b | renovaciones-enlace | Renovaciones de enlace | EP-001 | 146 | feature (2026-09-29) | --revocar |
 | 15 | resultados | Resultados en tarjetas y facetas | EP-002 (+EP-009) | 074, 081, 065, 071, 072 | v2-existe | --banco-completo, --buscando, --sin-reconocer, --afinamiento |
 | 16 | resultados-tabla | Vista tabla | EP-002 | 121 | v2-existe | --sin-criterios, --seleccion, --estrecha |
 | 17 | ficha-perfil | Ficha en panel lateral | EP-003 | 119, 120, 081 | v2-existe | --sin-criterios, --dato-ausente, --extremo, --movil |

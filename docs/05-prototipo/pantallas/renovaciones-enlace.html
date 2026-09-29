@@ -1,30 +1,27 @@
 <!doctype html>
 <!--
-  Prototipo de referencia — pantalla peticiones-invitacion
+  Prototipo de referencia — pantalla renovaciones-enlace
   Reglas duras del artefacto (NO negociables):
   - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
     Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
   - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
     ../tokens.css. Cero valores mágicos fuera de tokens.
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
-  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
-    de pantalla en archivos propios (peticiones-invitacion--estado.html), no interacciones.
-  Trazabilidad: épica EP-001 · historias HU-145 · registrada en ../manifest.json
-  Pantalla #14 «Peticiones de invitación» · origen: nueva (sin equivalente en el v2).
-  Lado del panel de la petición que el cliente hace en invitar-colega (HU-095).
-  Oficio v2 (2026-09-27): filas densas con divide-y en vez de tarjetas; sin píldora «Pendiente»
-  (la pestaña ya lo dice); confirmación por toast; actividad sin línea de tiempo; sin bordes
-  laterales de color; encabezado con metadatos («N pendientes · la más antigua, fecha»), no con
-  instrucciones. Consistencia 2026-09-27: menú lateral corto (Vigencia, Enlaces, Peticiones) igual
-  que admin-shell/enlaces-acceso; «Cuenta · Proyecto» con «·»; actividad con nombres; enlaces,
-  proyectos y procedencia de invitados = enlaces-acceso (ENL-0031, ENL-0019 vencido, ENL-0022 revocado).
-  Estado de ESTE archivo: base — administradora de inventario con 3 peticiones pendientes en enlaces vigentes; acaba de aprobar una (happy path de HU-145): la aprobada ya no aparece como pendiente, el toast confirma su alta en la lista de invitados como invitación aprobada y el registro de auditoría encabeza «Últimas decisiones».
+  - ESTADOS: los estados relevantes que la HU exija son VARIANTES de pantalla en archivos propios.
+  Trazabilidad: épica EP-001 · historias HU-146 · registrada en ../manifest.json
+  Pantalla «Renovaciones de enlace» · origen: modo feature (extraída en vivo del panel implementado,
+  /peticiones/renovaciones, 2026-09-29). Nace de la decisión del sponsor del 2026-09-29: la renovación
+  del enlace ya no consulta HubSpot y toda petición avisa a Talento Humano (correo + esta bandeja).
+  Vive bajo «Peticiones» (menú canónico de doce destinos sin cambios); se llega desde el botón
+  «Renovaciones de enlace» del encabezado de peticiones-invitacion. Mismas piezas: filas densas,
+  estados con punto, hoja lateral para la acción destructiva.
+  Estado de ESTE archivo: base — bandeja con los cuatro resultados de HU-146: enlace nuevo enviado (con «Revocar enlace nuevo»), no estaba invitado (sin acción), no se pudo enviar (con «Revocar») y enlace revocado.
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Peticiones de invitación — prototipo</title>
+  <title>Renovaciones de enlace — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
@@ -161,14 +158,46 @@
       .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
       .pp-pestana[aria-selected="true"] .pp-pestana__conteo { color: var(--tc-text-m); }
       /* /PP:pestanas */
-    /* PP:toast */
-      .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
-      .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
-      .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
-      .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-      .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
-      @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
-      /* /PP:toast */
+    /* PP:campos */
+      .pp-form { display: grid; gap: var(--tc-sp-5); }
+      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+      .pp-input::placeholder { color: var(--tc-text-s); }
+      .pp-input:hover { border-color: var(--tc-text-s); }
+      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+      .pp-form--alineado { gap: 0; }
+      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+      /* /PP:campos */
+    /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; margin: 0; }
+      .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+      .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+      .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+      .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+      @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
+      /* /PP:hoja */
   </style>
   <style>
     /* Composición propia de peticiones de invitación (prefijo pi-). Valores visuales → var(--token). */
@@ -221,7 +250,7 @@
   <div class="pp-panel__cuerpo">
     <!-- región: cabecera con migas -->
     <div class="pp-panel__topbar">
-      <ol class="pp-migas"><li><a href="#">Clientes</a></li><li aria-current="page">Peticiones de invitación</li></ol>
+      <ol class="pp-migas"><li><a href="#">Clientes</a></li><li><a href="#">Peticiones</a></li><li aria-current="page">Renovaciones de enlace</li></ol>
       <div class="pp-panel__herramientas">
         <span class="pp-meta">karen.rodriguez@trycore.com</span>
         <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#">Cerrar sesión</a>
@@ -229,67 +258,54 @@
     </div>
     <!-- región: contenido principal -->
     <main class="pp-panel__contenido">
+      
       <div class="pp-encabezado">
         <div class="pp-encabezado__texto">
-          <h1 class="pp-encabezado__titulo">Peticiones de invitación</h1>
-          <p class="pp-encabezado__meta">3 pendientes · la más antigua, 25 sep</p>
+          <h1 class="pp-encabezado__titulo">Renovaciones de enlace</h1>
+          <p class="pp-encabezado__meta">4 peticiones · la última, hoy, 9:14 a. m. · 1 de alguien no invitado</p>
         </div>
-        <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno" href="renovaciones-enlace.html">Renovaciones de enlace</a><a class="pp-btn pp-btn--contorno" href="#">Ver auditoría</a></div>
+        <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno" href="#">Peticiones de invitación</a></div>
       </div>
-      <div class="pp-pestanas" role="tablist" aria-label="Estado de las peticiones">
-        <a class="pp-pestana" role="tab" aria-selected="true" href="#">Pendientes <span class="pp-pestana__conteo">3</span></a>
-        <a class="pp-pestana" role="tab" aria-selected="false" href="#">Resueltas <span class="pp-pestana__conteo">14</span></a>
+      <p class="pi-texto pi-cuerpo">Cuando un enlace vence, quien estaba invitado puede pedir uno nuevo y le llega solo a su buzón. Cada petición llega también por correo a Talento Humano. Si esa persona ya no debería ver la selección, revoca el enlace nuevo.</p>
+      <div class="pi-cuerpo">
+        <ul class="pp-filas" aria-label="Renovaciones de enlace">
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><span>mariana.ospina@bancolombia.com.co</span></p>
+              <p class="pp-fila__meta"><a class="pi-enlace" href="#">Bancolombia · Modernización de pagos</a> · vencido ENL-0019 · <span class="pi-hora">hoy, 9:14 a. m.</span></p>
+              <p class="pp-fila__meta"><span class="pp-estado pp-estado--ok">Enlace nuevo enviado</span> · <a class="pi-enlace pp-mono" href="#">ENL-0034</a></p>
+            </div>
+            <div class="pp-fila__acciones"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Revocar enlace nuevo</button></div>
+          </li>
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><span>sebastian.mora@gmail.com</span></p>
+              <p class="pp-fila__meta"><a class="pi-enlace" href="#">Bancolombia · Modernización de pagos</a> · vencido ENL-0019 · <span class="pi-hora">hoy, 8:02 a. m.</span></p>
+              <p class="pp-fila__meta"><span class="pp-estado pp-estado--warn">No estaba invitado · no se envió enlace</span></p>
+            </div>
+            <div class="pp-fila__acciones"></div>
+          </li>
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><span>lider.qa@grupoexito.com</span></p>
+              <p class="pp-fila__meta"><a class="pi-enlace" href="#">Grupo Éxito · Plataforma omnicanal</a> · vencido ENL-0022 · <span class="pi-hora">26 sep, 11:02 a. m.</span></p>
+              <p class="pp-fila__meta"><span class="pp-estado pp-estado--danger">No se pudo enviar el enlace nuevo</span> · <a class="pi-enlace pp-mono" href="#">ENL-0033</a></p>
+            </div>
+            <div class="pp-fila__acciones"><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Revocar enlace nuevo</button></div>
+          </li>
+          <li class="pp-fila">
+            <div class="pp-fila__principal">
+              <p class="pp-fila__titulo"><span>paula.henao@davivienda.com</span></p>
+              <p class="pp-fila__meta"><a class="pi-enlace" href="#">Davivienda · Core bancario</a> · vencido ENL-0011 · <span class="pi-hora">23 sep, 3:20 p. m.</span></p>
+              <p class="pp-fila__meta"><span class="pp-estado pp-estado--neutro">Enlace revocado</span> · <a class="pi-enlace pp-mono" href="#">ENL-0027</a></p>
+            </div>
+            <div class="pp-fila__acciones"></div>
+          </li>
+        </ul>
       </div>
-      <div class="pp-con-lateral pi-cuerpo">
-      <ul class="pp-filas" aria-label="Peticiones pendientes">
-        <li class="pp-fila" aria-labelledby="pi-natalia">
-          <div class="pp-fila__principal">
-            <p class="pp-fila__titulo"><span id="pi-natalia">Natalia Cárdenas</span> <span class="pp-fila__sub">natalia.cardenas@bancolombia.com.co</span></p>
-            <p class="pp-fila__meta">Pide Mariana Ospina · <a class="pi-enlace" href="#">Bancolombia · Modernización de pagos</a> · <time datetime="2026-09-27T09:14">hoy, 9:14 a. m.</time></p>
-            <p class="pp-fila__nota"><q class="pi-cita">Es la gerente del proyecto; quiere revisar los perfiles de backend antes del comité del jueves.</q></p>
-          </div>
-          <div class="pp-fila__acciones">
-            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Rechazar</button>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Aprobar</button>
-          </div>
-        </li>
-        <li class="pp-fila" aria-labelledby="pi-sergio">
-          <div class="pp-fila__principal">
-            <p class="pp-fila__titulo"><span id="pi-sergio">Sergio Patiño</span> <span class="pp-fila__sub">sergio.patino@grupoexito.com</span></p>
-            <p class="pp-fila__meta">Pide Juliana Torres · <a class="pi-enlace" href="#">Grupo Éxito · Plataforma omnicanal</a> · <time datetime="2026-09-26T11:02">26 sep, 11:02 a. m.</time></p>
-            <p class="pp-fila__nota"><q class="pi-cita">Líder de QA; va a entrevistar a los perfiles de automatización de pruebas.</q></p>
-          </div>
-          <div class="pp-fila__acciones">
-            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Rechazar</button>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Aprobar</button>
-          </div>
-        </li>
-        <li class="pp-fila" aria-labelledby="pi-sebastian">
-          <div class="pp-fila__principal">
-            <p class="pp-fila__titulo"><span id="pi-sebastian">Sebastián Mora</span> <span class="pp-fila__sub">sebastian.mora@nexoconsultores.co</span></p>
-            <p class="pp-fila__meta">Pide Mariana Ospina · <a class="pi-enlace" href="#">Bancolombia · Modernización de pagos</a> · <time datetime="2026-09-25T16:37">25 sep, 4:37 p. m.</time></p>
-            <p class="pp-fila__nota"><q class="pi-cita">Consultor externo que nos apoya con la arquitectura de la pasarela.</q></p>
-            <p class="pp-fila__meta"><span class="pp-estado pp-estado--warn">Dominio distinto al de la cuenta</span></p>
-          </div>
-          <div class="pp-fila__acciones">
-            <button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm">Rechazar</button>
-            <button type="button" class="pp-btn pp-btn--contorno pp-btn--sm">Aprobar</button>
-          </div>
-        </li>
-      </ul>
-      <aside class="pp-seccion" aria-labelledby="pi-ult">
-        <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="pi-ult">Últimas decisiones</h2><a class="pp-enlace pp-meta" href="#">Ver todas</a></div>
-        <ol class="pp-actividad">
-          <li class="pp-actividad__item"><time class="pp-meta pi-hora" datetime="2026-09-27T10:42">hoy 10:42</time><p class="pp-actividad__texto"><strong>Aprobaste</strong> a Paula Henao en Davivienda · Core bancario</p></li>
-          <li class="pp-actividad__item"><time class="pp-meta pi-hora" datetime="2026-09-26T16:05">26 sep 16:05</time><p class="pp-actividad__texto"><strong>Rechazaste</strong> a Laura Pinto en Sura · Analítica de riesgo. Motivo: correo personal.</p></li>
-          <li class="pp-actividad__item"><time class="pp-meta pi-hora" datetime="2026-09-23T15:20">23 sep 15:20</time><p class="pp-actividad__texto"><strong>Aprobaste</strong> a Andrés Rincón en Bancolombia · Modernización de pagos</p></li>
-        </ol>
-      </aside>
-      </div>
+      
     </main>
   </div>
 </div>
-<!-- región: confirmación (toast) -->
-<div class="pp-toast" role="status"><span class="pp-toast__marca" aria-hidden="true">✓</span><p class="pp-toast__texto">Aprobaste a Paula Henao. Ya puede entrar al enlace de Davivienda.</p><button type="button" class="pp-toast__accion">Deshacer</button></div>
 </body>
 </html>
