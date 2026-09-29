@@ -65,6 +65,23 @@ describe("arranque con configuración incompleta (V8-9)", () => {
     expect(r.stderr).toContain("DOBLES");
   });
 
+  it("--sembrar-ficticios con APP_ENV=produccion sale con código ≠ 0 sin conectarse (tarea 3.2)", () => {
+    const entorno = entornoDev("worker");
+    delete entorno.DOBLES;
+    for (const v of obligatorias) entorno[v] ??= "x".repeat(40);
+    entorno.APP_ENV = "produccion";
+    entorno.MAILGUN_DOMAIN = "mg.people.trycore.com";
+    entorno.SPACES_BUCKET = "ps-evidencias";
+    entorno.LATIDO_URL = "https://latido.example/ping";
+    entorno.EXPORT_AGE_RECIPIENT = "age1produccion";
+    // Una BD inalcanzable: si intentara conectar, el error sería otro.
+    entorno.DATABASE_URL = "postgres://ps_worker:x@127.0.0.1:1/ps";
+    const r = correr(WORKER, entorno, ["--sembrar-ficticios"]);
+    expect(r.status).not.toBe(0);
+    expect(r.stdout).toContain("ficticios_rechazado");
+    expect(r.stdout).not.toContain("ficticios_fallo");
+  });
+
   it("migrar sin MIGRATOR_DATABASE_URL sale con código ≠ 0", () => {
     const entorno = entornoDev("migrar");
     delete entorno.MIGRATOR_DATABASE_URL;
@@ -135,6 +152,20 @@ describe.skipIf(!HAY_BD)("procesos contra una BD real (V8-11)", () => {
     );
     expect(a.rows).toEqual([{ origen: "migracion" }]);
     await bd.instalacion.query(`DELETE FROM identidad_panel.usuarios_panel`);
+  }, 30_000);
+
+  it("--sembrar-ficticios en CI siembra y sale con 0; repetirlo no crea nada", () => {
+    const entorno = {
+      ...entornoDev("worker"),
+      APP_ENV: "ci",
+      DATABASE_URL: bd.urlDe("ps_worker"),
+      DATABASE_DIRECT_URL: bd.urlDe("ps_worker", { directa: true }),
+    };
+    const primera = correr(WORKER, entorno, ["--sembrar-ficticios"]);
+    expect(primera.status, primera.stdout + primera.stderr).toBe(0);
+    expect(JSON.parse(primera.stdout.trim().split("\n").at(-1)!)).toMatchObject({ evento: "ficticios_sembrados" });
+    const segunda = correr(WORKER, entorno, ["--sembrar-ficticios"]);
+    expect(JSON.parse(segunda.stdout.trim().split("\n").at(-1)!)).toMatchObject({ creados: 0 });
   }, 30_000);
 
   it("el worker empaquetado despacha un código por NOTIFY y se apaga limpio con SIGTERM", async () => {

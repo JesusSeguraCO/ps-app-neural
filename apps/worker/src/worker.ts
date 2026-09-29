@@ -1,5 +1,6 @@
 // Worker de trabajo diferido (ADR-0009 §3). `node dist/worker.js`:
-//   --comprobar   valida la configuración y sale (0 si es válida; V8-11)
+//   --comprobar          valida la configuración y sale (0 si es válida; V8-11)
+//   --sembrar-ficticios  siembra los perfiles ficticios y sale (local, CI y staging; tarea 3.2)
 // Sin configuración completa sale con código 1 antes de abrir conexiones (V8-9).
 import { randomUUID } from "node:crypto";
 import pg from "pg";
@@ -7,6 +8,7 @@ import { doblesDe, exigirConfiguracion } from "@ps/infra/config";
 import { DobleCorreo, enviadorMailgun, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { vuelta, type ContextoDespacho } from "./despacho";
 import { sembrarAdminInicial } from "./sembrar";
+import { sembrarFicticios } from "./sembrar-ficticios";
 
 const registrar = (e: Record<string, unknown>) =>
   console.log(JSON.stringify({ ts: new Date().toISOString(), ...e }));
@@ -16,6 +18,27 @@ const config = exigirConfiguracion("worker");
 if (process.argv.includes("--comprobar")) {
   registrar({ evento: "configuracion_valida", proceso: "worker", app_env: config.APP_ENV });
   process.exit(0);
+}
+
+if (process.argv.includes("--sembrar-ficticios")) {
+  if (config.APP_ENV === "produccion") {
+    registrar({ evento: "ficticios_rechazado", motivo: "bloqueado en producción" });
+    process.exit(1);
+  }
+  const pool = new pg.Pool({ connectionString: config.DATABASE_URL, max: 2 });
+  try {
+    await sembrarFicticios({
+      bd: pool,
+      auditoria: { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! },
+      appEnv: config.APP_ENV,
+      registrar,
+    });
+    await pool.end();
+    process.exit(0);
+  } catch (e) {
+    registrar({ evento: "ficticios_fallo", error: (e as Error).message });
+    process.exit(1);
+  }
 }
 
 const correo: EnviadorCorreo = doblesDe(config).has("mailgun")

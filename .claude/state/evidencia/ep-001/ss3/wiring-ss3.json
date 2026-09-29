@@ -1,0 +1,5 @@
+[
+ {"item_id": "ss3-inventario-v8-10", "kind": "integration_point", "ref": "ADR-0003/0008 V8-10 y V3-2: ps_portal solo lee catalogo_publicable y estado_enlace_perfil"},
+ {"item_id": "ss3-siembra-ficticia", "kind": "integration_point", "ref": "tarea 3.2: siembra de perfiles ficticios bloqueada con APP_ENV=produccion"},
+ {"item_id": "ss3-catalogo-v8-4", "kind": "integration_point", "ref": "ADR-0008 V8-4: GET /api/v1/catalogo tras sesión, esquema estricto, sin B.4 en HTML/RSC"}
+]
