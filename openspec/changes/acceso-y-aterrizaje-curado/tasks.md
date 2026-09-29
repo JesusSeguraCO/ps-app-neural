@@ -5,13 +5,13 @@
 ## 1. Sub-slice 1 — Esqueleto andante
 
 - [x] 1.1 `packages/infra`: esquema de configuración por proceso que sale con código ≠ 0 ante cualquier variable obligatoria ausente y rechaza `DOBLES` con `APP_ENV=produccion`; verificar con el test V8-9 por proceso
-- [ ] 1.2 `docker/`: PostgreSQL 16 + PgBouncer (transacción) + borde emulado en `docker-compose.yml`; `roles.sql` crea `ps_portal`, `ps_panel`, `ps_worker`, `ps_migrador`; verificar que `docker compose up` levanta y que ningún proceso conecta como superusuario
+- [x] 1.2 `docker/`: PostgreSQL 16 + PgBouncer (transacción) + borde emulado en `docker-compose.yml`; `roles.sql` crea `ps_portal`, `ps_panel`, `ps_worker`, `ps_migrador`; verificar que `docker compose up` levanta y que ningún proceso conecta como superusuario
 - [x] 1.3 Migraciones iniciales (`identidad`, `identidad_panel`, `operacion.trabajos`, funciones `encolar_portal`/`encolar_panel`/`encolar_worker`, modo degradado y purga de ADR-0002, permisos de ADR-0008 §3) y job `migrar`; verificar V8-11 (base vacía aplica todo, segunda ejecución no hace nada, hueco → ≠ 0) y V8-10/V2-2 para las tablas existentes
 - [x] 1.4 `middleware.ts` en ambas apps (runtime nodejs): cabecera de borde en tiempo constante, 403 a `x-middleware-subrequest`, CSP con nonce, `Referrer-Policy: no-referrer`, `nosniff`, anti-marcos; verificar con los tests de borde, V8-2 y la prueba de CSP del shell
 - [x] 1.5 `GET /api/v1/salud/vivo` y `/lista` en ambas apps (lista: `SELECT 1` con su rol y versión de esquema, tope 2 s); verificar 200/503 con BD arriba y caída
 - [x] 1.6 `exigirSesion` y envoltorios `conSesion`/`conCsrf`/`conAutorizacion`/`conLimite` en `packages/dominio`/`infra` (con `server-only`); páginas públicas `/acceso` y `/e` como stubs; `rutas-permitidas.json` y `rutas-publicas.json`; verificar V8-1, V2-1 (307 a `/acceso` sin payload) y el test estático de `exigirSesion`
 - [x] 1.7 Worker: despachador con `FOR UPDATE SKIP LOCKED`, arrendamiento, tipo `enviar_codigo` (genera código, guarda HMAC, reintentos 5/15/30 s, caducidad 10 min) con Mailgun detrás de adaptador y doble; `node dist/worker.js --comprobar`; verificar con tests de cola y V8-11
-- [ ] 1.8 CI mínimo en `.github/`: lint, typecheck, V8-1, V8-2, V8-9, V8-11, V2-1, CSP, axe/móvil del shell (V8-7), Lighthouse del shell (V8-6a); verificar que el workflow corre en verde en el PR
+- [x] 1.8 CI mínimo en `.github/`: lint, typecheck, V8-1, V8-2, V8-9, V8-11, V2-1, CSP, axe/móvil del shell (V8-7), Lighthouse del shell (V8-6a); verificar que el workflow corre en verde en el PR
 - [x] 1.9 Journey smoke del esqueleto: portal y panel arrancan tras el borde emulado, `/acceso` y `/e` cargan, una página protegida redirige; verificar con el runner `integration-check`
 
 ## 2. Sub-slice 2 — Login del panel (HU-123)
