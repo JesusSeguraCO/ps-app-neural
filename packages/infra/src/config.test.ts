@@ -20,6 +20,9 @@ function entornoCompleto(proceso: Proceso): Record<string, string> {
     PANEL_ADMIN_INICIAL: "admin@trycore.com",
     PORTAL_ORIGEN: "https://people.trycore.com",
     WORKER_PAUSADO: "0",
+    HUBSPOT_PROP_CUENTA_ACTIVA: "lifecyclestage",
+    HUBSPOT_VALOR_CUENTA_ACTIVA: "customer",
+    CORREO_TALENTO_HUMANO: "people.service@trycore.com",
   };
   const entorno: Record<string, string> = {};
   for (const nombre of VARIABLES[proceso]) {

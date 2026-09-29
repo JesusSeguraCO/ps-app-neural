@@ -10,6 +10,7 @@ import * as m0005 from "./0005_inventario_minimo";
 import * as m0006 from "./0006_enlaces_panel";
 import * as m0007 from "./0007_motivo_revocacion";
 import * as m0008 from "./0008_estado_seleccion";
+import * as m0009 from "./0009_renovar_enlace";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -20,4 +21,5 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0006_enlaces_panel": m0006,
   "0007_motivo_revocacion": m0007,
   "0008_estado_seleccion": m0008,
+  "0009_renovar_enlace": m0009,
 };

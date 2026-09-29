@@ -12,9 +12,26 @@ import { mensajeCodigo } from "@ps/dominio/acceso/mensajes";
 import {
   ESQUEMAS_PAYLOAD,
   type PayloadEnviarCodigo,
+  type PayloadRenovarEnlace,
   type TipoConManejador,
 } from "@ps/contratos/trabajos";
+import { VIGENCIA_POR_OMISION_DIAS, generarTokenEnlace } from "@ps/dominio/enlaces/crear";
+import {
+  decidirRenovacion,
+  mensajeAvisoRenovacion,
+  mensajeEnlaceRenovado,
+} from "@ps/dominio/enlaces/renovacion";
+import type { ConsultaHubspot } from "@ps/infra/hubspot/index";
 import type { EnviadorCorreo } from "@ps/infra/mailgun/index";
+import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
+
+// Dependencias de la renovación del enlace vencido (HU-092); sin ellas el worker no la reclama.
+export interface ContextoRenovacion {
+  hubspot: ConsultaHubspot;
+  portalOrigen: string; // PORTAL_ORIGEN
+  correoTalentoHumano: string; // CORREO_TALENTO_HUMANO
+  auditoria: ClavesAuditoria;
+}
 
 export interface ContextoDespacho {
   bd: pg.Pool;
@@ -22,6 +39,7 @@ export interface ContextoDespacho {
   peppers: { cliente: string; panel: string };
   reclamo: string;
   registrar: (evento: Record<string, unknown>) => void;
+  renovacion?: ContextoRenovacion;
 }
 
 interface Trabajo {
@@ -33,7 +51,8 @@ interface Trabajo {
   caduca_en: Date | null;
 }
 
-const TIPOS: TipoConManejador[] = ["enviar_codigo"];
+const tiposDe = (ctx: ContextoDespacho): TipoConManejador[] =>
+  ctx.renovacion ? ["enviar_codigo", "renovar_enlace"] : ["enviar_codigo"];
 
 const SQL_RECLAMAR = `
 UPDATE operacion.trabajos SET estado = 'en_curso', locked_by = $1, locked_until = now() + interval '10 minutes',
@@ -137,6 +156,102 @@ async function enviarCodigo(
   await cerrarSegunResultado(ctx, t, resultado);
 }
 
+// Renovación del enlace vencido (HU-092, design §2). HubSpot se consulta SIEMPRE, esté o no invitado el
+// correo: lo que ve quien pide (`publico`) depende solo de la cuenta y el trabajo es el mismo en ambas
+// ramas. El enlace nuevo solo nace con cuenta activa y solo viaja al buzón del invitado (fallo cerrado).
+async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenovarEnlace): Promise<void> {
+  const deps = ctx.renovacion!;
+  const r = await ctx.bd.query(
+    `SELECT r.enlace_id, r.correo_hmac, r.resultado, e.cuenta_ref, e.cuenta_nombre, e.proyecto, e.codigo,
+            e.estado, e.vigente_hasta
+       FROM identidad.renovaciones r JOIN identidad.enlaces e ON e.id = r.enlace_id WHERE r.id = $1`,
+    [p.renovacion],
+  );
+  const f = r.rows[0];
+  if (!f || f.resultado) {
+    await cerrar(ctx, t.id, { estado: "hecho" });
+    return;
+  }
+  const i = await ctx.bd.query(
+    `SELECT id, correo, activo FROM identidad.enlace_invitados WHERE enlace_id = $1 AND correo_hmac = $2`,
+    [f.enlace_id, f.correo_hmac],
+  );
+  const inv = i.rows[0] as { id: string; correo: string; activo: boolean } | undefined;
+  const vencido = f.estado === "activo" && (f.vigente_hasta as Date).getTime() <= Date.now();
+  const empresa = await deps.hubspot.estadoDeEmpresa({ id: f.cuenta_ref, nombre: f.cuenta_nombre });
+  const { publico, accion } = decidirRenovacion(Boolean(inv?.activo && vencido), empresa);
+  const resolver = (resultado: string) =>
+    ctx.bd.query(`SELECT identidad.resolver_renovacion($1, $2, $3, $4, $5)`, [
+      t.id,
+      ctx.reclamo,
+      p.renovacion,
+      resultado,
+      publico,
+    ]);
+
+  if (accion.tipo === "emitir") {
+    const { token, hash } = generarTokenEnlace();
+    const vigenteHasta = new Date(Date.now() + VIGENCIA_POR_OMISION_DIAS * 86_400_000);
+    const nuevo = await conAuditoria(ctx.bd, deps.auditoria, async (tx) => {
+      const e = await tx.query(`SELECT identidad.emitir_renovacion($1, $2, $3, $4, $5, $6) AS id`, [
+        t.id,
+        ctx.reclamo,
+        p.renovacion,
+        inv!.id,
+        hash,
+        vigenteHasta,
+      ]);
+      const id = e.rows[0].id as string;
+      const cambio = (campo: string, despues: string) => ({
+        actor: "worker",
+        entidad: "enlaces",
+        entidadId: id,
+        campo,
+        antes: null,
+        despues,
+        origen: "worker" as const,
+      });
+      return {
+        resultado: id,
+        cambios: [
+          cambio("renovado_de", f.codigo),
+          cambio("invitados", inv!.correo),
+          cambio("vigente_hasta", vigenteHasta.toISOString()),
+        ],
+      };
+    });
+    const m = mensajeEnlaceRenovado({
+      url: `${deps.portalOrigen}/e/#t=${token}`,
+      cuenta: f.cuenta_nombre,
+      proyecto: f.proyecto,
+      correo: inv!.correo,
+      venceEl: vigenteHasta,
+    });
+    const { resultado } = await ctx.correo.enviar({ para: inv!.correo, asunto: m.asunto, texto: m.texto, html: m.html });
+    if (resultado !== "ok") ctx.registrar({ evento: "alerta_renovacion", motivo: `envio_${resultado}`, enlace: nuevo });
+    await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
+    return;
+  }
+
+  if (accion.tipo === "avisar") {
+    const para = accion.a === "propietario" ? accion.correo : deps.correoTalentoHumano;
+    const m = mensajeAvisoRenovacion({
+      motivo: empresa.estado === "inactiva" ? "cuenta_no_activa" : "hubspot_sin_respuesta",
+      cuenta: f.cuenta_nombre,
+      codigoEnlace: f.codigo,
+      correoInvitado: inv!.correo,
+    });
+    const { resultado } = await ctx.correo.enviar({ para, asunto: m.asunto, texto: m.texto, html: m.html });
+    if (resultado !== "ok") ctx.registrar({ evento: "alerta_renovacion", motivo: `aviso_${resultado}`, renovacion: p.renovacion });
+    await resolver(accion.a === "propietario" ? "aviso_propietario" : "aviso_talento");
+    await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
+    return;
+  }
+
+  await resolver("sin_efecto");
+  await cerrar(ctx, t.id, { estado: "hecho" });
+}
+
 async function cerrarSegunResultado(
   ctx: ContextoDespacho,
   t: Trabajo,
@@ -191,7 +306,8 @@ async function ejecutar(ctx: ContextoDespacho, t: Trabajo): Promise<void> {
     await cerrar(ctx, t.id, { estado: "caducado", error: "vencido_en_cola" });
     return;
   }
-  await enviarCodigo(ctx, t, payload.data);
+  if (t.tipo === "renovar_enlace") await renovarEnlace(ctx, t, payload.data as PayloadRenovarEnlace);
+  else await enviarCodigo(ctx, t, payload.data as PayloadEnviarCodigo);
 }
 
 // Una vuelta del bucle: reclama y ejecuta mientras haya trabajo; devuelve cuántos ejecutó.
@@ -202,7 +318,7 @@ export async function vuelta(ctx: ContextoDespacho, maximo = 50): Promise<number
   );
   let hechos = 0;
   while (hechos < maximo) {
-    const r = await ctx.bd.query(SQL_RECLAMAR, [ctx.reclamo, TIPOS]);
+    const r = await ctx.bd.query(SQL_RECLAMAR, [ctx.reclamo, tiposDe(ctx)]);
     const t = r.rows[0] as Trabajo | undefined;
     if (!t) break;
     try {

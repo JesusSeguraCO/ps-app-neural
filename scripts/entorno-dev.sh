@@ -43,6 +43,10 @@ case "$PROCESO" in
     echo "export EVENTOS_SEUDONIMO_SAL=$(s sal)"
     echo "export EXPORT_AGE_RECIPIENT=age1desarrollo"
     echo "export PANEL_ADMIN_INICIAL=admin@trycore.com"
+    echo "export PORTAL_ORIGEN=http://127.0.0.1:3100"
+    echo "export HUBSPOT_PROP_CUENTA_ACTIVA=lifecyclestage"
+    echo "export HUBSPOT_VALOR_CUENTA_ACTIVA=customer"
+    echo "export CORREO_TALENTO_HUMANO=people.service@trycore.com"
     ;;
   migrar)
     echo "export APP_ENV=local"

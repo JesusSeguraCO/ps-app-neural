@@ -21,9 +21,9 @@ import { horaDeColombia } from "../fecha/colombia";
 
 export { horaDeColombia };
 
-const escapar = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+export const escapar = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-const T = {
+export const T = {
   canvas: "#F6F7FA",
   card: "#FFFFFF",
   subtle: "#F1F3F7",
