@@ -104,6 +104,8 @@ test.describe("cara cliente", () => {
     await page.getByLabel("Correo corporativo").fill("no-invitado@cliente.com");
     await page.getByRole("button", { name: "Enviarme el código" }).click();
     await expect(page.getByText("está invitado, te llegó un código")).toBeVisible();
+    // Prototipo puerta-acceso--codigo: el foco pasa a la primera casilla para escribir el código.
+    await expect(page.getByLabel("Dígito 1")).toBeFocused();
     await sinIncidenciasGraves(page);
   });
 
@@ -138,6 +140,25 @@ test.describe("cara cliente", () => {
       page.getByRole("heading", { name: /Revisa tu buzón|Recibimos tu petición/ }),
     ).toBeVisible({ timeout: 40_000 });
     await expect(page.getByText(/#t=|\/e\//)).toHaveCount(0);
+    // Prototipo acceso-vencido: volver a escribir otro correo conserva la fecha en que venció.
+    await page.getByRole("button", { name: "Usar otro correo" }).click();
+    await expect(page.getByRole("heading", { name: "Este enlace ya venció" })).toBeVisible();
+    await expect(page.getByText(/Venció el \d{1,2} [a-z]{3} \d{4}/)).toBeVisible();
+  });
+
+  test("HU-094: «Buscar perfiles» con el título h1 del prototipo (30 px escritorio, 22 px móvil)", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const { enlaceId, invitadoId } = await sembrar({ correo: "banco@cliente.com" });
+    await abrirSesion(context, baseURL!, enlaceId, invitadoId);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/banco");
+    const titulo = page.getByRole("heading", { level: 1, name: "Buscar perfiles" });
+    await expect(titulo).toHaveCSS("font-size", "30px");
+    await page.setViewportSize({ width: 390, height: 800 });
+    await expect(titulo).toHaveCSS("font-size", "22px");
   });
 
   test("HU-144: con sesión, la selección con su razón; axe y sin scroll horizontal a 320/390; tema oscuro", async ({

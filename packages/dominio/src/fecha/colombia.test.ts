@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { diaCortoDeColombia, momentoCortoDeColombia, momentoDeColombia } from "./colombia";
+import {
+  diaCortoDeColombia,
+  horaDesbloqueoDeColombia,
+  momentoCortoDeColombia,
+  momentoDeColombia,
+} from "./colombia";
 
 // 29 sep 2026, 10:00 a. m. en Bogotá (15:00 UTC).
 const AHORA = new Date("2026-09-29T15:00:00Z");
@@ -28,5 +33,15 @@ describe("momentos relativos en hora de Colombia (prototipo peticiones-invitacio
   });
   it("el día corto no lleva año", () => {
     expect(diaCortoDeColombia(new Date("2026-09-26T06:44:00Z"))).toBe("26 sep");
+  });
+});
+
+describe("hora de desbloqueo", () => {
+  it("redondea al minuto siguiente: a la hora que dice, ya se puede", () => {
+    // 21:12:28 UTC = 4:12:28 p. m.: quien vuelve a las 4:12 aún no puede; se muestra 4:13.
+    expect(horaDesbloqueoDeColombia(new Date("2026-09-29T21:12:28Z"))).toBe("4:13 p. m.");
+  });
+  it("un minuto exacto no se mueve", () => {
+    expect(horaDesbloqueoDeColombia(new Date("2026-09-29T21:12:00.000Z"))).toBe("4:12 p. m.");
   });
 });

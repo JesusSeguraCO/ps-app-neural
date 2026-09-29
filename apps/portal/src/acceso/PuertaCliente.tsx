@@ -12,7 +12,10 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { fechaDeColombia as fecha, horaCortaDeColombia as hora } from "@ps/dominio/fecha/colombia";
+import {
+  fechaDeColombia as fecha,
+  horaDesbloqueoDeColombia as desbloqueo,
+} from "@ps/dominio/fecha/colombia";
 import { enviarJson } from "./cliente";
 import { AbreTuEnlace, CONTACTO, EnlaceRevocado } from "./Pantallas";
 
@@ -24,8 +27,8 @@ type Paso =
   | { tipo: "espera"; hasta: Date }
   | { tipo: "revocado" }
   | { tipo: "vencido"; vencio: Date | null }
-  | { tipo: "renovacion_enviada"; correo: string }
-  | { tipo: "renovacion_en_camino"; correo: string; desde: Date }
+  | { tipo: "renovacion_enviada"; correo: string; vencio: Date | null }
+  | { tipo: "renovacion_en_camino"; correo: string; desde: Date; vencio: Date | null }
   | { tipo: "renovacion_persona" };
 
 export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revocado"; vencio?: string | null }) {
@@ -42,6 +45,12 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
   const [fallo, setFallo] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const casillas = useRef<Array<HTMLInputElement | null>>([]);
+  // Cada vez que se pide o se rechaza un código, foco en la primera casilla (prototipo
+  // puerta-acceso--codigo). Tras el render: un setTimeout podía correr antes y el foco caía en body.
+  const [enfocarCodigo, setEnfocarCodigo] = useState(0);
+  useEffect(() => {
+    if (enfocarCodigo) casillas.current[0]?.focus();
+  }, [enfocarCodigo]);
 
   useEffect(() => {
     if (inicial) return;
@@ -77,7 +86,7 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
       if (r.status !== 202) throw new Error(String(r.status));
       setDigitos(Array(6).fill(""));
       setPaso({ tipo: "codigo", correo: destino, error: false });
-      setTimeout(() => casillas.current[0]?.focus(), 0);
+      setEnfocarCodigo((n) => n + 1);
     } catch {
       setFallo("No pudimos pedir el código. Inténtalo de nuevo en unos segundos.");
     } finally {
@@ -111,13 +120,14 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
       // Como el prototipo: casillas vacías y foco en la primera para escribir el código nuevo.
       setDigitos(Array(6).fill(""));
       setPaso({ ...paso, error: true });
-      setTimeout(() => casillas.current[0]?.focus(), 0);
+      setEnfocarCodigo((n) => n + 1);
     }
   }
 
   async function pedirEnlaceNuevo(e: FormEvent) {
     e.preventDefault();
     const destino = correo.trim();
+    const vencio = paso.tipo === "vencido" ? paso.vencio : null;
     setEnviando(true);
     setFallo(null);
     try {
@@ -131,6 +141,7 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
           tipo: "renovacion_en_camino",
           correo: destino,
           desde: new Date(cuerpo.puedes_desde),
+          vencio,
         });
         return;
       }
@@ -142,7 +153,7 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
         if (s.estado === "automatica") break;
         await new Promise((res) => setTimeout(res, 1000));
       }
-      setPaso({ tipo: "renovacion_enviada", correo: destino });
+      setPaso({ tipo: "renovacion_enviada", correo: destino, vencio });
     } catch {
       setFallo("No pudimos pedir el enlace. Inténtalo de nuevo en unos segundos.");
     } finally {
@@ -324,7 +335,7 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
             <h1>
               {"Vuelve a intentarlo a las "}
               <time className="puerta-num" dateTime={paso.hasta.toISOString()}>
-                {hora(paso.hasta)}
+                {desbloqueo(paso.hasta)}
               </time>
             </h1>
             <p>Pausamos el ingreso tras varios códigos que no sirven.</p>
@@ -414,7 +425,7 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
             <button
               type="button"
               className="pp-enlace puerta-accion"
-              onClick={() => setPaso({ tipo: "vencido", vencio: null })}
+              onClick={() => setPaso({ tipo: "vencido", vencio: paso.vencio })}
             >
               Usar otro correo
             </button>
@@ -435,14 +446,14 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
             <div className="av-separador">
               <p className="pp-meta">
                 {"Puedes pedir otro a partir de las "}
-                <span className="av-fecha">{hora(paso.desde)}</span>
+                <span className="av-fecha">{desbloqueo(paso.desde)}</span>
               </p>
             </div>
             <div className="pp-puerta__acciones">
               <button
                 type="button"
                 className="pp-enlace av-toque puerta-accion"
-                onClick={() => setPaso({ tipo: "vencido", vencio: null })}
+                onClick={() => setPaso({ tipo: "vencido", vencio: paso.vencio })}
               >
                 Usar otro correo
               </button>

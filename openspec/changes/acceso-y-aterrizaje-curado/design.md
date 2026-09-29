@@ -49,14 +49,15 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 - **Inicio del panel**: encabezado, no la tabla de Inventario (pertenece a otra épica).
 - **Pie de la barra lateral**: rol y hora de fin de la jornada en lugar del nombre; `usuarios_panel` no guarda nombre (el correo ya va en la barra superior).
 - **Vigencia del código**: 10 minutos (ADR-0002); el prototipo dice 15.
-- **Sesión caducada**: sin «Al entrar vuelves a …»; no hay `?volver=` (redirector abierto, ADR-0002).
+- **Sesión caducada**: sin «Al entrar vuelves a …»; no hay `?volver=` (redirector abierto, ADR-0002). La hora de entrada y el correo precargado salen de la fila de la sesión vencida; con solo `?motivo=sesion_expirada` y sin esa cookie, la pantalla no los muestra.
 - **Pie de la puerta en móvil**: objetivo táctil de 44 px (M-2) baja el pie unos 12 px.
 
 ### Sub-slice 4 (generación y revocación de enlaces)
 
 - **Cuenta e invitados a mano**: sin «Cambiar» contra HubSpot ni «contacto en el CRM» (sponsor, 2026-09-28; HU-122 escenario 4).
 - **Enlace `/e/#t=<token>`**, mostrado una sola vez con «Cópialo ahora»; el prototipo pinta `/e/<token>` (E-8).
-- **Sin aperturas** en el registro de enlaces hasta el sub-slice 5 (el acceso del cliente las escribe); sin paginación mientras haya pocos enlaces.
+- **Sin aperturas** en el registro ni en el detalle de enlaces (columna, «Sin aperturas», conteo por invitado y panel de aperturas): son **HU-116** («Ver quién entró por su enlace»), de **EP-011**, no de EP-001; `identidad.accesos_log` ya registra `verificacion_ok` para cuando se construya. Precisión del 2026-09-29 (revisión de fidelidad final): la nota anterior las ataba al sub-slice 5, pero ninguna HU de EP-001 las pide. Sin paginación mientras haya pocos enlaces.
+- **Rótulos de disponibilidad del panel** («Inmediato», «1 mes»): los del PRD, RF-3.13 (sponsor, 2026-09-28, `catalogo/banda.ts`); el portal usa los de cara cliente («Disponible ahora», «En 1 mes»).
 - **Correo en lugar de nombre** de quien generó o revocó (no hay nombre en `usuarios_panel`).
 - **Selector de perfiles publicados propio** en «Añadir desde el inventario»; el inventario completo es de EP-006.
 
@@ -78,6 +79,10 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 - **Banco («Buscar»)**: el banco completo o filtrado por una sola opción; sin buscador de texto (EP-002) ni bloques de evidencia y acciones en las tarjetas (EP-006/EP-004). Una opción sin perfiles vuelve al encuadre con el aviso y «Ampliar la búsqueda».
 - **Ninguno publicado**: el contexto que se ofrece al explorar son las categorías de la selección y se aplica como filtro; el prototipo muestra criterios «deseables», que dependen del motor de criterios (EP-002/EP-009). La categoría de un perfil que dejó de estar publicado no es dato personal y la vista la expone siempre.
 - **Mi equipo**: `identidad.equipos` / `equipo_perfiles`, creado vacío al primer ingreso (al verificar el código y, si faltara, al cargar la página); `ps_portal` sin escritura de perfiles hasta EP-004. La barra muestra su conteo; la página de Mi equipo llega con EP-004.
+
+### Sub-slice 6c (renovación sin HubSpot)
+
+- **Sin variante «cuenta inactiva»** (`acceso-vencido--cuenta-inactiva`): la renovación ya no consulta HubSpot (sponsor, 2026-09-29) y quien pide ve siempre «Revisa tu buzón»; esa pantalla del prototipo queda obsoleta.
 
 ## Risks / Trade-offs
 

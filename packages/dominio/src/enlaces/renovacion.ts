@@ -35,6 +35,7 @@ function correo(o: {
   titulo: string;
   parrafos: string[];
   boton?: { texto: string; url: string };
+  cuerpo?: string; // HTML ya escapado que sustituye a párrafos y botón (correo con marcado propio)
   pie: string;
 }): string {
   const p = (t: string) => `<p style="margin:0 0 16px">${escapar(t)}</p>`;
@@ -47,7 +48,7 @@ function correo(o: {
 <tr><td style="padding:18px 32px;border-bottom:1px solid ${T.borde}"><span style="font-size:17px;font-weight:700;color:${T.h}">trycore</span><span style="font-size:13px;color:${T.m}">&nbsp;/&nbsp;Portal de perfiles</span></td></tr>
 <tr><td style="padding:32px;font-size:15px;line-height:1.6">
 <p style="margin:0 0 8px;font-size:17px;line-height:1.35;font-weight:600;color:${T.h}">${escapar(o.titulo)}</p>
-${o.parrafos.slice(0, 1).map(p).join("")}${boton}${o.parrafos.slice(1).map(p).join("")}
+${o.cuerpo ?? `${o.parrafos.slice(0, 1).map(p).join("")}${boton}${o.parrafos.slice(1).map(p).join("")}`}
 </td></tr>
 <tr><td style="padding:18px 32px;border-top:1px solid ${T.borde};font-size:12px;line-height:1.6;color:${T.s}">${escapar(o.pie)}</td></tr>
 </table></td></tr></table></body></html>`;
@@ -74,8 +75,22 @@ export function mensajeEnlaceRenovado(d: {
   return {
     asunto,
     texto: ["Tu enlace nuevo", "", parrafos[0], "", `Abrir la selección: ${d.url}`, "", ...parrafos.slice(1, 2), "", parrafos[3], "", pie].join("\n"),
-    html: correo({ asunto, titulo: "Tu enlace nuevo", parrafos, boton: { texto: "Abrir la selección", url: d.url }, pie }),
+    html: correo({ asunto, titulo: "Tu enlace nuevo", parrafos, cuerpo: cuerpoEnlaceRenovado(d, para), pie }),
   };
+}
+
+// Marcado del prototipo correo-enlace-renovado: cuenta en negrita, vencimiento y cierre en pequeño,
+// dirección de respaldo en un bloque mono gris.
+function cuerpoEnlaceRenovado(d: { url: string; correo: string; venceEl: Date }, para: string): string {
+  const url = escapar(d.url);
+  return [
+    `<p style="margin:0 0 24px">Para la selección de perfiles de <strong style="font-weight:600;color:${T.h}">${escapar(para)}</strong>.</p>`,
+    `<p style="margin:0 0 12px"><a href="${url}" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#0F6E78;color:#FFFFFF;font-size:13px;font-weight:600;text-decoration:none">Abrir la selección</a></p>`,
+    `<p style="margin:0 0 32px;font-size:13px;color:${T.m}">Vence el ${escapar(fechaDeColombia(d.venceEl))}. Solo funciona con <span style="color:${T.h};overflow-wrap:anywhere">${escapar(d.correo)}</span>; al abrirlo te llega un código a este buzón.</p>`,
+    `<p style="margin:0 0 8px;font-size:12px;color:${T.m}">Si el botón no funciona, copia esta dirección:</p>`,
+    `<p style="margin:0 0 32px;padding:8px 12px;background:${T.subtle};border-radius:6px;font-family:${T.mono};font-size:12px;color:${T.h};overflow-wrap:anywhere;word-break:break-all">${url}</p>`,
+    `<p style="margin:0;font-size:13px;color:${T.m}">El enlace es personal: reenviarlo no le da acceso a nadie más. Si no lo pediste, ignora este mensaje.</p>`,
+  ].join("\n");
 }
 
 // Aviso a una persona cuando la renovación no puede ser automática (fallo cerrado).

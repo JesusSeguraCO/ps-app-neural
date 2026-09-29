@@ -114,6 +114,16 @@ test.describe("marco del panel con sesión", () => {
   });
 });
 
+test("HU-123: al pedir el código, el foco pasa a la primera casilla (prototipo panel-acceso--codigo)", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "panel", "solo el panel");
+  await page.goto("/acceso");
+  await page.getByLabel("Correo corporativo").fill("no-inscrito-e2e@trycore.com");
+  await page.getByRole("button", { name: /código/ }).click();
+  await expect(page.getByLabel("Dígito 1")).toBeFocused();
+});
+
 test.describe("pantallas de enlaces y peticiones con sesión (HU-122, HU-145, HU-146)", () => {
   test.beforeEach(async ({ context, baseURL }, info) => {
     test.skip(info.project.name !== "panel", "solo el panel");

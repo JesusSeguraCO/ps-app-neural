@@ -46,6 +46,20 @@ describe("correos", () => {
     expect(m.texto).toContain("Vence el 29 oct 2026");
     expect(m.html).toContain('href="https://people.trycore.com/e/#t=ABC"');
   });
+  it("el enlace renovado sigue el prototipo correo-enlace-renovado: cuenta en negrita, dirección en bloque mono, secundarios en pequeño", () => {
+    const { html } = mensajeEnlaceRenovado({
+      url: "https://people.trycore.com/e/#t=ABC",
+      cuenta: "Bancolombia",
+      proyecto: "Modernización de pagos",
+      correo: "mariana@bancolombia.com.co",
+      venceEl: new Date("2026-10-29T15:00:00Z"),
+    });
+    expect(html).toMatch(/<strong[^>]*>Bancolombia · Modernización de pagos<\/strong>/);
+    expect(html).toMatch(/<p style="[^"]*background:#F1F3F7[^"]*'Geist Mono'[^"]*">https:\/\/people\.trycore\.com\/e\/#t=ABC<\/p>/);
+    expect(html).toMatch(/<p style="[^"]*font-size:13px[^"]*">Vence el 29 oct 2026/);
+    expect(html).toMatch(/<p style="[^"]*font-size:12px[^"]*">Si el botón no funciona, copia esta dirección:<\/p>/);
+    expect(html).toMatch(/<p style="[^"]*font-size:13px[^"]*">El enlace es personal/);
+  });
   it("el aviso a Talento Humano de un invitado dice quién pidió, de qué cuenta y el enlace nuevo", () => {
     const m = mensajeAvisoRenovacion({
       resultado: "enlace_enviado",

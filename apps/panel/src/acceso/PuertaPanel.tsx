@@ -2,7 +2,14 @@
 // Puerta del panel (HU-123): correo @trycore.com inscrito → código de un uso al buzón → sesión de una
 // jornada. Pantallas panel-acceso, panel-acceso--codigo y panel-acceso--sesion-caducada del prototipo.
 // Mensajes neutros: nunca revela si un correo está inscrito.
-import { useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import { enviarJson } from "./cliente";
 import { Marca } from "./Marca";
 
@@ -38,6 +45,11 @@ export function PuertaPanel({
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const casillas = useRef<Array<HTMLInputElement | null>>([]);
+  // Foco en la primera casilla tras el render del paso «código» (un setTimeout podía correr antes).
+  const [enfocarCodigo, setEnfocarCodigo] = useState(0);
+  useEffect(() => {
+    if (enfocarCodigo) casillas.current[0]?.focus();
+  }, [enfocarCodigo]);
 
   async function pedirCodigo(destino: string) {
     setEnviando(true);
@@ -47,7 +59,7 @@ export function PuertaPanel({
       if (r.status !== 202) throw new Error(String(r.status));
       setDigitos(Array(6).fill(""));
       setPaso({ tipo: "codigo", correo: destino });
-      setTimeout(() => casillas.current[0]?.focus(), 0);
+      setEnfocarCodigo((n) => n + 1);
     } catch {
       setError("No pudimos enviar el código. Inténtalo de nuevo en unos segundos.");
     } finally {

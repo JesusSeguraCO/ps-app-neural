@@ -71,7 +71,7 @@
 - [x] 9.3 Portal: tras pedir, siempre «Revisa tu buzón» con respuesta idéntica para invitados y no invitados (V2-4); verificar HU-092 y la neutralidad por tiempo
 - [x] 9.4 Panel: bandeja de renovaciones con cuenta, proyecto, correo, cuándo, enlace vencido y resultado; enlace al detalle del enlace nuevo para revocarlo; verificar HU-146 (1-5), observadora sin acciones y aislamiento por rol
 - [x] 9.5 Pantalla de la bandeja en el prototipo (`/build:prototype`, modo feature, aprobación humana) y fidelidad con captura MCP; journey smoke pedir → aviso → bandeja → revocar
-- [ ] 9.6 Wiring: retirar en el hub los items obsoletos (`BND-hubspot-contacto-de-cuenta`, `BND-hubspot-get-company-status`, `HU-122-ac4-contacto-crm`, `otp-mail#send-access-code`) y registrar `na: no_credentials` de Mailgun para `send-access-code` y `send-notification`; verificar con `slice-ops.sh status`
+- [x] 9.6 Wiring: retirar en el hub los items obsoletos (`BND-hubspot-contacto-de-cuenta`, `BND-hubspot-get-company-status`, `HU-122-ac4-contacto-crm`, `otp-mail#send-access-code`) y registrar `na: no_credentials` de Mailgun para `send-access-code` y `send-notification`; verificar con `slice-ops.sh status`
 
 ## 8. Cierre de la épica caparazón
 

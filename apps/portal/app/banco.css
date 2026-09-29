@@ -24,7 +24,7 @@
 .enc-num { font-variant-numeric: tabular-nums; }
 .as-cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-4) var(--tc-sp-6); }
 .as-cabecera__texto { min-width: 0; }
-.as-cabecera h1 { margin: 0; max-width: 40ch; }
+.as-cabecera h1 { margin: 0; max-width: 40ch; font-size: var(--tc-fs-h1); line-height: var(--tc-lh-h2); letter-spacing: var(--tc-ls-heading); }
 .as-firma { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
 .as-filtro { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); }
 .as-filtro .pp-enlace { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--tc-fs-small); }

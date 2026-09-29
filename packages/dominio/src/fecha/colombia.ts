@@ -16,6 +16,12 @@ export function horaCortaDeColombia(fecha: Date): string {
   return horaDeColombia(fecha).split(", ")[1]!;
 }
 
+// «4:13 p. m.» para un desbloqueo (espera por intentos, próxima petición): redondea al minuto
+// siguiente, porque a la hora que se muestra ya tiene que poderse (4:12:28 → 4:13).
+export function horaDesbloqueoDeColombia(fecha: Date): string {
+  return horaCortaDeColombia(new Date(Math.ceil(fecha.getTime() / 60_000) * 60_000));
+}
+
 // «24 oct 2026» (día civil en America/Bogota).
 export function fechaDeColombia(fecha: Date): string {
   return horaDeColombia(fecha).split(", ")[0]!;
