@@ -20,8 +20,6 @@ function entornoCompleto(proceso: Proceso): Record<string, string> {
     PANEL_ADMIN_INICIAL: "admin@trycore.com",
     PORTAL_ORIGEN: "https://people.trycore.com",
     WORKER_PAUSADO: "0",
-    HUBSPOT_PROP_CUENTA_ACTIVA: "lifecyclestage",
-    HUBSPOT_VALOR_CUENTA_ACTIVA: "customer",
     CORREO_TALENTO_HUMANO: "people.service@trycore.com",
   };
   const entorno: Record<string, string> = {};
@@ -90,19 +88,19 @@ describe("dobles declarados", () => {
   it("en local un doble permite omitir la credencial de su frontera", () => {
     const entorno = entornoCompleto("worker");
     entorno.APP_ENV = "local";
-    entorno.DOBLES = "mailgun,hubspot";
+    entorno.DOBLES = "mailgun,gemini";
     delete entorno.MAILGUN_SENDING_KEY;
     delete entorno.MAILGUN_SUPPRESSIONS_KEY;
     delete entorno.MAILGUN_DOMAIN;
-    delete entorno.HUBSPOT_PRIVATE_APP_TOKEN;
+    delete entorno.GEMINI_API_KEY;
     const config = cargarConfiguracion("worker", entorno);
-    expect(doblesDe(config)).toEqual(new Set(["mailgun", "hubspot"]));
+    expect(doblesDe(config)).toEqual(new Set(["mailgun", "gemini"]));
   });
 
   it("sin declarar el doble la credencial sigue siendo obligatoria", () => {
     const entorno = entornoCompleto("worker");
     entorno.APP_ENV = "local";
-    entorno.DOBLES = "hubspot";
+    entorno.DOBLES = "gemini";
     delete entorno.MAILGUN_SENDING_KEY;
     expect(() => cargarConfiguracion("worker", entorno)).toThrowError(ErrorConfiguracion);
   });

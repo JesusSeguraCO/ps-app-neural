@@ -114,13 +114,13 @@ test.describe("marco del panel con sesión", () => {
   });
 });
 
-test.describe("pantallas de enlaces con sesión (HU-122, tarea 4.3/4.4)", () => {
+test.describe("pantallas de enlaces y peticiones con sesión (HU-122, HU-145, HU-146)", () => {
   test.beforeEach(async ({ context, baseURL }, info) => {
     test.skip(info.project.name !== "panel", "solo el panel");
     await abrirSesion(context, baseURL!);
   });
 
-  for (const ruta of ["/enlaces", "/enlaces/nuevo"]) {
+  for (const ruta of ["/enlaces", "/enlaces/nuevo", "/peticiones", "/peticiones/renovaciones"]) {
     test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
       const errores: string[] = [];
       page.on("console", (m) => {

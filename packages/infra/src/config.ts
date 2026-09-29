@@ -5,9 +5,9 @@ import { z } from "zod";
 
 export type Proceso = "portal" | "panel" | "worker" | "migrar";
 export type AppEnv = "local" | "ci" | "staging" | "produccion";
-export type Doble = "mailgun" | "hubspot" | "gemini" | "spaces" | "latido";
+export type Doble = "mailgun" | "gemini" | "spaces" | "latido";
 
-const DOBLES_VALIDOS: readonly Doble[] = ["mailgun", "hubspot", "gemini", "spaces", "latido"];
+const DOBLES_VALIDOS: readonly Doble[] = ["mailgun", "gemini", "spaces", "latido"];
 
 // Lista normativa de ADR-0010 §3.3.
 export const VARIABLES: Record<Proceso, readonly string[]> = {
@@ -48,7 +48,6 @@ export const VARIABLES: Record<Proceso, readonly string[]> = {
     "DATABASE_URL",
     "DATABASE_DIRECT_URL",
     "EXPORT_DATABASE_URL",
-    "HUBSPOT_PRIVATE_APP_TOKEN",
     "MAILGUN_SENDING_KEY",
     "MAILGUN_SUPPRESSIONS_KEY",
     "MAILGUN_DOMAIN",
@@ -65,12 +64,10 @@ export const VARIABLES: Record<Proceso, readonly string[]> = {
     "SPACES_BUCKET",
     "EXPORT_AGE_RECIPIENT",
     "PANEL_ADMIN_INICIAL",
-    // Renovación del enlace vencido (HU-092, EP-001 · 5.7): enlace nuevo con el origen del portal;
-    // propiedad y valor de «cuenta activa» en HubSpot (configuración, no código); buzón de Talento
-    // Humano para las peticiones que no pueden ser automáticas. Enmienda de ADR-0010 §3.3.
+    // Renovación del enlace vencido (HU-092, HU-146): enlace nuevo con el origen del portal y buzón de
+    // Talento Humano para el aviso de cada petición. Sin HubSpot desde el 2026-09-29 (sponsor): su
+    // token vuelve con la épica que escriba en el CRM (EP-007). Enmienda de ADR-0010 §3.3.
     "PORTAL_ORIGEN",
-    "HUBSPOT_PROP_CUENTA_ACTIVA",
-    "HUBSPOT_VALOR_CUENTA_ACTIVA",
     "CORREO_TALENTO_HUMANO",
   ],
   migrar: ["APP_ENV", "MIGRATOR_DATABASE_URL"],
@@ -94,7 +91,6 @@ const CREDENCIALES_DE: Record<Doble, readonly string[]> = {
     "MAILGUN_DOMAIN",
     "MAILGUN_WEBHOOK_SIGNING_KEY",
   ],
-  hubspot: ["HUBSPOT_PRIVATE_APP_TOKEN"],
   gemini: ["GEMINI_API_KEY"],
   spaces: ["SPACES_KEY", "SPACES_SECRET", "SPACES_BUCKET"],
   latido: ["LATIDO_URL"],
@@ -118,8 +114,6 @@ const FORMATO: Record<string, z.ZodType<string>> = {
   // Origen público del portal con el que el panel compone el enlace `/e/#t=` (config, no secreto).
   PORTAL_ORIGEN: z.string().regex(/^https?:\/\/[^/\s]+$/),
   WORKER_PAUSADO: z.enum(["0", "1"]),
-  HUBSPOT_PROP_CUENTA_ACTIVA: z.string().regex(/^[a-z0-9_]{1,100}$/),
-  HUBSPOT_VALOR_CUENTA_ACTIVA: z.string().min(1).max(100),
   CORREO_TALENTO_HUMANO: correoTrycore,
 };
 

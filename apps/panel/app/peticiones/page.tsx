@@ -17,11 +17,8 @@ import {
 } from "@ps/infra/postgres/invitaciones-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { MarcoPanel } from "../../src/marco/MarcoPanel";
-import {
-  AvisoDecision,
-  FilaPeticion,
-  type FilaPeticionDatos,
-} from "../../src/peticiones/DecidirPeticion";
+import { AvisoDecision } from "../../src/marco/Hoja";
+import { FilaPeticion, type FilaPeticionDatos } from "../../src/peticiones/DecidirPeticion";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
 import "../../src/marco/marco.css";
 import "./peticiones.css";
@@ -98,6 +95,9 @@ export default async function Peticiones({
           </p>
         </div>
         <div className="pp-encabezado__acciones">
+          <a className="pp-btn pp-btn--contorno" href="/peticiones/renovaciones">
+            Renovaciones de enlace
+          </a>
           <a className="pp-btn pp-btn--contorno" aria-disabled="true">
             Ver auditoría<span className="pp-sr"> (aún no disponible)</span>
           </a>

@@ -11,7 +11,7 @@ s() { printf 'dev-%s-%s' "$1" "0123456789abcdef0123456789abcdef"; }
 
 comun() {
   echo "export APP_ENV=local"
-  echo "export DOBLES=mailgun,hubspot,gemini,spaces,latido"
+  echo "export DOBLES=mailgun,gemini,spaces,latido"
   echo "export EMAIL_HMAC_KEY=$(s email)"
   echo "export EDGE_SECRET=$(s borde)"
   echo "export SALUD_TOKEN=$(s salud)"
@@ -44,8 +44,6 @@ case "$PROCESO" in
     echo "export EXPORT_AGE_RECIPIENT=age1desarrollo"
     echo "export PANEL_ADMIN_INICIAL=admin@trycore.com"
     echo "export PORTAL_ORIGEN=http://127.0.0.1:3100"
-    echo "export HUBSPOT_PROP_CUENTA_ACTIVA=lifecyclestage"
-    echo "export HUBSPOT_VALOR_CUENTA_ACTIVA=customer"
     echo "export CORREO_TALENTO_HUMANO=people.service@trycore.com"
     ;;
   migrar)

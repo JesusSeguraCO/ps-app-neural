@@ -71,8 +71,9 @@ export async function pedirRenovacion(
     const v = enVentanaDeEspera(ultima?.pedida_en ?? null, ahora);
     if (v.enEspera) return { tipo: "en_camino", solicitud: ultima!.id, desde: v.desde };
     const r = await tx.query(
-      `INSERT INTO identidad.renovaciones (enlace_id, correo_hmac) VALUES ($1, $2) RETURNING id`,
-      [e!.id, correoHmac],
+      // El correo escrito se guarda para avisar a Talento Humano quién pidió (HU-146), esté o no invitado.
+      `INSERT INTO identidad.renovaciones (enlace_id, correo_hmac, correo) VALUES ($1, $2, $3) RETURNING id`,
+      [e!.id, correoHmac, normalizarCorreo(entrada.correo)],
     );
     const solicitud = r.rows[0].id as string;
     await tx.query(`SELECT operacion.encolar_portal('renovar_enlace', $1::jsonb)`, [
@@ -82,8 +83,8 @@ export async function pedirRenovacion(
   });
 }
 
-// Lo único que el portal cuenta de una renovación: si fue automática o pasó a una persona (depende
-// solo del estado de la cuenta del enlace, nunca de la invitación).
+// Lo único que el portal cuenta de una renovación: pendiente o resuelta. Desde el 2026-09-29 siempre
+// resuelve como «automatica» («Revisa tu buzón»), esté o no invitado el correo.
 export async function estadoRenovacion(
   bd: pg.Pool,
   solicitud: string,

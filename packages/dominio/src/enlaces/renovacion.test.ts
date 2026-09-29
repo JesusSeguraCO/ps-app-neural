@@ -1,6 +1,6 @@
-// HU-092: la renovación del enlace vencido. Lo que ve quien pide depende solo del estado de la cuenta
-// (nunca de si su correo estaba invitado); el enlace nuevo solo va al buzón de un invitado con cuenta
-// activa y, si no se puede confirmar, la petición pasa a una persona (fallo cerrado).
+// HU-092 y HU-146: la renovación del enlace vencido. Desde el 2026-09-29 (sponsor) no consulta HubSpot:
+// a un invitado le llega el enlace nuevo solo a su buzón; a quien no estaba invitado, nada. Quien pide ve
+// siempre la misma respuesta, y toda petición avisa a Talento Humano.
 import { describe, expect, it } from "vitest";
 import {
   VENTANA_RENOVACION_MS,
@@ -11,34 +11,11 @@ import {
 } from "./renovacion";
 
 describe("decidirRenovacion", () => {
-  const activa = { estado: "activa" as const, propietario: "comercial@trycore.com" };
-  const inactiva = { estado: "inactiva" as const, propietario: "comercial@trycore.com" };
-  const desconocida = { estado: "desconocido" as const };
-
-  it("invitado + cuenta activa → emitir el enlace; público «automatica»", () => {
-    expect(decidirRenovacion(true, activa)).toEqual({ publico: "automatica", accion: { tipo: "emitir" } });
+  it("invitado → emitir el enlace nuevo y avisar a Talento Humano", () => {
+    expect(decidirRenovacion(true)).toEqual({ resultado: "enlace_enviado", emitir: true, avisar: true });
   });
-  it("no invitado + cuenta activa → nada, con el MISMO público que el invitado", () => {
-    expect(decidirRenovacion(false, activa)).toEqual({ publico: "automatica", accion: { tipo: "nada" } });
-  });
-  it("invitado + cuenta no activa → aviso al propietario de la empresa; público «persona»", () => {
-    expect(decidirRenovacion(true, inactiva)).toEqual({
-      publico: "persona",
-      accion: { tipo: "avisar", a: "propietario", correo: "comercial@trycore.com" },
-    });
-  });
-  it("cuenta no activa sin propietario con correo → a Talento Humano", () => {
-    expect(decidirRenovacion(true, { estado: "inactiva", propietario: null })).toEqual({
-      publico: "persona",
-      accion: { tipo: "avisar", a: "talento_humano" },
-    });
-  });
-  it("invitado + HubSpot sin respuesta → aviso a Talento Humano; nunca se emite (fallo cerrado)", () => {
-    expect(decidirRenovacion(true, desconocida)).toEqual({ publico: "persona", accion: { tipo: "avisar", a: "talento_humano" } });
-  });
-  it("no invitado + cuenta no activa o desconocida → nada, mismo público «persona»", () => {
-    expect(decidirRenovacion(false, inactiva)).toEqual({ publico: "persona", accion: { tipo: "nada" } });
-    expect(decidirRenovacion(false, desconocida)).toEqual({ publico: "persona", accion: { tipo: "nada" } });
+  it("no invitado → nada que emitir, pero Talento Humano se entera", () => {
+    expect(decidirRenovacion(false)).toEqual({ resultado: "no_invitado", emitir: false, avisar: true });
   });
 });
 
@@ -69,19 +46,36 @@ describe("correos", () => {
     expect(m.texto).toContain("Vence el 29 oct 2026");
     expect(m.html).toContain('href="https://people.trycore.com/e/#t=ABC"');
   });
-  it("el aviso a una persona dice quién pidió, de qué cuenta y por qué no fue automático", () => {
+  it("el aviso a Talento Humano de un invitado dice quién pidió, de qué cuenta y el enlace nuevo", () => {
     const m = mensajeAvisoRenovacion({
-      motivo: "cuenta_no_activa",
-      cuenta: "Bancolombia",
+      resultado: "enlace_enviado",
+      cuenta: "APAP",
+      proyecto: "Core bancario",
       codigoEnlace: "ENL-0007",
-      correoInvitado: "mariana@bancolombia.com.co",
+      codigoNuevo: "ENL-0031",
+      correo: "mariana@apap.com.do",
+      pedidaEn: new Date("2026-09-29T14:14:00Z"),
     });
-    expect(m.asunto).toContain("Bancolombia");
-    expect(m.texto).toContain("mariana@bancolombia.com.co");
+    expect(m.asunto).toBe("Enlace nuevo pedido: APAP · Core bancario");
+    expect(m.texto).toContain("mariana@apap.com.do");
     expect(m.texto).toContain("ENL-0007");
-    expect(m.texto).toMatch(/no figura como cuenta activa en HubSpot/);
-    const t = mensajeAvisoRenovacion({ motivo: "hubspot_sin_respuesta", cuenta: "X", codigoEnlace: "ENL-1", correoInvitado: "a@x.com" });
-    expect(t.texto).toMatch(/HubSpot no respondió/);
-    expect(t.texto).not.toMatch(/#t=/);
+    expect(m.texto).toContain("Se le envió el enlace nuevo ENL-0031 a su buzón.");
+    expect(m.texto).toContain("29 sep 2026, 9:14 a. m.");
+    expect(m.texto).not.toMatch(/HubSpot|#t=/);
+  });
+  it("el aviso de quien no estaba invitado dice que no se le envió nada", () => {
+    const m = mensajeAvisoRenovacion({
+      resultado: "no_invitado",
+      cuenta: "APAP",
+      proyecto: null,
+      codigoEnlace: "ENL-0007",
+      codigoNuevo: null,
+      correo: "reenviado@gmail.com",
+      pedidaEn: new Date("2026-09-29T14:14:00Z"),
+    });
+    expect(m.asunto).toBe("Enlace nuevo pedido por alguien no invitado: APAP");
+    expect(m.texto).toContain("reenviado@gmail.com no estaba invitado al enlace ENL-0007");
+    expect(m.texto).toContain("No se le envió ningún enlace.");
+    expect(m.html).not.toMatch(/<script/);
   });
 });

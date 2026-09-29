@@ -23,13 +23,11 @@ import {
   mensajeAvisoRenovacion,
   mensajeEnlaceRenovado,
 } from "@ps/dominio/enlaces/renovacion";
-import type { ConsultaHubspot } from "@ps/infra/hubspot/index";
 import type { EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
 
-// Dependencias de la renovación del enlace vencido (HU-092); sin ellas el worker no la reclama.
+// Dependencias de la renovación del enlace vencido (HU-092, HU-146); sin ellas el worker no la reclama.
 export interface ContextoRenovacion {
-  hubspot: ConsultaHubspot;
   portalOrigen: string; // PORTAL_ORIGEN
   correoTalentoHumano: string; // CORREO_TALENTO_HUMANO
   auditoria: ClavesAuditoria;
@@ -158,13 +156,14 @@ async function enviarCodigo(
   await cerrarSegunResultado(ctx, t, resultado);
 }
 
-// Renovación del enlace vencido (HU-092, design §2). HubSpot se consulta SIEMPRE, esté o no invitado el
-// correo: lo que ve quien pide (`publico`) depende solo de la cuenta y el trabajo es el mismo en ambas
-// ramas. El enlace nuevo solo nace con cuenta activa y solo viaja al buzón del invitado (fallo cerrado).
+// Renovación del enlace vencido (HU-092, HU-146, design §2). Sin HubSpot desde el 2026-09-29 (sponsor):
+// un correo invitado recibe el enlace nuevo solo en su buzón; a quien no estaba invitado no se le envía
+// nada. En ambos casos Talento Humano recibe el aviso y la petición queda en la bandeja del panel. Lo
+// que ve quien pide (`publico`) es siempre «automatica»: nunca revela si el correo estaba invitado.
 async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenovarEnlace): Promise<void> {
   const deps = ctx.renovacion!;
   const r = await ctx.bd.query(
-    `SELECT r.enlace_id, r.correo_hmac, r.resultado, e.cuenta_ref, e.cuenta_nombre, e.proyecto, e.codigo,
+    `SELECT r.enlace_id, r.correo_hmac, r.correo, r.pedida_en, r.resultado, e.cuenta_nombre, e.proyecto, e.codigo,
             e.estado, e.vigente_hasta
        FROM identidad.renovaciones r JOIN identidad.enlaces e ON e.id = r.enlace_id WHERE r.id = $1`,
     [p.renovacion],
@@ -174,24 +173,36 @@ async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenova
     await cerrar(ctx, t.id, { estado: "hecho" });
     return;
   }
+  const marcar = (entrega: "enviado" | "fallido" | null, avisado: boolean) =>
+    ctx.bd.query(`SELECT identidad.marcar_entrega_renovacion($1, $2, $3, $4, $5)`, [
+      t.id,
+      ctx.reclamo,
+      p.renovacion,
+      entrega,
+      avisado,
+    ]);
+  const vencido = f.estado === "activo" && (f.vigente_hasta as Date).getTime() <= Date.now();
+  if (!vencido) {
+    // Revocado (o renovado por otra vía) antes de procesarse: Talento Humano ya actuó sobre el enlace.
+    await ctx.bd.query(`SELECT identidad.resolver_renovacion($1, $2, $3, 'sin_efecto', 'automatica')`, [
+      t.id,
+      ctx.reclamo,
+      p.renovacion,
+    ]);
+    await cerrar(ctx, t.id, { estado: "hecho" });
+    return;
+  }
   const i = await ctx.bd.query(
     `SELECT id, correo, activo FROM identidad.enlace_invitados WHERE enlace_id = $1 AND correo_hmac = $2`,
     [f.enlace_id, f.correo_hmac],
   );
   const inv = i.rows[0] as { id: string; correo: string; activo: boolean } | undefined;
-  const vencido = f.estado === "activo" && (f.vigente_hasta as Date).getTime() <= Date.now();
-  const empresa = await deps.hubspot.estadoDeEmpresa({ id: f.cuenta_ref, nombre: f.cuenta_nombre });
-  const { publico, accion } = decidirRenovacion(Boolean(inv?.activo && vencido), empresa);
-  const resolver = (resultado: string) =>
-    ctx.bd.query(`SELECT identidad.resolver_renovacion($1, $2, $3, $4, $5)`, [
-      t.id,
-      ctx.reclamo,
-      p.renovacion,
-      resultado,
-      publico,
-    ]);
+  const decision = decidirRenovacion(Boolean(inv?.activo));
+  const correoPide = (f.correo as string | null) ?? inv?.correo ?? "(correo no registrado)";
 
-  if (accion.tipo === "emitir") {
+  let codigoNuevo: string | null = null;
+  let entrega: "enviado" | "fallido" | null = null;
+  if (decision.emitir) {
     const { token, hash } = generarTokenEnlace();
     const vigenteHasta = new Date(Date.now() + VIGENCIA_POR_OMISION_DIAS * 86_400_000);
     const nuevo = await conAuditoria(ctx.bd, deps.auditoria, async (tx) => {
@@ -222,6 +233,8 @@ async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenova
         ],
       };
     });
+    const c = await ctx.bd.query(`SELECT codigo FROM identidad.enlaces WHERE id = $1`, [nuevo]);
+    codigoNuevo = c.rows[0].codigo as string;
     const m = mensajeEnlaceRenovado({
       url: `${deps.portalOrigen}/e/#t=${token}`,
       cuenta: f.cuenta_nombre,
@@ -230,28 +243,29 @@ async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenova
       venceEl: vigenteHasta,
     });
     const { resultado } = await ctx.correo.enviar({ para: inv!.correo, asunto: m.asunto, texto: m.texto, html: m.html });
+    entrega = resultado === "ok" ? "enviado" : "fallido";
     if (resultado !== "ok") ctx.registrar({ evento: "alerta_renovacion", motivo: `envio_${resultado}`, enlace: nuevo });
-    await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
-    return;
+  } else {
+    await ctx.bd.query(`SELECT identidad.resolver_renovacion($1, $2, $3, 'no_invitado', 'automatica')`, [
+      t.id,
+      ctx.reclamo,
+      p.renovacion,
+    ]);
   }
 
-  if (accion.tipo === "avisar") {
-    const para = accion.a === "propietario" ? accion.correo : deps.correoTalentoHumano;
-    const m = mensajeAvisoRenovacion({
-      motivo: empresa.estado === "inactiva" ? "cuenta_no_activa" : "hubspot_sin_respuesta",
-      cuenta: f.cuenta_nombre,
-      codigoEnlace: f.codigo,
-      correoInvitado: inv!.correo,
-    });
-    const { resultado } = await ctx.correo.enviar({ para, asunto: m.asunto, texto: m.texto, html: m.html });
-    if (resultado !== "ok") ctx.registrar({ evento: "alerta_renovacion", motivo: `aviso_${resultado}`, renovacion: p.renovacion });
-    await resolver(accion.a === "propietario" ? "aviso_propietario" : "aviso_talento");
-    await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
-    return;
-  }
-
-  await resolver("sin_efecto");
-  await cerrar(ctx, t.id, { estado: "hecho" });
+  const aviso = mensajeAvisoRenovacion({
+    resultado: decision.resultado,
+    cuenta: f.cuenta_nombre,
+    proyecto: f.proyecto,
+    codigoEnlace: f.codigo,
+    codigoNuevo,
+    correo: correoPide,
+    pedidaEn: f.pedida_en,
+  });
+  const a = await ctx.correo.enviar({ para: deps.correoTalentoHumano, asunto: aviso.asunto, texto: aviso.texto, html: aviso.html });
+  if (a.resultado !== "ok") ctx.registrar({ evento: "alerta_renovacion", motivo: `aviso_${a.resultado}`, renovacion: p.renovacion });
+  await marcar(entrega, a.resultado === "ok");
+  await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
 }
 
 // Aviso a Talento Humano de una petición de invitación nueva (HU-095, `notificar` de ADR-0006/0009).

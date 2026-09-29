@@ -1,32 +1,15 @@
-// Renovación del enlace vencido (HU-092, design §2). Pura: la decisión, la ventana de espera y los
-// correos. Lo que se muestra a quien pide (`publico`) depende SOLO del estado de la cuenta del enlace,
-// que es el mismo para cualquiera que tenga esa dirección: nunca revela si el correo estaba invitado.
+// Renovación del enlace vencido (HU-092, HU-146, design §2). Pura: la decisión, la ventana de espera y
+// los correos. Desde el 2026-09-29 (sponsor) no consulta HubSpot: el enlace nuevo va solo al buzón de un
+// invitado, quien pide ve siempre la misma respuesta y toda petición se avisa a Talento Humano.
 import { T, escapar } from "../acceso/mensajes";
-import { fechaDeColombia } from "../fecha/colombia";
+import { fechaDeColombia, horaDeColombia } from "../fecha/colombia";
 
-export type EstadoEmpresa =
-  | { estado: "activa"; propietario: string | null }
-  | { estado: "inactiva"; propietario: string | null }
-  | { estado: "desconocido" }; // HubSpot sin respuesta, error o empresa no identificable
+export type ResultadoRenovacion = "enlace_enviado" | "no_invitado";
 
-export type PublicoRenovacion = "automatica" | "persona";
-
-export type AccionRenovacion =
-  | { tipo: "emitir" }
-  | { tipo: "avisar"; a: "propietario"; correo: string }
-  | { tipo: "avisar"; a: "talento_humano" }
-  | { tipo: "nada" };
-
-export function decidirRenovacion(
-  invitado: boolean,
-  empresa: EstadoEmpresa,
-): { publico: PublicoRenovacion; accion: AccionRenovacion } {
-  const publico: PublicoRenovacion = empresa.estado === "activa" ? "automatica" : "persona";
-  if (!invitado) return { publico, accion: { tipo: "nada" } };
-  if (empresa.estado === "activa") return { publico, accion: { tipo: "emitir" } };
-  if (empresa.estado === "inactiva" && empresa.propietario)
-    return { publico, accion: { tipo: "avisar", a: "propietario", correo: empresa.propietario } };
-  return { publico, accion: { tipo: "avisar", a: "talento_humano" } };
+export function decidirRenovacion(invitado: boolean): { resultado: ResultadoRenovacion; emitir: boolean; avisar: true } {
+  return invitado
+    ? { resultado: "enlace_enviado", emitir: true, avisar: true }
+    : { resultado: "no_invitado", emitir: false, avisar: true };
 }
 
 // Ventana antirrepetición por enlace + correo (negociable en HU-092; propuesta: 15 min).
@@ -97,25 +80,33 @@ export function mensajeEnlaceRenovado(d: {
 
 // Aviso a una persona cuando la renovación no puede ser automática (fallo cerrado).
 export function mensajeAvisoRenovacion(d: {
-  motivo: "cuenta_no_activa" | "hubspot_sin_respuesta";
+  resultado: ResultadoRenovacion;
   cuenta: string;
+  proyecto: string | null;
   codigoEnlace: string;
-  correoInvitado: string;
+  codigoNuevo: string | null;
+  correo: string;
+  pedidaEn: Date;
 }): Mensaje {
-  const asunto = `Petición de enlace nuevo: ${d.cuenta}`;
-  const porque =
-    d.motivo === "cuenta_no_activa"
-      ? `La empresa ${d.cuenta} no figura como cuenta activa en HubSpot, así que no se generó un enlace automático.`
-      : `HubSpot no respondió al comprobar si ${d.cuenta} es una cuenta activa, así que no se generó un enlace automático.`;
-  const parrafos = [
-    `${d.correoInvitado}, invitado al enlace ${d.codigoEnlace}, pidió un enlace nuevo porque el suyo venció.`,
-    porque,
-    "Escríbele para renovar el acceso; si corresponde, genera un enlace nuevo desde el panel. En el portal ve que alguien de People Service lo contactará.",
-  ];
+  const cuenta = d.proyecto ? `${d.cuenta} · ${d.proyecto}` : d.cuenta;
+  const invitado = d.resultado === "enlace_enviado";
+  const asunto = invitado ? `Enlace nuevo pedido: ${cuenta}` : `Enlace nuevo pedido por alguien no invitado: ${cuenta}`;
+  const cuando = `El ${horaDeColombia(d.pedidaEn)} (hora de Colombia)`;
+  const parrafos = invitado
+    ? [
+        `${cuando}, ${d.correo}, invitado al enlace ${d.codigoEnlace} de ${cuenta}, pidió un enlace nuevo porque el suyo venció.`,
+        `Se le envió el enlace nuevo ${d.codigoNuevo} a su buzón.`,
+        "Si esa persona ya no debería ver la selección, revoca el enlace nuevo desde la bandeja de renovaciones del panel.",
+      ]
+    : [
+        `${cuando}, ${d.correo} no estaba invitado al enlace ${d.codigoEnlace} de ${cuenta} y pidió un enlace nuevo desde él.`,
+        "No se le envió ningún enlace. En el portal vio la misma respuesta que un invitado.",
+        "Puede ser un colega al que conviene invitar, o el enlace circuló fuera de la cuenta.",
+      ];
   const pie = "People Service · Trycore · Aviso interno del Portal de perfiles.";
   return {
     asunto,
-    texto: ["Petición de enlace nuevo", "", ...parrafos.flatMap((x) => [x, ""]), pie].join("\n"),
-    html: correo({ asunto, titulo: "Petición de enlace nuevo", parrafos, pie }),
+    texto: [asunto, "", ...parrafos.flatMap((x) => [x, ""]), pie].join("\n"),
+    html: correo({ asunto, titulo: invitado ? "Enlace nuevo pedido" : "Enlace nuevo pedido por alguien no invitado", parrafos, pie }),
   };
 }

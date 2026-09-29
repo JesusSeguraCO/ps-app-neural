@@ -5,7 +5,6 @@
 import { randomUUID } from "node:crypto";
 import pg from "pg";
 import { doblesDe, exigirConfiguracion } from "@ps/infra/config";
-import { consultaHubspot, dobleDesdeEntorno } from "@ps/infra/hubspot/index";
 import { DobleCorreo, enviadorMailgun, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { vuelta, type ContextoDespacho } from "./despacho";
 import { sembrarAdminInicial } from "./sembrar";
@@ -58,13 +57,6 @@ const ctx: ContextoDespacho = {
   reclamo: `worker-${randomUUID()}`,
   registrar,
   renovacion: {
-    hubspot: doblesDe(config).has("hubspot")
-      ? dobleDesdeEntorno(process.env.DOBLE_HUBSPOT_EMPRESAS)
-      : consultaHubspot({
-          token: config.HUBSPOT_PRIVATE_APP_TOKEN!,
-          propiedad: config.HUBSPOT_PROP_CUENTA_ACTIVA!,
-          valorActiva: config.HUBSPOT_VALOR_CUENTA_ACTIVA!,
-        }),
     portalOrigen: config.PORTAL_ORIGEN!,
     correoTalentoHumano: config.CORREO_TALENTO_HUMANO!,
     auditoria: { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! },

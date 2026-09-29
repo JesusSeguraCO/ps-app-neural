@@ -1,11 +1,10 @@
-// HU-092 (recuperar el acceso cuando el enlace venció) de punta a punta: el portal standalone real
-// recibe la petición y encola `renovar_enlace`; el worker (en proceso, `ps_worker` real) consulta el
-// doble de HubSpot en sus tres estados y emite el enlace o avisa a una persona por el doble de Mailgun.
+// HU-092 y HU-146 de punta a punta: el portal standalone real recibe la petición y encola
+// `renovar_enlace`; el worker (en proceso, `ps_worker` real) emite el enlace nuevo solo para un correo
+// invitado y avisa SIEMPRE a Talento Humano, por el doble de Mailgun. Sin HubSpot (sponsor, 2026-09-29).
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { hmacCorreo } from "@ps/dominio/acceso/codigo";
 import { generarTokenEnlace, hashTokenEnlace } from "@ps/dominio/enlaces/crear";
-import { DobleHubspot } from "@ps/infra/hubspot/index";
 import { DobleCorreo } from "@ps/infra/mailgun/index";
 import { verificarCadena } from "@ps/infra/postgres/auditoria";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
@@ -20,12 +19,11 @@ import { vuelta, type ContextoDespacho } from "./worker/src/despacho";
 const PORTAL = "https://people.trycore.com";
 const TALENTO = "people.service@trycore.com";
 
-describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido (HU-092)", () => {
+describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido (HU-092, HU-146)", () => {
   let bd: BdPrueba;
   let srv: ServidorPrueba;
   let entorno: Record<string, string>;
   let correo: DobleCorreo;
-  let hubspot: DobleHubspot;
   let ctx: ContextoDespacho;
   const csrf = randomBytes(16).toString("hex");
   const workerEnv = entornoDev("worker");
@@ -62,6 +60,15 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     return { token, enlaceId: e.rows[0].id as string, codigo: e.rows[0].codigo as string };
   }
 
+  async function renovacion(solicitud: string) {
+    const r = await bd.instalacion.query(
+      `SELECT correo, resultado, entrega, avisado_en IS NOT NULL AS avisado, enlace_nuevo IS NOT NULL AS con_nuevo
+         FROM identidad.renovaciones WHERE id = $1`,
+      [solicitud],
+    );
+    return r.rows[0];
+  }
+
   async function estadoPublico(solicitud: string) {
     const r = await srv.pedir(`/api/v1/acceso/renovar/${solicitud}`);
     expect(r.status).toBe(200);
@@ -76,11 +83,6 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
 
   beforeEach(() => {
     correo = new DobleCorreo();
-    hubspot = new DobleHubspot({
-      Activa: { estado: "activa", propietario: "comercial@trycore.com" },
-      Inactiva: { estado: "inactiva", propietario: "duenia@trycore.com" },
-      Caida: "sin_respuesta",
-    });
     ctx = {
       bd: bd.como("ps_worker"),
       correo,
@@ -88,7 +90,6 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
       reclamo: `prueba-${randomBytes(4).toString("hex")}`,
       registrar: () => {},
       renovacion: {
-        hubspot,
         portalOrigen: PORTAL,
         correoTalentoHumano: TALENTO,
         auditoria: { hmac: workerEnv.AUDIT_HMAC_KEY!, kek: workerEnv.AUDIT_KEK! },
@@ -101,7 +102,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     await bd?.cerrar();
   });
 
-  it("HU-092 happy path: invitado + cuenta activa → mensaje neutro; el enlace nuevo llega solo al buzón y abre", async () => {
+  it("HU-092 happy path + HU-146: invitado → mensaje neutro; el enlace nuevo llega solo a su buzón y Talento Humano recibe el aviso", async () => {
     const { token, codigo } = await enlaceVencido("Activa", ["mariana@activa.com"]);
     const r = await post("/api/v1/acceso/renovar", { token, correo: "Mariana@Activa.com" });
     expect(r.status).toBe(202);
@@ -112,13 +113,24 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     expect(await estadoPublico(cuerpo.solicitud)).toBe("pendiente");
 
     expect(await vuelta(ctx)).toBe(1);
-    expect(hubspot.consultas).toEqual(["Activa"]);
-    expect(correo.enviados).toHaveLength(1);
+    expect(correo.enviados.map((x) => x.para)).toEqual(["mariana@activa.com", TALENTO]);
     const m = correo.enviados[0]!;
-    expect(m.para).toBe("mariana@activa.com");
+    const aviso = correo.enviados[1]!;
+    expect(aviso.asunto).toBe("Enlace nuevo pedido: Activa · Modernización de pagos");
+    expect(aviso.texto).toContain("mariana@activa.com");
+    expect(aviso.texto).toContain(codigo);
+    expect(aviso.texto).toMatch(/Se le envió el enlace nuevo ENL-\d{4} a su buzón\./);
+    expect(aviso.texto).not.toMatch(/#t=/);
     const nuevo = m.texto.match(/https:\/\/people\.trycore\.com\/e\/#t=([A-Za-z0-9_-]{43})/)?.[1];
     expect(nuevo).toBeTruthy();
     expect(await estadoPublico(cuerpo.solicitud)).toBe("automatica");
+    expect(await renovacion(cuerpo.solicitud)).toEqual({
+      correo: "mariana@activa.com",
+      resultado: "enlace_enviado",
+      entrega: "enviado",
+      avisado: true,
+      con_nuevo: true,
+    });
 
     // El enlace nuevo abre (vigente), con la misma selección y solo con el invitado que lo pidió.
     const abrir = await post("/api/v1/acceso/enlace", { token: nuevo });
@@ -160,10 +172,13 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     expect(s.solicitud).toBe(primera.solicitud);
     expect(new Date(s.puedes_desde).getTime()).toBeGreaterThan(Date.now() + 10 * 60_000);
     expect(await vuelta(ctx)).toBe(1);
-    expect(correo.enviados).toHaveLength(1);
+    // HU-146 edge: una sola petición y un solo aviso a Talento Humano.
+    expect(correo.enviados.map((x) => x.para)).toEqual(["repite@activa.com", TALENTO]);
+    const n = await bd.instalacion.query(`SELECT count(*)::int n FROM identidad.renovaciones WHERE id = $1 OR correo = 'repite@activa.com'`, [primera.solicitud]);
+    expect(n.rows[0].n).toBe(1);
   });
 
-  it("HU-092 error: quien pide no estaba invitado → la MISMA respuesta y el mismo recorrido; no se genera ni envía nada", async () => {
+  it("HU-092 error + HU-146: quien pide no estaba invitado → la MISMA respuesta; no se le envía nada y Talento Humano se entera", async () => {
     const { token, enlaceId } = await enlaceVencido("Activa", ["si@activa.com"]);
     const invitado = await post("/api/v1/acceso/renovar", { token, correo: "si@activa.com" });
     const noInvitado = await post("/api/v1/acceso/renovar", {
@@ -175,54 +190,36 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     expect(Object.keys(b).sort()).toEqual(Object.keys(a).sort());
     expect(b.estado).toBe(a.estado);
     expect(await vuelta(ctx)).toBe(2);
-    // HubSpot se consultó en las dos ramas: el tiempo del worker no delata la invitación.
-    expect(hubspot.consultas).toEqual(["Activa", "Activa"]);
-    expect(correo.enviados.map((m) => m.para)).toEqual(["si@activa.com"]);
+    expect(correo.enviados.map((m) => m.para)).toEqual(["si@activa.com", TALENTO, TALENTO]);
+    const aviso = correo.enviados[2]!;
+    expect(aviso.asunto).toBe("Enlace nuevo pedido por alguien no invitado: Activa · Modernización de pagos");
+    expect(aviso.texto).toContain("reenviado@activa.com no estaba invitado");
+    expect(aviso.texto).toContain("No se le envió ningún enlace.");
     expect(await estadoPublico(b.solicitud)).toBe(await estadoPublico(a.solicitud));
     const enlaces = await bd.instalacion.query(
       `SELECT count(*)::int n FROM identidad.enlaces WHERE cuenta_nombre = 'Activa' AND vigente_hasta > now() AND id <> $1`,
       [enlaceId],
     );
     expect(enlaces.rows[0].n).toBeGreaterThanOrEqual(1);
-    const r = await bd.instalacion.query(
-      `SELECT resultado FROM identidad.renovaciones WHERE id = $1`,
-      [b.solicitud],
-    );
-    expect(r.rows[0].resultado).toBe("sin_efecto");
+    expect(await renovacion(b.solicitud)).toEqual({
+      correo: "reenviado@activa.com",
+      resultado: "no_invitado",
+      entrega: null,
+      avisado: true,
+      con_nuevo: false,
+    });
   });
 
-  it.each([
-    [
-      "la empresa no figura como cuenta activa",
-      "Inactiva",
-      "duenia@trycore.com",
-      "aviso_propietario",
-      /no figura como cuenta activa/,
-    ],
-    ["HubSpot no responde", "Caida", TALENTO, "aviso_talento", /HubSpot no respondió/],
-  ])(
-    "HU-092 edge: %s → sin enlace automático; la petición llega a %s y se ve que Trycore contactará",
-    async (_c, cuenta, destino, resultado, texto) => {
-      const { token, codigo } = await enlaceVencido(cuenta, ["lider@cliente.com"]);
-      const r = await (
-        await post("/api/v1/acceso/renovar", { token, correo: "lider@cliente.com" })
-      ).json();
-      expect(await vuelta(ctx)).toBe(1);
-      expect(correo.enviados).toHaveLength(1);
-      const m = correo.enviados[0]!;
-      expect(m.para).toBe(destino);
-      expect(m.texto).toMatch(texto);
-      expect(m.texto).toContain("lider@cliente.com");
-      expect(m.texto).toContain(codigo);
-      expect(m.texto).not.toMatch(/#t=/);
-      expect(await estadoPublico(r.solicitud)).toBe("persona");
-      const f = await bd.instalacion.query(
-        `SELECT resultado, enlace_nuevo FROM identidad.renovaciones WHERE id = $1`,
-        [r.solicitud],
-      );
-      expect(f.rows[0]).toEqual({ resultado, enlace_nuevo: null });
-    },
-  );
+  it("HU-146 error: el enlace nuevo no se pudo entregar → la petición queda marcada y Talento Humano avisado", async () => {
+    const { token } = await enlaceVencido("Activa", ["rebota@activa.com"]);
+    const r = await (await post("/api/v1/acceso/renovar", { token, correo: "rebota@activa.com" })).json();
+    correo.programar("definitivo");
+    expect(await vuelta(ctx)).toBe(1);
+    expect(correo.enviados.map((m) => m.para)).toEqual(["rebota@activa.com", TALENTO]);
+    expect(await renovacion(r.solicitud)).toMatchObject({ resultado: "enlace_enviado", entrega: "fallido", avisado: true });
+    // Lo que ve quien pide no cambia.
+    expect(await estadoPublico(r.solicitud)).toBe("automatica");
+  });
 
   it("HU-092 happy path: abrir un enlace vencido dice que venció (410 con la fecha), sin error técnico", async () => {
     const { token } = await enlaceVencido("Activa", ["x@activa.com"]);
@@ -279,7 +276,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     });
     expect(r.status).toBe(202);
     expect(await vuelta(ctx)).toBe(1);
-    expect(correo.enviados.map((m) => m.para)).toEqual(["ses@activa.com"]);
+    expect(correo.enviados.map((m) => m.para)).toEqual(["ses@activa.com", TALENTO]);
   });
 
   it("si Talento Humano revoca el enlace antes de que el worker procese la petición, no se emite nada", async () => {
@@ -288,8 +285,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     await bd.instalacion.query(`UPDATE identidad.enlaces SET estado = 'revocado' WHERE id = $1`, [enlaceId]);
     expect(await vuelta(ctx)).toBe(1);
     expect(correo.enviados).toHaveLength(0);
-    const f = await bd.instalacion.query(`SELECT resultado FROM identidad.renovaciones WHERE id = $1`, [r.solicitud]);
-    expect(f.rows[0].resultado).toBe("sin_efecto");
+    expect(await renovacion(r.solicitud)).toMatchObject({ resultado: "sin_efecto", entrega: null, avisado: false });
   });
 
   it("como ps_worker no se puede insertar un enlace ni un token directamente (V2-6)", async () => {

@@ -6,7 +6,6 @@ import { createHash, randomBytes } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { hmacCorreo } from "@ps/dominio/acceso/codigo";
 import { generarTokenEnlace } from "@ps/dominio/enlaces/crear";
-import { DobleHubspot } from "@ps/infra/hubspot/index";
 import { DobleCorreo } from "@ps/infra/mailgun/index";
 import { verificarCadena } from "@ps/infra/postgres/auditoria";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
@@ -128,7 +127,6 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
         reclamo: `prueba-${randomBytes(3).toString("hex")}`,
         registrar: () => {},
         renovacion: {
-          hubspot: new DobleHubspot(),
           portalOrigen: "https://people.trycore.com",
           correoTalentoHumano: TALENTO,
           auditoria: { hmac: workerEnv.AUDIT_HMAC_KEY!, kek: workerEnv.AUDIT_KEK! },

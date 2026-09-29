@@ -1,6 +1,6 @@
 // GET /api/v1/acceso/renovar/{solicitud} (HU-092): en qué quedó la petición, para elegir la pantalla
-// «Revisa tu buzón» (automatica) o «Recibimos tu petición» (persona). Nunca dice si el correo estaba
-// invitado: `automatica`/`persona` dependen solo de la cuenta del enlace.
+// «Revisa tu buzón» (automatica). Nunca dice si el correo estaba invitado: desde el 2026-09-29 toda
+// petición resuelve igual («persona» solo queda en filas anteriores a la retirada de HubSpot).
 import { z } from "zod";
 import { conBorde, respuestaJson } from "@ps/infra/http/envoltorios";
 import { estadoRenovacion } from "@ps/infra/postgres/renovacion-cliente";
