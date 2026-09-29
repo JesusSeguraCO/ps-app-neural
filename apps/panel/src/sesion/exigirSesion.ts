@@ -14,6 +14,7 @@ export type SesionVerificada = {
   readonly usuarioId: string;
   readonly correo: string;
   readonly rol: RolPanel;
+  readonly hasta: Date;
   readonly [marca]: true;
 };
 
@@ -24,5 +25,5 @@ export const exigirSesion = cache(async (): Promise<SesionVerificada> => {
   const r = validarSesionPanel(fila, new Date());
   if (!r.ok) redirect(destinoSinSesion(r.motivo));
   if (r.refrescarActividad && id) await refrescarActividadPanel(bd, id);
-  return { usuarioId: r.usuarioId, correo: r.correo, rol: r.rol } as SesionVerificada;
+  return { usuarioId: r.usuarioId, correo: r.correo, rol: r.rol, hasta: r.hasta } as SesionVerificada;
 });

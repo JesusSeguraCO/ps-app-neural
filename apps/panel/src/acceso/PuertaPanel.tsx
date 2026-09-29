@@ -10,9 +10,17 @@ type Paso = { tipo: "correo" } | { tipo: "codigo"; correo: string };
 
 const CONTACTO = "talento.humano@trycore.com";
 
-export function PuertaPanel({ sesionTerminada }: { sesionTerminada: boolean }) {
+export function PuertaPanel({
+  sesionTerminada,
+  explicacion,
+  correoInicial = "",
+}: {
+  sesionTerminada: boolean;
+  explicacion?: string; // causa del fin de sesión (explicarFinDeSesion)
+  correoInicial?: string; // correo de la sesión vencida, si aún se conoce
+}) {
   const [paso, setPaso] = useState<Paso>({ tipo: "correo" });
-  const [correo, setCorreo] = useState("");
+  const [correo, setCorreo] = useState(correoInicial);
   const [digitos, setDigitos] = useState<string[]>(Array(6).fill(""));
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -90,7 +98,8 @@ export function PuertaPanel({ sesionTerminada }: { sesionTerminada: boolean }) {
             <h1>{sesionTerminada ? "Tu sesión terminó" : "Entra al panel"}</h1>
             <p className="pa-lead" role="status">
               {sesionTerminada
-                ? "La sesión dura 12 horas y se cierra tras 60 minutos sin actividad. Pide un código nuevo para seguir."
+                ? (explicacion ??
+                  "La sesión dura 12 horas y se cierra tras 60 minutos sin actividad. Pide un código nuevo para seguir.")
                 : "Te enviamos un código de un solo uso. Sin contraseña."}
             </p>
             <div className="pp-campo pa-form">

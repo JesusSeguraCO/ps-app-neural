@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { destinoSinSesion, validarSesionPanel, validarSesionPortal } from "./sesion";
+import {
+  destinoSinSesion,
+  explicarFinDeSesion,
+  validarSesionPanel,
+  validarSesionPortal,
+} from "./sesion";
 
 const AHORA = new Date("2026-09-28T12:00:00Z");
 const min = (m: number) => new Date(AHORA.getTime() + m * 60_000);
@@ -74,6 +79,10 @@ describe("validarSesionPanel (12 h absolutas, 60 min de inactividad, activo y ro
       rol: "administrador",
     });
   });
+  it("la sesión válida dice hasta cuándo dura: 12 h desde que se abrió", () => {
+    const r = validarSesionPanel(viva, AHORA);
+    expect(r.ok && r.hasta.getTime()).toBe(viva.creada.getTime() + 12 * 3_600_000);
+  });
   it("usuario desactivado → sin_sesion en la siguiente petición", () => {
     expect(validarSesionPanel({ ...viva, activo: false }, AHORA)).toEqual({
       ok: false,
@@ -111,5 +120,32 @@ describe("destinoSinSesion (motivo como enum cerrado, sin parámetros de retorno
     ["sesion_expirada", "/acceso?motivo=sesion_expirada"],
   ] as const)("%s → %s", (motivo, destino) => {
     expect(destinoSinSesion(motivo)).toBe(destino);
+  });
+});
+
+describe("explicarFinDeSesion (pantalla panel-acceso--sesion-caducada)", () => {
+  // AHORA de este fichero; las horas se leen en Colombia.
+  it("por las 12 h: dice a qué hora entró hoy", () => {
+    const creada = new Date(AHORA.getTime() - 12 * 3_600_000 - 60_000);
+    const hoyEnColombia = new Date(AHORA.getTime() - 5 * 3_600_000).getUTCDate();
+    const t = explicarFinDeSesion({ creada, ultimaActividad: new Date(AHORA.getTime() - 60_000) }, AHORA);
+    const diaCreada = new Date(creada.getTime() - 5 * 3_600_000).getUTCDate();
+    expect(t).toMatch(
+      diaCreada === hoyEnColombia
+        ? /^Entraste hoy a las \d{1,2}:\d{2} [ap]\. m\. y la sesión dura 12 horas\. Pide un código nuevo para seguir\.$/
+        : /^Entraste el \d{1,2} \w{3} \d{4} a las \d{1,2}:\d{2} [ap]\. m\. y la sesión dura 12 horas\. Pide un código nuevo para seguir\.$/,
+    );
+  });
+  it("por inactividad: lo dice así", () => {
+    const t = explicarFinDeSesion(
+      { creada: new Date(AHORA.getTime() - 2 * 3_600_000), ultimaActividad: new Date(AHORA.getTime() - 61 * 60_000) },
+      AHORA,
+    );
+    expect(t).toBe("La sesión se cerró tras 60 minutos sin actividad. Pide un código nuevo para seguir.");
+  });
+  it("sin sesión conocida: texto general", () => {
+    expect(explicarFinDeSesion(null, AHORA)).toBe(
+      "La sesión dura 12 horas y se cierra tras 60 minutos sin actividad. Pide un código nuevo para seguir.",
+    );
   });
 });

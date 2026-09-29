@@ -1,5 +1,6 @@
 // Revalidación de sesiones (ADR-0002 §2 y «Revisión adversarial» H5): única regla que comparten la
 // guarda de página `exigirSesion` y el envoltorio `conSesion`. Pura, con reloj inyectado.
+import { horaDeColombia } from "../fecha/colombia";
 
 // Cookies por host (`__Host-`: Secure, sin Domain, Path=/). Llevan el identificador; en BD su SHA-256.
 export const COOKIE_PORTAL = "__Host-ps";
@@ -48,7 +49,14 @@ export interface FilaSesionPanel {
 }
 
 export type ResultadoSesionPanel =
-  | { ok: true; usuarioId: string; correo: string; rol: RolPanel; refrescarActividad: boolean }
+  | {
+      ok: true;
+      usuarioId: string;
+      correo: string;
+      rol: RolPanel;
+      hasta: Date; // fin de la jornada (12 h desde que se abrió)
+      refrescarActividad: boolean;
+    }
   | { ok: false; motivo: MotivoSinSesion };
 
 export const DURACION_PANEL_MS = 12 * 60 * 60_000;
@@ -70,6 +78,7 @@ export function validarSesionPanel(
     usuarioId: fila.usuarioId,
     correo: fila.correo,
     rol: fila.rol,
+    hasta: new Date(fila.creada.getTime() + DURACION_PANEL_MS),
     refrescarActividad: t - fila.ultimaActividad.getTime() >= REFRESCO_ACTIVIDAD_MS,
   };
 }
@@ -77,4 +86,21 @@ export function validarSesionPanel(
 // `motivo` es un enum cerrado; ninguna otra query se propaga (sin `?volver=`: redirector abierto).
 export function destinoSinSesion(motivo: MotivoSinSesion): string {
   return motivo === "sin_sesion" ? "/acceso" : `/acceso?motivo=${motivo}`;
+}
+
+// Texto de la pantalla «Tu sesión terminó» (prototipo panel-acceso--sesion-caducada): la causa real
+// si la fila de la sesión vencida aún existe; si no, los dos límites. Sin «vuelves a …»: no hay
+// `?volver=` (redirector abierto, ver destinoSinSesion).
+export function explicarFinDeSesion(
+  fila: Pick<FilaSesionPanel, "creada" | "ultimaActividad"> | null,
+  ahora: Date,
+): string {
+  const seguir = "Pide un código nuevo para seguir.";
+  if (!fila) return `La sesión dura 12 horas y se cierra tras 60 minutos sin actividad. ${seguir}`;
+  if (ahora.getTime() - fila.creada.getTime() < DURACION_PANEL_MS)
+    return `La sesión se cerró tras 60 minutos sin actividad. ${seguir}`;
+  const [dia, hora] = horaDeColombia(fila.creada).split(", ");
+  const hoy = horaDeColombia(ahora).split(", ")[0];
+  const cuando = dia === hoy ? `hoy a las ${hora}` : `el ${dia} a las ${hora}`;
+  return `Entraste ${cuando} y la sesión dura 12 horas. ${seguir}`;
 }

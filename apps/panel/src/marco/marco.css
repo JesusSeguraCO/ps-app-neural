@@ -1,0 +1,4 @@
+/* Composición propia del marco (prefijo mp-): secciones sin caja y destinos aún no construidos. */
+.mp-seccion { display: contents; }
+.mp-sidelink--inactivo { cursor: default; opacity: 0.55; }
+.mp-sidelink--inactivo:hover { background: none; color: var(--tc-navy-ink); }

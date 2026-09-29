@@ -17,18 +17,11 @@ export interface OpcionesCodigo {
   detalle?: string;
 }
 
+import { horaDeColombia } from "../fecha/colombia";
+
+export { horaDeColombia };
+
 const escapar = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-
-const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-
-// «27 sep 2026, 8:05 a. m.» en America/Bogota (UTC-5 todo el año, sin horario de verano).
-export function horaDeColombia(fecha: Date): string {
-  const d = new Date(fecha.getTime() - 5 * 3_600_000);
-  const h = d.getUTCHours();
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  const min = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${h12}:${min} ${h < 12 ? "a. m." : "p. m."}`;
-}
 
 const T = {
   canvas: "#F6F7FA",

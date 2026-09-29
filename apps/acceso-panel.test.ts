@@ -107,7 +107,19 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
     const sesion = setCookie.split(";")[0]!;
     const inicio = await srv.pedir("/", { headers: { cookie: sesion } });
     expect(inicio.status).toBe(200);
-    expect(await inicio.text()).toContain("ana@trycore.com");
+    const html = await inicio.text();
+    expect(html).toContain("ana@trycore.com");
+    // Marco del panel (admin-shell): menú canónico de 12 destinos, deshabilitados hasta su épica.
+    const destinos = [
+      "Inventario", "Importar", "Vigencia", "Catálogos", "Léxico",
+      "Enlaces", "Peticiones", "Colocados", "Demanda",
+      "Medición", "Envíos", "Fallos",
+    ];
+    for (const d of destinos) expect(html, d).toMatch(new RegExp(`aria-disabled="true"[^>]*>(<svg[\\s\\S]*?</svg>)?${d}<`));
+    expect(html.match(/class="pp-sidelink[^"]*"[^>]*aria-disabled="true"/g)?.length).toBe(12);
+    expect(html).toContain("Administración de inventario");
+    expect(html).toMatch(/Sesión hasta las \d{1,2}:\d{2}(\s|&nbsp;)[ap]\. m\./);
+    expect(html).toContain("Cerrar sesión");
     // El código sirve una vez.
     expect(
       (await post("/api/v1/acceso/verificar", { correo: "ana@trycore.com", codigo })).status,
@@ -286,6 +298,18 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
     const r = await srv.pedir("/", { headers: { cookie: `__Host-pp=${id}` } });
     expect(r.status).toBe(307);
     expect(r.headers.get("location")).toContain("/acceso?motivo=sesion_expirada");
+    // La puerta explica la causa real y precarga el correo de la sesión vencida.
+    const puerta = await srv.pedir("/acceso?motivo=sesion_expirada", {
+      headers: { cookie: `__Host-pp=${id}` },
+    });
+    const html = await puerta.text();
+    expect(html).toMatch(/Entraste (hoy|el [^<]+) a las \d{1,2}:\d{2}/);
+    expect(html).toContain("y la sesión dura 12 horas");
+    expect(html).toMatch(/value="ana@trycore\.com"/);
+    // Sin cookie: texto general y campo vacío.
+    const sinCookie = await (await srv.pedir("/acceso?motivo=sesion_expirada")).text();
+    expect(sinCookie).toContain("La sesión dura 12 horas y se cierra tras 60 minutos sin actividad.");
+    expect(sinCookie).not.toContain("ana@trycore.com");
   });
 
   it("HU-123 el panel no se alcanza desde el portal: nada del portal apunta al host del panel", () => {
