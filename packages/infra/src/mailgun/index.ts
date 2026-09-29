@@ -62,12 +62,15 @@ export function enviadorMailgun(opciones: {
 
 // Doble declarado (`DOBLES=mailgun`, solo local y CI): guarda los mensajes y devuelve los
 // resultados programados (por omisión «ok»). En local también los escribe en un directorio para
-// poder leer el código de acceso sin buzón real.
+// poder leer el código de acceso sin buzón real. `latenciaMs` simula un Mailgun lento (V2-4: 3-5 s).
 export class DobleCorreo implements EnviadorCorreo {
   readonly enviados: Mensaje[] = [];
   private readonly programados: ResultadoEnvio[] = [];
 
-  constructor(private readonly alEnviar?: (m: Mensaje) => void) {}
+  constructor(
+    private readonly alEnviar?: (m: Mensaje) => void,
+    private readonly latenciaMs?: readonly [number, number],
+  ) {}
 
   programar(...resultados: ResultadoEnvio[]): this {
     this.programados.push(...resultados);
@@ -75,8 +78,22 @@ export class DobleCorreo implements EnviadorCorreo {
   }
 
   async enviar(m: Mensaje): Promise<ResultadoMensaje> {
+    if (this.latenciaMs) {
+      const [min, max] = this.latenciaMs;
+      await new Promise((r) => setTimeout(r, min + Math.random() * (max - min)));
+    }
     this.enviados.push(m);
     this.alEnviar?.(m);
     return { resultado: this.programados.shift() ?? "ok" };
   }
+}
+
+// `DOBLE_MAILGUN_LATENCIA_MS=3000-5000`: latencia del doble para las pruebas de tiempos (V2-4). Solo
+// tiene efecto donde el doble está declarado (local y CI); nunca cambia el Mailgun real.
+export function latenciaDelDoble(valor: string | undefined): [number, number] | undefined {
+  const m = valor?.match(/^(\d+)-(\d+)$/);
+  if (!m) return undefined;
+  const min = Number(m[1]);
+  const max = Number(m[2]);
+  return max >= min ? [min, max] : undefined;
 }

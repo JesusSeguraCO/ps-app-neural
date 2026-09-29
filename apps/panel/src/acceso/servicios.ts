@@ -1,7 +1,7 @@
 // Dependencias de los Route Handlers de acceso del panel (configuración, BD, correo).
 import "server-only";
 import { cargarConfiguracion, doblesDe } from "@ps/infra/config";
-import { DobleCorreo, enviadorMailgun, type EnviadorCorreo } from "@ps/infra/mailgun/index";
+import { DobleCorreo, enviadorMailgun, latenciaDelDoble, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { poolDe } from "@ps/infra/postgres/pool";
 
 let correo: EnviadorCorreo | undefined;
@@ -9,7 +9,10 @@ let correo: EnviadorCorreo | undefined;
 export function servicios() {
   const config = cargarConfiguracion("panel");
   correo ??= doblesDe(config).has("mailgun")
-    ? new DobleCorreo((m) => console.log(JSON.stringify({ evento: "correo_doble", para: m.para, asunto: m.asunto, texto: m.texto })))
+    ? new DobleCorreo(
+        (m) => console.log(JSON.stringify({ evento: "correo_doble", para: m.para, asunto: m.asunto, texto: m.texto })),
+        latenciaDelDoble(process.env.DOBLE_MAILGUN_LATENCIA_MS),
+      )
     : enviadorMailgun({ clave: config.MAILGUN_SENDING_KEY!, dominio: config.MAILGUN_DOMAIN! });
   return {
     bd: poolDe("panel"),
