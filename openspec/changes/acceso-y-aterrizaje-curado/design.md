@@ -52,6 +52,14 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 - **Sesión caducada**: sin «Al entrar vuelves a …»; no hay `?volver=` (redirector abierto, ADR-0002).
 - **Pie de la puerta en móvil**: objetivo táctil de 44 px (M-2) baja el pie unos 12 px.
 
+### Sub-slice 4 (generación y revocación de enlaces)
+
+- **Cuenta e invitados a mano**: sin «Cambiar» contra HubSpot ni «contacto en el CRM» (sponsor, 2026-09-28; HU-122 escenario 4).
+- **Enlace `/e/#t=<token>`**, mostrado una sola vez con «Cópialo ahora»; el prototipo pinta `/e/<token>` (E-8).
+- **Sin aperturas** en el registro de enlaces hasta el sub-slice 5 (el acceso del cliente las escribe); sin paginación mientras haya pocos enlaces.
+- **Correo en lugar de nombre** de quien generó o revocó (no hay nombre en `usuarios_panel`).
+- **Selector de perfiles publicados propio** en «Añadir desde el inventario»; el inventario completo es de EP-006.
+
 ## Risks / Trade-offs
 
 - [EP-001 es muy grande: 7 sub-slices y casi todo el monorepo] → un sub-slice por vez, checkpoint en el hub al cerrar cada uno y `journey_smoke` verde entre ellos; el `files_scope` amplio es aceptable porque es épica fundacional y nunca va en paralelo.
