@@ -38,3 +38,13 @@ export function bandaDeDisponibilidad(
   if (dias <= 30) return "un_mes";
   return "mas_de_un_mes";
 }
+
+// Rótulos del PRD (RF-3.13; decisión del sponsor 2026-09-28: mandan sobre los del prototipo).
+export const ROTULO_BANDA: Record<Banda, string> = {
+  inmediato: "Inmediato",
+  una_semana: "1 semana",
+  dos_semanas: "2 semanas",
+  un_mes: "1 mes",
+  mas_de_un_mes: "Más de 1 mes",
+  por_confirmar: "Por confirmar",
+};

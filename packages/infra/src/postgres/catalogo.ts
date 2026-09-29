@@ -61,3 +61,30 @@ export async function proyeccionCatalogo(
   );
   return proyectar(r.rows, ahora);
 }
+
+export interface PublicablePanel {
+  codigo: string;
+  nombre: string;
+  rol: string | null;
+  familia: string | null;
+  ciudad: string | null;
+  banda: ReturnType<typeof bandaDeDisponibilidad>;
+}
+
+// Para elegir perfiles al generar un enlace (panel, uso interno): los publicables con su rol
+// principal, familia, ciudad y banda. La fecha no sale ni en el panel: solo la banda.
+export async function publicablesParaPanel(bd: pg.Pool, ahora: Date = new Date()): Promise<PublicablePanel[]> {
+  const r = await bd.query<FilaCatalogo>(
+    `SELECT codigo, nombre, primer_apellido, familia, roles, ciudad,
+            disponibilidad_fecha::text AS disponibilidad_fecha, disponibilidad_actualizada_en
+       FROM operacion.catalogo_publicable ORDER BY codigo`,
+  );
+  return r.rows.map((f) => ({
+    codigo: f.codigo,
+    nombre: `${f.nombre} ${f.primer_apellido}`,
+    rol: f.roles[0] ?? null,
+    familia: f.familia,
+    ciudad: (f as FilaCatalogo & { ciudad: string | null }).ciudad,
+    banda: bandaDeDisponibilidad({ fecha: f.disponibilidad_fecha, actualizadaEn: f.disponibilidad_actualizada_en }, ahora),
+  }));
+}

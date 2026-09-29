@@ -43,7 +43,7 @@ describe("crearEnlace (HU-122, RF-19.4)", () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.errores).toEqual([
-      { tipo: "sin_razon", mensaje: "Sin razón, el cliente recibe un catálogo y no una curaduría. Escribe por qué elegiste estos perfiles." },
+      { tipo: "sin_razon", mensaje: "Escribe la razón: sin ella el cliente recibe un catálogo y no una curaduría." },
     ]);
   });
 

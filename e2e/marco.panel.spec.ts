@@ -45,7 +45,7 @@ test.describe("marco del panel con sesión", () => {
     await abrirSesion(context, baseURL!);
   });
 
-  test("escritorio 1440: barra lateral y contenido en dos columnas, 12 destinos deshabilitados", async ({
+  test("escritorio 1440: barra lateral y contenido en dos columnas, 11 destinos deshabilitados y Enlaces activo", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,8 +71,8 @@ test.describe("marco del panel con sesión", () => {
     expect(m.display).toBe("grid");
     expect(m.lateralAncho).toBeLessThan(400);
     expect(m.cuerpoALaDerecha).toBe(true);
-    expect(m.inactivos).toBe(12);
-    expect(m.conHref).toBe(0);
+    expect(m.inactivos).toBe(11);
+    expect(m.conHref).toBe(1); // Enlaces (EP-001 sub-slice 4)
     expect(m.scroll).toBe(0);
     expect(errores).toEqual([]);
   });
@@ -112,4 +112,30 @@ test.describe("marco del panel con sesión", () => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/acceso/);
   });
+});
+
+test.describe("pantallas de enlaces con sesión (HU-122, tarea 4.3/4.4)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  for (const ruta of ["/enlaces", "/enlaces/nuevo"]) {
+    test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
+      const errores: string[] = [];
+      page.on("console", (m) => {
+        if (m.type() === "error") errores.push(m.text());
+      });
+      await page.goto(ruta);
+      const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(graves.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+      for (const ancho of [320, 390]) {
+        await page.setViewportSize({ width: ancho, height: 800 });
+        const scroll = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
+        expect(scroll, `${ruta} a ${ancho}`).toBe(0);
+      }
+      expect(errores).toEqual([]);
+    });
+  }
 });

@@ -222,10 +222,10 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("generar enlace desde el panel (H
   });
 
   describe("revocar un enlace (tarea 4.4)", () => {
-    const revocar = (codigo: string, cookieSesion = sesionAdmin) =>
+    const revocar = (codigo: string, cookieSesion = sesionAdmin, cuerpo: unknown = {}) =>
       srv.pedir(`/api/v1/enlaces/${codigo}/revocar`, {
         method: "POST",
-        body: "{}",
+        body: JSON.stringify(cuerpo),
         headers: {
           "content-type": "application/json",
           origin: srv.url,
@@ -246,7 +246,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("generar enlace desde el panel (H
       const portal = bd.como("ps_portal");
       expect(validarSesionPortal(await buscarSesionPortal(portal, idCookie), new Date()).ok).toBe(true);
 
-      const r = await revocar(enlace.codigo);
+      const r = await revocar(enlace.codigo, sesionAdmin, { motivo: "La cuenta pausó el proyecto" });
       expect(r.status).toBe(200);
       expect(await r.json()).toMatchObject({ enlace: { codigo: enlace.codigo, estado: "revocado" } });
 
@@ -258,6 +258,11 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("generar enlace desde el panel (H
         [e.id],
       );
       expect(a.rows).toEqual([{ actor: "karen@trycore.com", campo: "estado", origen: "revocacion" }]);
+      const m = await bd.instalacion.query(
+        `SELECT count(*)::int n FROM auditoria.auditoria WHERE entidad_id = $1 AND campo = 'motivo_revocacion'`,
+        [e.id],
+      );
+      expect(m.rows[0].n).toBe(1);
     });
 
     it("revocar dos veces no audita de nuevo (409)", async () => {

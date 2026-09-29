@@ -98,6 +98,7 @@ export async function revocarEnlace(
   claves: ClavesAuditoria,
   autora: Autora,
   codigo: string,
+  motivo: string | null = null,
 ): Promise<ResultadoRevocacion> {
   return conAuditoria<ResultadoRevocacion>(bd, claves, async (tx) => {
     const r = await tx.query(
@@ -128,7 +129,102 @@ export async function revocarEnlace(
           despues: "revocado",
           origen: "revocacion",
         },
+        ...(motivo?.trim()
+          ? [
+              {
+                actor: autora.correo,
+                entidad: "enlaces",
+                entidadId: e.id,
+                campo: "motivo_revocacion",
+                antes: null,
+                despues: motivo.trim(),
+                origen: "revocacion" as const,
+              },
+            ]
+          : []),
       ],
     };
   });
+}
+
+export type EstadoEnlace = "vigente" | "vencido" | "revocado";
+
+export interface FilaEnlace {
+  codigo: string;
+  cuenta: string;
+  proyecto: string | null;
+  sinSeleccion: boolean;
+  invitados: string[];
+  generadoPor: string;
+  generadoEn: Date;
+  vigenteDesde: Date;
+  vigenteHasta: Date;
+  estado: EstadoEnlace;
+  revocadoEn: Date | null;
+  revocadoPor: string | null;
+}
+
+export interface PerfilDeEnlace {
+  codigo: string;
+  nombre: string | null;
+  rol: string | null;
+  estado: EstadoPublico | "desconocido";
+}
+
+export interface DetalleEnlace extends FilaEnlace {
+  razon: string;
+  perfiles: PerfilDeEnlace[];
+}
+
+const SELECT_ENLACE = `
+  SELECT e.codigo, e.cuenta_nombre AS cuenta, e.proyecto, cardinality(e.codigos_perfil) = 0 AS sin_seleccion,
+         COALESCE((SELECT array_agg(i.correo ORDER BY i.creado_en, i.correo) FROM identidad.enlace_invitados i
+                    WHERE i.enlace_id = e.id AND i.activo), '{}') AS invitados,
+         g.correo AS generado_por, e.creado_en AS generado_en, e.vigente_desde, e.vigente_hasta, e.revocado_en,
+         r.correo AS revocado_por, e.razon, e.codigos_perfil,
+         CASE WHEN e.estado = 'revocado' THEN 'revocado' WHEN e.vigente_hasta <= now() THEN 'vencido' ELSE 'vigente' END AS estado
+    FROM identidad.enlaces e
+    JOIN identidad_panel.usuarios_panel g ON g.id = e.generado_por
+    LEFT JOIN identidad_panel.usuarios_panel r ON r.id = e.revocado_por`;
+
+function aFila(f: Record<string, unknown>): FilaEnlace {
+  return {
+    codigo: f.codigo as string,
+    cuenta: f.cuenta as string,
+    proyecto: f.proyecto as string | null,
+    sinSeleccion: f.sin_seleccion as boolean,
+    invitados: f.invitados as string[],
+    generadoPor: f.generado_por as string,
+    generadoEn: f.generado_en as Date,
+    vigenteDesde: f.vigente_desde as Date,
+    vigenteHasta: f.vigente_hasta as Date,
+    estado: f.estado as EstadoEnlace,
+    revocadoEn: f.revocado_en as Date | null,
+    revocadoPor: f.revocado_por as string | null,
+  };
+}
+
+// Registro de enlaces del panel (prototipo enlaces-acceso), del más reciente al más antiguo.
+export async function listarEnlaces(bd: pg.Pool): Promise<FilaEnlace[]> {
+  const r = await bd.query(`${SELECT_ENLACE} ORDER BY e.creado_en DESC, e.codigo DESC`);
+  return r.rows.map(aFila);
+}
+
+export async function detalleEnlace(bd: pg.Pool, codigo: string): Promise<DetalleEnlace | null> {
+  const r = await bd.query(`${SELECT_ENLACE} WHERE e.codigo = $1`, [codigo]);
+  const f = r.rows[0];
+  if (!f) return null;
+  const codigos = f.codigos_perfil as string[];
+  const p = await bd.query(
+    `SELECT c.codigo, pf.nombre || ' ' || pf.primer_apellido AS nombre,
+            (SELECT cr.nombre FROM inventario.perfil_roles pr JOIN inventario.catalogo_roles cr ON cr.id = pr.valor_id
+              WHERE pr.perfil_id = pf.id ORDER BY pr.orden LIMIT 1) AS rol,
+            COALESCE(ee.estado, 'desconocido') AS estado
+       FROM unnest($1::text[]) WITH ORDINALITY AS c(codigo, orden)
+       LEFT JOIN inventario.perfiles pf ON pf.codigo = c.codigo
+       LEFT JOIN operacion.estado_enlace_perfil ee ON ee.codigo = c.codigo
+      ORDER BY c.orden`,
+    [codigos],
+  );
+  return { ...aFila(f), razon: f.razon as string, perfiles: p.rows as PerfilDeEnlace[] };
 }

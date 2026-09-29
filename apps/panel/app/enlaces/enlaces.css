@@ -1,0 +1,110 @@
+/* Composición propia del generador (prefijo ge-), portada de docs/05-prototipo/pantallas/generador-enlace.html. */
+.ge-form { max-width: 880px; padding: var(--tc-sp-6); }
+.ge-form .pp-form-fila { grid-template-columns: 200px minmax(0, 560px); }
+.ge-form .pp-filas { box-shadow: none; }
+.ge-form .pp-fila { padding: var(--tc-sp-3) var(--tc-sp-4); align-items: center; }
+.ge-form .pp-fila__titulo { font-size: var(--tc-fs-small); }
+.ge-form .pp-filas__cabecera { min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-4); }
+.ge-form .pp-vacio { padding: var(--tc-sp-5) var(--tc-sp-4); }
+.ge-form .ge-fila__rol { font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); }
+.ge-fila__nombre { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+.ge-fila--compacta .pp-fila__principal { flex: 1; min-width: 0; }
+.ge-fila--compacta .pp-fila__titulo { display: block; min-width: 0; }
+.ge-fila--compacta .ge-trunc { display: block; }
+.ge-fila--compacta .pp-fila__meta { overflow-wrap: anywhere; }
+.ge-fila--compacta .pp-fila__acciones { flex: none; }
+.ge-trunc { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ge-valor { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); margin: 0; min-height: 40px; padding-top: var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+.ge-valor .pp-enlace { font-size: var(--tc-fs-small); }
+.ge-fila--error .pp-fila__titulo { color: var(--tc-text-b); }
+.ge-fila__error { grid-column: 1 / -1; }
+.ge-anadir { display: flex; gap: var(--tc-sp-2); align-items: flex-start; }
+.ge-anadir .pp-input { flex: 1; min-width: 0; }
+.ge-vigencia { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+.ge-vigencia .pp-input { width: 96px; font-variant-numeric: tabular-nums; }
+.ge-form .pp-form__acciones { align-items: center; margin-top: 0; }
+.ge-pie-error { margin-right: auto; }
+.ge-url { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+.ge-url__texto { flex: 1 1 260px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--pp-mono); font-size: var(--tc-fs-small); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+.ge-perfiles-emitidos li { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--tc-sp-3); padding: var(--tc-sp-1) 0; }
+.ge-perfiles-emitidos .pp-mono { font-size: var(--tc-fs-caption); color: var(--tc-text-m); line-height: var(--tc-lh-body); }
+.ge-num { font-variant-numeric: tabular-nums; }
+.ge-razon { max-width: 64ch; margin: 0; line-height: var(--tc-lh-body); }
+@media (max-width: 767px) {
+  .ge-form { padding: var(--tc-sp-4); }
+  .ge-form .pp-form-fila { grid-template-columns: minmax(0, 1fr); }
+  .ge-form .pp-fila__acciones { justify-content: flex-start; }
+  .ge-form .pp-form__acciones .pp-btn { flex: 1 1 auto; }
+  .ge-pie-error { flex-basis: 100%; }
+  .ge-form .ge-fila--compacta { grid-template-columns: minmax(0, 1fr); }
+  .ge-perfiles-emitidos li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+/* Selector de perfiles publicados («Añadir desde el inventario»): propio, el inventario completo es de EP-006. */
+.ge-selector { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); background: var(--tc-surface-quiet); }
+.ge-candidatos { display: grid; gap: var(--tc-sp-1); max-height: 280px; overflow-y: auto; }
+.ge-candidato { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 40px; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+.ge-candidatos__vacio { padding: var(--tc-sp-2) 0; }
+@media (max-width: 767px) { .ge-candidato { min-height: 44px; } }
+/* Enlaces de acción que no navegan: botones con el aspecto de .pp-enlace. */
+.ge-accion { display: inline-flex; align-items: center; min-height: 32px; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; }
+@media (max-width: 767px) { .ge-accion { min-height: 44px; } }
+/* Registro de enlaces (prefijo ea-), portado de docs/05-prototipo/pantallas/enlaces-acceso.html. */
+.ea-tabla-marco { max-height: none; }
+.ea-tabla { min-width: 0; }
+.ea-tabla .ea-col-num { text-align: right; }
+.ea-cuenta { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); text-decoration: none; }
+.ea-cuenta:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ea-corta { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ea-cero { color: var(--tc-text-s); }
+.ea-tabla .pp-mono { white-space: nowrap; }
+.ea-movil { display: none; }
+
+.ea-detalle { margin-top: var(--tc-sp-10); padding-top: var(--tc-sp-8); border-top: 1px solid var(--tc-border); }
+.ea-detalle__cabecera { margin-bottom: var(--tc-sp-6); }
+.ea-detalle__titulo { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+.ea-detalle__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+.ea-principal { display: grid; gap: var(--tc-sp-8); min-width: 0; }
+.ea-principal .pp-seccion + .pp-seccion { margin-top: 0; }
+.ea-lateral { display: grid; gap: var(--tc-sp-8); min-width: 0; }
+.ea-razon { max-width: 68ch; line-height: var(--tc-lh-body); }
+
+.ea-filas .pp-fila { padding: var(--tc-sp-3) var(--tc-sp-4); align-items: center; }
+.ea-fila-perfil { grid-template-columns: 72px minmax(0, 1fr) auto; }
+.ea-fila__codigo { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.ea-fila__nombre { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); line-height: var(--tc-lh-h3); }
+.ea-fila__lado { display: grid; justify-items: end; gap: var(--tc-sp-1); text-align: right; }
+.ea-correo { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+.ea-conteo { font-size: var(--tc-fs-small); color: var(--tc-text-h); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ea-conteo--cero { color: var(--tc-text-s); }
+
+.ea-actividad { gap: var(--tc-sp-3); }
+.ea-actividad .pp-actividad__item { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.ea-actividad .pp-actividad__texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; overflow-wrap: normal; }
+.ea-revocar__texto { margin: 0 0 var(--tc-sp-4); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+.ea-revocar .pp-form { gap: var(--tc-sp-4); }
+.ea-revocar .pp-form__acciones { padding-top: 0; border-top: 0; }
+
+@media (max-width: 1023px) {
+  .ea-col-genero { display: none; }
+  .ea-tabla th, .ea-tabla td { padding-left: var(--tc-sp-3); padding-right: var(--tc-sp-3); }
+  .ea-corta { max-width: 136px; }
+}
+@media (max-width: 767px) {
+  /* Tabla → filas apiladas: cuenta + estado, y vigencia debajo. El resto vive en el detalle. */
+  .ea-tabla, .ea-tabla tbody { display: block; }
+  .ea-tabla thead { display: none; }
+  .ea-tabla tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--tc-sp-1) var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+  .ea-tabla tbody tr:last-child { border-bottom: 0; }
+  .ea-tabla tbody th, .ea-tabla tbody td { padding: 0; border-bottom: 0; }
+  .ea-tabla .ea-col-invitados, .ea-tabla .ea-col-genero, .ea-tabla .ea-col-num { display: none; }
+  .ea-tabla .ea-col-estado { grid-column: 2; grid-row: 1; align-self: start; }
+  .ea-tabla .ea-col-vigencia { grid-column: 1 / -1; }
+  .ea-tabla .ea-col-vigencia .pp-tabla__perfil { display: inline; font-weight: var(--tc-fw-regular); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+  .ea-tabla .ea-col-vigencia .pp-tabla__sub { display: inline; }
+  .ea-movil { display: inline; }
+  .ea-fila-perfil { grid-template-columns: minmax(0, 1fr); }
+  .ea-filas .pp-fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); }
+  .ea-fila__lado { justify-items: start; text-align: left; }
+  .ea-actividad .pp-actividad__item { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ea-detalle { margin-top: var(--tc-sp-8); padding-top: var(--tc-sp-6); }
+}

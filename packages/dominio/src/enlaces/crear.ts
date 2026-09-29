@@ -56,7 +56,7 @@ export function crearEnlace(
   if (!razon)
     errores.push({
       tipo: "sin_razon",
-      mensaje: "Sin razón, el cliente recibe un catálogo y no una curaduría. Escribe por qué elegiste estos perfiles.",
+      mensaje: "Escribe la razón: sin ella el cliente recibe un catálogo y no una curaduría.",
     });
 
   const codigos = unicos(e.codigos.map((c) => c.trim()));
