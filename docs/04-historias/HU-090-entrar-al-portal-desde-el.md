@@ -102,6 +102,8 @@ Los plazos concretos del código y de la espera tras el bloqueo los calibra Tecn
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · D-4 revisada · ADR-0002 (UC-1, QA-3) · backlog T-18, CRN-13 · orden de construcción: primera historia de la cara cliente de EP-001; no depende de otra historia (el enlace con invitados se siembra en pruebas sin esperar a HU-122)
 
 ## INVEST

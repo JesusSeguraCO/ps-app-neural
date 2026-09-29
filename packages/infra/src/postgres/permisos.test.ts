@@ -224,6 +224,49 @@ describe.skipIf(!HAY_BD)("permisos de identidad y cola (V2-2, V9-10)", () => {
         ),
       ).toBe(EXCEPCION);
     });
+    it("encolar_portal('renovar_enlace') (enmienda de ADR-0009): solo con una renovación existente y sin resolver", async () => {
+      const renovacion = (
+        await portal.query(
+          `INSERT INTO identidad.renovaciones (enlace_id, correo_hmac) VALUES ($1, '\\x03') RETURNING id`,
+          [enlaceId],
+        )
+      ).rows[0].id;
+      const r = await portal.query(
+        `SELECT operacion.encolar_portal('renovar_enlace', $1::jsonb) AS id`,
+        [JSON.stringify({ renovacion })],
+      );
+      const fila = await bd.instalacion.query(
+        `SELECT origen FROM operacion.trabajos WHERE id = $1`,
+        [r.rows[0].id],
+      );
+      expect(fila.rows[0].origen).toBe("portal");
+      await bd.instalacion.query(
+        `UPDATE identidad.renovaciones SET resultado = 'sin_efecto', publico = 'persona', resuelta_en = now() WHERE id = $1`,
+        [renovacion],
+      );
+      for (const payload of [
+        { renovacion },
+        { renovacion: "00000000-0000-0000-0000-000000000000" },
+        { renovacion: "no-uuid" },
+        { renovacion, extra: 1 },
+      ]) {
+        expect(
+          await codigoDeError(
+            portal.query(`SELECT operacion.encolar_portal('renovar_enlace', $1::jsonb)`, [
+              JSON.stringify(payload),
+            ]),
+          ),
+          JSON.stringify(payload),
+        ).toBe(EXCEPCION);
+      }
+      expect(
+        await codigoDeError(
+          panel.query(`SELECT operacion.encolar_panel('renovar_enlace', $1::jsonb)`, [
+            JSON.stringify({ renovacion }),
+          ]),
+        ),
+      ).toBe(EXCEPCION);
+    });
     it("encolar_panel('enviar_codigo', ambito panel) deja origen panel; ambito cliente → excepción", async () => {
       const r = await panel.query(
         `SELECT operacion.encolar_panel('enviar_codigo', $1::jsonb) AS id`,

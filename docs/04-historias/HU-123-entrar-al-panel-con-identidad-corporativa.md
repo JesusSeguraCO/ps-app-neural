@@ -63,6 +63,8 @@ Cubre **RF-8.1**, **RF-8.1.1**, **RF-8.1.3**, **RF-8.1.4**, **RF-8.1.5** y **RF-
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** (antes EP-006, reasignada por T-19) · PRD v4.13 · D-22 · ADR-0002 (UC-9, QA-4) · ADR-0008 (sub-slice 2 de EP-001) · habilita HU-122 y EP-006
 
 ## INVEST

@@ -66,6 +66,6 @@
 
 ## 8. Cierre de la épica caparazón
 
-- [ ] 8.1 Checklist de caparazón con evidencia de ejecución real: navegación y menús, layout del panel central, login (portal y panel), redirecciones y guardas; verificar que cada ítem tiene evidencia enlazada
-- [ ] 8.2 Registrar la enmienda de ADR-0009 (`renovar_enlace` en la lista blanca) en `docs/adr/_backlog-arquitectonico.md`; verificar que el tablero la cita
-- [ ] 8.3 Referencias de vuelta `> OpenSpec change: acceso-y-aterrizaje-curado` en EP-001 y en las 10 HU; verificar con `change-epic-coherence`
+- [x] 8.1 Checklist de caparazón con evidencia de ejecución real: navegación y menús, layout del panel central, login (portal y panel), redirecciones y guardas; verificar que cada ítem tiene evidencia enlazada
+- [x] 8.2 Registrar la enmienda de ADR-0009 (`renovar_enlace` en la lista blanca) en `docs/adr/_backlog-arquitectonico.md`; verificar que el tablero la cita
+- [x] 8.3 Referencias de vuelta `> OpenSpec change: acceso-y-aterrizaje-curado` en EP-001 y en las 10 HU; verificar con `change-epic-coherence`

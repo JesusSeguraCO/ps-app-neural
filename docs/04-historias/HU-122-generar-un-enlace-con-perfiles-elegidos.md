@@ -83,6 +83,8 @@ Cubre **RF-19.1**, **RF-19.3**, **RF-19.4**, **RF-19.5**, **RF-19.7**, **RF-1.2.
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002/0003 (UC-3) · depende de HU-123 · orden de construcción: HU-123 → HU-122 (sub-slices de EP-001 en ADR-0008: el login del panel antes de la generación del enlace) · habilita HU-144 · se relaciona con EP-011 (el correo es un vehículo para estos enlaces)
 
 ## INVEST

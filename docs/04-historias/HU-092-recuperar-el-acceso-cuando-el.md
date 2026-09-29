@@ -88,6 +88,8 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002 (UC-1, estados de enlace vencido y revocado) · RF-9.5 / RF-9.7.1 (canal del aviso) · depende de HU-090 · orden de construcción: después de HU-090
 
 ## INVEST

@@ -17,6 +17,8 @@ prd_version_alineada: 4.13
 
 ## EP-001 — Acceso y aterrizaje curado
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 **Resumen.** El cliente llega desde el correo, supera el control de acceso y aterriza frente a los mismos perfiles que le propusimos, presentados como selección con su razón declarada.
 
 **Justificación.** Es el primer contacto con el producto y el punto donde se gana o se pierde la percepción de curaduría. Si el aterrizaje muestra un grid genérico, el correo pierde su valor y el trabajo de selección de Mercadeo se vuelve invisible.
