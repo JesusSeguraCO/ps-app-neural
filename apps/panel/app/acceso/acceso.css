@@ -8,7 +8,7 @@
     .pa-codigo-bloque .pp-codigo { margin: 0; }
     .pa-codigo-bloque .pp-codigo legend { margin-bottom: var(--tc-sp-2); }
     .pa-enviar { margin-top: var(--tc-sp-6); }
-    .pa-enlaces { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); font-size: var(--tc-fs-small); }
+    .pa-enlaces { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); font-size: var(--tc-fs-small); }
     .pa-enlaces a { display: inline-flex; align-items: center; min-height: 32px; }
     .pa-pie { margin: var(--tc-sp-6) 0 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
     .pa-pie a { overflow-wrap: anywhere; }
