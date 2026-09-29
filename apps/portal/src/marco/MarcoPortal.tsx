@@ -42,7 +42,7 @@ export function MarcoPortal(props: {
         </nav>
         <span className="pp-equipo" aria-disabled="true">
           {"Mi equipo "}
-          <span className="pp-equipo__conteo" aria-hidden="true">
+          <span className={`pp-equipo__conteo${props.enEquipo === 0 ? " pp-equipo__conteo--cero" : ""}`} aria-hidden="true">
             {props.enEquipo}
           </span>
           <span className="pp-sr">

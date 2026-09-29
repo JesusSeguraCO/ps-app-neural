@@ -3,7 +3,8 @@
 .enc-cuerpo .pp-encabezado { margin-bottom: var(--tc-sp-5); }
 .enc-titulo { margin: 0; font-size: var(--tc-fs-h1); line-height: var(--tc-lh-h2); letter-spacing: var(--tc-ls-heading); }
 .enc-cuerpo .pp-encabezado__meta { margin-top: var(--tc-sp-2); }
-.enc-aviso { margin-bottom: var(--tc-sp-5); }
+.enc-aviso { margin-bottom: var(--tc-sp-5); align-items: center; }
+.enc-aviso p { margin: 0; flex: 1; min-width: 0; }
 .enc-aviso__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2) var(--tc-sp-4); align-items: center; }
 .enc-aviso__acciones .pp-enlace { display: inline-flex; align-items: center; min-height: 44px; }
 .enc-lista .pp-filas__cabecera { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--tc-sp-6); min-height: 40px; }

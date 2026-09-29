@@ -13,3 +13,4 @@
   .ac-franja { margin-bottom: var(--tc-sp-8); }
   .cl-tema { order: 1; }
 }
+.pp-equipo__conteo--cero { background: var(--tc-bg-subtle); color: var(--tc-text-m); }

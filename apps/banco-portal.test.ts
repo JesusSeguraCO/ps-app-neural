@@ -164,7 +164,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))(
         const vuelta = await html("/", cookies[0]!);
         expect(codigos(vuelta)).toEqual(["PS-0187", "PS-0223"]);
         expect(vuelta).toContain("Perfiles para la plataforma omnicanal.");
-        expect(vuelta).toMatch(/pp-equipo__conteo" aria-hidden="true">2</);
+        expect(vuelta).toMatch(/pp-equipo__conteo[^"]*" aria-hidden="true">2</);
         const despues = await bd.instalacion.query(
           `SELECT codigo_perfil FROM identidad.equipo_perfiles WHERE equipo_id = $1 ORDER BY orden`,
           [eq.rows[0].id],
@@ -247,9 +247,9 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))(
           [a.rows[0].id],
         );
         const deB = await html("/", cookies[1]!);
-        expect(deB).toMatch(/pp-equipo__conteo" aria-hidden="true">0</);
+        expect(deB).toMatch(/pp-equipo__conteo[^"]*" aria-hidden="true">0</);
         const deA = await html("/", cookies[0]!);
-        expect(deA).toMatch(/pp-equipo__conteo" aria-hidden="true">2</);
+        expect(deA).toMatch(/pp-equipo__conteo[^"]*" aria-hidden="true">2</);
         const equipos = await bd.instalacion.query(
           `SELECT invitado_id, (SELECT count(*)::int FROM identidad.equipo_perfiles p WHERE p.equipo_id = e.id) n
            FROM identidad.equipos e WHERE invitado_id = ANY($1) ORDER BY n`,
