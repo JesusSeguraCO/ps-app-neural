@@ -1,0 +1,13 @@
+/* Reglas propias de la pantalla aterrizaje-curado (prototipo, <style> de la pantalla). */
+.ac-main { max-width: 1200px; margin: 0 auto; padding: var(--tc-sp-8) var(--tc-sp-6) var(--tc-sp-10); }
+.ac-franja { margin-bottom: var(--tc-sp-10); }
+.ac-aviso { margin-bottom: var(--tc-sp-4); }
+.ac-explorar { margin-bottom: var(--tc-sp-10); }
+.ac-disponible { flex-basis: 100%; margin-bottom: var(--tc-sp-1); }
+.pp-perfil__meta > .ac-disponible + li::before { content: none; }
+.ac-perfil__nota { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+.pp-navlink[aria-disabled="true"], .pp-equipo[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+@media (max-width: 767px) {
+  .ac-main { padding: var(--tc-sp-5) var(--tc-sp-4) var(--tc-sp-10); }
+  .ac-franja { margin-bottom: var(--tc-sp-8); }
+}

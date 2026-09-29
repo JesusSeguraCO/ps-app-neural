@@ -15,3 +15,14 @@ export function horaDeColombia(fecha: Date): string {
 export function horaCortaDeColombia(fecha: Date): string {
   return horaDeColombia(fecha).split(", ")[1]!;
 }
+
+// «24 oct 2026» (día civil en America/Bogota).
+export function fechaDeColombia(fecha: Date): string {
+  return horaDeColombia(fecha).split(", ")[0]!;
+}
+
+// «24 oct 2026» para una fecha civil AAAA-MM-DD (sin hora ni zona).
+export function fechaCivil(aaaammdd: string): string {
+  const [a, m, d] = aaaammdd.split("-").map(Number);
+  return `${d} ${MESES[m! - 1]} ${a}`;
+}
