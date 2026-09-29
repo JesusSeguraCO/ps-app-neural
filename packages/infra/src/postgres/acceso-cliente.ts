@@ -237,6 +237,11 @@ export async function verificarCodigoCliente(
         [hashIdSesion(idSesion), enlace.enlaceId, invitado.id, expira],
       );
       await guardar(tx, claveDePar, registrarAcierto(par));
+      // «Mi equipo» vacío desde el primer ingreso (CRN-12, tarea 6.3).
+      await tx.query(
+        `INSERT INTO identidad.equipos (enlace_id, invitado_id) VALUES ($1, $2) ON CONFLICT (invitado_id, enlace_id) DO NOTHING`,
+        [enlace.enlaceId, invitado.id],
+      );
       // Apertura atribuida (ADR-0002 §3): la guarda `verificacion_ok` con el invitado.
       await log("verificacion_ok", invitado.id);
       return { ok: true, idSesion, expira, enlaceId: enlace.enlaceId };

@@ -21,6 +21,7 @@ export interface EstadoNoPublicado {
   estado: EstadoSeleccion;
   liberaEn: string | null; // AAAA-MM-DD, solo colocado
   resumen: ResumenPerfil | null;
+  categoria?: string | null; // familia (no es dato personal): contexto para explorar el banco
 }
 
 export type ItemSeleccion<P> =
@@ -30,6 +31,17 @@ export interface SeleccionReevaluada<P> {
   items: ItemSeleccion<P>[];
   cambiaron: number;
   ningunoPublicado: boolean;
+}
+
+// Categorías de la selección (en orden de aparición): el contexto con el que se ofrece explorar el
+// banco cuando ningún perfil sigue publicado (HU-091). No se aplican como filtro si hay publicados.
+export function categoriasDeSeleccion<P extends { familia: string | null }>(items: readonly ItemSeleccion<P>[]): string[] {
+  const vistas = new Set<string>();
+  for (const i of items) {
+    const c = i.tipo === "disponible" ? i.perfil.familia : (i.categoria ?? i.resumen?.familia ?? null);
+    if (c) vistas.add(c);
+  }
+  return [...vistas];
 }
 
 export function reevaluarSeleccion<P extends { codigo: string }>(

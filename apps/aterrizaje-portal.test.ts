@@ -115,7 +115,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("aterrizaje curado (HU-144, HU-0
     const html = await pagina(await sesionEn({ codigos: ["PS-0151", "PS-0137"] }));
     expect(html.split('<article class="pp-perfil').length - 1).toBe(2);
     expect(html).toContain("Ninguno de los dos sigue publicado");
-    expect(html).toMatch(/href="\/banco"[^>]*>Explorar el banco/);
+    expect(html).toMatch(/href="\/banco\?contexto=seleccion"[^>]*>Explorar el banco con este contexto/);
   });
 
   it("enlace sin contexto de proyecto: saluda con la cuenta, sin proyecto inventado", async () => {

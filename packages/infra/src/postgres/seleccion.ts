@@ -51,6 +51,7 @@ export async function aterrizajeDelEnlace(
     codigo: f.codigo,
     estado: f.estado as EstadoSeleccion,
     liberaEn: f.libera_en,
+    categoria: f.familia,
     resumen: f.nombre
       ? {
           nombre: f.nombre,

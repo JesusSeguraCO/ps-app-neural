@@ -1,19 +1,32 @@
 // Aterrizaje del cliente (HU-144, HU-090; prototipo aterrizaje-curado y variantes). Protegida: la guarda
 // va en la primera línea (ADR-0002 H5). En cada apertura se reevalúa el estado de cada perfil del enlace
 // (RF-19.2): ninguno se omite y no se deduce ningún filtro de la selección (RF-19.7).
+import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
 import { enLetras, avisoCambios, resumenFamilias, tituloSeleccion } from "@ps/dominio/enlaces/textos-seleccion";
 import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
-import { poolDe } from "@ps/infra/postgres/pool";
-import { aterrizajeDelEnlace } from "@ps/infra/postgres/seleccion";
+import { datosDelBanco, datosDelEnlace } from "../src/banco/datos";
+import { Encuadre } from "../src/banco/Encuadre";
 import { MarcoPortal } from "../src/marco/MarcoPortal";
 import { TarjetaPerfil } from "../src/seleccion/TarjetaPerfil";
 import { exigirSesion } from "../src/sesion/exigirSesion";
 import "./aterrizaje.css";
+import "./banco.css";
 
 export default async function Inicio() {
   const sesion = await exigirSesion();
-  const a = await aterrizajeDelEnlace(poolDe("portal"), sesion);
+  const { aterrizaje: a, equipo } = await datosDelEnlace(sesion);
   const { items, cambiaron, ningunoPublicado } = a.seleccion;
+  const marco = { cuenta: a.cuenta, proyecto: a.proyecto, accesoHasta: a.vigenteHasta, enEquipo: equipo.perfiles.length };
+
+  // Enlace sin selección: la pregunta de encuadre antes del listado (HU-093).
+  if (items.length === 0) {
+    const banco = await datosDelBanco(sesion);
+    return (
+      <MarcoPortal {...marco} conSeleccion={false} activo="buscar">
+        <Encuadre taxonomia={banco.taxonomia} total={banco.perfiles.length} />
+      </MarcoPortal>
+    );
+  }
   const enviado = fechaDeColombia(a.generadoEn);
   const desde = enviado.replace(/ \d{4}$/, ""); // «22 sep», como el prototipo
   const aviso = avisoCambios(cambiaron, items.length, desde);
@@ -22,7 +35,7 @@ export default async function Inicio() {
   );
 
   return (
-    <MarcoPortal cuenta={a.cuenta} proyecto={a.proyecto} accesoHasta={a.vigenteHasta}>
+    <MarcoPortal {...marco} conSeleccion activo="seleccion">
       <section className="pp-franja ac-franja" aria-labelledby="ac-titulo">
         <h1 className="pp-franja__titulo" id="ac-titulo">
           {tituloSeleccion(items.length, a.cuenta, a.proyecto)}
@@ -36,10 +49,20 @@ export default async function Inicio() {
           <h2 className="pp-vacio__titulo" id="ac-explorar-t">
             {`Ninguno de los ${enLetras(items.length)} sigue publicado`}
           </h2>
-          <p className="pp-vacio__texto">La necesidad sigue en pie. Abre el banco completo para ver quién está disponible hoy.</p>
+          <p className="pp-vacio__texto">
+            {`La necesidad sigue en pie. Abre el banco con lo que ya sabemos de ${a.proyecto ?? "tu selección"}:`}
+          </p>
+          <ul className="pp-chips" aria-label="Contexto que se aplica al explorar">
+            {categoriasDeSeleccion(items).map((c) => (
+              <li className="pp-chip pp-chip--deseable" key={c}>
+                <span className="pp-chip__valor">{c}</span>
+                <span className="pp-chip__modo">categoría</span>
+              </li>
+            ))}
+          </ul>
           <div className="pp-vacio__acciones">
-            <a className="pp-btn pp-btn--primario" href="/banco">
-              Explorar el banco
+            <a className="pp-btn pp-btn--primario" href="/banco?contexto=seleccion">
+              Explorar el banco con este contexto
             </a>
           </div>
         </section>
