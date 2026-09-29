@@ -1,6 +1,6 @@
 # PgBouncer en modo transacción para docker-compose (ADR-0008 «Paridad», ADR-0010 §3.1): la misma
-# configuración que scripts/bd-local.sh. Solo conoce a los roles de conexión, nunca al de instalación.
-FROM debian:bookworm-slim
+# configuración que scripts/bd-local.sh (trixie: PgBouncer ≥ 1.21, que admite max_prepared_statements). Solo conoce a los roles de conexión, nunca al de instalación.
+FROM debian:trixie-slim
 RUN apt-get update -q \
   && apt-get install -y -q --no-install-recommends pgbouncer postgresql-client \
   && apt-get clean
