@@ -125,12 +125,126 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
       [hmacCorreo("bucle@trycore.com", entorno.EMAIL_HMAC_KEY!)],
     );
     const respuestas = [];
-    for (let i = 0; i < 5; i++) respuestas.push(await (await post("/api/v1/acceso/codigo", { correo: "bucle@trycore.com" })).text());
+    for (let i = 0; i < 5; i++)
+      respuestas.push(
+        await (await post("/api/v1/acceso/codigo", { correo: "bucle@trycore.com" })).text(),
+      );
     expect(new Set(respuestas).size).toBe(1);
     await new Promise((r) => setTimeout(r, 2_000));
-    const enviados = srv.salida().split("\n").filter((l) => l.includes('"correo_doble"') && l.includes("bucle@trycore.com"));
+    const enviados = srv
+      .salida()
+      .split("\n")
+      .filter((l) => l.includes('"correo_doble"') && l.includes("bucle@trycore.com"));
     expect(enviados.length).toBe(3);
   }, 30_000);
+
+  describe("límite de intentos en tres capas (ADR-0002 §2), de punta a punta", () => {
+    const FALLO = JSON.stringify({ motivo: "codigo_invalido" });
+    const inscribir = (correo: string) =>
+      bd.instalacion.query(
+        `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ($1, $2, 'observador')`,
+        [correo, hmacCorreo(correo, entorno.EMAIL_HMAC_KEY!)],
+      );
+    const verificar = (correo: string, codigo: string, ip: string) =>
+      post("/api/v1/acceso/verificar", { correo, codigo }, { "do-connecting-ip": ip });
+    const erroneo = (codigo: string) => String((Number(codigo) + 1) % 1_000_000).padStart(6, "0");
+    const filaPar = async (correo: string) =>
+      (
+        await bd.instalacion.query(
+          `SELECT fallos_ventana, fallos_dia, bloqueado_hasta FROM identidad_panel.intentos_panel WHERE clave = $1`,
+          [hmacCorreo(correo, entorno.EMAIL_HMAC_KEY!)],
+        )
+      ).rows[0];
+
+    it("5 fallos en 15 min por correo bloquean incluso el código bueno, con el mismo 403; pasada la ventana, entra", async () => {
+      const correo = "ventana@trycore.com";
+      await inscribir(correo);
+      await post("/api/v1/acceso/codigo", { correo }, { "do-connecting-ip": "10.1.0.1" });
+      const codigo = await codigoEnviadoA(correo);
+      // IPs distintas: se mide la capa del par, no la de IP.
+      for (let i = 0; i < 5; i++) {
+        const r = await verificar(correo, erroneo(codigo), `10.1.1.${i}`);
+        expect(r.status).toBe(403);
+        expect(await r.text()).toBe(FALLO);
+      }
+      const bloqueado = await verificar(correo, codigo, "10.1.2.1");
+      expect(bloqueado.status).toBe(403);
+      expect(await bloqueado.text()).toBe(FALLO);
+      // El bloqueo no suma más fallos.
+      expect((await filaPar(correo)).fallos_ventana).toBe(5);
+
+      await bd.instalacion.query(
+        `UPDATE identidad_panel.intentos_panel SET ventana_inicio = ventana_inicio - interval '16 minutes'
+          WHERE clave = $1`,
+        [hmacCorreo(correo, entorno.EMAIL_HMAC_KEY!)],
+      );
+      expect((await verificar(correo, codigo, "10.1.2.1")).status).toBe(204);
+    }, 30_000);
+
+    it("5 fallos en 15 min desde una IP bloquean esa IP para cualquier correo, no a otra IP", async () => {
+      const correo = "porip@trycore.com";
+      await inscribir(correo);
+      await post("/api/v1/acceso/codigo", { correo }, { "do-connecting-ip": "10.2.0.1" });
+      const codigo = await codigoEnviadoA(correo);
+      for (let i = 0; i < 5; i++) {
+        expect((await verificar(`tanteo${i}@trycore.com`, "000000", "10.2.9.9")).status).toBe(403);
+      }
+      const desdeLaIp = await verificar(correo, codigo, "10.2.9.9");
+      expect(desdeLaIp.status).toBe(403);
+      expect(await desdeLaIp.text()).toBe(FALLO);
+      expect((await verificar(correo, codigo, "10.2.0.1")).status).toBe(204);
+    }, 30_000);
+
+    it("el fallo 20 del día bloquea 24 h con alerta: ni el código bueno ni uno nuevo pasan aunque se abra la ventana", async () => {
+      const correo = "diario@trycore.com";
+      await inscribir(correo);
+      await post("/api/v1/acceso/codigo", { correo }, { "do-connecting-ip": "10.3.0.1" });
+      const codigo = await codigoEnviadoA(correo);
+      const clave = hmacCorreo(correo, entorno.EMAIL_HMAC_KEY!);
+      // 19 fallos previos del día, fuera de la ventana corta.
+      await bd.instalacion.query(
+        `UPDATE identidad_panel.intentos_panel
+            SET fallos_dia = 19, fallos_ventana = 0, dia_inicio = now() - interval '2 hours'
+          WHERE clave = $1`,
+        [clave],
+      );
+      expect((await verificar(correo, erroneo(codigo), "10.3.1.1")).status).toBe(403);
+      const fila = await filaPar(correo);
+      expect(fila.fallos_dia).toBe(20);
+      const horas = (new Date(fila.bloqueado_hasta).getTime() - Date.now()) / 3_600_000;
+      expect(horas).toBeGreaterThan(23.9);
+      expect(horas).toBeLessThanOrEqual(24);
+      const alertas = await bd.instalacion.query(
+        `SELECT count(*)::int n FROM identidad.accesos_log WHERE evento = 'bloqueo' AND correo_hash = $1`,
+        [clave],
+      );
+      expect(alertas.rows[0].n).toBe(1);
+
+      await bd.instalacion.query(
+        `UPDATE identidad_panel.intentos_panel SET ventana_inicio = now() - interval '16 minutes', fallos_ventana = 0
+          WHERE clave = $1`,
+        [clave],
+      );
+      const r = await verificar(correo, codigo, "10.3.1.2");
+      expect(r.status).toBe(403);
+      expect(await r.text()).toBe(FALLO);
+      // Pedir otro código durante el bloqueo: misma respuesta neutra y nada llega al buzón.
+      const antes = srv
+        .salida()
+        .split("\n")
+        .filter((l) => l.includes('"correo_doble"') && l.includes(correo)).length;
+      expect(
+        (await post("/api/v1/acceso/codigo", { correo }, { "do-connecting-ip": "10.3.1.3" }))
+          .status,
+      ).toBe(202);
+      await new Promise((res) => setTimeout(res, 1_500));
+      const despues = srv
+        .salida()
+        .split("\n")
+        .filter((l) => l.includes('"correo_doble"') && l.includes(correo)).length;
+      expect(despues).toBe(antes);
+    }, 30_000);
+  });
 
   it("HU-123 correo sin inscribir: misma respuesta que uno inscrito, sin código ni datos", async () => {
     const inscrito = await post("/api/v1/acceso/codigo", { correo: "ana@trycore.com" });
