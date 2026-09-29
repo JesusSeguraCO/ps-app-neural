@@ -22,7 +22,7 @@
 - [x] 2.4 Auditoría encadenada mínima del panel (ADR-0003) con el correo de la sesión; verificar que la entrada queda registrada y que no existe desactivación manual
 - [x] 2.5 `MatrizPermisos` y V2-3 (observador → 403 sin cambios) y V8-5 (CSRF); verificar en CI
 - [x] 2.6 Verificar que el portal no expone ninguna ruta, enlace ni recurso hacia el host del panel (test sobre el manifiesto y el HTML del portal)
-- [ ] 2.7 Pantallas de acceso del panel según `docs/05-prototipo/`; verificar fidelidad con captura MCP y journey smoke (entrar al panel con código)
+- [x] 2.7 Pantallas de acceso del panel según `docs/05-prototipo/`; verificar fidelidad con captura MCP y journey smoke (entrar al panel con código)
 
 ## 3. Sub-slice 3 — Modelo mínimo de perfil publicable
 
