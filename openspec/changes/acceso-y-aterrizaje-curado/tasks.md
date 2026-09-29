@@ -32,7 +32,7 @@
 
 ## 4. Sub-slice 4 — Generación del enlace (HU-122)
 
-- [ ] 4.1 Dominio: `crearEnlace` (perfiles solo publicados, razón obligatoria, ≥ 1 invitado, vigencia 30 días editable, lista explícita de códigos) y token opaco con hash; verificar los cinco escenarios de HU-122 en tests de dominio
+- [x] 4.1 Dominio: `crearEnlace` (perfiles solo publicados, razón obligatoria, ≥ 1 invitado, vigencia 30 días editable, lista explícita de códigos) y token opaco con hash; verificar los cinco escenarios de HU-122 en tests de dominio
 - [ ] 4.2 Adaptador HubSpot de solo lectura `contactoDeCuenta` con timeout y doble; caída → invitados a mano sin bloquear; verificar con el doble en sus tres estados
 - [ ] 4.3 Endpoint y pantalla del panel para seleccionar perfiles, escribir la razón, preparar invitados y generar; registro en auditoría (cuenta, razón, invitados, autora, vigencia); verificar con test de contrato (Newman) y captura MCP contra el prototipo
 - [ ] 4.4 Revocar un enlace desde el panel (usado por HU-144 y HU-145), con auditoría; verificar con test de contrato
