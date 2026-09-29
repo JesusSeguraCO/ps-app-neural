@@ -60,6 +60,18 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 - **Correo en lugar de nombre** de quien generó o revocó (no hay nombre en `usuarios_panel`).
 - **Selector de perfiles publicados propio** en «Añadir desde el inventario»; el inventario completo es de EP-006.
 
+### Sub-slice 5 (acceso y aterrizaje del cliente)
+
+Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-29):
+
+- **Aterrizaje**: sin bloques «Verificado por Trycore / Declarado» (sin datos de evidencia hasta EP-006/EP-002); sin «Sumar al equipo», «Ver ficha» ni «Ver perfiles parecidos» (EP-004/EP-002); sin ciudad (contrato del catálogo); firma sin nombre de quien seleccionó (`usuarios_panel` no guarda nombre); sin «desde el …» del cambio de estado (no se guarda la fecha del cambio). Buscar, Invitar a un colega y Mi equipo visibles y deshabilitados hasta 6a/6b.
+- **Datos de perfiles que cambiaron**: pausados y colocados con consentimiento vigente muestran nombre, rol, sectores y modalidad; archivados y no publicados, solo código y etiqueta (Ley 1581, minimización; el prototipo muestra el nombre también para archivados). Vista `operacion.estado_seleccion_perfil` (migración 0008).
+- **Texto neutro del código**: el de HU-090 («Si tu correo está invitado, te llegó un código… Si no te llega, pídele a quien te compartió el enlace…»), 10 min (ADR-0002); el prototipo dice «tiene invitación vigente… 15 minutos».
+- **Intentos agotados**: `/verificar` responde 429 `{motivo: "en_espera", hasta}` —igual para invitados y no invitados— en lugar del «Código inválido o vencido» de ADR-0002, porque HU-090 exige ver que hay que esperar y a quién escribir.
+- **Texto mínimo de 13 px** en la cara cliente (M-8, PRD §8.1): ayudas y notas que el prototipo pone a 12 px.
+- **Renovación (decisión 2 aplicada)**: la pantalla tras pedir un enlace nuevo («Revisa tu buzón» o «Recibimos tu petición») depende solo del estado de la cuenta en HubSpot, que el worker consulta siempre, esté o no invitado el correo; el portal la consulta por `GET /api/v1/acceso/renovar/{id}`. Ventana de espera de 15 min por enlace y correo. El enlace renovado copia cuenta, proyecto, razón y selección, con vigencia nueva de 30 días y solo el invitado que lo pidió.
+- **HubSpot por nombre**: como la cuenta se escribe a mano (HU-122 escenario 4, enmienda del 2026-09-28), `estadoDeEmpresa` busca la empresa por nombre exacto cuando el enlace no tiene `cuenta_ref`; cero o varias coincidencias = «desconocido» (fallo cerrado → Talento Humano). No existe en HubSpot una propiedad «cuenta activa»: se configura con `HUBSPOT_PROP_CUENTA_ACTIVA` y `HUBSPOT_VALOR_CUENTA_ACTIVA` (en desarrollo, `lifecyclestage` = `customer`). Variables nuevas del worker: `PORTAL_ORIGEN`, `HUBSPOT_PROP_CUENTA_ACTIVA`, `HUBSPOT_VALOR_CUENTA_ACTIVA`, `CORREO_TALENTO_HUMANO` (enmienda de ADR-0010 §3.3, a registrar con la de ADR-0009 en la tarea 8.2).
+
 ## Risks / Trade-offs
 
 - [EP-001 es muy grande: 7 sub-slices y casi todo el monorepo] → un sub-slice por vez, checkpoint en el hub al cerrar cada uno y `journey_smoke` verde entre ellos; el `files_scope` amplio es aceptable porque es épica fundacional y nunca va en paralelo.

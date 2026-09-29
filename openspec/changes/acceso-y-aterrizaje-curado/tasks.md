@@ -39,14 +39,14 @@
 
 ## 5. Sub-slice 5 — Aterrizaje y acceso del cliente (HU-090, HU-144, HU-092)
 
-- [ ] 5.1 `/e/#t=`: leer el fragmento, `POST /acceso/enlace`, borrar de la barra; estados tipados (token inexistente = revocado); verificar escenarios «enlace revocado o alterado» de HU-144
-- [ ] 5.2 Puerta: explicación de por qué pide el correo, pedir código con respuesta neutra en tiempo constante (V2-4), `enviar_codigo {ambito: cliente}` solo a invitados; verificar escenarios happy y «correo no invitado» de HU-090
-- [ ] 5.3 Verificar código (equivocado, vencido, ya usado), límite de 5 intentos con espera sin revelar pertenencia, apertura registrada al verificar; verificar escenarios de error y «intentos agotados» de HU-090
-- [ ] 5.4 Sesión de 30 días acotada a enlace y dispositivo, cortada por vencimiento o revocación; verificar el esquema «alcance de la sesión» de HU-090 y «la revocación corta una sesión abierta» de HU-144
-- [ ] 5.5 Aterrizaje: selección con razón, sin filtros deducidos, reevaluación del estado real (`reevaluarSeleccion`) y perfiles colocados aparte con fecha de liberación; verificar escenarios happy y «un perfil cambió» de HU-144
-- [ ] 5.6 `noindex, nofollow` en cabecera y página, `robots.txt`, respuesta sin sesión sin nombres; verificar escenario «un buscador rastrea el portal»
-- [ ] 5.7 Adaptador HubSpot `estadoDeEmpresa` y trabajo `renovar_enlace` (añadido a la lista blanca de `encolar_portal`): enlace nuevo solo al buzón del invitado con cuenta activa; aviso al propietario o a Talento Humano con fallo cerrado; ventana de espera; verificar los cinco escenarios de HU-092 con el doble en tres estados
-- [ ] 5.8 Pantallas de puerta, código, vencido, revocado y aterrizaje según el prototipo; `redirecciones-guards`; verificar fidelidad con captura MCP y journey smoke como invitado no admin
+- [x] 5.1 `/e/#t=`: leer el fragmento, `POST /acceso/enlace`, borrar de la barra; estados tipados (token inexistente = revocado); verificar escenarios «enlace revocado o alterado» de HU-144
+- [x] 5.2 Puerta: explicación de por qué pide el correo, pedir código con respuesta neutra en tiempo constante (V2-4), `enviar_codigo {ambito: cliente}` solo a invitados; verificar escenarios happy y «correo no invitado» de HU-090
+- [x] 5.3 Verificar código (equivocado, vencido, ya usado), límite de 5 intentos con espera sin revelar pertenencia, apertura registrada al verificar; verificar escenarios de error y «intentos agotados» de HU-090
+- [x] 5.4 Sesión de 30 días acotada a enlace y dispositivo, cortada por vencimiento o revocación; verificar el esquema «alcance de la sesión» de HU-090 y «la revocación corta una sesión abierta» de HU-144
+- [x] 5.5 Aterrizaje: selección con razón, sin filtros deducidos, reevaluación del estado real (`reevaluarSeleccion`) y perfiles colocados aparte con fecha de liberación; verificar escenarios happy y «un perfil cambió» de HU-144
+- [x] 5.6 `noindex, nofollow` en cabecera y página, `robots.txt`, respuesta sin sesión sin nombres; verificar escenario «un buscador rastrea el portal»
+- [x] 5.7 Adaptador HubSpot `estadoDeEmpresa` y trabajo `renovar_enlace` (añadido a la lista blanca de `encolar_portal`): enlace nuevo solo al buzón del invitado con cuenta activa; aviso al propietario o a Talento Humano con fallo cerrado; ventana de espera; verificar los cinco escenarios de HU-092 con el doble en tres estados
+- [x] 5.8 Pantallas de puerta, código, vencido, revocado y aterrizaje según el prototipo; `redirecciones-guards`; verificar fidelidad con captura MCP y journey smoke como invitado no admin
 
 ## 6. Sub-slice 6a — Selección, encuadre y retorno (HU-091, HU-093, HU-094)
 
