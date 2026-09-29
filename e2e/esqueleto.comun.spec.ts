@@ -78,7 +78,9 @@ test.describe("shell del esqueleto", () => {
           ).length;
           return { scroll: raiz.scrollWidth - raiz.clientWidth, pequenos, campos, textos };
         });
-        expect(m, `${ruta} a ${ancho}px`).toEqual({ scroll: 0, pequenos: 0, campos: 0, textos: 0 });
+        // M-1 y M-8 son de la cara cliente (PRD §8.1); M-2 y M-3, de todo control.
+        const esperado = { scroll: 0, pequenos: 0, campos: 0, textos: info.project.name === "portal" ? 0 : m.textos };
+        expect(m, `${ruta} a ${ancho}px`).toEqual(esperado);
       }
     });
   }

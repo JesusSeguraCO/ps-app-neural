@@ -12,6 +12,20 @@ import { buscarSesionPanel, refrescarActividadPanel } from "../postgres/sesiones
 
 export { CABECERA_CSRF, COOKIE_CSRF };
 
+// IP del cliente para los límites (ADR-0002): la del borde solo si hay borde configurado; si no, la que
+// fija App Platform (`do-connecting-ip`) o el primer salto de x-forwarded-for.
+export function ipDelCliente(req: Request): string {
+  if (process.env.EDGE_SECRET) {
+    const cf = req.headers.get("cf-connecting-ip");
+    if (cf) return cf;
+  }
+  return (
+    req.headers.get("do-connecting-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "desconocida"
+  );
+}
+
 type Manejador<C> = (req: Request, ctx: C) => Promise<Response> | Response;
 
 const json = (status: number, cuerpo?: unknown) =>
@@ -39,7 +53,7 @@ export function conBorde<C>(h: Manejador<C>): Manejador<C> {
     const secretos = [process.env.EDGE_SECRET, process.env.EDGE_SECRET_PREV].filter(
       (s): s is string => Boolean(s),
     );
-    if (!bordeValido(req.headers.get(CABECERA_BORDE), secretos)) return json(403);
+    if (secretos.length > 0 && !bordeValido(req.headers.get(CABECERA_BORDE), secretos)) return json(403);
     return h(req, ctx);
   };
 }

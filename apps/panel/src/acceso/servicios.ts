@@ -18,7 +18,4 @@ export function servicios() {
   };
 }
 
-// IP real solo con cabecera de borde válida (ADR-0010: el Route Handler ya pasó por conBorde).
-export function ipDe(req: Request): string {
-  return req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
-}
+export { ipDelCliente as ipDe } from "@ps/infra/http/envoltorios";

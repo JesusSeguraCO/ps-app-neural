@@ -18,3 +18,5 @@
 /* Los enlaces de acción del prototipo son botones (no navegan): mismo aspecto que .pp-enlace. */
 .pa-accion { display: inline-flex; align-items: center; min-height: 32px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
 @media (max-width: 767px) { .pa-accion { min-height: 44px; } }
+/* M-2 (objetivo táctil de 44 px) también para el enlace de contacto del pie en móvil. */
+@media (max-width: 767px) { .pa-pie a { display: inline-flex; align-items: center; min-height: 44px; } }

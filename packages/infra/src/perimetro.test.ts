@@ -31,6 +31,12 @@ describe("cabecera de borde (ADR-0010 CON-22)", () => {
 });
 
 describe("decidirPerimetro", () => {
+  it("sin secreto de borde configurado no se exige cabecera (Cloudflare fuera de criterio)", () => {
+    expect(decidirPerimetro(entrada({ cabeceras: new Headers(), secretosBorde: [] })).tipo).toBe("seguir");
+    const sub = new Headers({ "x-middleware-subrequest": "m" });
+    expect(decidirPerimetro(entrada({ cabeceras: sub, secretosBorde: [] }))).toEqual({ tipo: "rechazar", status: 403 });
+  });
+
   it("sin cabecera de borde → 403", () => {
     expect(decidirPerimetro(entrada({ cabeceras: new Headers() }))).toEqual({
       tipo: "rechazar",

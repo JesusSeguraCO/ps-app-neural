@@ -4,8 +4,10 @@
 import type { Migration } from "kysely/migration";
 import * as m0001 from "./0001_identidad_y_cola";
 import * as m0002 from "./0002_claves_y_admin_inicial";
+import * as m0003 from "./0003_un_codigo_vigente";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
   "0002_claves_y_admin_inicial": m0002,
+  "0003_un_codigo_vigente": m0003,
 };

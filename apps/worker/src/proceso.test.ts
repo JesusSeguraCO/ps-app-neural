@@ -3,7 +3,7 @@
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { VARIABLES } from "@ps/infra/config";
+import { OPCIONALES, VARIABLES } from "@ps/infra/config";
 import { MIGRACIONES } from "../../../packages/infra/migraciones/indice";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 
@@ -36,11 +36,7 @@ beforeAll(() => {
 }, 60_000);
 
 describe("arranque con configuración incompleta (V8-9)", () => {
-  const opcionales = new Set([
-    "EDGE_SECRET_PREV",
-    "MAILGUN_WEBHOOK_SIGNING_KEY_PREV",
-    "WORKER_PAUSADO",
-  ]);
+  const opcionales = OPCIONALES;
   // Sin dobles: toda variable de la lista es obligatoria salvo las de rotación.
   const obligatorias = VARIABLES.worker.filter((v) => !opcionales.has(v));
 

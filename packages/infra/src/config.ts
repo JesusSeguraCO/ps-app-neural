@@ -69,7 +69,10 @@ export const VARIABLES: Record<Proceso, readonly string[]> = {
 };
 
 // Variables que solo existen durante una rotación, o con valor por omisión.
-const OPCIONALES = new Set([
+// EDGE_SECRET es opcional desde el 2026-09-28: Cloudflare dejó de ser criterio (decisión del sponsor);
+// si un proxy de borde vuelve a ponerse delante, basta con configurarla (enmienda pendiente de ADR-0010).
+export const OPCIONALES: ReadonlySet<string> = new Set([
+  "EDGE_SECRET",
   "EDGE_SECRET_PREV",
   "MAILGUN_WEBHOOK_SIGNING_KEY_PREV",
   "WORKER_PAUSADO",

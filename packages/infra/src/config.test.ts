@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ErrorConfiguracion, VARIABLES, cargarConfiguracion, doblesDe, type Proceso } from "./config";
+import {
+  ErrorConfiguracion,
+  OPCIONALES, VARIABLES, cargarConfiguracion, doblesDe, type Proceso } from "./config";
 
 const SECRETO = "s".repeat(48);
 
@@ -29,10 +31,7 @@ const obligatoriasPorProceso: Array<[Proceso, string]> = (
   ["portal", "panel", "worker", "migrar"] as const
 ).flatMap((p) =>
   VARIABLES[p]
-    .filter(
-      (v) =>
-        !["EDGE_SECRET_PREV", "MAILGUN_WEBHOOK_SIGNING_KEY_PREV", "WORKER_PAUSADO"].includes(v),
-    )
+    .filter((v) => !OPCIONALES.has(v))
     .map((v) => [p, v] as [Proceso, string]),
 );
 
@@ -58,13 +57,13 @@ describe("cargarConfiguracion (V8-9)", () => {
 
   it("el error nunca incluye valores de secretos", () => {
     const entorno = entornoCompleto("portal");
-    entorno.EDGE_SECRET = "corto";
+    entorno.EMAIL_HMAC_KEY = "corto";
     try {
       cargarConfiguracion("portal", entorno);
       expect.unreachable();
     } catch (e) {
       expect(String((e as Error).message)).not.toContain("corto");
-      expect((e as ErrorConfiguracion).invalidas).toContain("EDGE_SECRET");
+      expect((e as ErrorConfiguracion).invalidas).toContain("EMAIL_HMAC_KEY");
     }
   });
 

@@ -126,7 +126,7 @@ describe.skipIf(!HAY_BD)("despacho de la cola (ADR-0009)", () => {
     expect(log.rows[0].n).toBeGreaterThanOrEqual(1);
   });
 
-  it("envío ambiguo: reintenta con código nuevo sin invalidar el anterior", async () => {
+  it("envío ambiguo: reintenta con código nuevo, que invalida el anterior (T-31: un solo código vigente)", async () => {
     await bd.instalacion.query(`DELETE FROM identidad.codigos_cliente`);
     correo.programar("ambiguo");
     const id = await encolarCliente(invitadoId);
@@ -139,7 +139,7 @@ describe.skipIf(!HAY_BD)("despacho de la cola (ADR-0009)", () => {
     await vuelta(ctx);
     expect(correo.enviados).toHaveLength(2);
     const [primero, segundo] = await codigos();
-    expect(primero.invalidado_por_sistema).toBe(false);
+    expect(primero.invalidado_por_sistema).toBe(true);
     expect(primero.resultado_envio).toBe("ambiguo");
     expect(segundo.resultado_envio).toBe("ok");
     expect(await estado(id)).toMatchObject({ estado: "hecho" });

@@ -70,7 +70,8 @@ export function decidirPerimetro(
   const saludExenta = e.metodo === "GET" && SALUD_EXENTA.has(e.ruta);
   if (!saludExenta) {
     if (e.cabeceras.has("x-middleware-subrequest")) return { tipo: "rechazar", status: 403 };
-    if (!bordeValido(e.cabeceras.get(CABECERA_BORDE), e.secretosBorde))
+    // Sin secreto configurado no hay borde que comprobar (Cloudflare fuera de criterio, 2026-09-28).
+    if (e.secretosBorde.length > 0 && !bordeValido(e.cabeceras.get(CABECERA_BORDE), e.secretosBorde))
       return { tipo: "rechazar", status: 403 };
   }
   // Redirección optimista sin BD: la autoridad sigue siendo la guarda de página (ADR-0002 H5).

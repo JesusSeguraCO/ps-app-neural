@@ -344,3 +344,14 @@ Ningún driver apunta ya a 0001, 0005 ni 0007.
 El sponsor cambió la plataforma después de aceptar 0001–0007 (Docker portable → DigitalOcean App
 Platform; Next.js TypeScript + worker Node; PostgreSQL administrado; Mailgun; se abandona cPanel). La
 iteración 8 lo recoge en ADR-0008, 0009 y 0010 y en las enmiendas de 0002, 0003, 0004 y 0006. Discovery quedó alineado en el PRD v4.12 (T-17).
+
+
+## Decisiones y hallazgos de construcción de EP-001 (2026-09-28)
+
+| Id | Qué | Decisión / estado |
+|----|-----|-------------------|
+| T-31 | Códigos vigentes por sujeto ante envío ambiguo | **RESUELTA (sponsor, «la norma del mercado»): un solo código vigente**; cada código nuevo invalida por el sistema los anteriores, que no suman fallo. Migración `0003_un_codigo_vigente`. V2-5 se aplica en su variante de un solo código |
+| E-1 | Cloudflare y cabecera de borde (CON-22, ADR-0010) | **Cloudflare deja de ser criterio** (sponsor: era para el hosting anterior). `EDGE_SECRET` pasa a opcional: sin ella no se exige la cabecera; con ella, el mecanismo sigue igual. IP de los límites: `do-connecting-ip` / `x-forwarded-for` (la de Cloudflare solo con borde configurado). La capa 3 de limitación (regla de Cloudflare) desaparece. **Pendiente: enmendar ADR-0010 y ADR-0008 (V8-2 exención de salud) con `/build:architect`** |
+| E-2 | V2-1 con cabecera `RSC: 1` | Next 15 responde 200 `text/x-component` con la orden `NEXT_REDIRECT;replace;<destino>;307;`, no un 307 HTTP. El test exige esa orden exacta y ningún dato protegido. **Pendiente: alinear el texto de V2-1** |
+| E-3 | Vigencia del código y remitente en el prototipo | El prototipo dice 15 min y `no-responder@portal.trycore.com`; **se mantiene el ADR** (10 min, `notify@people.trycore.com`) por decisión del sponsor. Desviación justificada para la revisión de fidelidad |
+| E-4 | Frontera `otp-mail` · `send-access-code` | Intercambio real con Mailgun **diferido a staging** (sponsor, opción b); `na: no_credentials` transitorio en `build-config.json` |

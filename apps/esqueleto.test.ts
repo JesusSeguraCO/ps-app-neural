@@ -5,7 +5,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { VARIABLES } from "@ps/infra/config";
+import { OPCIONALES, VARIABLES } from "@ps/infra/config";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 import {
   RAIZ,
@@ -18,7 +18,6 @@ import {
 } from "@ps/infra/pruebas/servidor-next";
 
 const APPS: App[] = ["portal", "panel"];
-const OPCIONALES = new Set(["EDGE_SECRET_PREV", "MAILGUN_WEBHOOK_SIGNING_KEY_PREV"]);
 
 function manifiestoRutas(app: App): string[] {
   const m = JSON.parse(
