@@ -227,6 +227,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **HU-123 ya no está en esta épica.** Desde la v5.5 (2026-09-27, T-19) la construye EP-001, porque la caparazón necesita el login del panel para generar enlaces (HU-122). EP-006 conserva la lista nominal de acceso, los roles y el resto del panel.
 
+**HU-147 (2026-09-30):** el contacto de Trycore que ve el cliente (nombre, cargo y correo) se configura desde la sección Administración del panel; hasta entonces EP-001 lo fija en `people.service@trycore.com`.
+
 **Historias anticipadas:** crear un perfil · registrar consentimiento antes de publicar · actualizar disponibilidad en dos clics · pausar un perfil asignado · archivar un perfil que salió del banco · previsualizar la ficha · revisar la bandeja de vigencia · cargar perfiles masivamente · consultar el registro de auditoría.
 
 ### Requisitos de esta épica
