@@ -4,9 +4,10 @@ titulo: "Archivar un perfil sin perder su rastro"
 epica: EP-006
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.8
+depende_de: [HU-122]
 ---
 
 # HU-135 — Archivar un perfil sin perder su rastro
@@ -25,12 +26,19 @@ prd_version: 4.8
 **Y** deja de mostrarse en el portal
 **Y** sigue disponible para explicar solicitudes pasadas
 
-### Error — no existe el borrado físico
+### Error — archivar sin permiso de escritura
 
-**Dado** que quiero eliminar definitivamente un perfil,
-**cuando** busco esa acción,
-**Entonces** no existe en el panel
-**Y** el panel explica que archivar conserva la trazabilidad de lo que se mostró
+**Dado** que entré al panel con rol observador,
+**cuando** intento archivar un perfil,
+**Entonces** el panel no me lo permite
+**Y** el perfil conserva su estado y no queda ningún cambio registrado
+
+### Edge case — archivar un perfil ya archivado
+
+**Dado** que un perfil ya está *archivado*,
+**cuando** intento archivarlo de nuevo,
+**Entonces** el panel me indica que ya está archivado
+**Y** su fecha de archivo y su historial no cambian
 
 ### Edge case — perfil archivado que estaba en una selección curada
 
@@ -41,21 +49,23 @@ prd_version: 4.8
 
 ## Notas
 
-Cubre **RF-8.3**. El edge case se apoya en **RF-19.2** (reevaluación al abrir, HU-122).
+Cubre **RF-8.3**. El último edge case se apoya en **RF-19.2** (reevaluación al abrir, HU-122). Los roles del panel son los de **D-22**.
 
-**El borrado físico no existe a propósito.** Una solicitud enviada en julio tiene que poder explicarse en octubre con los perfiles que el cliente vio. Borrar un perfil destruye esa explicación y con ella la capacidad de responder cuando una cuenta dice «ustedes me mostraron a Fulano».
+**El borrado físico no existe a propósito.** El panel no ofrece ninguna acción de borrado definitivo: «eliminar» archiva (RF-8.3), y lo explica al usarse. Una solicitud enviada en julio tiene que poder explicarse en octubre con los perfiles que el cliente vio. Borrar un perfil destruye esa explicación y con ella la capacidad de responder cuando una cuenta dice «ustedes me mostraron a Fulano».
+
+**Revisión INVEST 2026-09-30:** el escenario «no existe el borrado físico» no era ejecutable (el Cuando era buscar una acción ausente) y pasa a Notas; en su lugar entran un error real (el observador intenta archivar y el panel no lo deja) y un edge (archivar uno ya archivado no altera su historial). Se declara la dependencia de HU-122, ya construida, por el enlace curado.
 
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · relacionada con HU-122
+Épica madre: **EP-006** · PRD v4.8 · RF-8.3 · RF-19.2 · D-22 · depende de HU-122 (enlace curado con reevaluación al abrir)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: el enlace curado y los roles del panel ya existen (HU-122 y HU-123, construidas); el archivo en sí no espera a otra historia |
+| N | Negociable | ✓ la regla es fija (RF-8.3); el texto que explica que eliminar archiva es negociable |
 | V | Valiosa | ✓ conserva la trazabilidad de lo mostrado |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ una transición a *archivado* en la máquina de estados del dominio (ADR-0003), idempotente, con la guarda de rol que ya existe; el portal ya reevalúa el estado real al abrir el enlace |
+| S | Pequeña | ✓ S: una acción, una guarda y un caso de idempotencia |
+| T | Testeable | ✓ estado *archivado* en BD con el perfil presente, rechazo al observador sin escritura, historial sin cambios, y estado real visible en el enlace |

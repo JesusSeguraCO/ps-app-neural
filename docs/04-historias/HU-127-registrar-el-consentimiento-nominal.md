@@ -4,9 +4,10 @@ titulo: "Registrar el consentimiento nominal del profesional"
 epica: EP-006
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.8
+depende_de: [HU-125]
 ---
 
 # HU-127 — Registrar el consentimiento nominal del profesional
@@ -26,22 +27,22 @@ prd_version: 4.8
 
 ### Error — consentimiento anterior para publicación anonimizada
 
-**Dado** que el profesional consintió cuando el banco se publicaba sin nombres,
-**cuando** intento usar ese consentimiento para el perfil nominal,
+**Dado** que el único consentimiento del profesional es de cuando el banco se publicaba sin nombres,
+**cuando** intento registrarlo como consentimiento nominal,
 **Entonces** el panel lo rechaza y explica que ese consentimiento no cubre este uso
-**Y** exige recogerlo de nuevo
+**Y** me indica que hay que recogerlo de nuevo
 
 ### Error — consentimiento revocado
 
-**Dado** que un profesional revoca su consentimiento,
-**cuando** lo registro,
+**Dado** que el perfil está publicado y el profesional comunicó que revoca su consentimiento,
+**cuando** registro la revocación,
 **Entonces** el perfil sale de *publicado* de inmediato
-**Y** el portal deja de mostrarlo sin dejar un hueco sin explicar
+**Y** un enlace curado que lo incluía, al abrirse, muestra que el perfil dejó de estar disponible en lugar de omitirlo (RF-19.2)
 
 ### Edge case — consentimiento parcial
 
 **Dado** que el profesional autoriza su trayectoria pero no que se nombren sus clientes,
-**cuando** lo registro,
+**cuando** registro ese consentimiento,
 **Entonces** el perfil puede publicarse con la experiencia despersonalizada
 **Y** los clientes nombrados no aparecen en su ficha
 
@@ -51,17 +52,21 @@ Cubre **RF-8.4**. Es consecuencia directa de la **reversión de D-1** (2026-09-1
 
 **El consentimiento recogido antes no sirve.** El PRD es explícito: el consentimiento para una publicación anonimizada no cubre la publicación nominal. Esto significa trabajo real de Talento Humano sobre el banco existente antes de salir a producción, y se cruza con **D-3** — 25 perfiles publicados como umbral, cada uno con consentimiento nominal recogido de nuevo.
 
+**Nota operativa (D-3):** antes de producción, Talento Humano vuelve a recoger el consentimiento nominal de cada perfil del banco existente. Es trabajo fuera del software, pero sin él no hay perfiles publicables el día de salida.
+
+**Revisión INVEST 2026-09-30:** el revocado se ancla a RF-19.2 (el enlace curado explica que el perfil dejó de estar disponible) y su Dado pasa a estado; el error anonimizado pasa a una acción concreta; añadida la nota operativa de D-3; `depende_de: [HU-125]`; tabla INVEST razonada.
+
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · D-1 revertida · condiciona D-3
+Épica madre: **EP-006** · PRD v4.8 · D-1 revertida · condiciona D-3 · depende de HU-125 · habilita HU-128 · RF-19.2
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
+| I | Independiente | ✓ con dependencia declarada: el consentimiento se registra sobre un perfil que ya existe (HU-125); se construye después |
 | N | Negociable | ✓ describe el registro, no el medio de recolección |
 | V | Valiosa | ✓ es el respaldo legal de todo el producto |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: la tabla `inventario.consentimientos` existe desde la migración 0005; falta el registro en el panel con alcance (nominal, parcial, revocado), el efecto sobre el estado del perfil y la ficha sin clientes nombrados. La reevaluación del enlace al abrirse (RF-19.2) ya la construyó HU-144 en EP-001 (`packages/dominio/src/enlaces/seleccion.ts`); aquí solo se verifica que la respeta |
+| S | Pequeña | ✓ cuatro escenarios de una capacidad; el bloqueo de publicar sin consentimiento está en HU-128 |
+| T | Testeable | ✓ el estado del perfil, la ficha y el enlace abierto tras cada registro son observables |

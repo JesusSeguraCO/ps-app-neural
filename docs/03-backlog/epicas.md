@@ -223,7 +223,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** Low-Fi (CRUD simulado) + MVP
 **Capa:** `layer: foundational`
 **Métrica de éxito:** 90% o más de los perfiles publicados con disponibilidad actualizada en los últimos 30 días; cero perfiles publicados sin consentimiento registrado.
-**Decisión abierta que la condiciona:** D-8, alcance del panel en v1.
+**Decisión que la condiciona:** D-8, alcance del panel en v1 — **cerrada** el 2026-09-18 en CRUD completo (PRD v4.6).
 
 **HU-123 ya no está en esta épica.** Desde la v5.5 (2026-09-27, T-19) la construye EP-001, porque la caparazón necesita el login del panel para generar enlaces (HU-122). EP-006 conserva la lista nominal de acceso, los roles y el resto del panel.
 

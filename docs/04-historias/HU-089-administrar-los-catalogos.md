@@ -4,47 +4,54 @@ titulo: "Crear valores de catálogo sin duplicar los que ya existen"
 epica: EP-006
 prioridad: alta
 complejidad: M
-estado: prototipado
+estado: lista
 fase: fase-2-rediseno
 prd_version: 4.8
 ---
 
 # HU-089 — Crear valores de catálogo sin duplicar los que ya existen
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** crear roles, tecnologías y sectores desde un catálogo que me avise si ya existe algo parecido,
 **para** que el banco crezca sin llenarse de duplicados que rompan los filtros del cliente.
 
 ## Criterios de aceptación
 
-### Happy path — rol nuevo con su familia
+### Happy path — rol nuevo en una familia con modalidades de prueba
 
-**Dado** que necesito publicar un Diseñador UX/UI Banking y ese rol no existe,
-**cuando** lo creo en el catálogo,
-**Entonces** el sistema me exige elegir una familia
-**Y** si la familia no tiene modalidades de prueba, me advierte que ningún perfil de esa familia se podrá publicar hasta definirla
-**Y** el rol queda disponible en el editor de perfiles
+**Dado** que necesito publicar un Diseñador UX/UI Banking, ese rol no existe y su familia tiene modalidades de prueba registradas,
+**cuando** creo el rol en el catálogo eligiendo esa familia,
+**Entonces** el rol queda disponible en el editor de perfiles
+**Y** el formulario de rol tiene la familia como campo obligatorio
 
 ### Happy path — seleccionar en vez de escribir
 
-**Dado** que estoy editando un perfil,
-**cuando** voy a poner sus tecnologías,
-**Entonces** las selecciono del catálogo, nunca las escribo libremente
-**Y** si escribo algo que no existe, se me ofrece crearlo como una acción aparte
+**Dado** que estoy editando las tecnologías de un perfil,
+**cuando** escribo «Fig» en el campo,
+**Entonces** el panel me ofrece para elegir los valores del catálogo que coinciden, como «Figma»
+**Y** el campo no acepta guardar texto libre
+**Y** crear un valor nuevo aparece como una acción aparte de las coincidencias
 
 ### Error — valor parecido a uno existente
 
-**Dado** que el catálogo ya tiene «Figma» y yo escribo «Fgima»,
-**cuando** voy a crearlo,
-**Entonces** el sistema me muestra el parecido y me deja usarlo en un toque
-**Y** si aun así lo creo, es una decisión mía y no un accidente
+**Dado** que el catálogo ya tiene «Figma»,
+**cuando** intento crear la tecnología «Fgima»,
+**Entonces** el panel me muestra «Figma» como valor parecido y me deja usarlo en un toque
+**Y** crear «Fgima» exige que confirme que es un valor distinto
 
 ### Error — valor idéntico salvo mayúsculas
 
-**Dado** que el catálogo ya tiene «Figma» y escribo «figma»,
-**cuando** intento crearlo,
-**Entonces** el sistema lo impide
-**Y** me indica que ya existe
+**Dado** que el catálogo ya tiene «Figma»,
+**cuando** intento crear «figma»,
+**Entonces** el panel impide crearlo
+**Y** me indica que ya existe como «Figma»
+
+### Edge case — rol nuevo en una familia sin modalidades de prueba
+
+**Dado** que la familia que elijo para un rol nuevo no tiene modalidades de prueba registradas,
+**cuando** creo el rol,
+**Entonces** el rol queda creado
+**Y** el panel me advierte que ningún perfil de esa familia se podrá publicar hasta registrar una modalidad
 
 ## Notas
 
@@ -58,6 +65,8 @@ prd_version: 4.8
 
 Cubre **RF-8.16.2**, **RF-8.16.3**, **RF-8.16.4** y **RF-8.16.8**.
 
+**Revisión INVEST 2026-09-30:** rol unificado; reorganizada en cinco escenarios sin Entonces condicionales: rol en familia con modalidades (happy), selección del catálogo (happy), parecido «Fgima» (error), idéntico salvo mayúsculas (error) y familia sin modalidades (edge, antes escondido como «si…» dentro del happy); tabla INVEST razonada.
+
 ## Trazabilidad
 
 Épica madre: **EP-006** · PRD v4.8 · consumida por HU-125 · habilita HU-143
@@ -66,9 +75,9 @@ Cubre **RF-8.16.2**, **RF-8.16.3**, **RF-8.16.4** y **RF-8.16.8**.
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ no depende de otra historia de la épica: los catálogos existen como tablas y esta historia les pone la administración encima. HU-125 y HU-143 dependen de ella, no al revés |
+| N | Negociable | ✓ fija que no hay texto libre y que el parecido se avisa; el umbral de parecido y la forma del aviso quedan abiertos |
 | V | Valiosa | ✓ protege la calidad de los filtros, que es lo que el cliente usa |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ tras la división |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: las tablas de catálogo (familias, roles, tecnologías, sectores, modalidades) existen desde la migración 0005; falta la pantalla de alta, la normalización de mayúsculas y acentos y la distancia de edición, deterministas y sobre catálogos de decenas de valores |
+| S | Pequeña | ✓ cinco escenarios de una capacidad (crear sin duplicar); retirar y fusionar están en HU-143 |
+| T | Testeable | ✓ cada caso tiene un valor de entrada concreto («Fig», «Fgima», «figma») y un resultado observable |
