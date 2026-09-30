@@ -67,15 +67,15 @@ Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, p
 
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9 y D11 (sponsor, 2026-09-30) · ADR-0003 · depende de HU-131
+Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9, D11 y D19 (sponsor, 2026-09-30) · ADR-0003 · depende de HU-131
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: el borrador se pide sobre la evidencia que adjunta HU-131; ninguna otra historia depende de esta tras el descarte de HU-149 (D11) |
+| I | Independiente | ✓ con dependencia declarada: se construye junto a HU-131 (misma pantalla de evidencia), aunque el borrador no exige artefacto (D19); necesita la modalidad elegida en HU-125; ninguna otra historia depende de esta tras el descarte de HU-149 (D11) |
 | N | Negociable | ✓ fija el resultado (precarga por plantilla, origen visible, confirmación humana, nada sale del servidor); cómo se presenta el borrador en el panel es negociable |
 | V | Valiosa | ✓ Talento Humano deja de transcribir en cada perfil el enunciado, los entregables y los criterios que ya viven en el catálogo |
 | E | Estimable | ✓ copiar tres textos del catálogo de la modalidad a un borrador con estado (generado → revisado) y confirmarlo o descartarlo; sin IA ni lectura del artefacto |
 | S | Pequeña | ✓ **S** tras la partición de D9: una capacidad (precargar y confirmar la plantilla) en cuatro escenarios |
-| T | Testeable | ✓ una modalidad con textos conocidos da un borrador comparable campo a campo; un artefacto vacío no impide la precarga; lo descartado o corregido se verifica en la ficha |
+| T | Testeable | ✓ una modalidad con textos conocidos da un borrador comparable campo a campo; sin modalidad elegida el panel lo impide y remite al selector; lo descartado o corregido se verifica en la ficha |
