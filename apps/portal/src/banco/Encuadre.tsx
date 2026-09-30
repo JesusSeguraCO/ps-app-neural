@@ -24,7 +24,7 @@ function Opcion(p: {
       <span className="enc-op__conteo" aria-hidden="true">
         {p.n}
       </span>
-      <span className="pp-sr">{`, ${p.n} perfiles`}</span>
+      <span className="pp-sr">{`, ${p.n} ${p.n === 1 ? "perfil" : "perfiles"}`}</span>
     </a>
   );
 }
@@ -87,13 +87,15 @@ export function Encuadre(props: {
           ))}
         </ul>
       </nav>
-      <div className="enc-pie">
-        <a className="pp-btn pp-btn--contorno" href="/banco">
-          <span>
-            Ver los <span className="enc-num">{props.total}</span> perfiles
-          </span>
-        </a>
-      </div>
+      {!props.sinPerfiles && (
+        <div className="enc-pie">
+          <a className="pp-btn pp-btn--contorno" href="/banco">
+            <span>
+              Ver los <span className="enc-num">{props.total}</span> perfiles
+            </span>
+          </a>
+        </div>
+      )}
     </div>
   );
 }

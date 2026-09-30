@@ -90,6 +90,8 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))(
           );
         }
         expect(h).toMatch(/href="\/banco\?rol=Ingeniera%20de%20datos"[^>]*>.*?>1</);
+        // El lector de pantalla concuerda el número: «1 perfil», no «1 perfiles».
+        expect(h).toMatch(/Ingeniera de datos<\/span>.*?<span class="pp-sr">, 1 perfil<\/span>/s);
         // Un rol del catálogo sin perfiles publicados hoy también es opción (con 0).
         expect(h).toMatch(
           /Analista de datos<\/span><span class="enc-op__conteo" aria-hidden="true">0</,
@@ -123,6 +125,8 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))(
         const h = await html(`/banco?rol=${encodeURIComponent("Analista de datos")}`, cookies[0]!);
         expect(h).toContain("Hoy no hay perfiles publicados de Analista de datos.");
         expect(h).toMatch(/href="\/banco"[^>]*>Ampliar la búsqueda</);
+        // Sin el pie «Ver los N perfiles»: la única salida es ampliar (prototipo --opcion-sin-perfiles).
+        expect(h).not.toMatch(/Ver los .*? perfiles/s);
         expect(tarjetas(h)).toHaveLength(0);
         // Una opción inexistente se trata igual (sin error crudo).
         const x = await html(`/banco?categoria=${encodeURIComponent("No existe")}`, cookies[0]!);

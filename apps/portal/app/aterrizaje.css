@@ -5,6 +5,8 @@
 .ac-explorar { margin-bottom: var(--tc-sp-10); }
 .ac-disponible { flex-basis: 100%; margin-bottom: var(--tc-sp-1); }
 .pp-perfil__meta > .ac-disponible + li::before { content: none; }
+.pp-rejilla-perfiles > li { display: flex; min-width: 0; }
+.pp-rejilla-perfiles > li > .pp-perfil { flex: 1; }
 .ac-perfil__nota { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
 .cl-tema { flex: none; }
 .pp-navlink[aria-disabled="true"], .pp-equipo[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }

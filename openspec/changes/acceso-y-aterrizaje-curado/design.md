@@ -56,8 +56,8 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 
 - **Cuenta e invitados a mano**: sin «Cambiar» contra HubSpot ni «contacto en el CRM» (sponsor, 2026-09-28; HU-122 escenario 4).
 - **Enlace `/e/#t=<token>`**, mostrado una sola vez con «Cópialo ahora»; el prototipo pinta `/e/<token>` (E-8).
-- **Sin aperturas** en el registro ni en el detalle de enlaces (columna, «Sin aperturas», conteo por invitado y panel de aperturas): son **HU-116** («Ver quién entró por su enlace»), de **EP-011**, no de EP-001; `identidad.accesos_log` ya registra `verificacion_ok` para cuando se construya. Precisión del 2026-09-29 (revisión de fidelidad final): la nota anterior las ataba al sub-slice 5, pero ninguna HU de EP-001 las pide. Sin paginación mientras haya pocos enlaces.
-- **Rótulos de disponibilidad del panel** («Inmediato», «1 mes»): los del PRD, RF-3.13 (sponsor, 2026-09-28, `catalogo/banda.ts`); el portal usa los de cara cliente («Disponible ahora», «En 1 mes»).
+- **Sin aperturas** en el registro ni en el detalle de enlaces (columna, «Sin aperturas», conteo por invitado y panel de aperturas): son **HU-116** («Ver quién entró por su enlace»), de **EP-011**, no de EP-001; `identidad.accesos_log` ya registra `verificacion_ok` para cuando se construya. Precisión del 2026-09-29 (revisión de fidelidad final): la nota anterior las ataba al sub-slice 5, pero ninguna HU de EP-001 las pide. Sin paginación mientras haya pocos enlaces. Aprobado por el sponsor el 2026-09-30.
+- **Rótulos de disponibilidad del panel** («Inmediato», «1 mes»): los del PRD, RF-3.13 (sponsor, 2026-09-28, `catalogo/banda.ts`); el portal usa los de cara cliente («Disponible ahora», «En 1 mes»). Aprobado por el sponsor el 2026-09-30.
 - **Correo en lugar de nombre** de quien generó o revocó (no hay nombre en `usuarios_panel`).
 - **Selector de perfiles publicados propio** en «Añadir desde el inventario»; el inventario completo es de EP-006.
 
@@ -82,7 +82,7 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 
 ### Sub-slice 6c (renovación sin HubSpot)
 
-- **Sin variante «cuenta inactiva»** (`acceso-vencido--cuenta-inactiva`): la renovación ya no consulta HubSpot (sponsor, 2026-09-29) y quien pide ve siempre «Revisa tu buzón»; esa pantalla del prototipo queda obsoleta.
+- **Sin variante «cuenta inactiva»** (`acceso-vencido--cuenta-inactiva`): la renovación ya no consulta HubSpot (sponsor, 2026-09-29) y quien pide ve siempre «Revisa tu buzón»; esa pantalla del prototipo queda obsoleta. Aprobado por el sponsor el 2026-09-30.
 
 ## Risks / Trade-offs
 
