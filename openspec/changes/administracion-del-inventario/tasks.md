@@ -1,0 +1,108 @@
+# Tasks
+
+> Un grupo = un sub-slice del DoR (`.claude/state/evidencia/ep-006/dor-pass.md`). Se construyen de uno en uno; al cerrar cada grupo, `journey_smoke` verde, su parte del `wiring_checklist` en `passing`, evidencia en `.claude/state/evidencia/ep-006/ssN/` y checkpoint en el hub. Cada tarea se da por hecha solo con su verificación **ejecutada** (suite, página cargada, consola leída), nunca por inspección. Fidelidad = captura real con MCP chrome-devtools contra las pantallas aprobadas de `docs/05-prototipo/manifest.json`; toda desviación se registra en `design.md` con su razón.
+
+## 1. Sub-slice 1 — Catálogos y léxico (HU-089, HU-143, HU-139)
+
+- [ ] 1.1 Migración: `catalogo_modalidades_prueba` (familia, texto de cara al cliente obligatorio, enunciado, entregables, criterios, `activo`, `fusionado_en_id`), `nombre_normal` único por catálogo, fila única `inventario_version`; permisos sin `DELETE` y `ps_portal` sin acceso; verificar V8-10/V3-2 con la batería de permisos y V3-7 (sin DML de nivel superior)
+- [ ] 1.2 Unidad de trabajo del inventario (orden perfil → hijas → versión global → auditoría, reintento ante `40P01`/`40001`) que registra en `auditoria.registrar(...)` con clave de sistema para catálogos y léxico; verificar V3-1 con escritores concurrentes y que cada escritura de catálogo deja su fila con actor
+- [ ] 1.3 Dominio `catalogo/parecidos`: normalización (mayúsculas, acentos, espacios), idéntico → bloqueo con el nombre existente, Damerau-Levenshtein y contención → parecido con confirmación; verificar con «Fig», «Fgima» y «figma» (HU-089) y propiedades con `fast-check`
+- [ ] 1.4 Endpoints y pantallas de catálogos: alta de rol con familia obligatoria y aviso de familia sin modalidades; alta de modalidad de prueba con su texto; alta de tecnología y sector con parecidos; selector del catálogo sin texto libre; verificar los cinco escenarios de HU-089 y el de RF-8.16.8, y observador → 403 (V2-3)
+- [ ] 1.5 Desactivar con conteo de fichas dependientes y sin acción de borrar; fusionar con `?previsualizar`, confirmación transaccional (reasigna hijas sin duplicar, sube `version` e `inventario_version`, `fusionado_en_id`, auditoría `origen = fusion`) y rechazo de mismo valor o catálogos distintos; verificar los cinco escenarios de HU-143 con recuento previo = reasignados
+- [ ] 1.6 Léxico: migración `lexico`/`propuestas_lexico`/`candidatas_lexico` con FK por tipo; vista de léxico aprobado para `ps_portal`; alta de equivalencia con rechazo a valor inexistente (422 con los valores ofrecidos); verificar escenarios «término con su equivalencia» y «equivalencia a un valor que no existe» de HU-139, y que el intérprete lo reconoce sin despliegue
+- [ ] 1.7 Worker `proponer_lexico` (planificador semanal): filtro determinista de nombres y apellidos de perfiles y de sesiones con `modelo_permitido = false`, `fetch` a Gemini con `AbortSignal.timeout(6 s)` y esquema zod de respuesta, adaptador en `packages/infra` y doble en CI; propuestas pendientes; verificar V9-8 con el doble (ninguna consulta vetada en el `payload`) y 0 dependencias nuevas
+- [ ] 1.8 Pantallas de propuestas (aprobar tal cual o editada, rechazar sin que vuelva) y de candidatas (al léxico o a la agenda de reclutamiento) con consultas sin coincidencia sintéticas sembradas solo fuera de producción; verificar los escenarios de propuestas y candidatas de HU-139
+- [ ] 1.9 Habilitar Catálogos y Léxico en el menú del panel; fidelidad con captura MCP de `catalogos`, `catalogos--duplicado`, `catalogos--familia-sin-modalidades`, `catalogos--fusion`, `catalogos--modalidad-en-uso`, `catalogos--parecidos`, `lexico-busqueda`, `lexico-busqueda--candidatas`, `lexico-busqueda--equivalencia-invalida`, `lexico-busqueda--propuestas`
+- [ ] 1.10 Journey smoke: entrar al panel → crear un rol con parecido avisado → fusionar un duplicado → aprobar una propuesta → la búsqueda del portal reconoce el término; evidencia en `ss1/` y checkpoint en el hub
+
+## 2. Sub-slice 2 — Crear perfil y consentimiento nominal (HU-125, HU-127)
+
+- [ ] 2.1 Migración: columnas del perfil del Anexo B (capacidad, anclaje, resumen, vínculo, formación, idiomas, `modalidad_prueba_id`, `origen_creacion`), `perfil_experiencias` con cliente nombrado separado, `perfil_sello_personal`, `consentimientos` con `nominal`, `incluye_clientes`, `registrado_por`; ninguna columna B.4; verificar V3-2, V3-7 y que `catalogo_publicable` no expone columnas nuevas no autorizadas
+- [ ] 2.2 Dominio `inventario/estados` (crear → borrador siempre; lista de lo que falta para publicar) y `ServicioPerfiles` como única vía de escritura, con `If-Match`/409 y claves de titular por perfil nuevo; verificar con tests de dominio y V3-3
+- [ ] 2.3 Editor de perfil: selección del catálogo (rol → familia → modalidades de prueba de esa familia), aviso inmediato y enlace a registrar modalidad si la familia no tiene, parecidos antes de crear, guardado como borrador con lo que falta señalado; verificar los cuatro escenarios de HU-125
+- [ ] 2.4 Registrar consentimiento nominal (quién y cuándo), rechazo del anonimizado con explicación, revocación que saca de publicado en la misma transacción, parcial que despersonaliza la experiencia en la proyección del portal; verificar los cuatro escenarios de HU-127 y que el enlace curado muestra «dejó de estar disponible» (regresión de `aterrizaje-curado`)
+- [ ] 2.5 Listado base del inventario en el panel (habilita el destino Inventario); verificar que el portal no ve borradores (V3-2)
+- [ ] 2.6 Fidelidad con captura MCP de `inventario-perfiles`, `perfil-editor`, `perfil-editor--familia-sin-modalidades`, `perfil-editor--campos-incompletos`, `perfil-editor--consentimiento-invalido`
+- [ ] 2.7 Journey smoke: crear perfil → borrador fuera del portal → registrar consentimiento → revocar → el enlace curado lo muestra como no disponible; evidencia en `ss2/` y checkpoint
+
+## 3. Sub-slice 3 — Exportar, pegar y emparejar (HU-088, HU-086, HU-148)
+
+- [ ] 3.1 Contrato único del formato en `packages/contratos/importacion` (columnas, encabezados autoexplicativos, `;` en listas, `[vaciar]`, marca de internos, sin consentimiento); verificar con tests de contrato
+- [ ] 3.2 Exportación del banco en CSV y JSON y plantilla de muestra con tres ejemplos (actualizar, crear, archivar), con respaldo en área de texto si la descarga se bloquea; verificar los cinco escenarios de HU-088
+- [ ] 3.3 Detección de formato (JSON/TSV/CSV, pregunta si es ambiguo) y emparejamiento propuesto por nombre, corregible, con columnas fuera del modelo o B.4 ignoradas e informadas; verificar escenario «pegar desde la hoja de cálculo» de HU-086 y que ninguna columna B.4 llega a `perfiles`
+- [ ] 3.4 Migración `lotes_importacion`/`lote_filas` (estado `calculado`) y `calcularPlan` puro: grupos con conteo, diff solo de lo que cambia, duplicados a error y bloqueo, valores nuevos de taxonomía con conteo, exclusión por tarjeta, nada escrito en el banco; verificar escenarios 2–5 de HU-086 y la ida y vuelta exportar → pegar → todo «sin cambios»
+- [ ] 3.5 Plantillas de emparejamiento: guardar con nombre, listar, aplicar, columnas faltantes informadas sin tocar sus campos, columnas desconocidas ignoradas; verificar los cuatro escenarios de HU-148
+- [ ] 3.6 Fidelidad con captura MCP de `importar-perfiles`, `importar-perfiles--vista-previa`, `importar-perfiles--codigo-duplicado`, `importar-perfiles--plantilla-guardada`, `importar-perfiles--plantilla-aplicada`, `importar-perfiles--plantilla-columna-faltante`
+- [ ] 3.7 Journey smoke: exportar → editar dos disponibilidades → pegar con plantilla → vista previa con 2 actualizados y el resto sin cambios, banco intacto; evidencia en `ss3/` y checkpoint
+
+## 4. Sub-slice 4 — Confirmar, revertir y corregir (HU-141, HU-087, HU-142)
+
+- [ ] 4.1 Trabajo `aplicar_importacion` en el worker con el contrato I-2 (candado consultivo, `estado = 'calculado'`, versión revalidada, una subida de `inventario_version`, una toma de la cabeza de auditoría con `origen = importacion` y actor = quien confirmó, 1 intento, tope 5 min); endpoint 202 + consulta de estado; verificar V3-5 (sin 503 del panel, matar el worker → `abortado` sin filas, retoma sin reaplicar)
+- [ ] 4.2 Modos crear/actualizar/ambos, fusión ausente/vacío/`[vaciar]`, nuevos a borrador, rechazo por campo de consentimiento y `estado: publicado`; verificar los cuatro escenarios de HU-141 y el de importación de HU-128
+- [ ] 4.3 Trabajo `revertir_importacion`: solo el último lote, restaura `foto_previa`, archiva los creados, lista los perfiles con versión posterior y deja elegir, evento propio (`origen = reversion`); verificar los tres escenarios de HU-087 con diff = 0
+- [ ] 4.4 Descarga de solo las filas con error en su formato original con motivo, distinción archivo entero/filas, reimportación idempotente; verificar los tres escenarios de HU-142
+- [ ] 4.5 Fidelidad con captura MCP de `importar-perfiles--campos-rechazados`, `importar-perfiles--filas-con-error`, `importar-perfiles--revertir`, `importar-perfiles--revertir-no-ultima`
+- [ ] 4.6 Journey smoke: importar 60 filas con 3 erróneas → aplicar → descargar errores → corregir y reimportar → revertir la última; evidencia en `ss4/` (incluida la medición del límite de filas) y checkpoint
+
+## 5. Sub-slice 5 — Bloqueo, vista previa y Nivel 0 (HU-128, HU-129, HU-130)
+
+- [ ] 5.1 Guardas de publicar en el dominio (consentimiento nominal vigente, modalidad elegida y activa de la familia, familia con modalidades, obligatorios completos) y disparador de BD ampliado a la modalidad como defensa en profundidad; verificar escenarios «el bloqueo actúa» y «sin modalidad elegida» de HU-128 y que ninguna vía (panel, importación, SQL como `ps_panel`) publica sin ellas
+- [ ] 5.2 Publicación masiva con resultado por perfil sin abortar; verificar escenario «publicación masiva» de HU-128
+- [ ] 5.3 Componente de ficha compartido panel/portal (`packages/ui`) y vista previa con el estado en edición: banda, país, ciudad condicionada, bloques opcionales omitidos, bloque incompleto que nombra el dato; verificar los cuatro escenarios de HU-129 comparando el HTML de la vista previa con el del portal para el mismo perfil
+- [ ] 5.4 Publicación con Nivel 0 desde el texto de la modalidad, sin bloque vacío; bloqueo por familia sin modalidades; enriquecimiento posterior sin republicar; verificar los tres escenarios de HU-130 en el portal
+- [ ] 5.5 Fidelidad con captura MCP de `perfil-editor--publicar-bloqueado`, `perfil-editor--sin-modalidad`, `inventario-perfiles--publicacion-masiva`, `vista-previa-ficha`, `vista-previa-ficha--bloque-incompleto`, `vista-previa-ficha--bloque-opcional`
+- [ ] 5.6 Journey smoke: perfil completo → vista previa → publicar con Nivel 0 → el portal lo muestra; perfil sin consentimiento → bloqueado; evidencia en `ss5/` y checkpoint
+
+## 6. Sub-slice 6 — Editar publicado, evidencia y borrador (HU-126, HU-131, HU-140)
+
+- [ ] 6.1 Edición de publicado en dos pasos (`?previsualizar` con diff de cara al cliente, confirmar con `If-Match`), pregunta D1 con `resolucion=descartar` (sin escritura ni auditoría) o `a_borrador` (cambio + transición auditada); verificar los cinco escenarios de HU-126 y el portal con la versión vigente durante la pregunta
+- [ ] 6.2 Migración `validaciones` y `artefactos`; adaptador Spaces (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`) con doble; subida por PUT prefirmado de 5 min con tipo y tamaño fijados, verificación con `HeadObject`, rechazo de video y > 64 MB sin tocar el perfil; CSP del panel con el origen del bucket; verificar escenarios «queda asociado» y «formato o tamaño no admitido» de HU-131 y la prueba de CSP del panel con la subida
+- [ ] 6.3 Descarga por GET prefirmado de 5 min solo con `evidencia.descargar` (administrador); observador ve «existe» sin enlace y recibe 403 con motivo; el portal no tiene ruta ni responde a la del panel con su sesión; verificar los escenarios de descarga, observador y «nunca se publica» de HU-131, y URL prefirmada vencida → 403
+- [ ] 6.4 `borradorDesdeModalidad` determinista (origen `plantilla` por campo), sin modalidad → remite al selector, confirmar con campos editados (`origen = persona`) y descartar sin tocar la ficha; 0 llamadas salientes; verificar los cuatro escenarios de HU-140 y el test de 0 llamadas externas
+- [ ] 6.5 Fidelidad con captura MCP de `perfil-editor--cambios-declarados`, `perfil-editor--incompleto-al-guardar`, `perfil-editor--adjunto-no-admitido`, `borrador-evidencia`, `borrador-evidencia--campo-ambiguo`, `borrador-evidencia--sin-texto`
+- [ ] 6.6 Journey smoke: editar un publicado → ver impacto → confirmar; adjuntar evidencia → descargarla como administradora → pedir borrador → confirmarlo → la ficha del portal muestra el reporte sin el artefacto; evidencia en `ss6/` y checkpoint
+
+## 7. Sub-slice 7 — Disponibilidad, vigencia y pausa (HU-132, HU-136, HU-133)
+
+- [ ] 7.1 Cambio de disponibilidad desde el listado, uno o en bloque con resultado por perfil, fecha de actualización y auditoría; observador sin control y 403; verificar los tres escenarios de HU-132 y la banda del portal de inmediato
+- [ ] 7.2 Pausa con motivo del catálogo (sale del portal, `pausado_en`, auditoría) y la salida «eso no es una pausa sino disponibilidad»; verificar los escenarios «pausa con motivo» y «el motivo es una fecha» de HU-133
+- [ ] 7.3 Bandeja de vigencia con `Reloj.fechaHoy()` de Bogotá: publicados sin actualizar > 30 días por antigüedad, «por confirmar» al principio, pausados > 30 días con motivo, fecha y días, «dato incompleto», vacía explícita, acciones en fila (dos clics, reactivar, archivar); verificar los cinco escenarios de HU-136, los dos de umbral de HU-133 (31 días sí, 30 no) y V3-4
+- [ ] 7.4 Fidelidad con captura MCP de `inventario-perfiles--lote`, `inventario-perfiles--pausar-motivo`, `bandeja-vigencia`, `bandeja-vigencia--vacia`, `bandeja-vigencia--pausado-reactivar`
+- [ ] 7.5 Journey smoke: actualizar en bloque → pausar con motivo → con reloj a +31 días la bandeja lo muestra → reactivar desde la bandeja; evidencia en `ss7/` y checkpoint
+
+## 8. Sub-slice 8 — Incoherencias y archivo (HU-134, HU-135)
+
+- [ ] 8.1 `evaluarCoherencia` con la matriz D5 corregida (colocado con fecha es coherente) y RF-8.14.4; tabla de verdad exhaustiva estado × colocado × disponibilidad × antigüedad; verificar los cinco escenarios de HU-134 y que ninguna otra combinación se marca
+- [ ] 8.2 Señal en la fila (rojo ALTA con la contradicción nombrada, MEDIA sin rojo), acción que corrige sin salir del listado, bloqueo al publicar y marca en la vista previa de importación; verificar en panel e importación
+- [ ] 8.3 Archivar: «eliminar» archiva con `archivado_en`, idempotente sin tocar fecha ni historial, observador 403 sin cambio, sin ninguna ruta de borrado físico (grep de `DELETE` en repositorios de inventario en CI); verificar los cuatro escenarios de HU-135 y la regresión del enlace curado con un archivado
+- [ ] 8.4 Fidelidad con captura MCP de `inventario-perfiles--incoherencia`, `inventario-perfiles--archivar`
+- [ ] 8.5 Journey smoke: pausado con fecha → incoherencia ALTA en la fila → corregir → publicar; archivar → el enlace curado lo muestra fuera del banco; evidencia en `ss8/` y checkpoint
+
+## 9. Sub-slice 9 — Colocados, carga de Operaciones y observador (HU-137, HU-150, HU-124)
+
+- [ ] 9.1 Migración expand: `colocaciones`, `cargas_operaciones`, `diferencias_operaciones`; trabajo del worker (`origen = migracion`) que pasa los perfiles `colocado` a `publicado` + colocación; migración contract que retira `colocado` del CHECK y reescribe `estado_enlace_perfil`, `estado_seleccion_perfil` y `catalogo_publicable`; verificar V3-7, V3-2 y la regresión completa de `aterrizaje-curado` y `generacion-enlaces`
+- [ ] 9.2 Registrar colocado en el panel (cliente, inicio, liberación obligatoria, disponibilidad = liberación, fuente panel) y pestaña por vencimiento con los de 60 días destacados; verificar los cuatro escenarios de HU-137 y el colocado visible en el portal con su banda
+- [ ] 9.3 Carga de Operaciones JSON/CSV (columnas mínimas, resto ignorado e informado, filas válidas aplicadas, erróneas con número y motivo, otro formato rechazado entero), fecha de corte = momento de la carga, «dato desincronizado» a los > 7 días, «diferencia con Operaciones» con los dos valores y decisión; auditoría `origen = sincronizacion`; verificar los cinco escenarios de HU-150 (tabla 7 → sin aviso, 8 → aviso)
+- [ ] 9.4 Observador: inventario, enlaces y colocados sin controles de escritura; rechazo por ruta directa explicado y auditado como `acceso_rechazado`; botón de aviso a la administradora por `notificar` con el perfil identificado; matriz completa de acciones de EP-006 con V2-3; verificar los tres escenarios de HU-124 y el delta de `acceso-panel`
+- [ ] 9.5 Registrar en `docs/adr/_backlog-arquitectonico.md` la enmienda de ADR-0009 (`sincronizar_colocados` no se construye en v1, D8) y la de ADR-0003 (estado `colocado` retirado); verificar que el tablero las cita
+- [ ] 9.6 Fidelidad con captura MCP de `colocados`, `colocados--registrar`, `colocados--sin-fecha-liberacion`, `colocados--en-el-portal`, `colocados--carga-operaciones`, `colocados--carga-filas-con-error`, `colocados--diferencia-operaciones`, `colocados--formato-no-admitido`, `colocados--corte-desactualizado`, `inventario-perfiles--observador`, `perfil-editor--observador`
+- [ ] 9.7 Journey smoke: registrar un colocado → pestaña ordenada → cargar Operaciones con una diferencia → el panel gana → entrar como observador y ver sin editar; evidencia en `ss9/` y checkpoint
+
+## 10. Sub-slice 10 — Accesos, contacto y auditoría (HU-151, HU-147, HU-138)
+
+- [ ] 10.1 Migración: `usuarios_panel` con `dado_de_baja_en` y `actualizado_por`, `sesiones_panel.rol_al_abrir`; función con bloqueo de fila para la invariante «al menos un administrador activo»; verificar V3-7, V8-10 y el test concurrente de dos bajas
+- [ ] 10.2 Pantalla y endpoints de accesos (alta solo `@trycore.com`, cambio de rol, baja lógica, auditados con rol anterior y nuevo); verificar los escenarios de alta, correo externo y último administrador de HU-151
+- [ ] 10.3 Corte de sesión en la siguiente petición (`conSesionPanel` relee `activo` y `rol` con la sesión); baja con respuesta idéntica y sin código encolado; verificar los escenarios de cambio de rol y baja de HU-151 y la carrera petición en curso ↔ baja
+- [ ] 10.4 `configuracion_contacto` y vista `operacion.contacto_trycore`; componente `ContactoTrycore` en las cinco pantallas de contacto del portal (retira la constante `CONTACTO` de EP-001), edición auditada, rechazo de correo externo, observador en lectura y 403 por petición directa; verificar los cinco escenarios de HU-147 en las cinco pantallas
+- [ ] 10.5 Consulta de auditoría por perfil descifrada en el panel (campo, antes, después, quién, cuándo, origen; enlace al lote o a la carga con su fecha de corte; archivado como cambio de estado); verificar los cinco escenarios de HU-138 con historia generada por todas las vías de los sub-slices 1–9, y que una sesión vencida no deja cambio sin autor
+- [ ] 10.6 Fidelidad con captura MCP de `admin-accesos`, `admin-accesos--alta`, `admin-accesos--correo-externo`, `admin-accesos--cambio-rol`, `admin-accesos--baja`, `admin-accesos--ultimo-admin`, `admin-contacto`, `admin-contacto--correo-externo`, `admin-contacto--observador`, `auditoria-perfil`, `auditoria-perfil--archivado`
+- [ ] 10.7 Journey smoke: inscribir un observador → entra con código → bajarlo de rol a otra administradora corta su sesión → cambiar el contacto → el portal lo muestra → el registro del perfil muestra cada cambio con autor; evidencia en `ss10/` y checkpoint
+
+## 11. Cierre de la épica
+
+- [ ] 11.1 Recorrido integrado de punta a punta (runner `integration-check`): catálogo → perfil → consentimiento → evidencia → publicar → importar y revertir → disponibilidad y vigencia → colocado → observador → auditoría; verificar en verde con la cola real y los dobles declarados de Mailgun, Gemini y Spaces
+- [ ] 11.2 Tests de contrato (Newman) de todos los endpoints nuevos del panel; verificar la colección en verde en la fase api
+- [ ] 11.3 Fidelidad final: las 66 pantallas de EP-006 capturadas contra el prototipo y desviaciones aprobadas registradas en `design.md`; verificar el conteo contra el manifiesto
+- [ ] 11.4 Verificación adversarial de cableado (`wiring-adversarial-verifier`, contexto virgen) y cierre de `wiring_verified`; retirar HU-149 del grafo del hub (condición del DoR) y corregir `design_source_applies` en la consola; verificar con `slice-ops.sh status`
+- [ ] 11.5 DoD con `dor-dod-gatekeeper`; referencias de vuelta `> OpenSpec change: administracion-del-inventario` en EP-006 y en las 28 HU; verificar con `change-epic-coherence`
+- [ ] 11.6 PR a `main` y archivo del change (`openspec archive administracion-del-inventario`) con los specs sincronizados en `openspec/specs/`; verificar `openspec validate --specs` en verde tras archivar
