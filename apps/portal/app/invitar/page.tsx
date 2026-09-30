@@ -44,7 +44,7 @@ export default async function Invitar() {
             </span>
             <p>
               <span className="pp-aviso__titulo">{`Talento Humano no aprobó la invitación de ${rechazada.nombre ?? rechazada.correo}.`}</span>
-              {`Esa persona sigue sin acceso. Motivo: «${rechazada.motivo}»`}
+              {`${rechazada.nombre?.trim().split(/\s+/)[0] ?? "Esa persona"} sigue sin acceso. Motivo: «${rechazada.motivo}»`}
               <span className="ic-aviso__linea">
                 {"Si tienes dudas, escribe a People Service: "}
                 <span className="ic-aviso__correo">{CONTACTO}</span>

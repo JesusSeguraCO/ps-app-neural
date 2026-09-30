@@ -278,6 +278,8 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
       ).text();
       expect(pagina).toContain("Talento Humano no aprobó la invitación de Sebastián Mora.");
       expect(pagina).toContain("Correo de una empresa externa.");
+      // Por su nombre de pila, como el prototipo invitar-colega--rechazada.
+      expect(pagina).toContain("Sebastián sigue sin acceso.");
       expect(pagina).toContain("people.service@trycore.com");
       await post(portal, "/api/v1/acceso/codigo", {
         token: e.token,

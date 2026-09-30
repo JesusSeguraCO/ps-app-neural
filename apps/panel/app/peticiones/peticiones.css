@@ -9,3 +9,8 @@
 .pi-invitados .pp-fila { align-items: center; }
 /* Con la hoja abierta el fondo no desplaza: la pantalla mide lo que el viewport. */
 .pi-con-hoja .pp-panel { height: 100vh; overflow: hidden; }
+@media (max-width: 767px) {
+  .pp-fila__acciones .pp-btn { flex: 1 1 0; }
+  .pi-invitados .pp-fila__acciones { justify-content: flex-start; }
+  .pp-hoja__pie .pp-btn { flex: 1 1 0; }
+}
