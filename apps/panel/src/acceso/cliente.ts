@@ -6,9 +6,13 @@ function tokenCsrf(): string {
   return par ? decodeURIComponent(par.slice(COOKIE_CSRF.length + 1)) : "";
 }
 
-export async function enviarJson(ruta: string, cuerpo: unknown): Promise<Response> {
+export async function enviarJson(
+  ruta: string,
+  cuerpo: unknown,
+  metodo: "POST" | "PATCH" = "POST",
+): Promise<Response> {
   return fetch(ruta, {
-    method: "POST",
+    method: metodo,
     headers: { "content-type": "application/json", "x-ps-csrf": tokenCsrf() },
     body: JSON.stringify(cuerpo),
     credentials: "same-origin",

@@ -9,6 +9,9 @@ export const MatrizPermisos = {
   "enlaces.revocar": ["administrador"],
   "invitaciones.decidir": ["administrador"],
   "accesos.desbloquear": ["administrador"],
+  // EP-006 (diseño §9): escribir el inventario es solo de la administradora.
+  "catalogo.escribir": ["administrador"],
+  "lexico.escribir": ["administrador"],
 } as const satisfies Record<string, readonly RolPanel[]>;
 
 export type AccionPanel = keyof typeof MatrizPermisos;

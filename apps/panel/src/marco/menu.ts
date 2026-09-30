@@ -34,13 +34,13 @@ export const MENU_PANEL: SeccionMenu[] = [
       {
         clave: "catalogos",
         etiqueta: "Catálogos",
-        ruta: null,
+        ruta: "/catalogos",
         icono: "M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z",
       },
       {
         clave: "lexico",
         etiqueta: "Léxico",
-        ruta: null,
+        ruta: "/lexico",
         icono: "M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6",
       },
     ],

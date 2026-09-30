@@ -1,0 +1,41 @@
+/* Pantalla lexico-busqueda del prototipo y sus variantes (prefijo lx-). */
+.lx-principal { display: grid; gap: var(--tc-sp-10); min-width: 0; }
+.lx-principal > * { min-width: 0; }
+.lx-termino { overflow-wrap: anywhere; }
+.lx-flecha { color: var(--tc-text-s); font-weight: var(--tc-fw-regular); }
+.lx-eq { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-h); }
+.lx-eq__tipo { color: var(--tc-text-m); }
+.lx-eq__sep { margin: 0 var(--tc-sp-1); color: var(--tc-text-s); }
+.lx-ejemplo { overflow-wrap: anywhere; }
+.lx-acciones { flex-wrap: wrap; justify-content: flex-end; }
+.lx-garantia { margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.lx-tabla-marco { max-height: none; }
+.lx-tabla th:nth-child(1) { width: 30%; }
+.lx-tabla th:nth-child(3) { width: 200px; }
+.lx-eq--bloque { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+.lx-cabecera { flex-wrap: wrap; }
+.lx-tabla td.pp-tabla__num { white-space: normal; }
+.lx-tabla th:nth-child(4) { width: 80px; }
+.lx-tabla { table-layout: fixed; }
+.lx-tabla .lx-eq--bloque { max-width: none; }
+.lx-fecha { white-space: nowrap; }
+.lx-sinonimos { display: block; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.lx-periodo { width: min(220px, 100%); margin-bottom: var(--tc-sp-2); }
+.lx-periodo .pp-input { min-height: 36px; font-size: var(--tc-fs-small); }
+.lx-consulta { overflow-wrap: anywhere; }
+.lx-norec { text-decoration: underline; text-decoration-style: wavy; text-decoration-color: var(--tc-amber); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.lx-fila-resuelta .pp-fila__titulo { color: var(--tc-text-m); font-weight: var(--tc-fw-medium); }
+.lx-alta { position: sticky; top: var(--tc-sp-6); padding: var(--tc-sp-5); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+.lx-alta__titulo { margin: 0 0 var(--tc-sp-1); font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); }
+.lx-alta__origen { margin: 0 0 var(--tc-sp-5); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); overflow-wrap: anywhere; }
+.lx-alta .pp-form { gap: var(--tc-sp-4); }
+.lx-alta .pp-form__acciones { padding-top: var(--tc-sp-4); }
+.lx-sugerencias { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; }
+@media (max-width: 1100px) { .lx-alta { position: static; } }
+@media (max-width: 767px) {
+  .lx-principal { gap: var(--tc-sp-8); }
+  .lx-periodo { width: 100%; }
+  .lx-periodo .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); }
+  .lx-acciones .pp-btn { flex: 1 1 auto; }
+  .pp-panel__topbar .pp-meta { display: none; }
+}

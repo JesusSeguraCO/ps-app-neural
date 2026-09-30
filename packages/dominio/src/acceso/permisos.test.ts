@@ -9,6 +9,12 @@ describe("MatrizPermisos (ADR-0002 H19)", () => {
     const permitidas = Object.keys(MatrizPermisos).filter((a) => puede("observador", a as never));
     expect(permitidas).toEqual(["sesion.salir"]);
   });
+  it("EP-006: catálogos y léxico solo los escribe la administradora", () => {
+    for (const accion of ["catalogo.escribir", "lexico.escribir"] as const) {
+      expect(puede("administrador", accion)).toBe(true);
+      expect(puede("observador", accion)).toBe(false);
+    }
+  });
   it("una acción desconocida no es acción", () => {
     expect(esAccion("enlaces.generar")).toBe(true);
     expect(esAccion("inventario.borrar")).toBe(false);
