@@ -3921,6 +3921,174 @@
               ]
             }
           }
+        },
+        {
+          "name": "tope: cuarto colega → 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}; __Host-ps={{sesPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/invitaciones",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"correo\":\"colega4-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "tope: quinto colega → 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}; __Host-ps={{sesPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/invitaciones",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"correo\":\"colega5-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "tope: sexto colega en la misma hora → 429 en_espera (design §2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 429\", () => pm.response.to.have.status(429));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"cuerpo exacto {motivo: en_espera, hasta}\", () => { pm.expect(Object.keys(b)).to.have.members([\"motivo\", \"hasta\"]); pm.expect(b.motivo).to.eql(\"en_espera\"); });",
+                  "pm.test(\"hasta es una fecha futura (menos de 1 h)\", () => { const d = Date.parse(b.hasta) - Date.now(); pm.expect(d).to.be.above(0); pm.expect(d).to.be.at.most(60 * 60 * 1000); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}; __Host-ps={{sesPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/invitaciones",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"correo\":\"colega6-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
       ]
     },
@@ -5723,6 +5891,290 @@
                 "renovar",
                 "00000000-0000-4000-8000-000000000000"
               ]
+            }
+          }
+        },
+        {
+          "name": "forma: lo escrito no es un correo → 400 entrada_invalida (design §2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"cuerpo exacto {motivo: entrada_invalida}\", () => pm.expect(pm.response.json()).to.eql({ motivo: \"entrada_invalida\" }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/acceso/renovar",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "acceso",
+                "renovar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"{{tokenVencido}}\",\"correo\":\"no es un correo <b>x</b>\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "tope: correo distinto 3 → 202",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 202\", () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/acceso/renovar",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "acceso",
+                "renovar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"{{tokenVencido}}\",\"correo\":\"tope3-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "tope: correo distinto 4 → 202",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 202\", () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/acceso/renovar",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "acceso",
+                "renovar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"{{tokenVencido}}\",\"correo\":\"tope4-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "tope: correo distinto 5 → 202",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 202\", () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/acceso/renovar",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "acceso",
+                "renovar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"{{tokenVencido}}\",\"correo\":\"tope5-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "tope: sexta petición del enlace en la misma hora → 429 en_espera (design §2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 429\", () => pm.response.to.have.status(429));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"cuerpo exacto {motivo: en_espera, hasta}\", () => { pm.expect(Object.keys(b)).to.have.members([\"motivo\", \"hasta\"]); pm.expect(b.motivo).to.eql(\"en_espera\"); });",
+                  "pm.test(\"hasta es una fecha futura (menos de 1 h)\", () => { const d = Date.parse(b.hasta) - Date.now(); pm.expect(d).to.be.above(0); pm.expect(d).to.be.at.most(60 * 60 * 1000); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "__Host-csrf={{csrfPortal}}"
+              },
+              {
+                "key": "x-ps-csrf",
+                "value": "{{csrfPortal}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{portal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{portal}}/api/v1/acceso/renovar",
+              "host": [
+                "{{portal}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "acceso",
+                "renovar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"{{tokenVencido}}\",\"correo\":\"tope6-{{run}}@{{dominioCliente}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }

@@ -212,3 +212,65 @@ test.describe("cara cliente", () => {
     await expect(page.locator(".pp-perfil")).toHaveCount(0);
   });
 });
+
+// Topes contra la inundación de avisos a Talento Humano (design §2 «valida forma y límite»): la
+// pantalla explica qué pasó y desde qué hora se puede volver a pedir, sin error crudo.
+test.describe("topes de renovación e invitaciones", () => {
+  const hmac = (c: string) => createHmac("sha256", clave).update(c).digest();
+  async function consulta(sql: string, params: unknown[]) {
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    try {
+      await bd.query(sql, params);
+    } finally {
+      await bd.end();
+    }
+  }
+
+  test("renovar con el tope del enlace alcanzado → 429 y la hora desde la que se puede volver a pedir", async ({ page }) => {
+    const correo = `tope-${randomBytes(3).toString("hex")}@cliente.com`;
+    const s = await sembrar({ vencido: true, correo });
+    for (let k = 0; k < 5; k++)
+      await consulta(`INSERT INTO identidad.renovaciones (enlace_id, correo_hmac, correo) VALUES ($1, $2, $3)`, [
+        s.enlaceId,
+        hmac(`inventado${k}@x.com`),
+        `inventado${k}@x.com`,
+      ]);
+    await page.goto(`/e/#t=${s.token}`);
+    await page.getByLabel("Tu correo corporativo").fill(correo);
+    const resp = page.waitForResponse((r) => r.url().includes("/api/v1/acceso/renovar"));
+    await page.getByRole("button", { name: "Pedir un enlace nuevo" }).click();
+    expect((await resp).status()).toBe(429);
+    const aviso = page.getByText(/Ya se pidieron varios enlaces nuevos para este enlace\./);
+    await expect(aviso).toContainText(/puedes volver a pedirlo desde las \d{1,2}:\d{2} [ap]\. m\.$/);
+    await expect(aviso).not.toContainText("m..");
+  });
+
+  test("renovar con algo que no es un correo → 400 y cómo escribirlo", async ({ page }) => {
+    const s = await sembrar({ vencido: true, correo: `forma-${randomBytes(3).toString("hex")}@cliente.com` });
+    await page.goto(`/e/#t=${s.token}`);
+    await page.getByLabel("Tu correo corporativo").fill("a@b");
+    const resp = page.waitForResponse((r) => r.url().includes("/api/v1/acceso/renovar"));
+    await page.getByRole("button", { name: "Pedir un enlace nuevo" }).click();
+    expect((await resp).status()).toBe(400);
+    await expect(page.getByText("Escribe un correo válido, por ejemplo nombre@empresa.com.")).toBeVisible();
+  });
+
+  test("invitar con el tope del invitado alcanzado → 429 y la hora", async ({ page, context, baseURL }) => {
+    const s = await sembrar({ correo: `inv-${randomBytes(3).toString("hex")}@cliente.com` });
+    for (let k = 0; k < 5; k++)
+      await consulta(
+        `INSERT INTO identidad.invitaciones_solicitadas (enlace_id, solicitado_por, correo_propuesto, correo_hmac) VALUES ($1, $2, $3, $4)`,
+        [s.enlaceId, s.invitadoId, `colega${k}@cliente.com`, hmac(`colega${k}@cliente.com`)],
+      );
+    await abrirSesion(context, baseURL!, s.enlaceId, s.invitadoId);
+    await page.goto("/invitar");
+    await page.locator("#ic-correo").fill("nuevo@cliente.com");
+    const resp = page.waitForResponse((r) => r.url().includes("/api/v1/invitaciones"));
+    await page.locator('button[type="submit"]').click();
+    expect((await resp).status()).toBe(429);
+    const aviso = page.getByText(/Ya pediste varias invitaciones en la última hora\./);
+    await expect(aviso).toContainText(/Podrás pedir otra desde las \d{1,2}:\d{2} [ap]\. m\.$/);
+    await expect(aviso).not.toContainText("m..");
+  });
+});

@@ -153,7 +153,7 @@ export function PuertaCliente({
       }
       if (r.status === 429 && cuerpo.motivo === "en_espera") {
         setFallo(
-          `Ya se pidieron varios enlaces nuevos para este enlace. Puedes volver a pedirlo desde las ${desbloqueo(new Date(cuerpo.hasta))}. Si es urgente, escribe a ${CONTACTO}.`,
+          `Ya se pidieron varios enlaces nuevos para este enlace. Si es urgente, escribe a ${CONTACTO}; si no, puedes volver a pedirlo desde las ${desbloqueo(new Date(cuerpo.hasta))}`,
         );
         return;
       }

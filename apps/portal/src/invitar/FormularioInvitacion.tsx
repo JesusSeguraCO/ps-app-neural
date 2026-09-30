@@ -35,7 +35,7 @@ export function FormularioInvitacion() {
     }
     const cuerpo = r ? await r.json().catch(() => ({})) : {};
     if (cuerpo.motivo === "en_espera" && cuerpo.hasta) {
-      setError(`Ya pediste varias invitaciones en la última hora. Podrás pedir otra desde las ${horaDesbloqueoDeColombia(new Date(cuerpo.hasta))}.`);
+      setError(`Ya pediste varias invitaciones en la última hora. Podrás pedir otra desde las ${horaDesbloqueoDeColombia(new Date(cuerpo.hasta))}`);
       return;
     }
     setError(ERRORES[cuerpo.motivo] ?? "No pudimos pedir la invitación. Inténtalo de nuevo en unos segundos.");
