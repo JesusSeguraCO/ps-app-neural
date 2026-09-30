@@ -20,18 +20,18 @@ depende_de: [HU-131]
 
 ### Happy path — borrador por plantilla para mi confirmación
 
-**Dado** que un perfil tiene la modalidad de prueba elegida del catálogo y un artefacto adjunto,
+**Dado** que un perfil tiene la modalidad de prueba elegida del catálogo,
 **cuando** pido el borrador,
 **Entonces** el sistema precarga desde la modalidad de prueba el enunciado del reto, los entregables esperados y los criterios evaluados
 **Y** indica en cada uno de esos campos que salió de la modalidad de prueba
 **Y** el borrador queda para mi revisión y nunca se publica sin que yo lo confirme
 
-### Error — artefacto sin texto aprovechable
+### Error — el perfil no tiene modalidad de prueba elegida
 
-**Dado** que el artefacto adjunto está vacío, es ilegible o no contiene texto que el sistema pueda leer,
+**Dado** que un perfil en borrador todavía no tiene modalidad de prueba elegida,
 **cuando** pido el borrador,
-**Entonces** el sistema precarga igualmente lo que viene de la modalidad de prueba
-**Y** el adjunto no se borra
+**Entonces** el panel no precarga nada y me explica que el borrador sale de la modalidad de prueba
+**Y** me lleva al selector de modalidad del perfil (HU-125)
 
 ### Edge case — corrijo un campo que el artefacto no sostiene
 
@@ -46,6 +46,8 @@ depende_de: [HU-131]
 **Entonces** la ficha no recibe ningún campo de ese borrador
 
 ## Notas
+
+**Revisión DoR 2026-09-30 (sponsor):** sin modalidad elegida no hay borrador: el panel lo impide y remite al selector (HU-125). El borrador **no necesita artefacto adjunto**: tras D11 la precarga solo usa la modalidad de prueba, y la evidencia se puede adjuntar antes o después (HU-131). En los dos edge, quien compara el campo con el artefacto es la administradora, no el sistema.
 
 Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, precarga desde la modalidad; **RF-8.11.4**, confirma una persona) y **B.9.3** (carga asistida), con los dos candados de B.9.3. La fecha y el resultado no se leen del artefacto (D11): los escribe Talento Humano.
 
