@@ -77,8 +77,9 @@ Verificadas con Chrome DevTools contra `docs/05-prototipo/pantallas/` (2026-09-2
 
 - **Encuadre**: categorías y roles activos del catálogo con su conteo de publicados, incluidos los de 0 (vista `operacion.taxonomia_banco`, migración 0010); sin «Pedir el perfil a medida» (EP-010, HU-093).
 - **Banco («Buscar»)**: el banco completo o filtrado por una sola opción; sin buscador de texto (EP-002) ni bloques de evidencia y acciones en las tarjetas (EP-006/EP-004). Una opción sin perfiles vuelve al encuadre con el aviso y «Ampliar la búsqueda».
+- **Sin «Publicados recientemente» ni la nota «Todos pasaron las 5 verificaciones · Qué verificamos»** (prototipo `app-shell--sin-seleccion`, revisión de fidelidad pase 3): ninguna HU ni el PRD los piden; quedan como funcionalidad de una versión futura. Las verificaciones son **por perfil** (el cliente las ve en cada perfil, bloques Verificado/Declarado de EP-006), no una afirmación global del banco. El banco muestra todos los perfiles publicados. Decisión del sponsor, 2026-09-30.
 - **Ninguno publicado**: el contexto que se ofrece al explorar son las categorías de la selección y se aplica como filtro; el prototipo muestra criterios «deseables», que dependen del motor de criterios (EP-002/EP-009). La categoría de un perfil que dejó de estar publicado no es dato personal y la vista la expone siempre.
-- **Mi equipo**: `identidad.equipos` / `equipo_perfiles`, creado vacío al primer ingreso (al verificar el código y, si faltara, al cargar la página); `ps_portal` sin escritura de perfiles hasta EP-004. La barra muestra su conteo; la página de Mi equipo llega con EP-004.
+- **Mi equipo**: `identidad.equipos` / `equipo_perfiles`, creado vacío al primer ingreso (al verificar el código y, si faltara, al cargar la página); `ps_portal` sin escritura de perfiles hasta EP-004. La barra muestra su conteo; la página de Mi equipo llega con EP-004. Por eso «Ninguno publicado» no ofrece «Seguir con Mi equipo» (prototipo `aterrizaje-curado--sin-publicados`): llega con EP-004. Registrado el 2026-09-30.
 
 ### Sub-slice 6c (renovación sin HubSpot)
 
