@@ -9,12 +9,7 @@
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes que la HU exige son VARIANTES de pantalla en archivos
     propios (vista-previa-ficha--estado.html), no interacciones.
-  Estado de ESTA variante: --bloque-incompleto (AC de error de HU-129). Perfil sin publicar
-  (Valentina Ospina, PS-0151) con tres bloques sin datos suficientes. La vista previa los muestra
-  tal como los vería el cliente («Sin dato registrado», Sello Personal con una sola competencia) y
-  una capa de revisión propia del panel los marca con un número que remite al lateral. El lateral
-  separa lo que impide publicar (trayectoria vacía) de lo que solo empobrece la ficha; «Publicar»
-  queda deshabilitado y el aviso de encima dice qué pasa y cómo arreglarlo.
+  Estado de ESTE archivo (vista-previa-ficha--bloque-incompleto): --bloque-incompleto (HU-129 error). Perfil sin publicar (Valentina Ospina, PS-0151): al faltarle la trayectoria, el bloque que depende de ella aparece marcado como incompleto y nombra el dato; el panel dice que no puede publicarse hasta completarlo y «Publicar» queda deshabilitado. El Sello Personal parcial solo empobrece la ficha. Los bloques opcionales sin datos no se dibujan (ver --bloque-opcional).
   Oficio v2: sin pestañas de versión (no hay versión publicada con qué comparar); una sola primaria
   («Publicar», deshabilitada con motivo); estado como punto + texto; filas con hairline.
   Trazabilidad: épica EP-006 · historias HU-129 · registrada en ../manifest.json
@@ -315,7 +310,7 @@
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
       <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
       <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
       <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
@@ -353,7 +348,7 @@
             <button type="button" class="pp-btn pp-btn--primario" disabled aria-describedby="vp-motivo">Publicar</button>
           </div>
         </div>
-        <div class="pp-aviso pp-aviso--danger vp-motivo" id="vp-motivo" role="alert"><span class="pp-aviso__icono" aria-hidden="true">!</span><p>No se puede publicar: falta la trayectoria.</p><a class="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="perfil-editor--campos-incompletos.html#pe-trayectoria">Completar la trayectoria</a></div>
+        <div class="pp-aviso pp-aviso--danger vp-motivo" id="vp-motivo" role="alert"><span class="pp-aviso__icono" aria-hidden="true">!</span><p>No se puede publicar hasta completar la trayectoria, que la ficha exige.</p><a class="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="perfil-editor--campos-incompletos.html#pe-trayectoria">Completar la trayectoria</a></div>
         <div class="vp-rejilla">
           <div class="vp-columna">
             <!-- región: versión de la ficha + modalidad de la necesidad simulada -->
@@ -385,7 +380,7 @@
                   </section>
                   <section class="fp-seccion" aria-labelledby="fp-declarado">
                     <div class="pp-seccion__cabecera"><h3 class="pp-seccion__titulo" id="fp-declarado">Declarado por la profesional</h3></div>
-                    <dl class="pp-datos"><div class="pp-datos__fila vp-marca vp-marca--bloquea" id="vp-fila-trayectoria"><dt>Trayectoria</dt><dd><span class="vp-num vp-num--bloquea" aria-hidden="true">1</span><span class="pp-sr">Marca 1 del panel, impide publicar: </span><span class="fp-ausente">Sin dato registrado</span></dd></div><div class="pp-datos__fila"><dt>Stack</dt><dd>C# · .NET 8 · Azure · SQL Server · Azure DevOps</dd></div><div class="pp-datos__fila"><dt>Sectores</dt><dd>Seguros · Salud</dd></div><div class="pp-datos__fila vp-marca"><dt>Idiomas</dt><dd><span class="vp-num" aria-hidden="true">3</span><span class="pp-sr">Marca 3 del panel, solo empobrece la ficha: </span><span class="fp-ausente">Sin dato registrado</span></dd></div><div class="pp-datos__fila"><dt>Modalidad</dt><dd>Remoto · Colombia</dd></div></dl>
+                    <dl class="pp-datos"><div class="pp-datos__fila vp-marca vp-marca--bloquea" id="vp-fila-trayectoria"><dt>Trayectoria</dt><dd><span class="vp-num vp-num--bloquea" aria-hidden="true">1</span><span class="pp-sr">Marca 1 del panel, impide publicar: </span><span class="fp-ausente">Sin dato registrado</span></dd></div><div class="pp-datos__fila"><dt>Stack</dt><dd>C# · .NET 8 · Azure · SQL Server · Azure DevOps</dd></div><div class="pp-datos__fila"><dt>Sectores</dt><dd>Seguros · Salud</dd></div><div class="pp-datos__fila"><dt>Modalidad</dt><dd>Remoto · Colombia</dd></div></dl>
                   </section>
                 </div>
                 <footer class="pp-hoja__pie">
@@ -397,15 +392,14 @@
           <!-- región: lateral -->
           <aside class="vp-lateral" aria-label="Revisión antes de publicar">
             <section class="pp-seccion" aria-labelledby="vp-bloques">
-              <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="vp-bloques">Bloques incompletos</h2><span class="pp-meta"><span class="pp-mono">3</span> en la ficha</span></div>
+              <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="vp-bloques">Bloques incompletos</h2><span class="pp-meta"><span class="pp-mono">2</span> en la ficha</span></div>
               <p class="vp-grupo"><span>Impide publicar</span><span class="pp-mono">1</span></p>
               <ul class="vp-bloques">
                 <li class="vp-bloque"><a class="vp-num vp-num--bloquea" href="#vp-fila-trayectoria" aria-label="Ir a la trayectoria en la ficha">1</a><div><p class="vp-bloque__campo">Trayectoria</p><p>Sin experiencias, el cliente no tiene con qué evaluar el perfil.</p></div></li>
               </ul>
-              <p class="vp-grupo"><span>Solo empobrece la ficha</span><span class="pp-mono">2</span></p>
+              <p class="vp-grupo"><span>Solo empobrece la ficha</span><span class="pp-mono">1</span></p>
               <ul class="vp-bloques">
                 <li class="vp-bloque"><span class="vp-num" aria-hidden="true">2</span><div><p class="vp-bloque__campo">Sello Personal</p><p><span class="pp-mono">1</span> de <span class="pp-mono">3</span> competencias verificadas. Las otras dos las registra el equipo de verificación.</p><a class="pp-enlace" href="#editor-sello">Ver el Sello Personal</a></div></li>
-                <li class="vp-bloque"><span class="vp-num" aria-hidden="true">3</span><div><p class="vp-bloque__campo">Idiomas</p><p>Sin dato: no aparecerá en búsquedas que pidan un idioma.</p><a class="pp-enlace" href="#editor-idiomas">Añadir idiomas</a></div></li>
               </ul>
             </section>
           </aside>

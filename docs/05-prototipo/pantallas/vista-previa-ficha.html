@@ -9,12 +9,8 @@
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes que la HU exige son VARIANTES de pantalla en archivos
     propios (vista-previa-ficha--estado.html), no interacciones.
-  Estado de ESTA pantalla: base. Karen editó un perfil ya publicado (Laura Méndez, PS-0142) y abre
-  la vista previa: ve la ficha exacta del cliente con sus 3 cambios sin confirmar (happy path y
-  edge case de HU-129), la disponibilidad como banda, solo el país porque la necesidad simulada es
-  remota, y al lado la comparación antes/ahora con lo publicado (cada cambio enlaza a su campo del
-  editor). La pestaña «Lo que ve el cliente ahora» muestra la versión vigente.
-  Oficio v2 (DESIGN.md › Oficio): una sola primaria («Confirmar cambios», en el encabezado); estado
+  Estado de ESTE archivo (vista-previa-ficha): base — Karen editó un perfil ya publicado (Laura Méndez, PS-0142) y abre la vista previa con cambios sin guardar: ve la ficha exacta del cliente con el cambio aplicado mientras el portal sigue con la versión vigente (HU-129 edge «previsualizar un publicado»), la disponibilidad como banda y solo el país porque la necesidad simulada es remota (HU-129 happy path). Solo vista previa fiel: sin pestaña «lo que ve el cliente ahora» ni comparación lado a lado (D3); el antes/después por campo lo da HU-126 al guardar.
+  Oficio v2 (DESIGN.md › Oficio): una sola primaria («Guardar cambios», en el encabezado); estado
   como punto + texto; sin tarjetas en el lateral; la ficha es la misma de ficha-perfil v2 (una sola
   sección verificada, Sello Personal como texto) y va inerte: sus botones no son accionables aquí.
   Trazabilidad: épica EP-006 · historias HU-129 · registrada en ../manifest.json
@@ -314,7 +310,7 @@
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
       <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
       <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
       <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
@@ -345,11 +341,11 @@
         <div class="pp-encabezado">
           <div class="pp-encabezado__texto">
             <h1 class="pp-encabezado__titulo">Vista previa de la ficha</h1>
-            <p class="pp-encabezado__meta"><span class="pp-estado pp-estado--ok">Publicado</span> · Hasta que confirmes, el cliente ve la versión publicada.</p>
+            <p class="pp-encabezado__meta"><span class="pp-estado pp-estado--ok">Publicado</span> · 3 cambios sin guardar. Así la verá el cliente si guardas; el portal sigue con la versión vigente.</p>
           </div>
           <div class="pp-encabezado__acciones">
             <a class="pp-btn pp-btn--contorno" href="perfil-editor--cambios-declarados.html">Volver a editar</a>
-            <button type="button" class="pp-btn pp-btn--primario">Confirmar cambios</button>
+            <a class="pp-btn pp-btn--primario" href="perfil-editor--cambios-declarados.html">Guardar cambios</a>
           </div>
         </div>
 
@@ -357,10 +353,6 @@
           <div class="vp-columna">
             <!-- región: versión de la ficha + modalidad de la necesidad simulada -->
             <div class="vp-barra">
-              <div class="pp-pestanas" role="tablist" aria-label="Versión de la ficha">
-                <a class="pp-pestana" role="tab" aria-selected="true" aria-controls="vp-vista" href="#vp-vista">Con tus cambios</a>
-                <a class="pp-pestana" role="tab" aria-selected="false" aria-controls="vp-vista" href="#vp-vista">Lo que ve el cliente ahora</a>
-              </div>
               <fieldset class="vp-modalidad">
                 <legend>Ver como necesidad</legend>
                 <span class="vp-segmento">
@@ -398,20 +390,12 @@
             </div>
           </div>
           <!-- región: lateral -->
-          <aside class="vp-lateral" aria-label="Revisión antes de confirmar">
+          <aside class="vp-lateral" aria-label="Revisión antes de guardar">
             <section class="pp-seccion vp-listo" aria-label="Estado de la ficha">
-              <span class="pp-estado pp-estado--ok">Lista para confirmar</span>
-              <p class="pp-meta">Bloques completos y consentimiento registrado. Al confirmar, también se actualiza en los enlaces curados que la incluyen.</p>
+              <span class="pp-estado pp-estado--ok">Lista para publicar</span>
+              <p class="pp-meta">Bloques completos, consentimiento y modalidad de prueba registrados. La ficha ya lleva tus cambios; al guardar verás qué cambia para el cliente, campo por campo, antes de confirmar.</p>
             </section>
-            <section class="pp-seccion" aria-labelledby="vp-cambios">
-              <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="vp-cambios">Qué cambia</h2><span class="pp-meta">publicada el 12 sep 2026</span></div>
-              <ul class="vp-diff">
-                <li class="vp-diff__cabecera" aria-hidden="true"><span>Antes</span><span>Ahora</span></li>
-                <li class="vp-cambio"><p class="vp-cambio__campo">Disponibilidad<a class="pp-enlace" href="#editor-disponibilidad">Editar</a></p><p class="vp-cambio__antes"><span class="pp-sr">Antes: </span>Disponible ahora</p><p class="vp-cambio__ahora"><span class="pp-sr">Ahora: </span>En 2 a 4 semanas</p></li>
-                <li class="vp-cambio"><p class="vp-cambio__campo">Stack<a class="pp-enlace" href="#editor-stack">Editar</a></p><p class="vp-cambio__antes"><span class="pp-sr">Antes: </span>Java 11 · Spring Boot · Kafka</p><p class="vp-cambio__ahora"><span class="pp-sr">Ahora: </span>Java 17 · Spring Boot · Kafka · PostgreSQL · OpenShift</p></li>
-                <li class="vp-cambio"><p class="vp-cambio__campo">Trayectoria<a class="pp-enlace" href="#editor-trayectoria">Editar</a></p><p class="vp-cambio__antes"><span class="pp-sr">Antes: </span>2 experiencias</p><p class="vp-cambio__ahora"><span class="pp-sr">Ahora: </span>3 experiencias: se añade Desarrolladora junior · cooperativa financiera, 2016–2018</p></li>
-              </ul>
-            </section>
+            
           </aside>
         </div>
       </main>

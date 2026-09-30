@@ -9,19 +9,19 @@
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
     de pantalla en archivos propios (importar-perfiles con sufijo de estado), no interacciones.
-  Trazabilidad: épica EP-006 · historias HU-086, HU-088, HU-141, HU-142, HU-087 · registrada en ../manifest.json
+  Trazabilidad: épica EP-006 · historias HU-088, HU-086, HU-148, HU-141 · registrada en ../manifest.json
   Origen: v2-adaptar (ImportarPerfiles del panel de Talento Humano del v2). Cambia por las HU:
-  pegar celdas con emparejamiento de columnas y plantilla guardada (HU-086), modo explícito y
+  pegar celdas con emparejamiento de columnas (HU-086), emparejamiento guardado y reutilizado (HU-148), modo explícito y
   fusión campo a campo con [vaciar] (HU-141), vista previa agrupada con solo los campos que cambian
   (HU-086), plantilla de muestra y exportación en hoja de cálculo o JSON con campos internos
   marcados (HU-088), descarga de solo las filas con error (HU-142) y reversión de la última
   importación (HU-087). Nunca publica ni concede consentimiento.
   Oficio v2 (2026-09-27, feedback del sponsor + hallazgos Krug): un solo esquema de pasos (sin
-  numeración interna «1 · Origen»); sin panel lateral de instrucciones (exportar pasa a la cabecera,
+  numeración interna «1 · Origen»); sin panel lateral de instrucciones (exportar va primero como sección propia, D2;
   la plantilla es un enlace, las reglas de celda aparecen en la vista previa cuando ocurren); estado
   como punto + texto solo en las excepciones; modo como radio group compacto; filas densas en vez
   de tarjetas por grupo; resultado con toast; primaria a la derecha.
-  Esta vista: base · paso 1: pegar celdas, emparejar columnas, modo, plantilla y exportación (HU-086, HU-088, HU-141).
+  Estado de ESTE archivo (importar-perfiles): base — paso 1 del asistente. Primero el formato (D2): exportar el banco en hoja de cálculo o JSON y la plantilla de muestra, con «ver para copiar» si el navegador bloquea la descarga (HU-088). Después se pega la hoja: el sistema la reconoce como tabular sin decírselo y propone el emparejamiento de cada columna, o «no importar», para corregirlo (HU-086 happy path). Se puede elegir un emparejamiento guardado o guardar el corregido como plantilla (HU-148) y se declara el modo (HU-141).
 -->
 <html lang="es">
 <head>
@@ -271,6 +271,13 @@
     .ip-menu__nota { margin: 0; padding: var(--tc-sp-2) var(--tc-sp-3); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
 
     /* Paso 1 */
+    .ip-texto { max-width: 72ch; margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .ip-formato { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); }
+    .ip-formato .pp-meta { font-family: var(--pp-mono); }
+    .ip-guardado { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-3); margin-bottom: var(--tc-sp-3); }
+    .ip-guardado .pp-select { width: 280px; max-width: 100%; }
+    .ip-guardado .pp-input { min-height: 36px; font-size: var(--tc-fs-small); }
+    .ip-aviso { margin-bottom: var(--tc-sp-3); }
     .ip-seccion-meta { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
     .ip-pegado { min-height: 176px; font-family: var(--pp-mono); white-space: pre; overflow: auto; tab-size: 8; }
     .ip-bajo-campo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
@@ -414,7 +421,7 @@
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
       <a class="pp-sidelink" href="importar-perfiles.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
       <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
       <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
@@ -455,18 +462,28 @@
               <h1 class="pp-encabezado__titulo">Importar perfiles</h1>
               <p class="pp-encabezado__meta">Los perfiles nuevos entran en borrador. La importación nunca publica ni concede consentimiento.</p>
             </div>
-            <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--fantasma" href="importar-perfiles--revertir-no-ultima.html">Historial</a><details class="ip-menu">
-                <summary class="pp-btn pp-btn--contorno">Exportar banco</summary>
-                <div class="ip-menu__panel">
-                  <a class="ip-menu__item" href="#">Hoja de cálculo <span class="pp-meta">128 perfiles</span></a>
-                  <a class="ip-menu__item" href="#">JSON <span class="pp-meta">128 perfiles</span></a>
-                  <p class="ip-menu__nota">Mismo formato que acepta la importación. Los campos que no se publican van en columnas marcadas «interno». ¿No arranca la descarga? <a class="pp-enlace" href="#">Ver para copiar</a></p>
-                </div>
-              </details></div>
+            <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--fantasma" href="importar-perfiles--revertir-no-ultima.html">Historial</a></div>
           </div>
+          <section class="pp-seccion" aria-labelledby="t-formato">
+            <div class="pp-seccion__cabecera">
+              <h2 class="pp-seccion__titulo" id="t-formato">Parte del formato</h2>
+              <span class="ip-seccion-meta">Mismo formato que acepta la importación</span>
+            </div>
+            <p class="ip-texto">Exporta el banco o descarga la plantilla de muestra, edítala donde te resulte cómodo y pégala abajo. Una fila por perfil; las listas van en una celda separadas por punto y coma. Los campos que no se publican van marcados «interno» y el consentimiento nunca viaja en el archivo.</p>
+            <div class="ip-formato">
+              <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Exportar banco · hoja de cálculo <span class="pp-meta">128</span></a>
+              <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#">Exportar banco · JSON <span class="pp-meta">128</span></a>
+              <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="#">Plantilla de muestra</a>
+              <details class="ip-copiar"><summary class="pp-enlace">¿No arranca la descarga? Ver para copiar</summary><label class="pp-sr" for="copiar-plantilla">Contenido de la plantilla de muestra</label><textarea class="pp-input" id="copiar-plantilla" readonly wrap="off">codigo	nombre	apellido	rol	disponibilidad	estado
+PS-0142				Disponible ahora
+	Nuevo	Ejemplo	Analista QA	Disponible ahora
+PS-0099					archivado</textarea></details>
+            </div>
+          </section>
+
           <section class="pp-seccion" aria-labelledby="t-origen">
             <div class="pp-seccion__cabecera">
-              <h2 class="pp-seccion__titulo" id="t-origen">Origen</h2>
+              <h2 class="pp-seccion__titulo" id="t-origen">Pega tu hoja</h2>
               <label class="pp-btn pp-btn--contorno pp-btn--sm" for="archivo">Cargar archivo<input class="pp-sr" id="archivo" type="file" accept=".csv,.json,.tsv"></label>
             </div>
             <label class="pp-label pp-sr" for="pegado">Celdas copiadas de la hoja de cálculo, con la fila de títulos</label>
@@ -478,12 +495,6 @@ PS-0061	Santiago	Herrera	Líder técnico	Más de 2 meses
 …</textarea>
             <div class="ip-bajo-campo">
               <span id="deteccion" role="status"><span class="pp-estado pp-estado--ok">Hoja de cálculo reconocida</span><span>60 filas · 9 columnas</span></span>
-              <span>Plantilla de muestra: <a class="pp-enlace" href="#">hoja de cálculo</a> · <a class="pp-enlace" href="#">JSON</a> ·
-                <details class="ip-copiar"><summary class="pp-enlace">ver para copiar</summary><label class="pp-sr" for="copiar-plantilla">Contenido de la plantilla de muestra</label><textarea class="pp-input" id="copiar-plantilla" readonly wrap="off">codigo	nombre	apellido	rol	disponibilidad	estado
-PS-0142				Disponible ahora
-	Nuevo	Ejemplo	Analista QA	Disponible ahora
-PS-0099					archivado</textarea></details>
-              </span>
             </div>
           </section>
 
@@ -491,6 +502,10 @@ PS-0099					archivado</textarea></details>
             <div class="pp-seccion__cabecera">
               <h2 class="pp-seccion__titulo" id="t-columnas">Columnas</h2>
               <span class="ip-seccion-meta">7 emparejadas por nombre · 2 no se importan</span>
+            </div>
+            <div class="ip-guardado">
+              <label class="pp-label" for="plantilla-guardada">Emparejamiento guardado</label>
+              <div class="pp-select"><select class="pp-input" id="plantilla-guardada"><option selected>Ninguno: emparejar por nombre</option><option>Disponibilidad mensual</option><option>Altas de Operaciones</option></select></div>
             </div>
             <div class="pp-tabla-marco ip-mapa" tabindex="0" role="region" aria-label="Emparejamiento de columnas">
               <table class="pp-tabla">
@@ -510,7 +525,7 @@ PS-0099					archivado</textarea></details>
               </table>
             </div>
             <div class="ip-plantilla">
-              <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Guardar como plantilla</span></label>
+              <label class="pp-check"><input type="checkbox" checked><span class="pp-check__texto">Guardar este emparejamiento como plantilla</span></label>
               <input class="pp-input" id="nombre-plantilla" type="text" value="Disponibilidad mensual" aria-label="Nombre de la plantilla">
             </div>
           </section>

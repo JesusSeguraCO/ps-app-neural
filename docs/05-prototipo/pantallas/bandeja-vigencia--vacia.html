@@ -17,7 +17,7 @@
   Oficio v2 (DESIGN.md › Oficio): lista densa de filas en lugar de tarjetas-formulario; edición
   en línea que se abre solo en la fila activa (una sola primaria visible); estado = punto + texto;
   confirmación por toast; sin KPI, sin lista de ✓, sin bordes laterales de color.
-  Estado de ESTE archivo: variante vacía (error de HU-136) — ningún perfil publicado lleva más de 30 días sin actualizar la disponibilidad. El panel lo declara explícitamente, con cuántos están al día y quién entra primero, en vez de una lista vacía.
+  Estado de ESTE archivo (bandeja-vigencia--vacia): vacía — ningún publicado lleva más de 30 días sin actualizarse y ningún perfil lleva más de 30 días pausado: el panel lo declara explícitamente y no muestra una lista vacía sin explicación (HU-136 edge «bandeja vacía»).
 -->
 <html lang="es">
 <head>
@@ -304,8 +304,8 @@
         <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno" href="inventario-perfiles.html">Ver inventario</a></div>
       </div>
       <section class="pp-vacio" aria-labelledby="bv-vacio">
-        <h2 id="bv-vacio">Ningún perfil lleva más de 30 días sin actualizar</h2>
-        <p>Los 105 publicados están al día y ningún cliente ve «Disponibilidad por confirmar». La próxima en entrar es Valentina Gómez (<span class="pp-mono">PS-0203</span>), el 21 oct, si nadie la actualiza antes.</p>
+        <h2 id="bv-vacio">No hay perfiles pendientes de revisión</h2>
+        <p>Ningún publicado lleva más de 30 días sin actualizar y ningún perfil lleva más de 30 días pausado; ningún cliente ve «Disponibilidad por confirmar». La próxima en entrar es Valentina Gómez (<span class="pp-mono">PS-0203</span>), el 21 oct, si nadie la actualiza antes.</p>
         <div class="pp-vacio__acciones"><a class="pp-btn pp-btn--contorno pp-btn--sm" href="#contenido">Ver los que entran esta semana</a></div>
       </section>
       </div>
