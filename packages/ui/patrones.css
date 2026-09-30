@@ -291,7 +291,7 @@
       .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-1); border: 0; border-bottom: 2px solid transparent; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease); }
       .pp-pestana:hover { color: var(--tc-text-h); }
       .pp-pestana[aria-selected="true"], .pp-pestana[aria-current="page"] { border-bottom-color: var(--tc-text-h); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-      .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+      .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-m); }
       .pp-pestana[aria-selected="true"] .pp-pestana__conteo, .pp-pestana[aria-current="page"] .pp-pestana__conteo { color: var(--tc-text-m); }
       
 /* /PP:pestanas */

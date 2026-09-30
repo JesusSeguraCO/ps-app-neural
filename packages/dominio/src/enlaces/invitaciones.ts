@@ -1,8 +1,17 @@
 // Invitar a un colega (HU-095) y decidir la petición en el panel (HU-145). Puras.
 import { normalizarCorreo } from "../acceso/codigo";
 import { T, escapar } from "../acceso/mensajes";
+import { topeEnVentana } from "../acceso/tope";
 
 export type ErrorPeticion = "correo_invalido" | "es_tu_correo";
+
+// Cada petición avisa a Talento Humano: un invitado no puede pedir más de 5 por hora.
+export const TOPE_PETICIONES_POR_INVITADO = 5;
+export const VENTANA_TOPE_PETICIONES_MS = 60 * 60_000;
+
+export function topeDePeticiones(pedidas: readonly Date[], ahora: Date) {
+  return topeEnVentana(pedidas, ahora, TOPE_PETICIONES_POR_INVITADO, VENTANA_TOPE_PETICIONES_MS);
+}
 
 const CORREO = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const opcional = (s: string | undefined, max: number) => {

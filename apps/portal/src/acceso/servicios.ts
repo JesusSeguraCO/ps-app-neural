@@ -1,7 +1,7 @@
 // Dependencias de los Route Handlers de acceso del portal (configuración, BD, correo).
 import "server-only";
 import { cargarConfiguracion, doblesDe } from "@ps/infra/config";
-import { DobleCorreo, enviadorMailgun, latenciaDelDoble, type EnviadorCorreo } from "@ps/infra/mailgun/index";
+import { DobleCorreo, enviadorMailgun, latenciaDelDoble, rebotesDelDoble, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { poolDe } from "@ps/infra/postgres/pool";
 
 let correo: EnviadorCorreo | undefined;
@@ -12,6 +12,10 @@ export function servicios() {
     ? new DobleCorreo(
         (m) => console.log(JSON.stringify({ evento: "correo_doble", para: m.para, asunto: m.asunto, texto: m.texto })),
         latenciaDelDoble(process.env.DOBLE_MAILGUN_LATENCIA_MS),
+        {
+          buzones: rebotesDelDoble(process.env.DOBLE_MAILGUN_REBOTA),
+          alRebotar: (para) => console.log(JSON.stringify({ evento: "correo_doble_rebote", para })),
+        },
       )
     : enviadorMailgun({ clave: config.MAILGUN_SENDING_KEY!, dominio: config.MAILGUN_DOMAIN! });
   return {

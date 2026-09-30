@@ -6,7 +6,7 @@ import "server-only";
 import type pg from "pg";
 import { hmacCorreo, normalizarCorreo } from "@ps/dominio/acceso/codigo";
 import { estadoAlAbrir, tokenConForma } from "@ps/dominio/acceso/enlace";
-import { enVentanaDeEspera } from "@ps/dominio/enlaces/renovacion";
+import { enVentanaDeEspera, topeDeRenovaciones, VENTANA_TOPE_RENOVACIONES_MS } from "@ps/dominio/enlaces/renovacion";
 import { hashTokenEnlace } from "@ps/dominio/enlaces/crear";
 import { enTransaccion } from "./intentos";
 import { hashIdSesion } from "./sesiones";
@@ -14,6 +14,7 @@ import { hashIdSesion } from "./sesiones";
 export type ResultadoPeticionRenovacion =
   | { tipo: "pedida"; solicitud: string }
   | { tipo: "en_camino"; solicitud: string; desde: Date }
+  | { tipo: "tope"; hasta: Date }
   | { tipo: "activo" }
   | { tipo: "revocado" };
 
@@ -70,6 +71,18 @@ export async function pedirRenovacion(
     const ultima = u.rows[0] as { id: string; pedida_en: Date } | undefined;
     const v = enVentanaDeEspera(ultima?.pedida_en ?? null, ahora);
     if (v.enEspera) return { tipo: "en_camino", solicitud: ultima!.id, desde: v.desde };
+    // Tope por enlace (cualquier correo): serializa por enlace para que peticiones simultáneas con
+    // correos distintos no lo salten.
+    await tx.query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [`renovacion:${e!.id}`]);
+    const p = await tx.query(
+      `SELECT pedida_en FROM identidad.renovaciones WHERE enlace_id = $1 AND pedida_en > $2`,
+      [e!.id, new Date(ahora.getTime() - VENTANA_TOPE_RENOVACIONES_MS)],
+    );
+    const tope = topeDeRenovaciones(
+      p.rows.map((f) => f.pedida_en as Date),
+      ahora,
+    );
+    if (!tope.permitido) return { tipo: "tope", hasta: tope.hasta };
     const r = await tx.query(
       // El correo escrito se guarda para avisar a Talento Humano quién pidió (HU-146), esté o no invitado.
       `INSERT INTO identidad.renovaciones (enlace_id, correo_hmac, correo) VALUES ($1, $2, $3) RETURNING id`,

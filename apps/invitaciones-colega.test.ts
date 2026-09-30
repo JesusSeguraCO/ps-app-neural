@@ -82,6 +82,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
         codigo: e.rows[0].codigo as string,
         token,
         correoInv,
+        invitadoId: i.rows[0].id as string,
         cookie: await sesionPortal(e.rows[0].id, i.rows[0].id),
       };
     }
@@ -138,6 +139,28 @@ describe.skipIf(!HAY_BD || !hayBuild("portal") || !hayBuild("panel"))(
       await portal?.cerrar();
       await panel?.cerrar();
       await bd?.cerrar();
+    });
+
+    it("límite: un invitado no puede pedir más de 5 invitaciones por hora (cada una avisa a Talento Humano)", async () => {
+      const e = await sembrar();
+      for (let k = 0; k < 5; k++)
+        expect((await pedir(e.cookie, { correo: `colega${k}@bancolombia.com.co` })).status).toBe(
+          201,
+        );
+      // Repetir una pendiente sigue siendo idempotente, no cuenta como nueva.
+      expect((await pedir(e.cookie, { correo: "colega0@bancolombia.com.co" })).status).toBe(201);
+      const sexta = await pedir(e.cookie, { correo: "colega5@bancolombia.com.co" });
+      expect(sexta.status).toBe(429);
+      expect(sexta.cuerpo.motivo).toBe("en_espera");
+      expect(new Date(sexta.cuerpo.hasta).getTime()).toBeGreaterThan(Date.now() + 50 * 60_000);
+      const n = await bd.instalacion.query(
+        `SELECT count(*)::int n FROM identidad.invitaciones_solicitadas WHERE solicitado_por = $1`,
+        [e.invitadoId],
+      );
+      expect(n.rows[0].n).toBe(5);
+      // Cinco avisos a Talento Humano, ninguno por la sexta.
+      expect(await vuelta(ctx)).toBe(5);
+      expect(correo.enviados.filter((m) => m.para === TALENTO)).toHaveLength(5);
     });
 
     it("HU-095 pendiente: la petición queda registrada y visible, Talento Humano recibe el aviso y el colega sigue sin acceso", async () => {

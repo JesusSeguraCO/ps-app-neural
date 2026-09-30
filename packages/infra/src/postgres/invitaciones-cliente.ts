@@ -5,7 +5,12 @@ import "server-only";
 import type pg from "pg";
 import { hmacCorreo } from "@ps/dominio/acceso/codigo";
 import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
-import { validarPeticion, type ErrorPeticion } from "@ps/dominio/enlaces/invitaciones";
+import {
+  topeDePeticiones,
+  validarPeticion,
+  VENTANA_TOPE_PETICIONES_MS,
+  type ErrorPeticion,
+} from "@ps/dominio/enlaces/invitaciones";
 import { enTransaccion } from "./intentos";
 
 export interface PeticionDelInvitado {
@@ -23,7 +28,9 @@ export async function pedirInvitacion(
   emailHmac: string,
   sesion: SesionPortalVerificada,
   entrada: { correo: string; nombre?: string; paraQue?: string },
-): Promise<{ ok: true; id: string } | { ok: false; error: ErrorPeticion }> {
+): Promise<
+  { ok: true; id: string } | { ok: false; error: ErrorPeticion } | { ok: false; error: "en_espera"; hasta: Date }
+> {
   return enTransaccion(bd, async (tx) => {
     const yo = await tx.query(`SELECT correo FROM identidad.enlace_invitados WHERE id = $1`, [sesion.invitadoId]);
     const v = validarPeticion(entrada, yo.rows[0].correo);
@@ -34,6 +41,16 @@ export async function pedirInvitacion(
       [sesion.enlaceId, correoHmac],
     );
     if (previa.rows[0]) return { ok: true, id: previa.rows[0].id };
+    await tx.query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [`peticiones:${sesion.invitadoId}`]);
+    const p = await tx.query(
+      `SELECT creado_en FROM identidad.invitaciones_solicitadas WHERE solicitado_por = $1 AND creado_en > $2`,
+      [sesion.invitadoId, new Date(Date.now() - VENTANA_TOPE_PETICIONES_MS)],
+    );
+    const tope = topeDePeticiones(
+      p.rows.map((f) => f.creado_en as Date),
+      new Date(),
+    );
+    if (!tope.permitido) return { ok: false, error: "en_espera", hasta: tope.hasta };
     const r = await tx.query(
       `INSERT INTO identidad.invitaciones_solicitadas (enlace_id, solicitado_por, correo_propuesto, correo_hmac, nombre_propuesto, para_que)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,

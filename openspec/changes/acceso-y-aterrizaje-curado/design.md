@@ -37,9 +37,10 @@ Las decisiones de arquitectura ya están tomadas y aceptadas; este diseño **no 
 
 6. **Peticiones de invitación** como filas `invitaciones_solicitadas` (enlace, correo solicitado, quien pidió, estado, motivo); aprobar inserta en `enlace_invitados` con `origen = 'invitacion_aprobada'` usando un único `(enlace, correo)` para no duplicar; ambas decisiones escriben en la auditoría encadenada (ADR-0003). El aviso a Talento Humano de una petición nueva usa el tipo `notificar` existente (ADR-0006/0009).
 
-7. **Encuadre sin selección** con los valores de rol y categoría que ya expone `catalogo_publicable` (sub-slice 3 los incluye), filtrado por una sola opción en el cliente. No se construye el panel de facetas de EP-002.
+7. **`GET /api/v1/catalogo` es contrato para épicas posteriores**: las páginas del portal leen `catalogo_publicable` en el servidor y no lo consumen; el endpoint (con sesión, 12 campos, sin B.4) queda para el buscador de EP-002 y Mi equipo de EP-004, con su test de contrato (Newman) desde ya. Precisión 2026-09-30 (verificación de cableado).
+8. **Encuadre sin selección** con los valores de rol y categoría que ya expone `catalogo_publicable` (sub-slice 3 los incluye), filtrado por una sola opción en el cliente. No se construye el panel de facetas de EP-002.
 
-8. **Pantallas** desde `docs/05-prototipo/` (37 pantallas de EP-001 aprobadas) con los tokens y componentes de `packages/ui`; fidelidad verificada por captura real con MCP chrome-devtools en la fase smoke de cada sub-slice con UI.
+9. **Pantallas** desde `docs/05-prototipo/` (37 pantallas de EP-001 aprobadas) con los tokens y componentes de `packages/ui`; fidelidad verificada por captura real con MCP chrome-devtools en la fase smoke de cada sub-slice con UI.
 
 ## Desviaciones intencionales del prototipo (fidelidad del sub-slice 2)
 

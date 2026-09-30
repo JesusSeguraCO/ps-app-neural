@@ -5,7 +5,7 @@
 import { randomUUID } from "node:crypto";
 import pg from "pg";
 import { doblesDe, exigirConfiguracion } from "@ps/infra/config";
-import { DobleCorreo, enviadorMailgun, type EnviadorCorreo } from "@ps/infra/mailgun/index";
+import { DobleCorreo, enviadorMailgun, rebotesDelDoble, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { vuelta, type ContextoDespacho } from "./despacho";
 import { sembrarAdminInicial } from "./sembrar";
 import { sembrarFicticios } from "./sembrar-ficticios";
@@ -42,8 +42,13 @@ if (process.argv.includes("--sembrar-ficticios")) {
 }
 
 const correo: EnviadorCorreo = doblesDe(config).has("mailgun")
-  ? new DobleCorreo((m) =>
-      registrar({ evento: "correo_doble", para: m.para, asunto: m.asunto, texto: m.texto }),
+  ? new DobleCorreo(
+      (m) => registrar({ evento: "correo_doble", para: m.para, asunto: m.asunto, texto: m.texto }),
+      undefined,
+      {
+        buzones: rebotesDelDoble(process.env.DOBLE_MAILGUN_REBOTA),
+        alRebotar: (para) => registrar({ evento: "correo_doble_rebote", para }),
+      },
     )
   : enviadorMailgun({ clave: config.MAILGUN_SENDING_KEY!, dominio: config.MAILGUN_DOMAIN! });
 

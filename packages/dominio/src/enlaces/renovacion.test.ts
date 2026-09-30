@@ -6,6 +6,9 @@ import {
   VENTANA_RENOVACION_MS,
   decidirRenovacion,
   enVentanaDeEspera,
+  topeDeRenovaciones,
+  TOPE_RENOVACIONES_POR_ENLACE,
+  VENTANA_TOPE_RENOVACIONES_MS,
   mensajeAvisoRenovacion,
   mensajeEnlaceRenovado,
 } from "./renovacion";
@@ -91,5 +94,27 @@ describe("correos", () => {
     expect(m.texto).toContain("reenviado@gmail.com no estaba invitado al enlace ENL-0007");
     expect(m.texto).toContain("No se le envió ningún enlace.");
     expect(m.html).not.toMatch(/<script/);
+  });
+});
+
+describe("topeDeRenovaciones (por enlace, cualquier correo)", () => {
+  const ahora = new Date("2026-09-30T12:00:00Z");
+  const hace = (min: number) => new Date(ahora.getTime() - min * 60_000);
+
+  it("por debajo del tope en la última hora, permite", () => {
+    expect(topeDeRenovaciones([hace(5), hace(10), hace(20), hace(50)], ahora)).toEqual({ permitido: true });
+  });
+
+  it("con el tope alcanzado en la última hora, espera hasta que la más antigua salga de la ventana", () => {
+    const pedidas = [hace(1), hace(5), hace(10), hace(20), hace(50)];
+    expect(pedidas).toHaveLength(TOPE_RENOVACIONES_POR_ENLACE);
+    expect(topeDeRenovaciones(pedidas, ahora)).toEqual({
+      permitido: false,
+      hasta: new Date(hace(50).getTime() + VENTANA_TOPE_RENOVACIONES_MS),
+    });
+  });
+
+  it("las de hace más de una hora no cuentan", () => {
+    expect(topeDeRenovaciones([hace(61), hace(70), hace(80), hace(90), hace(5)], ahora)).toEqual({ permitido: true });
   });
 });

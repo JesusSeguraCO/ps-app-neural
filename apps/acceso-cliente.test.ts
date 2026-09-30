@@ -5,6 +5,7 @@
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { hmacCorreo } from "@ps/dominio/acceso/codigo";
+import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
 import { generarTokenEnlace } from "@ps/dominio/enlaces/crear";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 import {
@@ -416,6 +417,12 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))(
         const pagina = await srv.pedir("/", { headers: { cookie } });
         expect(pagina.status).toBe(307);
         expect(pagina.headers.get("location")).toMatch(/\/acceso\?motivo=enlace_vencido$/);
+        // HU-092 edge: al entrar directamente ve que el enlace venció, cuándo, y dónde escribir su correo.
+        const vencido = await (await srv.pedir("/acceso?motivo=enlace_vencido", { headers: { cookie } })).text();
+        expect(vencido).toContain("ya venció");
+        const hasta = await bd.instalacion.query(`SELECT vigente_hasta FROM identidad.enlaces WHERE id = $1`, [enlaceId]);
+        expect(vencido).toMatch(new RegExp(`<time[^>]*>${fechaDeColombia(hasta.rows[0].vigente_hasta)}</time>`));
+        expect(vencido).toMatch(/<input[^>]*type="email"/);
       });
       it("HU-144: la revocación corta una sesión abierta en la siguiente petición", async () => {
         const { token, enlaceId } = await sembrarEnlace({ invitados: ["e5@cliente.com"] });

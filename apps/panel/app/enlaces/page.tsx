@@ -1,6 +1,6 @@
 // Enlaces de acceso (prototipo enlaces-acceso): registro de enlaces con pestañas por estado, búsqueda
 // y el detalle del elegido con «Revocar» (tarea 4.4). Protegida: la guarda va en la primera línea.
-// Las aperturas por invitado llegan con el acceso del cliente (sub-slice 5).
+// Sin aperturas por invitado: son HU-116 (EP-011), no de EP-001 (design.md, sub-slice 4).
 import { puede } from "@ps/dominio/acceso/permisos";
 import { ROTULO_BANDA } from "@ps/dominio/catalogo/banda";
 import { horaDeColombia } from "@ps/dominio/fecha/colombia";

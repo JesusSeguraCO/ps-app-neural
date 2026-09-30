@@ -52,7 +52,13 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
 
   beforeAll(async () => {
     bd = await crearBdPrueba();
-    entorno = { ...entornoDev("panel"), APP_ENV: "ci", DATABASE_URL: bd.urlDe("ps_panel") };
+    entorno = {
+      ...entornoDev("panel"),
+      APP_ENV: "ci",
+      DATABASE_URL: bd.urlDe("ps_panel"),
+      // Buzón muerto de quien salió de la empresa (HU-123): el doble lo acepta y nunca lo entrega.
+      DOBLE_MAILGUN_REBOTA: "salio@trycore.com",
+    };
     await bd.instalacion.query(
       `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ('ana@trycore.com', $1, 'administrador')`,
       [hmacCorreo("ana@trycore.com", entorno.EMAIL_HMAC_KEY!)],
@@ -272,14 +278,24 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
     ).toBe(403);
   }, 30_000);
 
-  it("HU-123 buzón desactivado: el usuario inactivo no recibe código y no entra, sin baja manual en la auditoría", async () => {
+  it("HU-123 buzón desactivado: sigue inscrito y activo, el código se envía pero no llega y no entra, sin baja manual en la auditoría", async () => {
+    // Nadie lo da de baja: sigue en la lista y activo. Lo que murió es su buzón corporativo.
     await bd.instalacion.query(
-      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol, activo) VALUES ('salio@trycore.com', $1, 'observador', false)`,
+      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ('salio@trycore.com', $1, 'observador')`,
       [hmacCorreo("salio@trycore.com", entorno.EMAIL_HMAC_KEY!)],
     );
     expect((await post("/api/v1/acceso/codigo", { correo: "salio@trycore.com" })).status).toBe(202);
     await new Promise((r) => setTimeout(r, 1_500));
+    // Se intentó entregar (es un inscrito activo) y el buzón lo rebotó: el código nunca llegó.
+    expect(srv.salida()).toMatch(/"correo_doble_rebote".*salio@trycore\.com/);
     expect(srv.salida()).not.toMatch(/"correo_doble".*salio@trycore\.com/);
+    const codigos = await bd.instalacion.query(
+      `SELECT count(*)::int n FROM identidad_panel.codigos_panel c JOIN identidad_panel.usuarios_panel u ON u.id = c.usuario_id WHERE u.correo = 'salio@trycore.com'`,
+    );
+    expect(codigos.rows[0].n).toBe(1);
+    expect(
+      (await post("/api/v1/acceso/verificar", { correo: "salio@trycore.com", codigo: "123456" })).status,
+    ).toBe(403);
     const bajas = await bd.instalacion.query(
       `SELECT count(*)::int n FROM auditoria.auditoria WHERE entidad = 'usuarios_panel' AND campo = 'activo'`,
     );

@@ -71,6 +71,7 @@ export class DobleCorreo implements EnviadorCorreo {
   constructor(
     private readonly alEnviar?: (m: Mensaje) => void,
     private readonly latenciaMs?: readonly [number, number],
+    private readonly rebota?: { buzones: ReadonlySet<string>; alRebotar?: (para: string) => void },
   ) {}
 
   programar(...resultados: ResultadoEnvio[]): this {
@@ -83,10 +84,22 @@ export class DobleCorreo implements EnviadorCorreo {
       const [min, max] = this.latenciaMs;
       await new Promise((r) => setTimeout(r, min + Math.random() * (max - min)));
     }
+    // Buzón muerto (p. ej. quien salió de la empresa): Mailgun acepta el envío y el rebote llega
+    // después, así que el resultado es «ok», pero el mensaje nunca llega al buzón.
+    if (this.rebota?.buzones.has(m.para.toLowerCase())) {
+      this.rebota.alRebotar?.(m.para);
+      return { resultado: this.programados.shift() ?? "ok" };
+    }
     this.enviados.push(m);
     this.alEnviar?.(m);
     return { resultado: this.programados.shift() ?? "ok" };
   }
+}
+
+// `DOBLE_MAILGUN_REBOTA=salio@trycore.com,otro@trycore.com`: buzones que el doble trata como muertos
+// (HU-123 «buzón desactivado»). Solo donde el doble está declarado.
+export function rebotesDelDoble(valor: string | undefined): ReadonlySet<string> {
+  return new Set((valor ?? "").split(",").map((c) => c.trim().toLowerCase()).filter(Boolean));
 }
 
 // `DOBLE_MAILGUN_LATENCIA_MS=3000-5000`: latencia del doble para las pruebas de tiempos (V2-4). Solo

@@ -2,6 +2,7 @@
 // Formulario de «Invitar a un colega» (HU-095; prototipo invitar-colega): correo obligatorio, nombre y
 // «para qué» opcionales. Tras pedirla, la página se recarga con la petición pendiente en la lista.
 import { useEffect, useState, type FormEvent } from "react";
+import { horaDesbloqueoDeColombia } from "@ps/dominio/fecha/colombia";
 import { enviarJson } from "../acceso/cliente";
 
 const ERRORES: Record<string, string> = {
@@ -33,6 +34,10 @@ export function FormularioInvitacion() {
       return;
     }
     const cuerpo = r ? await r.json().catch(() => ({})) : {};
+    if (cuerpo.motivo === "en_espera" && cuerpo.hasta) {
+      setError(`Ya pediste varias invitaciones en la última hora. Podrás pedir otra desde las ${horaDesbloqueoDeColombia(new Date(cuerpo.hasta))}.`);
+      return;
+    }
     setError(ERRORES[cuerpo.motivo] ?? "No pudimos pedir la invitación. Inténtalo de nuevo en unos segundos.");
   }
 

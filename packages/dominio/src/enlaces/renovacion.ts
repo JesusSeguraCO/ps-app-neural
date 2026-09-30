@@ -2,11 +2,16 @@
 // los correos. Desde el 2026-09-29 (sponsor) no consulta HubSpot: el enlace nuevo va solo al buzón de un
 // invitado, quien pide ve siempre la misma respuesta y toda petición se avisa a Talento Humano.
 import { T, escapar } from "../acceso/mensajes";
+import { topeEnVentana } from "../acceso/tope";
 import { fechaDeColombia, horaDeColombia } from "../fecha/colombia";
 
 export type ResultadoRenovacion = "enlace_enviado" | "no_invitado";
 
-export function decidirRenovacion(invitado: boolean): { resultado: ResultadoRenovacion; emitir: boolean; avisar: true } {
+export function decidirRenovacion(invitado: boolean): {
+  resultado: ResultadoRenovacion;
+  emitir: boolean;
+  avisar: true;
+} {
   return invitado
     ? { resultado: "enlace_enviado", emitir: true, avisar: true }
     : { resultado: "no_invitado", emitir: false, avisar: true };
@@ -22,6 +27,16 @@ export function enVentanaDeEspera(
   if (!ultimaPedida) return { enEspera: false };
   const desde = new Date(ultimaPedida.getTime() + VENTANA_RENOVACION_MS);
   return desde.getTime() > ahora.getTime() ? { enEspera: true, desde } : { enEspera: false };
+}
+
+// Tope por enlace, cualquier correo (design §2 «valida forma y límite»): cada petición avisa a Talento
+// Humano, así que sin tope un enlace vencido serviría para inundar su buzón con correos inventados.
+// No depende de la invitación: no revela nada a quien pide.
+export const TOPE_RENOVACIONES_POR_ENLACE = 5;
+export const VENTANA_TOPE_RENOVACIONES_MS = 60 * 60_000;
+
+export function topeDeRenovaciones(pedidas: readonly Date[], ahora: Date) {
+  return topeEnVentana(pedidas, ahora, TOPE_RENOVACIONES_POR_ENLACE, VENTANA_TOPE_RENOVACIONES_MS);
 }
 
 export interface Mensaje {
@@ -74,14 +89,35 @@ export function mensajeEnlaceRenovado(d: {
     "People Service · Trycore · Bogotá. Recibes este correo porque se pidió un enlace nuevo al Portal de perfiles con tu dirección.";
   return {
     asunto,
-    texto: ["Tu enlace nuevo", "", parrafos[0], "", `Abrir la selección: ${d.url}`, "", ...parrafos.slice(1, 2), "", parrafos[3], "", pie].join("\n"),
-    html: correo({ asunto, titulo: "Tu enlace nuevo", parrafos, cuerpo: cuerpoEnlaceRenovado(d, para), pie }),
+    texto: [
+      "Tu enlace nuevo",
+      "",
+      parrafos[0],
+      "",
+      `Abrir la selección: ${d.url}`,
+      "",
+      ...parrafos.slice(1, 2),
+      "",
+      parrafos[3],
+      "",
+      pie,
+    ].join("\n"),
+    html: correo({
+      asunto,
+      titulo: "Tu enlace nuevo",
+      parrafos,
+      cuerpo: cuerpoEnlaceRenovado(d, para),
+      pie,
+    }),
   };
 }
 
 // Marcado del prototipo correo-enlace-renovado: cuenta en negrita, vencimiento y cierre en pequeño,
 // dirección de respaldo en un bloque mono gris.
-function cuerpoEnlaceRenovado(d: { url: string; correo: string; venceEl: Date }, para: string): string {
+function cuerpoEnlaceRenovado(
+  d: { url: string; correo: string; venceEl: Date },
+  para: string,
+): string {
   const url = escapar(d.url);
   return [
     `<p style="margin:0 0 24px">Para la selección de perfiles de <strong style="font-weight:600;color:${T.h}">${escapar(para)}</strong>.</p>`,
@@ -105,7 +141,9 @@ export function mensajeAvisoRenovacion(d: {
 }): Mensaje {
   const cuenta = d.proyecto ? `${d.cuenta} · ${d.proyecto}` : d.cuenta;
   const invitado = d.resultado === "enlace_enviado";
-  const asunto = invitado ? `Enlace nuevo pedido: ${cuenta}` : `Enlace nuevo pedido por alguien no invitado: ${cuenta}`;
+  const asunto = invitado
+    ? `Enlace nuevo pedido: ${cuenta}`
+    : `Enlace nuevo pedido por alguien no invitado: ${cuenta}`;
   const cuando = `El ${horaDeColombia(d.pedidaEn)} (hora de Colombia)`;
   const parrafos = invitado
     ? [
@@ -122,6 +160,11 @@ export function mensajeAvisoRenovacion(d: {
   return {
     asunto,
     texto: [asunto, "", ...parrafos.flatMap((x) => [x, ""]), pie].join("\n"),
-    html: correo({ asunto, titulo: invitado ? "Enlace nuevo pedido" : "Enlace nuevo pedido por alguien no invitado", parrafos, pie }),
+    html: correo({
+      asunto,
+      titulo: invitado ? "Enlace nuevo pedido" : "Enlace nuevo pedido por alguien no invitado",
+      parrafos,
+      pie,
+    }),
   };
 }

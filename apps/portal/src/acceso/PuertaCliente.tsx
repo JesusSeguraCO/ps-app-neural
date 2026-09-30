@@ -31,7 +31,13 @@ type Paso =
   | { tipo: "renovacion_en_camino"; correo: string; desde: Date; vencio: Date | null }
   | { tipo: "renovacion_persona" };
 
-export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revocado"; vencio?: string | null }) {
+export function PuertaCliente({
+  inicial,
+  vencio,
+}: {
+  inicial?: "vencido" | "revocado";
+  vencio?: string | null;
+}) {
   const [paso, setPaso] = useState<Paso>(
     inicial === "revocado"
       ? { tipo: "revocado" }
@@ -143,6 +149,16 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
           desde: new Date(cuerpo.puedes_desde),
           vencio,
         });
+        return;
+      }
+      if (r.status === 429 && cuerpo.motivo === "en_espera") {
+        setFallo(
+          `Ya se pidieron varios enlaces nuevos para este enlace. Puedes volver a pedirlo desde las ${desbloqueo(new Date(cuerpo.hasta))}. Si es urgente, escribe a ${CONTACTO}.`,
+        );
+        return;
+      }
+      if (r.status === 400) {
+        setFallo("Escribe un correo válido, por ejemplo nombre@empresa.com.");
         return;
       }
       if (r.status !== 202) throw new Error(String(r.status));
@@ -484,4 +500,3 @@ export function PuertaCliente({ inicial, vencio }: { inicial?: "vencido" | "revo
       );
   }
 }
-

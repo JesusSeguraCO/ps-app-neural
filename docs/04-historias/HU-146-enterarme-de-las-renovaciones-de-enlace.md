@@ -77,6 +77,8 @@ Cubre **RF-1.4** (el lado de Talento Humano). **Nace el 2026-09-29 por decisión
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · RF-1.4 · ADR-0002 (renovación y respuesta neutra) · ADR-0006/0009 (`notificar` a Talento Humano) · depende de HU-123 (login del panel) y HU-092 (la petición) · orden de construcción: HU-092 → HU-146
 
 ## INVEST
