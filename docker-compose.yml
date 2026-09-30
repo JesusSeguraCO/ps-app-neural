@@ -1,18 +1,66 @@
-# Desarrollo local (ADR-0010 §3.1). Solo PostgreSQL 16; las apps corren con `npm run dev:*`.
+# Desarrollo local (ADR-0010 §3.1): PostgreSQL 16 + PgBouncer en modo transacción + borde emulado.
+# Las apps corren en el host (`npm run dev:*` o los servidores standalone en :3100/:3101) y se abren
+# por el borde en :3000 (portal) y :3001 (panel). Mismos puertos y contraseñas de desarrollo que
+# scripts/bd-local.sh, así que scripts/entorno-dev.sh sirve igual con una u otra BD (no las dos a la vez).
+#
+#   docker compose up -d --wait
+#   eval "$(scripts/entorno-dev.sh migrar)" && node apps/worker/dist/migrar.js
+#   scripts/verificar-compose.sh        # tarea 1.2: levanta y nadie conecta como superusuario
+#
+# El superusuario `ps_instalacion` solo aplica roles.sql al crear la BD; los roles de conexión
+# (`ps_portal`, `ps_panel`, `ps_worker`, `ps_exportador`, `ps_migrador`) no lo son, y PgBouncer
+# solo conoce a esos.
 services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: ps
-      POSTGRES_PASSWORD: ps
+      POSTGRES_USER: ps_instalacion
+      POSTGRES_PASSWORD: dev-instalacion
       POSTGRES_DB: ps
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+      TZ: UTC
     ports:
-      - "5432:5432"
+      - "127.0.0.1:54329:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/bd/iniciar.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
+      - ./packages/infra/bootstrap/roles.sql:/ps/roles.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ps -d ps"]
-      interval: 5s
-      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U ps_instalacion -d ps"]
+      interval: 2s
+      retries: 30
+
+  pgbouncer:
+    build:
+      context: docker/pgbouncer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:64329:6432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432"]
+      interval: 2s
+      retries: 30
+
+  borde-local:
+    image: node:22-slim
+    command: ["node", "/ps/borde-local.mjs"]
+    environment:
+      # El mismo valor que scripts/entorno-dev.sh da a EDGE_SECRET en desarrollo.
+      EDGE_SECRET: dev-borde-0123456789abcdef0123456789abcdef
+      DESTINOS: "3000=host.docker.internal:3100,3001=host.docker.internal:3101"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - ./docker/borde-local.mjs:/ps/borde-local.mjs:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/__borde').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 2s
+      retries: 30
+
 volumes:
   pgdata:

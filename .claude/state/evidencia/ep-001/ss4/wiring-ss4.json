@@ -1,0 +1,47 @@
+[
+ {
+  "item_id": "HU-122-ac1-seleccion-heterogenea",
+  "kind": "hu_ac",
+  "ref": "HU-122 · Happy path — selección heterogénea"
+ },
+ {
+  "item_id": "HU-122-ac2-falta-razon",
+  "kind": "hu_ac",
+  "ref": "HU-122 · Error — falta la razón de la selección"
+ },
+ {
+  "item_id": "HU-122-ac3-perfil-sin-publicar",
+  "kind": "hu_ac",
+  "ref": "HU-122 · Error — un perfil sin publicar"
+ },
+ {
+  "item_id": "HU-122-ac4-varios-invitados",
+  "kind": "hu_ac",
+  "ref": "HU-122 · Edge — invito a varios correos de la cuenta"
+ },
+ {
+  "item_id": "HU-122-ac5-sin-invitados",
+  "kind": "hu_ac",
+  "ref": "HU-122 · Edge — ningún correo invitado"
+ },
+ {
+  "item_id": "ss4-token-h9",
+  "kind": "integration_point",
+  "ref": "ADR-0002 H9: token opaco de 32 bytes, en BD solo SHA-256"
+ },
+ {
+  "item_id": "ss4-auditoria-enlace",
+  "kind": "integration_point",
+  "ref": "ADR-0003: generar y revocar enlace auditados (cuenta, razón, invitados, autora, vigencia)"
+ },
+ {
+  "item_id": "ss4-revocar-enlace",
+  "kind": "integration_point",
+  "ref": "tarea 4.4: revocar un enlace desde el panel, efecto en la siguiente petición"
+ },
+ {
+  "item_id": "ss4-fidelidad-generar-enlace",
+  "kind": "integration_point",
+  "ref": "pantallas del panel para generar el enlace según docs/05-prototipo"
+ }
+]

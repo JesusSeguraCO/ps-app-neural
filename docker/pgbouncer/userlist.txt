@@ -1,0 +1,5 @@
+"ps_portal" "dev"
+"ps_panel" "dev"
+"ps_worker" "dev"
+"ps_exportador" "dev"
+"ps_migrador" "dev"

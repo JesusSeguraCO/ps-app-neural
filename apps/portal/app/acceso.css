@@ -1,0 +1,35 @@
+/* Pantallas de acceso del cliente (prototipo: puerta-acceso y variantes, acceso-vencido y variantes,
+   enlace-revocado). Reglas propias de cada pantalla, copiadas de su <style>. */
+.puerta-pie-global { margin: var(--tc-sp-5) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); text-align: start; }
+.puerta-pie-global .pp-enlace { display: inline-flex; align-items: center; min-height: 44px; }
+.puerta-correo { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); overflow-wrap: anywhere; }
+.puerta-campo { margin-top: var(--tc-sp-6); }
+.puerta-input { font-size: var(--tc-fs-h3); }
+.puerta-enviar { margin-top: var(--tc-sp-5); }
+.puerta-enviar .pp-btn { min-height: 44px; }
+.puerta-error { margin-top: var(--tc-sp-3); }
+.puerta-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.puerta-contacto { margin-top: var(--tc-sp-5); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+.puerta-contacto p { margin: 0; }
+.puerta-contacto p + p { margin-top: var(--tc-sp-1); }
+.puerta-accion { display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: inherit; }
+.pp-puerta__cuerpo .pp-codigo { margin-top: var(--tc-sp-6); }
+.av-cuerpo > p { margin: 0; }
+.av-cuerpo > p + p { margin-top: var(--tc-sp-3); }
+.av-fecha { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.av-form { margin-top: var(--tc-sp-6); }
+.av-form .pp-btn--bloque { margin-top: var(--tc-sp-5); }
+.av-correo { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); overflow-wrap: anywhere; }
+.av-separador { margin: var(--tc-sp-6) 0 0; padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+.av-separador .pp-meta { margin: 0; line-height: var(--tc-lh-body); }
+.av-pie { margin: var(--tc-sp-5) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); text-align: start; }
+.av-toque { display: inline-flex; align-items: center; min-height: 44px; }
+.er-cuerpo > p { margin: 0; }
+.er-cuerpo .pp-puerta__acciones { margin-top: var(--tc-sp-6); }
+.er-contacto { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); overflow-wrap: anywhere; }
+.er-contacto .pp-enlace { display: inline-flex; align-items: center; min-height: 44px; }
+.er-nota .pp-enlace { display: inline-flex; align-items: center; min-height: 44px; }
+.er-nota { margin: var(--tc-sp-5) 0 0; padding-top: var(--tc-sp-4); border-top: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+.pp-btn:focus-visible, .pp-enlace:focus-visible { outline: none; box-shadow: var(--tc-sh-focus); border-radius: var(--tc-r-sm); }
+/* M-8 (PRD §8.1): en la cara cliente ningún texto baja de 13 px; el prototipo usa 12 px (caption). */
+.pp-puerta .pp-ayuda, .er-nota { font-size: var(--tc-fs-small); }

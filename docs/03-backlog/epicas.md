@@ -17,6 +17,8 @@ prd_version_alineada: 4.13
 
 ## EP-001 — Acceso y aterrizaje curado
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 **Resumen.** El cliente llega desde el correo, supera el control de acceso y aterriza frente a los mismos perfiles que le propusimos, presentados como selección con su razón declarada.
 
 **Justificación.** Es el primer contacto con el producto y el punto donde se gana o se pierde la percepción de curaduría. Si el aterrizaje muestra un grid genérico, el correo pierde su valor y el trabajo de selección de Mercadeo se vuelve invisible.
@@ -26,14 +28,14 @@ prd_version_alineada: 4.13
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: foundational`
 
-**Alcance asumido en el DoR (2026-09-28, decisión del PO).** Además de sus historias, EP-001 construye el mínimo que estas necesitan: un «Mi equipo» por invitado en el servidor (vacío al entrar, aislado entre invitados, no alterado al volver a la selección; sumar y quitar es de EP-004) y un adaptador de **solo lectura** de HubSpot para la empresa (cuenta activa y propietario, HU-092) con doble en CI y fallo cerrado.
+**Alcance asumido en el DoR (2026-09-28, decisión del PO).** Además de sus historias, EP-001 construye el mínimo que estas necesitan: un «Mi equipo» por invitado en el servidor (vacío al entrar, aislado entre invitados, no alterado al volver a la selección; sumar y quitar es de EP-004) ~~y un adaptador de **solo lectura** de HubSpot para la empresa (cuenta activa y propietario, HU-092) con doble en CI y fallo cerrado~~ *(retirado el 2026-09-29 por el sponsor: la renovación de un enlace vencido ya no consulta HubSpot; toda petición de enlace nuevo avisa a Talento Humano por correo y en una bandeja del panel, **HU-146**)*, y un modelo mínimo de perfil publicable (perfil, consentimiento y vista `catalogo_publicable`) con perfiles ficticios, que exige HU-122 (ADR-0008, sub-slice 3).
 
 **Métrica de éxito:** el 100% de los aterrizajes con parámetros muestran el conjunto curado sin pasos intermedios; tasa de rebote en el aterrizaje por debajo del 30%.
 **Riesgo asociado:** enlace firmado que circula fuera de la empresa del cliente (§10.3 del PRD).
 
 **Historias anticipadas:** entrar desde el correo · aterrizar en el conjunto curado con su razón · ampliar la búsqueda sin perder la selección · volver al conjunto curado · enlace vencido · aterrizaje sin parámetros de curaduría.
 
-**HU-123 (entrar al panel con el correo corporativo) pertenece a esta épica desde la v5.5.** Se reasignó desde EP-006 el 2026-09-27 por decisión del sponsor (T-19 del backlog de arquitectura): la caparazón de la aplicación necesita el login del panel para que Talento Humano genere enlaces (HU-122), y sin él EP-001 no se puede construir ni verificar completa. No recorta ni difiere alcance: la historia es la misma, cambia la épica que la construye. El resto de RF-8.1 (lista nominal de acceso, roles y observador) sigue en EP-006.
+**HU-123 (entrar al panel con el correo corporativo) pertenece a esta épica desde la v5.5.** Se reasignó desde EP-006 el 2026-09-27 por decisión del sponsor (T-19 del backlog de arquitectura): la caparazón de la aplicación necesita el login del panel para que Talento Humano genere enlaces (HU-122), y sin él EP-001 no se puede construir ni verificar completa. No recorta ni difiere alcance: la historia es la misma, cambia la épica que la construye. El resto de RF-8.1 (gestión de la lista nominal de acceso y de los roles) sigue en EP-006; la matriz rol × acción y el rol observador como mínimo técnico los construye EP-001, porque V2-3/V8-13 los exigen desde el sub-slice 2 (precisión del 2026-09-28).
 
 ### Requisitos de esta épica
 
@@ -224,6 +226,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Decisión abierta que la condiciona:** D-8, alcance del panel en v1.
 
 **HU-123 ya no está en esta épica.** Desde la v5.5 (2026-09-27, T-19) la construye EP-001, porque la caparazón necesita el login del panel para generar enlaces (HU-122). EP-006 conserva la lista nominal de acceso, los roles y el resto del panel.
+
+**HU-147 (2026-09-30):** el contacto de Trycore que ve el cliente (nombre, cargo y correo) se configura desde la sección Administración del panel; hasta entonces EP-001 lo fija en `people.service@trycore.com`.
 
 **Historias anticipadas:** crear un perfil · registrar consentimiento antes de publicar · actualizar disponibilidad en dos clics · pausar un perfil asignado · archivar un perfil que salió del banco · previsualizar la ficha · revisar la bandeja de vigencia · cargar perfiles masivamente · consultar el registro de auditoría.
 

@@ -69,6 +69,8 @@ Cubre **RF-1.3**, el recorrido secundario «aterrizaje sin conjunto curado» de 
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · §6.3 · RF-2.3 · depende de HU-090 · orden de construcción: después de HU-090 · relacionada con HU-065 y HU-066 (EP-009), dueñas de la vía de instrucción
 
 ## INVEST

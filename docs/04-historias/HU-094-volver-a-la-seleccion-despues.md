@@ -56,6 +56,8 @@ Cubre **RF-2.2**. Es la resolución de la tensión entre curaduría y descubrimi
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · §2.5 · T-1 · depende de HU-090 y de HU-091 o HU-144 (la vista de la selección) · orden de construcción: HU-090 → HU-091/HU-144 → HU-094
 
 ## INVEST

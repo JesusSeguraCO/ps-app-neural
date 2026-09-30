@@ -1,0 +1,3 @@
+# Journey en navegador real: generar, ver y revocar un enlace (Chrome DevTools MCP) — 2026-09-29T05:05:24Z
+Panel standalone :3101 con BD de desarrollo (0001-0006) y 11 perfiles ficticios. /enlaces/nuevo → «Añadir desde el inventario» (7 publicados) → 3 perfiles de 3 familias con su banda · Generar vacío de razón e invitados → errores por campo y pie «No se generó: falta la razón; falta un correo invitado.» · con razón y 2 correos (uno en mayúsculas) → vista emitido: ENL-0001, enlace http://127.0.0.1:3100/e/#t=…, 3 perfiles, 2 invitados normalizados, «30 días · vence el 29 oct 2026», toast · /enlaces?enlace=ENL-0001 → tabla y detalle · revocar con motivo → estado Revocado, pestaña Revocados 1.
+Consola: solo los 422 de las validaciones provocadas.

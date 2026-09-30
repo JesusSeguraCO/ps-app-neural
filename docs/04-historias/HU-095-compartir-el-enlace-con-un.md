@@ -68,6 +68,8 @@ Cubre **RF-1.2.10** (el lado de quien pide), **RF-1.2.11** y, para el equipo del
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · D-4 revisada · T-1 · ADR-0002 (UC-2) · ADR-0003/0004 (equipo por invitado) · depende de HU-090 · se completa con HU-145 (decisión en el panel) · orden de construcción: HU-090 → HU-095 → HU-145 (HU-145 necesita además HU-123)
 
 ## INVEST

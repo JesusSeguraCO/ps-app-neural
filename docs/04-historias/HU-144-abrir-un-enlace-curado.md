@@ -89,6 +89,8 @@ Cubre **RF-19.2**, **RF-19.6**, **RF-19.7**, **RF-1.4** (revocación) y **RF-1.5
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002 (UC-1, UC-3) · depende de HU-122 y HU-090 · orden de construcción: HU-090 y HU-122 → HU-144
 
 ## INVEST

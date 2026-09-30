@@ -51,6 +51,8 @@ Cubre **RF-1.3**, **RF-2.1** y **RF-19.2**. El escenario de error es real: entre
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002/0003 (UC-3) · depende de HU-090 · orden de construcción: después de HU-090 · se solapa con HU-144 (misma reevaluación al abrir, distinto origen del enlace)
 
 ## INVEST

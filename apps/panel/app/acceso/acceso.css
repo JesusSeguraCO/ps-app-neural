@@ -1,0 +1,22 @@
+/* Composición de las pantallas panel-acceso, --codigo y --sesion-caducada (docs/05-prototipo). */
+.pa-pantalla h1 { margin: 0; }
+    .pa-pantalla .pa-lead { margin: var(--tc-sp-2) 0 0; }
+    .pa-correo { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); overflow-wrap: anywhere; }
+    .pa-num { font-variant-numeric: tabular-nums; color: var(--tc-text-h); }
+    .pa-form { margin-top: var(--tc-sp-6); }
+    .pa-codigo-bloque { display: grid; gap: var(--tc-sp-2); margin-top: var(--tc-sp-6); }
+    .pa-codigo-bloque .pp-codigo { margin: 0; }
+    .pa-codigo-bloque .pp-codigo legend { margin-bottom: var(--tc-sp-2); }
+    .pa-enviar { margin-top: var(--tc-sp-6); }
+    .pa-enlaces { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--tc-sp-2) var(--tc-sp-4); margin-top: var(--tc-sp-4); font-size: var(--tc-fs-small); }
+    .pa-enlaces a { display: inline-flex; align-items: center; min-height: 32px; }
+    .pa-pie { margin: var(--tc-sp-6) 0 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+    .pa-pie a { overflow-wrap: anywhere; }
+    .pp-btn:focus-visible, .pp-enlace:focus-visible { outline: none; box-shadow: var(--tc-sh-focus); border-radius: var(--tc-r-sm); }
+    .pp-btn:focus-visible { border-radius: var(--tc-r-md); }
+    @media (max-width: 767px) { .pa-enlaces a { min-height: 44px; } }
+/* Los enlaces de acción del prototipo son botones (no navegan): mismo aspecto que .pp-enlace. */
+.pa-accion { display: inline-flex; align-items: center; min-height: 32px; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: inherit; font-weight: var(--tc-fw-medium); }
+@media (max-width: 767px) { .pa-accion { min-height: 44px; } }
+/* M-2 (objetivo táctil de 44 px) también para el enlace de contacto del pie en móvil. */
+@media (max-width: 767px) { .pa-pie a { display: inline-flex; align-items: center; min-height: 44px; } }

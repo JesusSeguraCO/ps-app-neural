@@ -66,6 +66,8 @@ Cubre **RF-1.2.10** (el lado de quien decide). **Dividida de HU-095 el 2026-09-2
 
 ## Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · D-4 revisada · RF-1.2.10 · ADR-0002 (UC-2) · ADR-0003 (auditoría encadenada) · ADR-0006 (aviso de peticiones pendientes) · depende de HU-123 (login del panel) y HU-095 (la petición) · orden de construcción: HU-123 y HU-095 → HU-145
 
 ## INVEST

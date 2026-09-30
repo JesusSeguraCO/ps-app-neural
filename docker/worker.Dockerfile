@@ -4,6 +4,7 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY apps/worker/package.json apps/worker/
 COPY packages/dominio/package.json packages/dominio/
+COPY packages/contratos/package.json packages/contratos/
 COPY packages/infra/package.json packages/infra/
 RUN npm ci --workspace @ps/worker --include-workspace-root
 COPY . .
@@ -14,4 +15,5 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /repo/apps/worker/dist ./dist
 USER node
+# `node dist/migrar.js` es el job migrar (ADR-0010 CON-3); `--comprobar` valida la configuración.
 CMD ["node", "dist/worker.js"]

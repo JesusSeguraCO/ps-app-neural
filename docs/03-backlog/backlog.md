@@ -5,7 +5,7 @@ version: 5.5
 fecha: 2026-09-27
 prd_version: 4.13
 epicas_version: 5.5
-historias_escritas: 79
+historias_escritas: 80
 historias_descartadas: 1
 ---
 
@@ -116,6 +116,9 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-142** | Corregir solo las filas que fallaron | EP-006 | media | S | borrador | Depende de HU-141 |
 | **HU-143** | Retirar y fusionar valores sin romper los perfiles que los usan | EP-006 | media | M | borrador | Depende de HU-089 |
 | **HU-144** | Abrir el enlace y encontrar la selección que me armaron | EP-001 | alta | S | borrador | Depende de HU-122 |
+| **HU-145** | Aprobar o rechazar la invitación de un colega | EP-001 | media | S | lista | Depende de HU-123 y HU-095 · dividida de HU-095 el 2026-09-27 |
+| **HU-146** | Enterarme de cada enlace nuevo que piden los clientes | EP-001 | alta | S | lista | Depende de HU-123 y HU-092 · dividida de HU-092 el 2026-09-29 (sponsor: la renovación no consulta HubSpot) |
+| **HU-147** | Configurar el contacto de Trycore que ve el cliente | EP-006 | media | S | lista | Depende de HU-123 · nace el 2026-09-30 (sponsor: el contacto es paramétrico desde el panel, no un dato fijo); EP-001 usa `people.service@trycore.com` fijo hasta entonces |
 
 ## Historias anticipadas sin redactar
 

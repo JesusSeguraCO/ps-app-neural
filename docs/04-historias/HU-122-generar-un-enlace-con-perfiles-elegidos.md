@@ -47,23 +47,25 @@ spec: docs/10-specs/enlaces-curados.md
 **Entonces** el sistema me indica cuál perfil no está publicado
 **Y** no emite el enlace
 
-### Edge case — la cuenta tiene contacto en el CRM y sumo otro invitado
+### Edge case — invito a varios correos de la cuenta
 
 **Dado** que entré al panel como administradora de inventario
-**Y** que la cuenta tiene un contacto en el CRM
-**Cuando** preparo los correos invitados del enlace
-**Entonces** el sistema me propone el correo del contacto
-**Y** me deja añadir otro correo, como el del arquitecto de la cuenta
+**Y** que escribí el correo del contacto de la cuenta
+**Cuando** añado otro correo, como el del arquitecto de la cuenta
+**Entonces** el enlace queda con los dos correos invitados
+**Y** cada uno aparece una sola vez aunque lo escriba con otras mayúsculas
 
 ### Edge case — ningún correo invitado
 
 **Dado** que entré al panel como administradora de inventario
-**Y** que la cuenta no tiene contacto en el CRM y no añadí ningún correo invitado
+**Y** que no añadí ningún correo invitado
 **Cuando** intento generar el enlace
 **Entonces** el sistema no emite el enlace
 **Y** me indica que el enlace necesita al menos un correo invitado
 
 ## Notas
+
+**Sin lectura de HubSpot al generar** (decisión del sponsor, 2026-09-28): la cuenta se escribe por su nombre y los correos invitados a mano; el enlace va en el correo que el equipo comercial envía al cliente. La solicitud llega a HubSpot después por formulario y workflow (EP-007), que asocia contacto y empresa por el correo. *Sustituye la degradación por caída de HubSpot del DoR de EP-001.*
 
 **Dividida el 2026-09-22.** La historia original tenía **seis escenarios** y dos happy paths con **actores distintos**: Talento Humano generando el enlace y el cliente abriéndolo. Cuando los happy paths cambian de actor, el corte natural está ahí. Lo que el cliente ve al abrir es ahora **HU-144**.
 
@@ -80,6 +82,8 @@ spec: docs/10-specs/enlaces-curados.md
 Cubre **RF-19.1**, **RF-19.3**, **RF-19.4**, **RF-19.5**, **RF-19.7**, **RF-1.2.7** y la vigencia de **RF-1.4**.
 
 ## Trazabilidad
+
+> OpenSpec change: acceso-y-aterrizaje-curado
 
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002/0003 (UC-3) · depende de HU-123 · orden de construcción: HU-123 → HU-122 (sub-slices de EP-001 en ADR-0008: el login del panel antes de la generación del enlace) · habilita HU-144 · se relaciona con EP-011 (el correo es un vehículo para estos enlaces)
 

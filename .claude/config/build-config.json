@@ -60,7 +60,22 @@
         "receive-delivery-event"
       ],
       "na": null,
-      "verified": []
+      "verified": [
+        {
+          "message_kind": "send-access-code",
+          "status": "na",
+          "reason_code": "no_credentials",
+          "at": "2026-09-29T18:40:00Z",
+          "detail": "MAILGUN_SENDING_KEY ausente; decisión del sponsor (2026-09-28, reafirmada el 2026-09-29): el intercambio real con Mailgun se verifica en staging. Transitorio: se recomputa en cada slice."
+        },
+        {
+          "message_kind": "send-notification",
+          "status": "na",
+          "reason_code": "no_credentials",
+          "at": "2026-09-29T18:40:00Z",
+          "detail": "MAILGUN_SENDING_KEY ausente; decisión del sponsor (2026-09-29): Mailgun se verifica en staging. Cubre los avisos a Talento Humano (peticiones de invitación y renovaciones, HU-095/HU-146) y el enlace renovado (HU-092). Transitorio: se recomputa en cada slice."
+        }
+      ]
     },
     {
       "id": "object-storage",

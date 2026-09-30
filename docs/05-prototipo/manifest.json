@@ -586,7 +586,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "Peticiones de invitación · origen nueva · aprobada por Jesús Segura el 2026-09-28"
+      "notas": "Peticiones de invitación · origen nueva · aprobada por Jesús Segura el 2026-09-28 · 2026-09-29: encabezado con «Renovaciones de enlace» (acceso a la bandeja de HU-146) — cambio aprobado por Jesús Segura el 2026-09-29"
     },
     {
       "slug": "peticiones-invitacion--enlace-no-vigente",
@@ -2851,6 +2851,36 @@
         "mobile"
       ],
       "variante_de": "correo-boletin-curado"
+    },
+    {
+      "slug": "renovaciones-enlace",
+      "archivo": "pantallas/renovaciones-enlace.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-146"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-29T19:00:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "mobile"
+      ],
+      "notas": "Renovaciones de enlace · origen: modo feature (extraída en vivo de /peticiones/renovaciones, 2026-09-29) · vive bajo «Peticiones» sin tocar el menú de doce destinos · aprobada por Jesús Segura el 2026-09-29"
+    },
+    {
+      "slug": "renovaciones-enlace--revocar",
+      "archivo": "pantallas/renovaciones-enlace--revocar.html",
+      "epica": "EP-001",
+      "historias": [
+        "HU-146"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-29T19:00:00Z",
+      "viewports_verificados": [
+        "desktop"
+      ],
+      "variante_de": "renovaciones-enlace",
+      "notas": "Hoja lateral para revocar el enlace nuevo desde la fila (HU-146 escenario 5) · aprobada por Jesús Segura el 2026-09-29"
     }
   ]
 }

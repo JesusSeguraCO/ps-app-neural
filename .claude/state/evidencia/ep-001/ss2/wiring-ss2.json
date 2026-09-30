@@ -1,0 +1,67 @@
+[
+ {
+  "item_id": "HU-123-ac1-entrada-con-codigo",
+  "kind": "hu_ac",
+  "ref": "HU-123 · Happy path — entrada con correo inscrito y código"
+ },
+ {
+  "item_id": "HU-123-ac2-buzon-desactivado",
+  "kind": "hu_ac",
+  "ref": "HU-123 · Error — mi buzón corporativo ya no existe"
+ },
+ {
+  "item_id": "HU-123-ac3-correo-sin-inscribir",
+  "kind": "hu_ac",
+  "ref": "HU-123 · Error — correo sin inscribir"
+ },
+ {
+  "item_id": "HU-123-ac4-panel-no-alcanzable",
+  "kind": "hu_ac",
+  "ref": "HU-123 · Edge — el panel no se alcanza desde el enlace del cliente"
+ },
+ {
+  "item_id": "HU-123-ac5-sesion-12h",
+  "kind": "hu_ac",
+  "ref": "HU-123 · Edge — sesión abierta cuando el buzón se desactiva (12 h)"
+ },
+ {
+  "item_id": "ss2-auditoria-v3-1",
+  "kind": "integration_point",
+  "ref": "ADR-0003 V3-1: cadena encadenada sin bifurcación y sin escritura directa"
+ },
+ {
+  "item_id": "ss2-csrf-v8-5",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Sin mutaciones fuera de endpoints protegidos (V8-5)"
+ },
+ {
+  "item_id": "ss2-matriz-v2-3",
+  "kind": "integration_point",
+  "ref": "acceso-panel: Autorización por rol en cada acción del panel (V2-3)"
+ },
+ {
+  "item_id": "ss2-limite-intentos",
+  "kind": "integration_point",
+  "ref": "ADR-0002 limitación en tres capas (ventana 15 min, tope diario, bloqueo 24 h)"
+ },
+ {
+  "item_id": "ss2-sembrar-admin-inicial",
+  "kind": "integration_point",
+  "ref": "ADR-0002 enmienda: primer administrador por tarea auditada del worker"
+ },
+ {
+  "item_id": "ss2-modo-degradado-v2-4",
+  "kind": "integration_point",
+  "ref": "ADR-0002 H8 / V2-4: respuesta neutra en modo degradado (panel)"
+ },
+ {
+  "item_id": "ss2-fidelidad-acceso-panel",
+  "kind": "integration_point",
+  "ref": "pantallas panel-acceso, panel-acceso--codigo, panel-acceso--sesion-caducada, admin-shell, correo-codigo-acceso--panel"
+ },
+ {
+  "item_id": "ss2-journey-login-panel",
+  "kind": "integration_point",
+  "ref": "sub-slice 2: pedir código → correo → verificar → panel con rol → caducidad"
+ }
+]

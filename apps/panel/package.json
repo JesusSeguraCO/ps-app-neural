@@ -6,13 +6,20 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postbuild": "rm -rf .next/standalone/apps/panel/.next/static && cp -R .next/static .next/standalone/apps/panel/.next/static"
   },
   "dependencies": {
+    "@ps/contratos": "*",
+    "@ps/dominio": "*",
+    "@ps/infra": "*",
     "@ps/ui": "*",
     "next": "15.5.26",
+    "pg": "^8.23.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

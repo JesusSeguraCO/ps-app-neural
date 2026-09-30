@@ -1,3 +1,8 @@
 @tailwind base;
+/* El reinicio base de Tailwind pisa la tipografía de tokens.css: se restituye (fidelidad D2). */
+@layer base {
+  body { line-height: var(--tc-lh-body); }
+  h1, h2, h3, h4 { font-family: var(--tc-font-heading); font-weight: var(--tc-fw-semibold); letter-spacing: -0.02em; color: var(--tc-text-h); }
+}
 @tailwind components;
 @tailwind utilities;

@@ -1,0 +1,223 @@
+== integration-check ==
+root: /Users/cmo/Local/claude/Apps/App People Service
+pm:   npm
+ts:   (sin timestamp determinista; lo estampa quien invoca)
+
+▶ bd-local: /Users/cmo/Local/claude/Apps/App People Service/scripts/bd-local.sh arrancar
+BD local lista: PostgreSQL :54329 · PgBouncer :64329
+  ✓ bd-local OK
+
+▶ build: npm run build
+
+> build
+> npm run build --workspaces --if-present
+
+
+> @ps/panel@0.0.0 build
+> next build
+
+   ▲ Next.js 15.5.26
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 591ms
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/2) ...
+ ✓ Generating static pages (2/2)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      131 B         103 kB
+├ ƒ /_not-found                            992 B         104 kB
+├ ƒ /acceso                                131 B         103 kB
+├ ƒ /api/v1/salud/lista                    131 B         103 kB
+└ ƒ /api/v1/salud/vivo                     131 B         103 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-498168fb58dcd546.js        46.4 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          1.89 kB
+
+
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> @ps/panel@0.0.0 postbuild
+> rm -rf .next/standalone/apps/panel/.next/static && cp -R .next/static .next/standalone/apps/panel/.next/static
+
+
+> @ps/portal@0.0.0 build
+> next build
+
+   ▲ Next.js 15.5.26
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 647ms
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/2) ...
+ ✓ Generating static pages (2/2)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      135 B         103 kB
+├ ƒ /_not-found                            992 B         104 kB
+├ ƒ /acceso                                135 B         103 kB
+├ ƒ /api/v1/salud/lista                    135 B         103 kB
+├ ƒ /api/v1/salud/vivo                     135 B         103 kB
+└ ƒ /e                                     135 B         103 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-498168fb58dcd546.js        46.4 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          1.89 kB
+
+
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> @ps/portal@0.0.0 postbuild
+> rm -rf .next/standalone/apps/portal/.next/static && cp -R .next/static .next/standalone/apps/portal/.next/static
+
+
+> @ps/worker@0.0.0 build
+> esbuild src/worker.ts src/migrar.ts --bundle --platform=node --target=node22 --format=esm --external:pg-native --alias:server-only=../../scripts/server-only-vacio.mjs --banner:js="import{createRequire}from'module';const require=createRequire(import.meta.url);" --outdir=dist
+
+
+  dist/migrar.js    1.4mb ⚠️
+  dist/worker.js  931.2kb
+
+⚡ Done in 44ms
+  ✓ build OK
+
+▶ migrar: bash -c eval "$("$0"/scripts/entorno-dev.sh migrar)" && node "$0"/apps/worker/dist/migrar.js /Users/cmo/Local/claude/Apps/App People Service
+{"ts":"2026-09-28T21:44:48.095Z","evento":"migraciones_aplicadas","aplicadas":[]}
+{"ts":"2026-09-28T21:44:48.096Z","evento":"migrar_terminado","aplicadas":[],"porDelante":[]}
+  ✓ migrar OK
+
+▶ lint: npm run lint
+
+> lint
+> eslint .
+
+  ✓ lint OK
+
+▶ tipos: npm run typecheck
+
+> typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @ps/panel@0.0.0 typecheck
+> tsc --noEmit
+
+
+> @ps/portal@0.0.0 typecheck
+> tsc --noEmit
+
+
+> @ps/worker@0.0.0 typecheck
+> tsc --noEmit -p .
+
+
+> @ps/contratos@0.0.0 typecheck
+> tsc --noEmit -p .
+
+
+> @ps/dominio@0.0.0 typecheck
+> tsc --noEmit -p .
+
+
+> @ps/infra@0.0.0 typecheck
+> tsc --noEmit -p .
+
+
+> @ps/motor@0.0.0 typecheck
+> tsc --noEmit -p .
+
+
+> @ps/ui@0.0.0 typecheck
+> tsc --noEmit -p .
+
+  ✓ tipos OK
+
+▶ tests: bash -c cd "$0" && eval "$(scripts/bd-local.sh entorno)" && REQUIERE_BD=1 npx vitest run /Users/cmo/Local/claude/Apps/App People Service
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/Users/cmo/Local/claude/Apps/App People Service[39m
+
+ [32m✓[39m packages/dominio/src/acceso/codigo.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/infra/src/perimetro.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m packages/infra/src/config.test.ts [2m([22m[2m58 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m packages/dominio/src/acceso/sesion.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/infra/src/pruebas/entorno.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/infra/src/postgres/migrar.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 559[2mms[22m[39m
+ [32m✓[39m apps/worker/src/despacho.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 524[2mms[22m[39m
+ [32m✓[39m packages/infra/src/postgres/permisos.test.ts [2m([22m[2m35 tests[22m[2m)[22m[33m 578[2mms[22m[39m
+ [32m✓[39m apps/v8-2.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 990[2mms[22m[39m
+   [32m✓[39m V8-2 [2m(9)[22m
+     [33m[2m✓[22m[39m el lint falla ante 'use server', runtime edge e imports cruzados[33m 982[2mms[22m[39m
+ [32m✓[39m apps/worker/src/proceso.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 3056[2mms[22m[39m
+ [32m✓[39m apps/esqueleto.test.ts [2m([22m[2m25 tests[22m[2m)[22m[33m 7314[2mms[22m[39m
+   [32m✓[39m esqueleto de portal [2m(12)[22m
+     [32m✓[39m salud [2m(2)[22m
+       [33m[2m✓[22m[39m salud/lista → 503 y salud/vivo → 200 cuando la BD no responde[33m 336[2mms[22m[39m
+     [33m[2m✓[22m[39m sin cada variable obligatoria el servidor no llega a servir (V8-9)[33m 2147[2mms[22m[39m
+   [32m✓[39m esqueleto de panel [2m(12)[22m
+     [33m[2m✓[22m[39m sin cada variable obligatoria el servidor no llega a servir (V8-9)[33m 2964[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m      Tests [22m [1m[32m240 passed[39m[22m[90m (240)[39m
+[2m   Start at [22m 16:44:53
+[2m   Duration [22m 7.70s[2m (tests 90%, import 6%, transform 4%)[22m
+
+  ✓ tests OK
+
+▶ e2e: bash -c cd "$0" && npx playwright test /Users/cmo/Local/claude/Apps/App People Service
+
+Running 12 tests using 5 workers
+
+  ✓   4 [portal] › e2e/esqueleto.comun.spec.ts:56:9 › shell del esqueleto › móvil a 320 px: sin scroll horizontal, controles de 44 px, campos de 16 px, texto ≥ 13 px (405ms)
+  ✓   5 [portal] › e2e/esqueleto.comun.spec.ts:56:9 › shell del esqueleto › móvil a 390 px: sin scroll horizontal, controles de 44 px, campos de 16 px, texto ≥ 13 px (473ms)
+  ✓   6 [portal] › e2e/esqueleto.comun.spec.ts:86:7 › shell del esqueleto › una página protegida sin sesión lleva a /acceso sin mostrar datos (94ms)
+  ✓   3 [portal] › e2e/esqueleto.comun.spec.ts:33:9 › shell del esqueleto › sin violaciones de CSP ni errores de consola en /acceso (766ms)
+  ✓   2 [portal] › e2e/esqueleto.comun.spec.ts:33:9 › shell del esqueleto › sin violaciones de CSP ni errores de consola en /e (807ms)
+  ✓   1 [portal] › e2e/esqueleto.comun.spec.ts:42:7 › shell del esqueleto › accesibilidad: 0 incidencias serias o críticas (axe, WCAG 2.1 AA) (993ms)
+  -   8 [panel] › e2e/esqueleto.comun.spec.ts:33:9 › shell del esqueleto › sin violaciones de CSP ni errores de consola en /e
+  ✓   9 [panel] › e2e/esqueleto.comun.spec.ts:86:7 › shell del esqueleto › una página protegida sin sesión lleva a /acceso sin mostrar datos (109ms)
+  ✓  11 [panel] › e2e/esqueleto.comun.spec.ts:56:9 › shell del esqueleto › móvil a 320 px: sin scroll horizontal, controles de 44 px, campos de 16 px, texto ≥ 13 px (117ms)
+  ✓  12 [panel] › e2e/esqueleto.comun.spec.ts:56:9 › shell del esqueleto › móvil a 390 px: sin scroll horizontal, controles de 44 px, campos de 16 px, texto ≥ 13 px (101ms)
+  ✓   7 [panel] › e2e/esqueleto.comun.spec.ts:33:9 › shell del esqueleto › sin violaciones de CSP ni errores de consola en /acceso (659ms)
+  ✓  10 [panel] › e2e/esqueleto.comun.spec.ts:42:7 › shell del esqueleto › accesibilidad: 0 incidencias serias o críticas (axe, WCAG 2.1 AA) (329ms)
+
+  1 skipped
+  11 passed (3.3s)
+  ✓ e2e OK
+
+▶ lighthouse: bash -c cd "$0" && npx lhci autorun --config=lighthouserc.cjs /Users/cmo/Local/claude/Apps/App People Service
+✅  .lighthouseci/ directory writable
+✅  Configuration file found
+✅  Chrome installation found
+⚠️   GitHub token not set
+Healthcheck passed!
+
+Started a web server with "env APP_ENV=local DOBLES=mailgun,hubspot,gemini,spaces,latido EMAIL_HMAC_KEY=dev-email-0123456789abcdef0123456789abcdef EDGE_SECRET=dev-borde-0123456789abcdef0123456789abcdef SALUD_TOKEN=dev-salud-0123456789abcdef0123456789abcdef DATABASE_URL=postgres://ps_portal:dev@127.0.0.1:64329/ps OTP_PEPPER_CLIENTE=dev-pepper-cliente-0123456789abcdef0123456789abcdef PORT=3110 HOSTNAME=127.0.0.1 NODE_ENV=production node apps/portal/.next/standalone/apps/portal/server.js"...
+Running Lighthouse 1 time(s) on http://127.0.0.1:3110/acceso
+Run #1...done.
+Running Lighthouse 1 time(s) on http://127.0.0.1:3110/e
+Run #1...done.
+Done running Lighthouse!
+
+Checking assertions against 2 URL(s), 2 total run(s)
+
+All results processed!
+
+Dumping 2 reports to disk at /Users/cmo/Local/claude/Apps/App People Service/.local/lhci...
+Done writing reports to disk.
+
+Done running autorun.
+  ✓ lighthouse OK
+
+== resultado: VERDE ==
+Reporte: /Users/cmo/Local/claude/Apps/App People Service/.claude/state/integration-report.txt

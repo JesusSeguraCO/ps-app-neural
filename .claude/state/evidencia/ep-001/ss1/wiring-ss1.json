@@ -1,0 +1,67 @@
+[
+ {
+  "item_id": "ss1-borde-cabecera-403",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Solo el borde de Cloudflare llega al origen (V8-2, ADR-0010)"
+ },
+ {
+  "item_id": "ss1-cabeceras-csp-nonce",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Cabeceras de seguridad en toda respuesta"
+ },
+ {
+  "item_id": "ss1-rutas-permitidas-v8-1",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Lista positiva de rutas del portal (V8-1)"
+ },
+ {
+  "item_id": "ss1-guarda-pagina-v2-1",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Guarda de sesión en cada página protegida (V2-1)"
+ },
+ {
+  "item_id": "ss1-sin-server-actions-edge-v8-2",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Sin mutaciones fuera de endpoints protegidos (V8-2)"
+ },
+ {
+  "item_id": "ss1-config-incompleta-v8-9",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Arranque solo con configuración completa (V8-9)"
+ },
+ {
+  "item_id": "ss1-salud-vivo-lista",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Salud y preparación"
+ },
+ {
+  "item_id": "ss1-roles-bd-v2-2",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Permisos mínimos de base de datos (V2-2, V8-10)"
+ },
+ {
+  "item_id": "ss1-encolado-lista-blanca-v9-10",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Encolado fuera de la lista permitida (V9-10)"
+ },
+ {
+  "item_id": "ss1-worker-enviar-codigo",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Envío de códigos de acceso por el worker"
+ },
+ {
+  "item_id": "ss1-migraciones-v8-11",
+  "kind": "integration_point",
+  "ref": "plataforma-base: Migraciones deterministas (V8-11)"
+ },
+ {
+  "item_id": "BND-otp-mail-send-access-code",
+  "kind": "integration_point",
+  "ref": "boundary:otp-mail#send-access-code"
+ },
+ {
+  "item_id": "ss1-journey-esqueleto",
+  "kind": "integration_point",
+  "ref": "sub-slice 1: portal y panel arrancan tras el borde, /acceso y /e cargan, página protegida redirige"
+ }
+]
