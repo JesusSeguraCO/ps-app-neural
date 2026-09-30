@@ -1,0 +1,16 @@
+{
+  "id": "ep-001-local",
+  "name": "EP-001 local (sin cabecera de borde)",
+  "values": [
+    { "key": "portal", "value": "http://127.0.0.1:3100", "enabled": true },
+    { "key": "panel", "value": "http://127.0.0.1:3101", "enabled": true },
+    { "key": "buzon", "value": "http://127.0.0.1:3199", "enabled": true },
+    { "key": "dominioCliente", "value": "cliente-sintetico.test", "enabled": true },
+    { "key": "perfilDisponibleA", "value": "PS-0142", "enabled": true },
+    { "key": "perfilDisponibleB", "value": "PS-0187", "enabled": true },
+    { "key": "perfilNoPublicado", "value": "PS-0137", "enabled": true },
+    { "key": "perfilesNoPublicables", "value": "PS-0099,PS-0137,PS-0151,PS-0160", "enabled": true },
+    { "key": "run", "value": "", "enabled": true },
+    { "key": "ipBase", "value": "198.51.100", "enabled": true }
+  ]
+}
