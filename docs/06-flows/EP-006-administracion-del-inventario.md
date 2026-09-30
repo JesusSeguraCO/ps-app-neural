@@ -1,7 +1,7 @@
 ---
 id: flow-006-administracion-del-inventario
 epica: EP-006
-historias_cubiertas: [HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-131, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-149]
+historias_cubiertas: [HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-131, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-150, HU-151]
 ---
 
 # Flow 006 — Administración del inventario
@@ -23,7 +23,7 @@ sequenceDiagram
   %% HU-124
   M->>P: Entra con rol observador
   %% HU-124
-  P-->>M: Muestra inventario, enlaces, colocados, demanda y cobertura, sin controles de edición, publicación ni importación
+  P-->>M: Muestra inventario, enlaces de acceso y colocados, sin controles de edición, publicación ni importación
 
   %% HU-124
   alt El observador llega por una dirección de edición
@@ -181,6 +181,7 @@ sequenceDiagram
 sequenceDiagram
   participant TH as Talento Humano
   participant P as Panel
+  participant M as Mercadeo
   participant C as Cliente
 
   %% HU-127
@@ -212,6 +213,16 @@ sequenceDiagram
   P-->>TH: Lo almacena internamente, lo asocia a esa validación y lo deja recuperable
 
   %% HU-131
+  TH->>P: Abre el artefacto desde el perfil en el panel
+  %% HU-131
+  P-->>TH: Lo descarga tal como se adjuntó, sin resumirlo ni extraer datos de él
+
+  %% HU-131
+  M->>P: Intenta descargar el artefacto con rol observador
+  %% HU-131
+  P-->>M: No lo entrega, explica que solo la administradora lo descarga y muestra que existe, sin enlace
+
+  %% HU-131
   alt Video o archivo de más de 64 MB
     %% HU-131
     P-->>TH: Lo rechaza, dice qué admite y conserva lo ya registrado del perfil
@@ -222,21 +233,10 @@ sequenceDiagram
   %% HU-140
   P-->>TH: Precarga reto, entregables y criterios desde la modalidad de prueba, marcando su origen
 
-  %% HU-149
-  P-->>TH: Propone la fecha y el resultado leídos del artefacto, este como sugerencia «sin confirmar», sin enviarlo fuera del servidor
-
   %% HU-140
   alt El artefacto no tiene texto aprovechable
     %% HU-140
     P-->>TH: Precarga igual lo que viene de la modalidad de prueba, sin borrar el adjunto
-    %% HU-149
-    P-->>TH: Dice que no pudo leer el artefacto y deja fecha y resultado vacíos para completarlos a mano
-  end
-
-  %% HU-149
-  alt Varias fechas o ninguna frase de resultado
-    %% HU-149
-    P-->>TH: Deja ese campo vacío y marcado, nunca lo rellena por analogía ni por defecto
   end
 
   %% HU-140
@@ -245,8 +245,6 @@ sequenceDiagram
     TH->>P: Corrige el campo o descarta el borrador
     %% HU-140
     P-->>TH: La ficha conserva solo lo que confirmó
-    %% HU-149
-    P-->>TH: Un resultado que sigue «sin confirmar» no llega a la ficha
   end
 
   %% HU-129
@@ -275,9 +273,15 @@ sequenceDiagram
   end
 
   %% HU-128
-  alt Publicación masiva con algún perfil sin consentimiento
+  alt Con consentimiento pero sin modalidad de prueba elegida
     %% HU-128
-    P-->>TH: Publica los que lo tienen y señala los demás con su motivo, sin abortar
+    P-->>TH: Bloquea, dice que falta elegir la modalidad y la ofrece entre las de la familia del rol
+  end
+
+  %% HU-128
+  alt Publicación masiva con algún perfil sin consentimiento o sin modalidad
+    %% HU-128
+    P-->>TH: Publica los que cumplen y señala los demás con su motivo, sin abortar
   end
 
   %% HU-128
@@ -293,7 +297,7 @@ sequenceDiagram
   end
 
   %% HU-130
-  P-->>TH: Publica con el enunciado de Nivel 0 derivado de la familia de rol, sin bloque vacío
+  P-->>TH: Publica con el enunciado de Nivel 0 que trae la modalidad de prueba elegida, sin bloque vacío
 
   %% HU-130
   alt El reporte detallado llega después
@@ -334,6 +338,10 @@ sequenceDiagram
   P-->>C: La ficha publicada coincide con lo previsualizado
   %% HU-131
   P-->>C: Muestra el reporte estructurado, nunca el artefacto crudo ni un enlace a él
+  %% HU-131
+  C->>P: Pide la dirección de descarga del artefacto con su sesión del portal
+  %% HU-131
+  P-->>C: No responde con el artefacto
 ```
 
 ## Diagrama — mantenimiento y gobierno
@@ -437,23 +445,44 @@ sequenceDiagram
   P-->>TH: Cuenta, inicio y liberación, ordenados por proximidad, con los de menos de 60 días destacados
 
   %% HU-137
-  alt Operaciones tiene asignaciones que no están en el panel
+  alt Guarda el colocado sin fecha de liberación
     %% HU-137
-    TH->>P: Importa la hoja del sistema de asignación
-    %% HU-137
-    P-->>TH: Marca los colocados como procedentes de esa carga y muestra su fecha de corte
-  end
-
-  %% HU-137
-  alt La carga de Operaciones está desincronizada
-    %% HU-137
-    P-->>TH: Muestra el aviso «dato desincronizado» junto a la fecha de corte, sin ocultar los colocados
+    P-->>TH: No lo guarda, explica que un colocado siempre lleva su fecha de liberación y el perfil queda como estaba
   end
 
   %% HU-137
   alt Un colocado sigue publicado
     %% HU-137
     P-->>TH: Conserva su disponibilidad en la fecha de liberación y sigue visible en el portal
+  end
+
+  %% HU-150
+  TH->>P: Carga en la pestaña de colocados el archivo JSON o CSV de Operaciones
+  %% HU-150
+  P-->>TH: Marca los colocados como procedentes de esa carga, fecha el corte en el momento de la carga e informa las columnas ignoradas
+
+  %% HU-150
+  alt Una fila difiere de un colocado registrado en el panel
+    %% HU-150
+    P-->>TH: Gana el panel, la fila no lo pisa y queda señalada «diferencia con Operaciones» para que ella decida
+  end
+
+  %% HU-150
+  alt El archivo trae filas con errores de formato
+    %% HU-150
+    P-->>TH: Aplica solo las válidas y muestra cada fila mala con su número y motivo, sin aplicarla
+  end
+
+  %% HU-150
+  alt El archivo no es JSON ni CSV
+    %% HU-150
+    P-->>TH: Lo rechaza entero y conserva la carga anterior con su fecha de corte
+  end
+
+  %% HU-150
+  alt Pasaron más de 7 días sin una carga nueva
+    %% HU-150
+    P-->>TH: Muestra «dato desincronizado» junto a la fecha de corte, sin ocultar los colocados
   end
 
   %% HU-135
@@ -586,6 +615,33 @@ sequenceDiagram
     P-->>M: Lo rechaza, el contacto no cambia y la auditoría no registra nada
   end
 
+  %% HU-151
+  TH->>P: Inscribe un correo @trycore.com con su rol en la lista de acceso
+  %% HU-151
+  P-->>TH: Aparece en la lista con su rol, ya puede recibir código y el alta queda en la auditoría
+
+  %% HU-151
+  TH->>P: Pasa a observador a otra administradora
+  %% HU-151
+  P-->>TH: La lista muestra el rol nuevo, su sesión se corta en la siguiente petición y la auditoría registra el anterior y el nuevo
+
+  %% HU-151
+  TH->>P: Da de baja un correo inscrito
+  %% HU-151
+  P-->>TH: Sale de los activos, su sesión se corta en la siguiente petición, ya no recibe código y la baja queda en la auditoría
+
+  %% HU-151
+  alt El correo no es @trycore.com
+    %% HU-151
+    P-->>TH: No lo inscribe, lo explica y la lista queda igual
+  end
+
+  %% HU-151
+  alt Es la única administradora activa e intenta quitarse el rol
+    %% HU-151
+    P-->>TH: Lo impide, explica que el panel no puede quedarse sin administrador y sigue inscrita como administradora
+  end
+
   %% HU-138
   TH->>P: Consulta el registro de auditoría de un perfil
   %% HU-138
@@ -625,23 +681,24 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
 | Corregir lo que falló | HU-142 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Revertir importación | HU-087 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Registrar consentimiento | HU-127 | AC-1 (happy) · AC-2 y AC-3 (error) · AC-4 (edge) |
-| Adjuntar artefacto | HU-131 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
+| Adjuntar, descargar y ver el artefacto en el panel | HU-131 | AC-1 y AC-2 (happy) · AC-3 y AC-4 (error) · AC-5 (edge) |
 | Precargar borrador desde la modalidad de prueba | HU-140 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
-| Reconocer fecha y resultado en el artefacto | HU-149 | AC-1 (happy) · AC-2 (error) · AC-3 y AC-4 (edge) |
 | Previsualizar | HU-129 | AC-1 (happy) · AC-2 (error) · AC-3 y AC-4 (edge) |
-| Bloqueo sin consentimiento | HU-128 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
+| Bloqueo sin consentimiento o sin modalidad | HU-128 | AC-1 (happy) · AC-2 y AC-3 (error) · AC-4 (edge) |
 | Publicar con Nivel 0 | HU-130 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Editar publicado | HU-126 | AC-1 y AC-2 (happy) · AC-3 y AC-4 (error) · AC-5 (edge) |
 | Disponibilidad en dos clics | HU-132 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Incoherencias | HU-134 | AC-1 (happy) · AC-2 (error) · AC-3 y AC-4 (edge) |
 | Pausar con motivo | HU-133 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Bandeja de vigencia | HU-136 | AC-1 y AC-2 (happy) · AC-3 (error) · AC-4 y AC-5 (edge) |
-| Colocados | HU-137 | AC-1 y AC-2 (happy) · AC-3 (edge) · AC-4 (error) · AC-5 (edge) |
+| Colocados | HU-137 | AC-1 y AC-2 (happy) · AC-3 (error) · AC-4 (edge) |
+| Carga de colocados de Operaciones | HU-150 | AC-1 (happy) · AC-2 y AC-3 (error) · AC-4 y AC-5 (edge) |
 | Archivar | HU-135 | AC-1 (happy) · AC-2 (error) · AC-3 y AC-4 (edge) |
 | Crear valores de catálogo | HU-089 | AC-1 y AC-2 (happy) · AC-3 y AC-4 (error) · AC-5 (edge) |
 | Retirar y fusionar valores | HU-143 | AC-1, AC-2 y AC-3 (happy) · AC-4 (error) · AC-5 (edge) |
 | Léxico | HU-139 | AC-1 y AC-2 (happy) · AC-3 (edge) · AC-4 (error) · AC-5 (edge) |
 | Contacto de Trycore | HU-147 | AC-1 (happy) · AC-2, AC-3 y AC-4 (error) · AC-5 (edge) |
+| Lista de acceso al panel | HU-151 | AC-1, AC-2 y AC-3 (happy) · AC-4 (error) · AC-5 (edge) |
 | Auditoría | HU-138 | AC-1 (happy) · AC-2 (error) · AC-3, AC-4 y AC-5 (edge) |
 
 ## Notas
@@ -649,7 +706,7 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
 **Revisión del 2026-09-30.** Se alinea con las historias revisadas antes del DoR y con las decisiones del sponsor D1–D9 (`.claude/state/evidencia/ep-006/decisiones-sponsor-2026-09-30.md`):
 
 - **HU-123 sale de este flow.** Pertenece a EP-001 desde el 2026-09-27 (T-19); aquí solo queda como nota de precondición en el primer diagrama.
-- **Nuevas:** HU-147 (contacto de Trycore que ve el cliente), HU-148 (reutilizar un emparejamiento de columnas, partida de HU-086 por D2) y HU-149 (reconocer fecha y resultado por patrones, partida de HU-140 por D9).
+- **Nuevas:** HU-147 (contacto de Trycore que ve el cliente), HU-148 (reutilizar un emparejamiento de columnas, partida de HU-086 por D2) y HU-149 (reconocer fecha y resultado por patrones, partida de HU-140 por D9; descartada después por D11). Tras el DoR: HU-150 (carga de colocados de Operaciones, D12) y HU-151 (lista de acceso al panel, D13).
 - **HU-140** es ahora «Precargar el borrador desde la modalidad de prueba»; los arcos de fecha y resultado propuestos desde el artefacto, el de lectura fallida con campos vacíos, el del caso ambiguo y el de «sin confirmar no llega a la ficha» pasan a HU-149 (D7, D9).
 - **D1 · HU-126:** al quedar incompleto, el panel pregunta si descartar el cambio o pasar el perfil a borrador (ya no «bloquea o propone»).
 - **D2:** exportar (HU-088) va antes que pegar (HU-086), que consume su formato.
@@ -658,6 +715,13 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
 - **D5 · HU-134:** la matriz ALTA/MEDIA vive en los AC; el diagrama muestra un arco por severidad.
 - **D6:** el caso «pausado al que le ponen fecha» es de HU-134; HU-132 tiene como error propio el observador que intenta cambiar la disponibilidad.
 - **D8 · HU-137:** el panel es la fuente (marcar colocado con cliente y fecha de liberación) y Operaciones puede cargar su hoja con fecha de corte visible.
+- **Tras el DoR (D10–D14, mismo día):**
+  - **D10 · HU-128 / HU-130:** la modalidad de prueba se elige del catálogo cerrado de su familia y es obligatoria para publicar; nuevo ramal de HU-128 «sin modalidad elegida» y el Nivel 0 sale de la modalidad elegida, no del rol.
+  - **D11 · HU-149 descartada:** se retiran sus arcos (fecha y resultado leídos del artefacto, lectura fallida, caso ambiguo, «sin confirmar»); HU-131 gana la descarga y visualización en el panel y el rechazo de la descarga desde el portal.
+  - **D12 · HU-150:** la carga de Operaciones (JSON o CSV, filas malas sin aplicar, fecha de corte, «dato desincronizado» a los más de 7 días) sale de HU-137, que gana el error «colocado sin fecha de liberación».
+  - **D13 · HU-151:** alta, cambio de rol y baja en la lista de acceso, con correo externo rechazado y guarda del último administrador. El rechazo al observador lo cubren los arcos de HU-124 (ruta directa).
+  - **D15–D18 (mismo día):** HU-150 gana el ramal «diferencia con Operaciones» (gana el panel) y fecha el corte en el momento de la carga con columnas ignoradas informadas; el límite de 7 días exactos sale del diagrama (vive en las notas de HU-150); HU-151 corta la sesión en la siguiente petición al dar de baja o pasar a observador; HU-131 niega la descarga al observador, que solo ve que el artefacto existe (Mercadeo entra como participante del segundo diagrama).
+  - **D14 · HU-124:** el observador ve inventario, enlaces de acceso y colocados; demanda y cobertura se añaden con EP-010.
 - **Correcciones de fidelidad a los AC:** HU-088 exporta los campos internos marcados (no los omite); HU-086 manda los códigos duplicados al grupo con error en vez de rechazar el archivo; HU-087 deja elegir si incluir los perfiles cambiados a mano; HU-125 advierte al elegir el rol en el editor (la advertencia al crear el rol es de HU-089); la advertencia de fichas dependientes al desactivar es el happy path de HU-143.
 
 **Tres diagramas y no uno.** El ciclo del panel no es un recorrido lineal: son tres momentos con actores y disparadores distintos —quien consulta y carga, quien publica, quien mantiene y gobierna—. Forzarlos en un solo diagrama produciría algo ilegible sin ganar precisión.
@@ -666,8 +730,8 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
 
 **D-8 cerró el 2026-09-18 en CRUD completo**, así que todo lo diagramado está comprometido. **D-22** fija los dos roles: administrador de inventario escribe, observador consulta.
 
-**Dependencias duras:** HU-138 (auditoría) no existe sin la identidad de HU-123 (EP-001) — RF-8.1.3. **HU-140 y HU-149 no existen sin HU-131**: sin artefacto guardado no hay de qué derivar. **HU-148 no existe sin HU-086**: guarda el emparejamiento que HU-086 propone.
+**Dependencias duras:** HU-138 (auditoría) no existe sin la identidad de HU-123 (EP-001) — RF-8.1.3. **HU-140 no existe sin HU-131**: sin artefacto guardado no hay borrador que pedir. **HU-148 no existe sin HU-086**: guarda el emparejamiento que HU-086 propone. **HU-150 no existe sin HU-137**: carga en la pestaña de colocados que HU-137 construye. **HU-151 no existe sin HU-123** (EP-001): mantiene la lista de acceso que HU-123 aplica al entrar.
 
-**Divisiones.** El 2026-09-22 HU-086 se partió en HU-086, HU-141 y HU-142; HU-089 en HU-089 y HU-143; HU-131 en HU-131 y HU-140. El 2026-09-30 HU-086 cedió el guardado del emparejamiento a HU-148 y HU-140 cedió el reconocimiento de fecha y resultado a HU-149. Todas son particiones, no recortes: se construyen en EP-006.
+**Divisiones.** El 2026-09-22 HU-086 se partió en HU-086, HU-141 y HU-142; HU-089 en HU-089 y HU-143; HU-131 en HU-131 y HU-140. El 2026-09-30 HU-086 cedió el guardado del emparejamiento a HU-148 y HU-140 cedió el reconocimiento de fecha y resultado a HU-149; tras el DoR, HU-137 cedió la carga de Operaciones a HU-150 (D12). Todas son particiones, no recortes: se construyen en EP-006. **HU-149 se descartó** por decisión del sponsor (D11), no del modelo.
 
 **AC no diagramados:** HU-133 AC-4 (pausa dentro del umbral, que no aparece en la bandeja) y HU-134 AC-5 (fecha vencida pero actualizada hace poco). Son la negación de un arco ya dibujado; viven en los AC de su historia y no añaden recorrido.

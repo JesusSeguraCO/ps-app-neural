@@ -6,7 +6,7 @@ prioridad: media
 complejidad: S
 estado: lista
 fase: panel-crud
-prd_version: 4.13
+prd_version: 4.15
 depende_de: [HU-131]
 ---
 
@@ -47,7 +47,7 @@ depende_de: [HU-131]
 
 ## Notas
 
-Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, precarga desde la modalidad; **RF-8.11.4**, confirma una persona) y **B.9.3** (carga asistida), con los dos candados de B.9.3. El reconocimiento de fecha y resultado por patrones en el texto del artefacto vive en **HU-149**.
+Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, precarga desde la modalidad; **RF-8.11.4**, confirma una persona) y **B.9.3** (carga asistida), con los dos candados de B.9.3. La fecha y el resultado no se leen del artefacto (D11): los escribe Talento Humano.
 
 **Ajustada el 2026-09-27 a T-2** (aprobado por el sponsor; backlog de arquitectura T-2, T-13): el borrador se arma con una **plantilla determinista, sin IA**. Lo que se precarga sale de la modalidad de prueba (B.9.1: el texto vive en el catálogo, no en el perfil); **nada sale del servidor** y **confirma siempre una persona**. Ningún modelo de lenguaje interviene, así que tampoco aplica la frontera de D-24 ni el riesgo de que un modelo redacte sobre una persona real (RF-16.1, RF-16.2). Esta historia no lee el contenido del artefacto: por eso la precarga funciona aunque el artefacto no tenga texto legible.
 
@@ -61,15 +61,17 @@ Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, p
 
 **Revisión INVEST 2026-09-30: partida por D9 (partición, no recorte).** HU-140 queda con la precarga desde la plantilla de la modalidad (talla S); el reconocimiento de fecha y resultado por patrones en el artefacto, con la sugerencia «sin confirmar» de D7 y los casos de ambigüedad, pasa a **HU-149**. Las dos se construyen en EP-006.
 
+**Revisión DoR 2026-09-30: aplicada D11** (sponsor). No hay lectura automática del artefacto y HU-149 se descarta (no se construye). HU-140 se mantiene tal cual: nunca leyó el contenido del artefacto, así que no necesita librería de PDF o Word. La fecha y el resultado de la validación los escribe Talento Humano en la ficha; ya no hay sugerencia «sin confirmar» que venga del artefacto.
+
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.13 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9 (sponsor, 2026-09-30) · ADR-0003 · depende de HU-131 · parte de fecha y resultado en HU-149
+Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9 y D11 (sponsor, 2026-09-30) · ADR-0003 · depende de HU-131
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: el borrador se pide sobre la evidencia que adjunta HU-131; no depende de HU-149, que se apoya en esta |
+| I | Independiente | ✓ con dependencia declarada: el borrador se pide sobre la evidencia que adjunta HU-131; ninguna otra historia depende de esta tras el descarte de HU-149 (D11) |
 | N | Negociable | ✓ fija el resultado (precarga por plantilla, origen visible, confirmación humana, nada sale del servidor); cómo se presenta el borrador en el panel es negociable |
 | V | Valiosa | ✓ Talento Humano deja de transcribir en cada perfil el enunciado, los entregables y los criterios que ya viven en el catálogo |
 | E | Estimable | ✓ copiar tres textos del catálogo de la modalidad a un borrador con estado (generado → revisado) y confirmarlo o descartarlo; sin IA ni lectura del artefacto |

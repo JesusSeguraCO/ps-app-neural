@@ -55,11 +55,13 @@ Cubre **RF-8.2**, **RF-8.16.2**, **RF-8.16.3** y **RF-8.16.4**.
 
 **La detección de parecidos vive en HU-089** (catálogos). Aquí solo se consume desde el editor: por eso el edge case describe el comportamiento y no la mecánica.
 
+**Revisión DoR 2026-09-30: aplicada D10** (sponsor; CRN-14). En el editor, la modalidad de prueba se elige del catálogo cerrado de la familia del rol (Anexo B.8.1): el rol solo filtra qué modalidades se ofrecen, no la deriva. Es un atributo obligatorio para publicar; si queda sin elegir, el perfil se guarda como borrador y el panel la señala entre lo que falta (escenario «campos obligatorios incompletos»). El bloqueo al publicar sin modalidad vive en HU-128.
+
 **Revisión INVEST 2026-09-30:** el error de familia deja de repetir la acción en Dado y Cuando (Dado = el rol pertenece a una familia sin modalidades; Cuando = lo selecciono); Dado y Cuando de los demás escenarios pasan a estado y acción únicos; `depende_de: [HU-089]`; tabla INVEST razonada.
 
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-089 · habilita HU-127
+Épica madre: **EP-006** · PRD v4.15 · RF-8.10 (D10) · Anexo B.8.1 · depende de HU-089 · habilita HU-127 y HU-128
 
 ## INVEST
 

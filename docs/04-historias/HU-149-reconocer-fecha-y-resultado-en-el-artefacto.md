@@ -4,13 +4,15 @@ titulo: "Reconocer fecha y resultado por patrones en el artefacto"
 epica: EP-006
 prioridad: media
 complejidad: M
-estado: lista
+estado: descartada
 fase: panel-crud
 prd_version: 4.15
 depende_de: [HU-140, HU-131]
 ---
 
 # HU-149 — Reconocer fecha y resultado por patrones en el artefacto
+
+> **Descartada por el sponsor el 2026-09-30 (D11): sin lectura automática del artefacto.** La evidencia se sube y quien la necesita en el panel la descarga y la ve (HU-131); la fecha y el resultado los escribe Talento Humano. No se construye. Se conserva el fichero como rastro.
 
 **Como** administradora de inventario de Talento Humano,
 **quiero** que el sistema reconozca en el texto del artefacto que ya adjunté la fecha de la validación y el resultado, y me los proponga en el borrador,
@@ -54,6 +56,8 @@ depende_de: [HU-140, HU-131]
 **Y** un resultado que sigue «sin confirmar» no llega a la ficha
 
 ## Notas
+
+**Revisión DoR 2026-09-30:** descartada por el sponsor (D11, bloqueo B7 del DoR: leer PDF o Word exigía una librería fuera de `stack-allowlist.json` y sin ADR). Sale de `depende_de` de las demás historias y de los arcos del flujo de EP-006. RF-8.11, RF-8.11.2 y B.9.3 enmendados en la v4.15.
 
 Cubre la segunda mitad de **RF-8.11** en su parte de patrones (**RF-8.11.2**: «la fecha y el resultado se extraen por patrones del texto de la evidencia; lo que la plantilla no encuentra queda vacío, nunca se completa por analogía») y **B.9.3**, con sus dos candados. La precarga desde la modalidad de prueba vive en **HU-140**.
 

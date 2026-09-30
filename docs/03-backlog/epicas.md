@@ -229,6 +229,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **HU-147 (2026-09-30):** el contacto de Trycore que ve el cliente (nombre, cargo y correo) se configura desde la sección Administración del panel; hasta entonces EP-001 lo fija en `people.service@trycore.com`.
 
+**HU-150 y HU-151 (2026-09-30, tras el DoR, D12 y D13 del sponsor):** **HU-150** «Cargar la información de colocados de Operaciones» sale de HU-137 (partición, no recorte): archivo JSON o CSV, fecha de corte visible y aviso «dato desincronizado» si pasan más de 7 días sin carga nueva; HU-137 queda con el registro en el panel. **HU-151** «Administrar quién entra al panel y con qué rol» da historia a RF-8.1.5: alta, cambio de rol y baja de correos `@trycore.com`, auditadas, sin quedarse nunca sin administrador. En la misma revisión: la modalidad de prueba es obligatoria para publicar (D10, HU-128), **HU-149 se descarta** por decisión del sponsor (D11: sin lectura automática del artefacto; HU-131 permite descargarlo y verlo en el panel) y HU-124 se limita a inventario, enlaces y colocados hasta EP-010 (D14).
+
 **Historias anticipadas:** crear un perfil · registrar consentimiento antes de publicar · actualizar disponibilidad en dos clics · pausar un perfil asignado · archivar un perfil que salió del banco · previsualizar la ficha · revisar la bandeja de vigencia · cargar perfiles masivamente · consultar el registro de auditoría.
 
 ### Requisitos de esta épica
@@ -248,7 +250,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 - **RF-8.7** Vista previa exacta de la ficha antes de publicar.
 - **RF-8.8** Bandeja de vigencia: perfiles sin actualización en más de 30 días, marcados para revisión.
 - **RF-8.9** Registro de auditoría: qué cambió, quién y cuándo.
-- **RF-8.10** **La publicación de un perfil nunca se bloquea por falta del reporte detallado de validación.** Basta el Nivel 0 (Anexo B.9), que se deriva del rol sin intervención. El detalle enriquece la ficha cuando existe.
+- **RF-8.10** **La publicación de un perfil nunca se bloquea por falta del reporte detallado de validación.** Basta el Nivel 0 (Anexo B.9). El detalle enriquece la ficha cuando existe. *Enmienda PRD v4.15 (D10): la modalidad de prueba se elige del catálogo cerrado de su familia y es obligatoria para publicar; el rol solo filtra las modalidades ofrecidas.*
 - **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4).
   - **RF-8.11.2 · El borrador sale de una plantilla determinista, sin IA** (decisión del sponsor, 2026-09-25, T-2). Se **precarga desde la modalidad de prueba** del perfil (su texto de catálogo, B.9.1); la **fecha y el resultado se extraen por patrones** del texto de la evidencia; lo que la plantilla no encuentra queda vacío, nunca se completa por analogía (B.9.3).
   - **RF-8.11.3 · Nada sale del servidor.** Ni el artefacto ni su texto viajan a Gemini ni a ningún servicio externo. Es coherente con RF-16.2: el modelo nunca ve datos de perfiles.

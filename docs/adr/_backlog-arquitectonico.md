@@ -53,12 +53,12 @@ conservan como alias para no romper citas.
 | UC-6 Estado en la URL y persistencia local | Funcional | (A,M) | EP-002, EP-009 · HU-073, HU-096 · RF-2.5, 13.4, 16.4, 19.8 · D-16 | 4, 8 | 0004, 0008 | ABORDADO (✅) |
 | UC-7 Solicitud durable hacia HubSpot | Funcional | (A,A) | EP-005, EP-007 · HU-096–101, 102, 104, 105, 106, 107, 077 · RF-5, 9.1–9.6.2, 17 · D-6, D-7, D-21 | 8 | 0009 | ABORDADO (⚠️) |
 | UC-8 Camino del cero y demanda | Funcional | (A,M) | EP-010, EP-002 · HU-075, 077, 078 · RF-10, 11, 14.3, 15.1, 13.7.3 · D-11, D-12 | 4 | 0004 | ABORDADO (✅) |
-| UC-9 Acceso al panel | Funcional | (A,A) | EP-001 · HU-123 (T-19) · EP-006 · HU-124 · RF-8.1–8.1.6 · D-22 | 2, 8 | 0002 | ABORDADO (✅) |
-| UC-10 Ciclo de vida del perfil y consentimiento | Funcional | (A,A) | EP-006 · HU-125–130, 132–135 · RF-8.2–8.5, 8.7, 8.10, 8.14 · B.9.2 | 3 | 0003 | ABORDADO (⚠️) |
-| UC-11 Importación masiva y reversión | Funcional | (A,A) | EP-006 · HU-086, 087, 088, 141, 142 · RF-8.15 | 3, 8 | 0003, 0009 | ABORDADO (✅) |
-| UC-12 Auditoría por campo | Funcional | (A,A) | EP-006 · HU-138 · RF-8.9, 8.1.3 | 3, 8 | 0003 | ABORDADO (✅) |
+| UC-9 Acceso al panel | Funcional | (A,A) | EP-001 · HU-123 (T-19) · EP-006 · HU-124, HU-151 · RF-8.1–8.1.6 · D-22 | 2, 8 | 0002 | ABORDADO (✅) |
+| UC-10 Ciclo de vida del perfil y consentimiento | Funcional | (A,A) | EP-006 · HU-125–130, 132–136 · RF-8.2–8.5, 8.7, 8.8, 8.10, 8.14 · B.9.2 | 3 | 0003 | ABORDADO (⚠️) |
+| UC-11 Importación masiva y reversión | Funcional | (A,A) | EP-006 · HU-086, 087, 088, 141, 142, 148 · RF-8.15 | 3, 8 | 0003, 0009 | ABORDADO (✅) |
+| UC-12 Auditoría por campo | Funcional | (A,A) | EP-006 · HU-138, HU-147, HU-151 · RF-8.9, 8.1.3 | 3, 8 | 0003 | ABORDADO (✅) |
 | UC-13 Catálogos paramétricos y léxico | Funcional | (A,M) | EP-006 · HU-089, 139, 143 · RF-8.12, 8.12.1, 8.16 · D-24 | 3 | 0003 | ABORDADO (✅) |
-| UC-14 Colocados y evidencia | Funcional | (M,M) | EP-006 · HU-131, 137, 140 · RF-8.11, 8.11.1, 8.13 · B.8.4, B.9.3 | 3, 8 | 0003, 0010 | ABORDADO (✅) |
+| UC-14 Colocados y evidencia | Funcional | (M,M) | EP-006 · HU-131, 137, 140, 150 · RF-8.11, 8.11.1, 8.13 · B.8.4, B.9.3 | 3, 8 | 0003, 0010 | ABORDADO (✅) |
 | UC-15 Notificación y escalamiento hábil | Funcional | (A,A) | EP-007 · HU-101, HU-103 · RF-9.5, 9.7, 17.1–17.2 | 8 | 0009 | ABORDADO (⚠️) |
 | UC-16 Correo curado | Funcional | (A,M) | EP-011 · HU-113–117 · RF-18 (v4.14), 1.6 | 8, *2026-09-27* | 0009, 0006, 0002 | ABORDADO (✅) — *redefinido el 2026-09-27 (decisión de negocio): el boletín se envía desde Gmail o HubSpot; el portal arma la edición curada, genera el enlace por destinatario y el bloque para copiar, y mide entradas* |
 | UC-17 Telemetría con atribución | Funcional | (A,M) | EP-008, EP-002, EP-009 · HU-108–112 · RF-7, 12.1, 13.1, 14.2, 14.7 | 6, 8 | 0006 | ABORDADO (⚠️) |
@@ -73,12 +73,12 @@ conservan como alias para no romper citas.
 | QA-1 Rendimiento del filtrado | QA | (A,A) | EP-002, EP-009, EP-010 (UC-5) · RF-13.8 · §8, §13.5 | 4, 8 | 0008, 0004 | ABORDADO (⚠️) |
 | QA-2 Primer render útil | QA | (A,A) | EP-001, EP-003 (UC-3, UC-4) · §8 | 6, 8 | 0008, 0006, 0010 | ABORDADO (⚠️) |
 | QA-3 Seguridad del acceso del cliente | QA | (A,A) | EP-001 · HU-090, HU-092, HU-144 (UC-1) · RF-1.2.9 | 2, 6, 8 | 0002, 0006, 0009, 0010 | ABORDADO (⚠️) — enmienda propuesta en ADR-0002/0008/0010 (2026-09-28): dos capas de limitación en la aplicación (capa 3 de Cloudflare retirada), un solo código vigente (T-31); residual R-13, R-10, R-82, R-83 |
-| QA-4 Autorización del panel | QA | (A,A) | EP-001 · HU-123 (T-19) · EP-006 · HU-124 (UC-9) · RF-8.1 | 2, 8 | 0008, 0002 | ABORDADO (✅) |
+| QA-4 Autorización del panel | QA | (A,A) | EP-001 · HU-123 (T-19) · EP-006 · HU-124, HU-147, HU-151 (UC-9) · RF-8.1 | 2, 8 | 0008, 0002 | ABORDADO (✅) |
 | QA-5 Confidencialidad y Ley 1581 | QA | (A,A) | EP-003, EP-006, EP-009 (UC-4, UC-18) · RF-3.13, RF-16 · §8, Anexo B | 2, 3, 6, 8 | 0002, 0003, 0006, 0008, 0010 | ABORDADO (⚠️) |
 | QA-6 Durabilidad de la solicitud | QA | (A,A) | EP-005, EP-007 · HU-096–101, HU-105 (UC-7) · RF-9.6.1 | 6, 8 | 0009, 0006 | ABORDADO (✅) |
 | QA-7 Idempotencia | QA | (A,A) | EP-005, EP-007 · HU-104, HU-106 (UC-7) · D-7 | 8 | 0009 | ABORDADO (✅) |
 | QA-8 Entrega de correo | QA | (A,A) | EP-001, EP-007, EP-011 (UC-1, UC-15, UC-16) · §8.3 | 2, 8 | 0002, 0009, 0010 | ABORDADO (⚠️) |
-| QA-9 Integridad de la importación | QA | (A,A) | EP-006 · HU-086–088 (UC-11) · RF-8.15 | 3, 8 | 0003, 0009 | ABORDADO (⚠️) |
+| QA-9 Integridad de la importación | QA | (A,A) | EP-006 · HU-086–088, HU-148 (UC-11) · RF-8.15 | 3, 8 | 0003, 0009 | ABORDADO (⚠️) |
 | QA-10 Reversibilidad de la importación | QA | (A,A) | EP-006 · HU-141, HU-142 (UC-11) · RF-8.15 | 3, 8 | 0003, 0009 | ABORDADO (⚠️) |
 | QA-11 Auditoría completa | QA | (A,A) | EP-006 · HU-138 (UC-12) · RF-8.9 | 3, 8 | 0003, 0010 | ABORDADO (⚠️) |
 | QA-12 Recuperabilidad | QA | (A,A) | Transversal · §8.3, §10.3 | 3, 8 | 0003, 0010 | ABORDADO (⚠️) |
@@ -137,7 +137,7 @@ conservan como alias para no romper citas.
 | CRN-11 Motor del borrador de evidencia (HU-140) | Concern · negocio | — | EP-006 · HU-140 · RF-8.11 · D-24 | 3 | 0003 | ABORDADO (✅) |
 | CRN-12 Dónde vive «Mi equipo» | Concern · negocio | — | EP-002, EP-001 · HU-095 · RF-4.1 · D-16 | 4 | 0003, 0004 | ABORDADO (✅) |
 | CRN-13 Restos anteriores a D-4/D-16 en discovery | Concern · discovery | — | EP-001, EP-009 · HU-090 · RF-4.1, RF-9.7.1, RF-13.4.1, §13.7, §10.3 | — | — | ABORDADO (discovery corregido en PRD v4.13, 2026-09-27) |
-| CRN-14 Nivel 0 de validación contradictorio | Concern · discovery | — | EP-006 · RF-8.10, B.8.1 | 3 | 0003 | PENDIENTE (discovery) |
+| CRN-14 Nivel 0 de validación contradictorio | Concern · discovery | — | EP-006 · RF-8.10, B.8.1 · HU-128, HU-130 | 3 | 0003 | ABORDADO (discovery corregido en PRD v4.15 por **D10** del sponsor, 2026-09-30: la modalidad de prueba se elige del catálogo cerrado de su familia y es obligatoria para publicar, igual que el consentimiento; el rol solo filtra las ofrecidas. RF-8.10, B.8.1 y B.9.2 enmendados; HU-128 gana el bloqueo sin modalidad. Cierra R-39) |
 | CRN-15 Concurrencia entre administradoras | Concern | — | EP-006 | 3, 8 | 0003 | ABORDADO (✅) |
 | CRN-16 Números sin fijar (sesión, enlace, código, confianza…) | Concern | — | EP-001, EP-006, EP-009 | 2, 4, 8 | 0002, 0004 | ABORDADO (⚠️) |
 | CRN-17 Sin SLO de disponibilidad | Concern | — | §8.3 | 8 | 0010 | ABORDADO (⚠️) |
@@ -149,6 +149,7 @@ conservan como alias para no romper citas.
 3, 5, 7, 15, 16 → CON-18..22) · **1 NO APLICA** (CRN-18) · **72 ABORDADO** · **4 PENDIENTE** (CON-17;
 CRN-13, 14 de discovery; CRN-20 fuera de capa) · 0 VERIFICADO. Cambios de veredicto al recalcular
 desde los §5 vigentes: suben a ✅ UC-4, UC-14, UC-16, QA-6 y QA-22; bajan a ⚠️ QA-10, CON-9 y CRN-5.
+*DoR de EP-006, 2026-09-30:* CRN-14 pasa a ABORDADO por D10 (discovery corregido en PRD v4.15). Se añaden a la trazabilidad de sus drivers HU-136 (UC-10), HU-147 (UC-12, QA-4), HU-148 (UC-11, QA-9), HU-150 (UC-14) y HU-151 (UC-9, UC-12, QA-4); ningún driver nuevo.
 Ningún driver apunta ya a 0001, 0005 ni 0007.
 *Decisión de negocio 2026-09-27 (RF-18):* CRN-5 sube a ✅ (el portal ya no mide la apertura del boletín; mide entradas) y UC-16 sigue en ✅ con alcance redefinido; los totales no cambian.
 
@@ -198,7 +199,7 @@ Ningún driver apunta ya a 0001, 0005 ni 0007.
 | R-36 | Calendario hábil ✅ CERRADO (2026-09-25: L–V 8–18 `America/Bogota`, festivos de Colombia, 24 h hábiles); siguen sin definir los destinatarios nominales | CRN-3, UC-15 | Fijar destinatarios antes de EP-007 | 5 |
 | R-37 | ✅ CERRADO (2026-09-25) — HU-140 sin motor autorizado | CRN-11 | Plantilla determinista sin IA, confirmada por una persona | 3 |
 | R-38 | ✅ CERRADO (2026-09-25) — Modelo de datos de «Mi equipo» abierto | CRN-12 | Por invitado en servidor (`equipos`, `equipo_perfiles`); mutación idempotente `PATCH /equipo` (ADR-0004, rev.) | 4 |
-| R-39 | La guarda de modalidad para publicar depende de CRN-14 | CRN-14, UC-10 | Devolver a discovery | 3 |
+| R-39 | ✅ CERRADO (2026-09-30, D10 del sponsor) — La guarda de modalidad para publicar depende de CRN-14 | CRN-14, UC-10 | Devuelto a discovery y resuelto: la modalidad elegida es obligatoria para publicar (RF-8.10 enmendado en PRD v4.15; bloqueo en HU-128) | 3 |
 | R-40 | Restos anteriores a D-4/D-16 y «carpeta privada» en UC-4/CON-9 del `0000` | CRN-13, CON-9 | Corrección en discovery y en el `0000` con aprobación (el `0000` ya se rebasó el 2026-09-26; discovery sigue en T-18) | — |
 | R-41 | TTFB del HTML dinámico (nonce, sin caché de borde) y catálogo ≤ 500 ms sin medir en DO | QA-2 | Bloque curado en el primer HTML por SSR (ADR-0008); V10-15 y V8-6 (c) **en producción en oscuro** desde Colombia con datos ficticios; instancias ≥ 1 GB. La medición en staging no mitiga | 8 |
 | R-42 | Portabilidad de contenedores declarada pero no ensayada fuera de DO | CON-18 | Staging corre las mismas imágenes firmadas en un servidor de la empresa (T-14): la portabilidad se ejercita en cada despliegue | 8 |
@@ -277,7 +278,7 @@ Ningún driver apunta ya a 0001, 0005 ni 0007.
 | # | Decisión | Opciones | Recomendación de arquitectura | ADR | Estado |
 |---|----------|----------|-------------------------------|-----|--------|
 | T-1 | **CRN-12 «Mi equipo»**: ¿por dispositivo o por invitado en servidor? | (a) Dispositivo/URL (D-16); (b) servidor por invitado (RF-4.1, HU-095) | (a) por defecto, reversible; (b) si negocio necesita continuidad entre dispositivos | 0003, 0004 | **RESUELTA 2026-09-25:** (b) por invitado en servidor (`equipos`/`equipo_perfiles` ligadas al correo verificado y al enlace; cada invitado ve solo el suyo; se recupera en otro dispositivo; viaja completo a la solicitud). Perfil Objetivo sigue por dispositivo (D-16) |
-| T-2 | **CRN-11 motor del borrador de evidencia (HU-140)** | Ampliar D-24 con saneamiento · extracción determinista · diferir con acuerdo del equipo | Extracción determinista; nunca diferir sin acuerdo | 0003 | **RESUELTA 2026-09-25:** plantilla determinista sin IA (precarga desde la modalidad de prueba, fecha y resultado por patrones, nada sale del servidor, confirma una persona) |
+| T-2 | **CRN-11 motor del borrador de evidencia (HU-140)** | Ampliar D-24 con saneamiento · extracción determinista · diferir con acuerdo del equipo | Extracción determinista; nunca diferir sin acuerdo | 0003 | **RESUELTA 2026-09-25:** plantilla determinista sin IA (precarga desde la modalidad de prueba, fecha y resultado por patrones, nada sale del servidor, confirma una persona) · **Revisada el 2026-09-30 (D11 del sponsor):** sin lectura automática del artefacto; se retira la extracción de fecha y resultado por patrones (HU-149 descartada) y queda solo la precarga desde la modalidad (HU-140); sin librería de PDF/Word |
 | T-3 | **CRN-2 canal diario de notificaciones** | Correo · Slack/Chat · WhatsApp | Correo mientras no se decida | 0009 | **RESUELTA 2026-09-25:** solo correo + notificación nativa de HubSpot al asignar propietario, sin integración nueva. RF-9.7.1 pide «no solo por correo»: el aviso de HubSpot cuenta como segundo canal |
 | T-4 | **CRN-3 horario hábil** y si las 24 h de RF-9.7 son hábiles o naturales | Horario, zona, festivos de Colombia, dueño del calendario | Tabla administrable; 24 h hábiles | 0009 | **RESUELTA 2026-09-25:** L–V 8:00–18:00 `America/Bogota`, festivos de Colombia en tabla administrable; 24 h en horas hábiles |
 | T-5 | **Sesión del cliente 30 días y vigencia por defecto del enlace** | 30 d / 60 d renovable / otros | 30 d de sesión; 60 d renovable de enlace | 0002 | **RESUELTA 2026-09-25:** sesión 30 días acotada a la vigencia del enlace; vigencia por defecto del enlace 30 días |
@@ -287,7 +288,7 @@ Ningún driver apunta ya a 0001, 0005 ni 0007.
 | T-9 | **Precisión de la ciudad** que devuelve el servidor | Filtro mínimo en servidor · filtro completo en servidor | Filtro mínimo (modalidad ≠ Remoto + obligatorios de rol/país) | 0003 | **RESUELTA 2026-09-25:** ciudad solo cuando la necesidad es presencial o híbrida. Rev. 2026-09-26 (H14, decisión técnica): el servidor aplica el motor completo con los `Criterios` completos, así que ya no hay superconjunto de ciudades |
 | T-10 | **Regla «3 envíos sin abrir»** medida por clic/entrada en lugar del píxel | Clic/entrada (más estricta) · píxel (falsos «abiertos») | Clic/entrada | 0006, 0009 | **RESUELTA 2026-09-25:** por clic o entrada, no por apertura · **Ratificada el 2026-09-27 (decisión de negocio RF-18):** el portal no envía el boletín; la regla es «tres envíos con salida registrada sin entrada» y la apertura, si interesa, se lee en HubSpot |
 | T-11 | **Staging en el mismo servidor** | Mismo servidor · segundo hosting de pago | Mismo servidor, sin pruebas de carga | 0007 | **RESUELTA 2026-09-25:** staging en el mismo hosting (superada por T-14) |
-| T-12 | **CRN-13 / CRN-14 correcciones de discovery** (restos pre D-4/D-16; nivel 0 de validación) | Corregir en discovery con aprobación | Corregir antes del DoR de EP-006 y EP-009 | 0003 | **PENDIENTE (discovery, no arquitectura)**; la parte de CRN-13 que bloquea EP-001 se sigue en T-18 |
+| T-12 | **CRN-13 / CRN-14 correcciones de discovery** (restos pre D-4/D-16; nivel 0 de validación) | Corregir en discovery con aprobación | Corregir antes del DoR de EP-006 y EP-009 | 0003 | **RESUELTA** — CRN-13 corregido en PRD v4.13 (2026-09-27, la parte que bloqueaba EP-001 se siguió en T-18); **CRN-14 resuelto por D10 del sponsor el 2026-09-30** (modalidad elegida del catálogo cerrado de su familia y obligatoria para publicar; PRD v4.15, HU-128) |
 | T-13 | **Reflejar en el PRD las divergencias** decididas en esta revisión: «Mi equipo» por invitado en servidor (RF-4.1, HU-095, D-16), HU-140 determinista sin IA y canal de notificación solo correo + HubSpot (RF-9.7.1) | Actualizar PRD e HU con aprobación | Hacerlo antes del DoR de EP-001, EP-002, EP-006 y EP-007 | 0003, 0004, 0009 | **RESUELTA 2026-09-27** en PRD v4.13 (RF-4.1, HU-095, D-16, HU-140/RF-8.11, RF-9.7.1) |
 
 ### Trade-offs de negocio de la iteración 8
