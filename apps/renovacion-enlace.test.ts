@@ -136,13 +136,15 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("renovación del enlace vencido 
     const abrir = await post("/api/v1/acceso/enlace", { token: nuevo });
     expect(await abrir.json()).toEqual({ estado_enlace: "activo", con_sesion: false });
     const e = await bd.instalacion.query(
-      `SELECT e.cuenta_nombre, e.codigos_perfil, e.vigente_hasta > now() + interval '29 days' AS vigente, t.invitado_id IS NOT NULL AS personal,
+      `SELECT e.cuenta_nombre, e.proyecto, e.razon, e.codigos_perfil, e.vigente_hasta > now() + interval '29 days' AS vigente, t.invitado_id IS NOT NULL AS personal,
               (SELECT array_agg(correo) FROM identidad.enlace_invitados WHERE enlace_id = e.id) AS invitados
          FROM identidad.enlace_tokens t JOIN identidad.enlaces e ON e.id = t.enlace_id WHERE t.token_hash = $1`,
       [hashTokenEnlace(nuevo!)],
     );
     expect(e.rows[0]).toEqual({
       cuenta_nombre: "Activa",
+      proyecto: "Modernización de pagos",
+      razon: "La razón",
       codigos_perfil: ["PS-0142"],
       vigente: true,
       personal: true,
