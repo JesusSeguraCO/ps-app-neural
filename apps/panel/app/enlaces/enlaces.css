@@ -41,8 +41,8 @@
 }
 /* Selector de perfiles publicados («Añadir desde el inventario»): propio, el inventario completo es de EP-006. */
 .ge-selector { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); background: var(--tc-surface-quiet); }
-.ge-candidatos { display: grid; gap: var(--tc-sp-1); max-height: 280px; overflow-y: auto; }
-.ge-candidato { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 40px; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+.ge-candidatos { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); max-height: 280px; overflow-y: auto; }
+.ge-candidato { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 40px; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
 .ge-candidatos__vacio { padding: var(--tc-sp-2) 0; }
 @media (max-width: 767px) { .ge-candidato { min-height: 44px; } }
 /* Enlaces de acción que no navegan: botones con el aspecto de .pp-enlace. */
