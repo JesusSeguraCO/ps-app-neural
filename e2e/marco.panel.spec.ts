@@ -11,6 +11,11 @@ const CORREO = "e2e-marco@trycore.com";
 const INSTALACION =
   process.env.BD_INSTALACION_URL ?? "postgres://ps_instalacion@127.0.0.1:54329/ps";
 
+function entornoPanel(): Record<string, string> {
+  const salida = execFileSync("bash", ["scripts/entorno-dev.sh", "panel"], { encoding: "utf8" });
+  return Object.fromEntries([...salida.matchAll(/^export ([A-Z_]+)=(.*)$/gm)].map((m) => [m[1]!, m[2]!]));
+}
+
 function claveCorreo(): string {
   const salida = execFileSync("bash", ["scripts/entorno-dev.sh", "panel"], { encoding: "utf8" });
   return salida.match(/^export EMAIL_HMAC_KEY=(.*)$/m)![1]!;
@@ -795,5 +800,92 @@ test.describe("observador (HU-124)", () => {
       await bd.end();
     }
     expect(errores).toEqual([]);
+  });
+});
+
+// Recorrido del sub-slice 10 (HU-151, HU-147, HU-138): inscribir a otra administradora → entra → bajarla a
+// observador corta su sesión en la siguiente petición → cambiar el contacto → el portal lo muestra → el
+// registro del perfil muestra cada cambio con su autor. Lo que se crea en la BD de desarrollo se retira al
+// terminar (la inscrita queda de baja y el contacto vuelve al buzón por omisión).
+test.describe("administración (HU-151, HU-147, HU-138)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("inscribir → entra → bajarla de rol corta su sesión → contacto → portal → registro con autor", async ({
+    page,
+    browser,
+    baseURL,
+  }) => {
+    const otra = `e2e-admin-${randomBytes(3).toString("hex")}@trycore.com`;
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    try {
+      await page.goto("/administracion/accesos");
+      await page.getByRole("button", { name: "Inscribir correo" }).click();
+      const alta = page.getByRole("dialog", { name: "Inscribir un correo" });
+      await alta.getByLabel("Correo corporativo").fill(otra);
+      await alta.getByRole("radio", { name: /^Administradora de inventario/ }).check();
+      await alta.getByRole("button", { name: "Inscribir" }).click();
+      await expect(page.getByText(`${otra} inscrito como administradora de inventario.`)).toBeVisible();
+
+      // Entra (la sesión se abre con su rol de administradora, como la crea la puerta).
+      const u = await bd.query(`SELECT id FROM identidad_panel.usuarios_panel WHERE correo = $1`, [otra]);
+      const id = randomBytes(32).toString("base64url");
+      await bd.query(
+        `INSERT INTO identidad_panel.sesiones_panel (id_hash, usuario_id, expira, rol_al_abrir)
+         VALUES ($1, $2, now() + interval '12 hours', 'administrador')`,
+        [createHash("sha256").update(id).digest(), u.rows[0].id],
+      );
+      const suya = await browser.newContext({ extraHTTPHeaders: { "x-ps-edge": entornoPanel().EDGE_SECRET! } });
+      await suya.addCookies([
+        { name: "__Host-pp", value: id, domain: new URL(baseURL!).hostname, path: "/", secure: true, httpOnly: true, sameSite: "Lax" },
+      ]);
+      const ella = await suya.newPage();
+      await ella.goto(`${baseURL}/administracion/accesos`);
+      await expect(ella.getByRole("heading", { name: "Inscritos activos" })).toBeVisible();
+
+      // Bajarla a observadora: la hoja avisa de la sesión abierta y su siguiente petición la corta.
+      await page.reload();
+      await page.getByRole("button", { name: `Cambiar el rol de ${otra}` }).click();
+      const hoja = page.getByRole("dialog", { name: `Cambiar el rol de ${otra}` });
+      await expect(hoja.getByText("Tiene una sesión abierta.")).toBeVisible();
+      await hoja.getByRole("button", { name: "Pasar a observador" }).click();
+      await expect(page.getByText(`${otra} pasó a observador.`)).toBeVisible();
+      await ella.goto(`${baseURL}/inventario`);
+      await expect(ella).toHaveURL(/\/acceso\?motivo=rol_cambiado/);
+      await expect(ella.getByText("Cambió tu rol en el panel")).toBeVisible();
+      await suya.close();
+
+      // Contacto: solo correo → el portal dice «escribe a People Service: …».
+      await page.goto("/administracion/contacto");
+      await page.getByLabel("Nombre (opcional)").fill("");
+      await page.getByLabel("Cargo (opcional)").fill("");
+      await page.getByLabel("Correo", { exact: true }).fill("servicio.clientes@trycore.com");
+      await page.getByRole("button", { name: "Guardar contacto" }).click();
+      await expect(page.getByText("Contacto guardado.")).toBeVisible();
+      await page.goto("http://127.0.0.1:3100/acceso?motivo=enlace_revocado");
+      await expect(page.getByText("o escribe a People Service: servicio.clientes@trycore.com")).toBeVisible();
+
+      // Registro del perfil: cada cambio con su autor.
+      await page.goto("/inventario/PS-0142/auditoria");
+      await expect(page.getByRole("table", { name: /Registro de auditoría del perfil PS-0142/ })).toBeVisible();
+      const quienes = await page.locator(".au-td-quien").allInnerTexts();
+      expect(quienes.length).toBeGreaterThan(0);
+      expect(quienes.every((q) => q.trim().length > 0)).toBe(true);
+      expect(
+        (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter(
+          (v) => v.impact === "serious" || v.impact === "critical",
+        ),
+      ).toEqual([]);
+    } finally {
+      await bd.query(`DELETE FROM inventario.configuracion_contacto`);
+      await bd.query(
+        `UPDATE identidad_panel.usuarios_panel SET activo = false, dado_de_baja_en = now() WHERE correo = $1`,
+        [otra],
+      );
+      await bd.end();
+    }
   });
 });

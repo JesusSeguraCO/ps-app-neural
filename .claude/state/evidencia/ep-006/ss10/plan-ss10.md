@@ -48,5 +48,6 @@
   filtros, páginas); `/inventario/{código}/auditoria` para ambos roles, enlazada desde el editor y la ficha. D40.
   Tests: dominio 5, infra 5, HTTP 6. Mutación `mutacion-10.5.md` (6/6). BD de desarrollo en 0025.
 - **10.6 hecha**: 11 pantallas FIEL con entrada real y clics reales sobre una BD efímera (`fidelidad-ss10.md`), D41.
-- **Siguiente: 10.7** journey (observador entra con código → bajarlo de rol corta su sesión → contacto → portal → registro)
-  con evidencia en `ss10/`, mutación ya hecha (10.1–10.5) y cableado.
+- **10.7 hecha**: journey MCP con entrada real + e2e «administración (HU-151, HU-147, HU-138)» (`journey-ss10.md`);
+  cableado `wiring-ss10.json` (15 AC) sembrado y en `passing` con `wiring/*.md` (eventos en cola del runtime).
+  **Sub-slice 10 cerrado. Siguiente: 11.1** (recorrido integrado de punta a punta).
