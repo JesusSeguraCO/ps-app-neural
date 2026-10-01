@@ -1,6 +1,7 @@
 // Reglas del perfil en el panel (HU-125, HU-127; RF-8.2, RF-8.4, RF-8.10 con D10). Puras: qué le
 // falta a un perfil para poder publicarse —siempre nace en borrador— y si un consentimiento cubre la
 // publicación nominal. La publicación en sí (guardas en la transición) es de HU-128.
+import { normalizar } from "../catalogo/parecidos";
 
 export interface DatosParaPublicar {
   nombre: string;
@@ -144,3 +145,22 @@ export function fechaDeOpcionDisponibilidad(opcion: OpcionDisponibilidad, ahora:
   hoyBogota.setUTCDate(hoyBogota.getUTCDate() + OPCIONES_DISPONIBILIDAD[opcion].dias);
   return hoyBogota.toISOString().slice(0, 10);
 }
+
+// Experiencia Clave (Anexo B.1): el cliente nombrado va en su propio campo para que el consentimiento
+// parcial lo oculte sin reescribir el texto (HU-127 edge). Si el texto también lo nombra, ocultar el
+// campo no despersonaliza nada: se rechaza al guardar.
+export function clienteEnDescripcion(descripcion: string, cliente: string | null): boolean {
+  const palabras = (t: string) => normalizar(t.replace(/[^\p{L}\p{N}]+/gu, " "));
+  if (!cliente || !palabras(cliente)) return false;
+  return ` ${palabras(descripcion)} `.includes(` ${palabras(cliente)} `);
+}
+
+// Rótulo de la banda en el panel, con las mismas palabras que las opciones rápidas del editor.
+export const ETIQUETA_BANDA_PANEL = {
+  inmediato: "Disponible ahora",
+  una_semana: "En 1 semana",
+  dos_semanas: "En 2 semanas",
+  un_mes: "En 1 mes",
+  mas_de_un_mes: "Más de 1 mes",
+  por_confirmar: "Por confirmar",
+} as const;

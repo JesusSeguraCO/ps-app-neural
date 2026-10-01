@@ -18,7 +18,7 @@ export const MENU_PANEL: SeccionMenu[] = [
   {
     titulo: "Banco de perfiles",
     destinos: [
-      { clave: "inventario", etiqueta: "Inventario", ruta: null, icono: "M4 6h16M4 12h16M4 18h10" },
+      { clave: "inventario", etiqueta: "Inventario", ruta: "/inventario", icono: "M4 6h16M4 12h16M4 18h10" },
       {
         clave: "importar",
         etiqueta: "Importar",

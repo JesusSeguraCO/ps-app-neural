@@ -10,10 +10,11 @@ export async function enviarJson(
   ruta: string,
   cuerpo: unknown,
   metodo: "POST" | "PATCH" = "POST",
+  cabeceras: Record<string, string> = {},
 ): Promise<Response> {
   return fetch(ruta, {
     method: metodo,
-    headers: { "content-type": "application/json", "x-ps-csrf": tokenCsrf() },
+    headers: { "content-type": "application/json", "x-ps-csrf": tokenCsrf(), ...cabeceras },
     body: JSON.stringify(cuerpo),
     credentials: "same-origin",
   });

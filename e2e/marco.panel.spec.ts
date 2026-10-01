@@ -45,7 +45,7 @@ test.describe("marco del panel con sesión", () => {
     await abrirSesion(context, baseURL!);
   });
 
-  test("escritorio 1440: barra lateral y contenido en dos columnas, 8 destinos deshabilitados; Enlaces, Peticiones, Catálogos y Léxico activos", async ({
+  test("escritorio 1440: barra lateral y contenido en dos columnas, 7 destinos deshabilitados; Enlaces, Peticiones, Catálogos, Léxico e Inventario activos", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,8 +71,8 @@ test.describe("marco del panel con sesión", () => {
     expect(m.display).toBe("grid");
     expect(m.lateralAncho).toBeLessThan(400);
     expect(m.cuerpoALaDerecha).toBe(true);
-    expect(m.inactivos).toBe(8);
-    expect(m.conHref).toBe(4); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1)
+    expect(m.inactivos).toBe(7);
+    expect(m.conHref).toBe(5); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1); Inventario (sub-slice 2)
     expect(m.scroll).toBe(0);
     expect(errores).toEqual([]);
   });
@@ -124,7 +124,7 @@ test("HU-123: al pedir el código, el foco pasa a la primera casilla (prototipo 
   await expect(page.getByLabel("Dígito 1")).toBeFocused();
 });
 
-test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: HU-089, HU-143, HU-139)", () => {
+test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: HU-089, HU-143, HU-139, HU-125, HU-127)", () => {
   test.beforeEach(async ({ context, baseURL }, info) => {
     test.skip(info.project.name !== "panel", "solo el panel");
     await abrirSesion(context, baseURL!);
@@ -139,6 +139,9 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/catalogos?tipo=modalidad_prueba",
     "/lexico",
     "/lexico?vista=candidatas",
+    "/inventario",
+    "/inventario/nuevo",
+    "/inventario/PS-0187",
   ]) {
     test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
       const errores: string[] = [];
@@ -157,4 +160,56 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
       expect(errores).toEqual([]);
     });
   }
+});
+
+// Editor de perfiles en un navegador real (EP-006 · sub-slice 2): lo tecleado solo encuentra valores
+// del catálogo (HU-089 «seleccionar en vez de escribir») y un rol que no existe muestra antes los
+// parecidos y deja crear después de verlos (HU-125 edge). Guardar deja un borrador (HU-125).
+test.describe("editor de perfiles (HU-089, HU-125)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("las tecnologías se eligen del catálogo; Enter nunca guarda lo escrito", async ({ page }) => {
+    await page.goto("/inventario/nuevo");
+    const tec = page.getByRole("combobox", { name: "Tecnologías ancla" });
+    await tec.fill("kaf");
+    const opciones = page.getByRole("listbox", { name: "Valores del catálogo" });
+    await expect(opciones.getByRole("option", { name: "Kafka" })).toBeVisible();
+    await expect(opciones.getByRole("option", { name: "Crear «kaf» en el catálogo" })).toBeVisible();
+    await tec.press("Enter");
+    await expect(page.getByRole("list", { name: "Tecnologías elegidas" }).getByText("Kafka")).toBeVisible();
+    await expect(tec).toHaveValue("");
+    // Un texto sin coincidencias no se convierte en valor: solo ofrece crearlo aparte.
+    await tec.fill("zzqq");
+    await expect(opciones.getByText("Ningún valor del catálogo coincide.")).toBeVisible();
+    await tec.press("Escape");
+    await expect(page.getByRole("list", { name: "Tecnologías elegidas" }).getByRole("listitem")).toHaveCount(1);
+  });
+
+  test("un rol que no existe muestra los parecidos antes de dejar crearlo", async ({ page }) => {
+    await page.goto("/inventario/nuevo");
+    const rol = page.getByRole("combobox", { name: "Rol" });
+    await rol.fill("Desarrolador full stak");
+    await page.getByRole("option", { name: "Crear «Desarrolador full stak» en el catálogo" }).click();
+    const hoja = page.getByRole("dialog", { name: "Crear rol en el catálogo" });
+    await expect(hoja.getByText("Antes de crear uno nuevo, revisa si es alguno de estos:")).toBeVisible();
+    await expect(hoja.getByText("Desarrollador full stack")).toBeVisible();
+    await expect(hoja.getByRole("button", { name: "Crear «Desarrolador full stak» de todos modos" })).toBeVisible();
+    await hoja.getByRole("button", { name: "Usar este" }).first().click();
+    await expect(page.getByRole("list", { name: "Rol elegido" }).getByText("Desarrollador full stack")).toBeVisible();
+    await expect(page.getByText("Familia Desarrollo")).toBeVisible();
+  });
+
+  test("guardar un perfil nuevo lo deja en borrador y señala lo que falta", async ({ page }) => {
+    await page.goto("/inventario/nuevo");
+    await page.getByLabel("Nombre", { exact: true }).fill("E2E");
+    await page.getByRole("button", { name: "Guardar borrador" }).click();
+    await expect(page).toHaveURL(/\/inventario\/PS-\d{4}$/);
+    await expect(page.getByText("Guardado como borrador. No se perdió nada de lo que escribiste.")).toBeVisible();
+    await expect(page.locator(".pp-encabezado .pp-estado")).toHaveText("Borrador");
+    await expect(page.getByText("Falta el primer apellido.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Registrar el consentimiento nominal" })).toBeVisible();
+  });
 });

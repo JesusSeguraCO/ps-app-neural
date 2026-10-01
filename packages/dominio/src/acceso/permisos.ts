@@ -12,6 +12,8 @@ export const MatrizPermisos = {
   // EP-006 (diseño §9): escribir el inventario es solo de la administradora.
   "catalogo.escribir": ["administrador"],
   "lexico.escribir": ["administrador"],
+  "perfil.escribir": ["administrador"],
+  "consentimiento.registrar": ["administrador"],
 } as const satisfies Record<string, readonly RolPanel[]>;
 
 export type AccionPanel = keyof typeof MatrizPermisos;

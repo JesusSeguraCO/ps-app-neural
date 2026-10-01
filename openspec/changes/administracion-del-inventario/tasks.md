@@ -17,13 +17,13 @@
 
 ## 2. Sub-slice 2 — Crear perfil y consentimiento nominal (HU-125, HU-127)
 
-- [ ] 2.1 Migración: columnas del perfil del Anexo B (capacidad, anclaje, resumen, vínculo, formación, idiomas, `modalidad_prueba_id`, `origen_creacion`), `perfil_experiencias` con cliente nombrado separado, `perfil_sello_personal`, `consentimientos` con `nominal`, `incluye_clientes`, `registrado_por`; ninguna columna B.4; verificar V3-2, V3-7 y que `catalogo_publicable` no expone columnas nuevas no autorizadas
-- [ ] 2.2 Dominio `inventario/estados` (crear → borrador siempre; lista de lo que falta para publicar) y `ServicioPerfiles` como única vía de escritura, con `If-Match`/409 y claves de titular por perfil nuevo; verificar con tests de dominio y V3-3
-- [ ] 2.3 Editor de perfil: selección del catálogo (rol → familia → modalidades de prueba de esa familia), aviso inmediato y enlace a registrar modalidad si la familia no tiene, parecidos antes de crear, guardado como borrador con lo que falta señalado; verificar los cuatro escenarios de HU-125
-- [ ] 2.4 Registrar consentimiento nominal (quién y cuándo), rechazo del anonimizado con explicación, revocación que saca de publicado en la misma transacción, parcial que despersonaliza la experiencia en la proyección del portal; verificar los cuatro escenarios de HU-127 y que el enlace curado muestra «dejó de estar disponible» (regresión de `aterrizaje-curado`)
-- [ ] 2.5 Listado base del inventario en el panel (habilita el destino Inventario); verificar que el portal no ve borradores (V3-2)
-- [ ] 2.6 Fidelidad con captura MCP de `inventario-perfiles`, `perfil-editor`, `perfil-editor--familia-sin-modalidades`, `perfil-editor--campos-incompletos`, `perfil-editor--consentimiento-invalido`
-- [ ] 2.7 Journey smoke: crear perfil → borrador fuera del portal → registrar consentimiento → revocar → el enlace curado lo muestra como no disponible; evidencia en `ss2/` y checkpoint
+- [x] 2.1 Migración: columnas del perfil del Anexo B (capacidad, anclaje, resumen, vínculo, formación, idiomas, `modalidad_prueba_id`, `origen_creacion`), `perfil_experiencias` con cliente nombrado separado, `perfil_sello_personal`, `consentimientos` con `nominal`, `incluye_clientes`, `registrado_por`; ninguna columna B.4; verificar V3-2, V3-7 y que `catalogo_publicable` no expone columnas nuevas no autorizadas
+- [x] 2.2 Dominio `inventario/estados` (crear → borrador siempre; lista de lo que falta para publicar) y `ServicioPerfiles` como única vía de escritura, con `If-Match`/409 y claves de titular por perfil nuevo; verificar con tests de dominio y V3-3
+- [x] 2.3 Editor de perfil: selección del catálogo (rol → familia → modalidades de prueba de esa familia), aviso inmediato y enlace a registrar modalidad si la familia no tiene, parecidos antes de crear, guardado como borrador con lo que falta señalado; verificar los cuatro escenarios de HU-125
+- [x] 2.4 Registrar consentimiento nominal (quién y cuándo), rechazo del anonimizado con explicación, revocación que saca de publicado en la misma transacción, parcial que despersonaliza la experiencia en la proyección del portal; verificar los cuatro escenarios de HU-127 y que el enlace curado muestra «dejó de estar disponible» (regresión de `aterrizaje-curado`)
+- [x] 2.5 Listado base del inventario en el panel (habilita el destino Inventario); verificar que el portal no ve borradores (V3-2)
+- [x] 2.6 Fidelidad con captura MCP de `inventario-perfiles`, `perfil-editor`, `perfil-editor--familia-sin-modalidades`, `perfil-editor--campos-incompletos`, `perfil-editor--consentimiento-invalido`
+- [x] 2.7 Journey smoke: crear perfil → borrador fuera del portal → registrar consentimiento → revocar → el enlace curado lo muestra como no disponible; evidencia en `ss2/` y checkpoint
 
 ## 3. Sub-slice 3 — Exportar, pegar y emparejar (HU-088, HU-086, HU-148)
 

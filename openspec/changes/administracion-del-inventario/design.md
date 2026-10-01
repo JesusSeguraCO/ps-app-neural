@@ -115,6 +115,15 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - El reconocimiento de candidatas usa el intérprete determinista mínimo (catálogo + léxico); textos como «Reconoció «ingeniero»» del prototipo dependen del intérprete de EP-009.
 - Paginación de 25 (catálogos) y 20 (léxico) filas; grupos de tecnología como lista fija del dominio.
 
+**Desviaciones del sub-slice 2** (evidencia `.claude/state/evidencia/ep-006/ss2/fidelidad-ss2.md`; pendientes del visto bueno del sponsor):
+- Rol con buscador del catálogo (chip del valor elegido + campo con coincidencias) en lugar del `<select>` del prototipo: HU-125 edge exige escribir el rol y ver los parecidos antes de crear uno nuevo, y un `<select>` no deja escribir. Crear un valor abre la hoja de alta con los parecidos («Usar este») y, para el rol, su familia.
+- Campos del modelo que el prototipo del editor no dibuja: seniority y años de experiencia (obligatorios para publicar, RF-3.1) junto al rol, y la sección «Ficha para el cliente» (capacidad, anclaje, resumen, nivel de formación, vínculo con Trycore, idiomas y las tres competencias del Sello Personal, Anexo B.1/B.2/B.7).
+- Experiencia con su hoja de alta y edición (cargo, cliente en su propio campo, años, texto); el texto que nombra al cliente se rechaza, porque el consentimiento parcial solo puede ocultar el campo del cliente.
+- Consentimiento: hoja «Registrar consentimiento nominal» con la fecha de firma y el alcance; «Ver el anterior» reabre la hoja con lo que se intentó registrar (no se guarda un consentimiento rechazado). Marcar o desmarcar una casilla del alcance registrado abre la misma hoja con el cambio (cambiar el alcance es registrar uno nuevo). El autor se muestra por correo (identidad del panel), no por nombre.
+- Opciones rápidas de disponibilidad con los rótulos de banda del PRD (decisión del sponsor 2026-09-28), no los del prototipo.
+- Lo que el prototipo del editor muestra y entregan sub-slices posteriores, sin construir aquí: «Vista previa» y «Publicar» (sub-slice 5, HU-128/129/130); evaluador, fecha, resultado, reporte detallado y artefacto (sub-slice 6, HU-131/140). En el listado: disponibilidad editable en la fila, selección en bloque y «Más acciones» (sub-slice 7), pestaña «Con incoherencia» (8), «Importar» (3).
+- Abierta para discovery: «Qué le interesa aportar» se guarda (`aporte`, 280) como dato interno; no cruza al portal mientras no se confirme que no es «Motivación y Proyección» (B.4).
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.

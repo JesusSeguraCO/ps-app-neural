@@ -2,6 +2,7 @@
 // nominal y explícito; el anonimizado no sirve). Puras, sin BD.
 import { describe, expect, it } from "vitest";
 import {
+  clienteEnDescripcion,
   evaluarPublicacion,
   fechaDeOpcionDisponibilidad,
   validarConsentimiento,
@@ -137,5 +138,17 @@ describe("fechaDeOpcionDisponibilidad (RF-3.13: se carga fecha, se publica banda
     expect(fechaDeOpcionDisponibilidad("una_semana", ahora)).toBe("2026-10-07");
     expect(fechaDeOpcionDisponibilidad("dos_semanas", ahora)).toBe("2026-10-14");
     expect(fechaDeOpcionDisponibilidad("un_mes", ahora)).toBe("2026-10-30");
+  });
+});
+
+describe("clienteEnDescripcion (HU-127 edge)", () => {
+  it("detecta el cliente nombrado dentro del texto, sin importar mayúsculas ni tildes", () => {
+    expect(clienteEnDescripcion("Pagos inmediatos para BANCOLOMBIA en línea", "Bancolombia")).toBe(true);
+    expect(clienteEnDescripcion("Cotización de pólizas en Súra.", "sura")).toBe(true);
+  });
+  it("no confunde palabras que solo contienen el nombre, ni exige nada sin cliente", () => {
+    expect(clienteEnDescripcion("Migración de monolito a microservicios", "Sura")).toBe(false);
+    expect(clienteEnDescripcion("Seguros de vida", "Segur")).toBe(false);
+    expect(clienteEnDescripcion("Pagos", null)).toBe(false);
   });
 });

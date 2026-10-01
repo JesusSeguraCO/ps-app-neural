@@ -15,6 +15,12 @@ describe("MatrizPermisos (ADR-0002 H19)", () => {
       expect(puede("observador", accion)).toBe(false);
     }
   });
+  it("EP-006: perfiles y consentimiento solo los escribe la administradora (HU-125, HU-127)", () => {
+    for (const accion of ["perfil.escribir", "consentimiento.registrar"] as const) {
+      expect(puede("administrador", accion)).toBe(true);
+      expect(puede("observador", accion)).toBe(false);
+    }
+  });
   it("una acción desconocida no es acción", () => {
     expect(esAccion("enlaces.generar")).toBe(true);
     expect(esAccion("inventario.borrar")).toBe(false);

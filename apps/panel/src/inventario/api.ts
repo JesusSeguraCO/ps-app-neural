@@ -37,7 +37,7 @@ export async function cuerpoDe<T>(req: Request, esquema: z.ZodType<T>): Promise<
 
 // 404 si no existe; 409 si choca con el estado (duplicado, parecido, ya decidida); 422 si la entrada
 // es válida en forma pero no en el dominio (valor inexistente, familia requerida…).
-const CONFLICTO = new Set(["duplicado", "parecido", "ya_decidida", "mismo_valor", "distinto_catalogo", "distinta_familia", "modalidad_repetida"]);
+const CONFLICTO = new Set(["duplicado", "parecido", "ya_decidida", "mismo_valor", "distinto_catalogo", "distinta_familia", "modalidad_repetida", "version_distinta", "editar_publicado", "sin_consentimiento", "archivado"]);
 
 export async function responderRechazos(acto: () => Promise<Response>): Promise<Response> {
   try {
@@ -69,3 +69,60 @@ export const entradaTermino = z.strictObject({
   tipo: z.enum(["rol", "tecnologia", "sector"]),
   valores: z.array(z.string().max(200)).max(20),
 });
+
+// Perfil del editor (HU-125): identificadores del catálogo, nunca nombres escritos; todo opcional
+// (un borrador se guarda incompleto). Sin ningún campo de la lista negra B.4: un campo de más → 400.
+const corto = (n: number) => z.string().max(n).nullish();
+const fechaCivil = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+export const entradaPerfil = z.strictObject({
+  nombre: corto(80),
+  primerApellido: corto(80),
+  rolId: z.uuid().nullish(),
+  tecnologiaIds: z.array(z.uuid()).max(8).optional(),
+  sectorId: z.uuid().nullish(),
+  seniorityId: z.uuid().nullish(),
+  aniosExperiencia: z.number().int().min(0).max(60).nullish(),
+  ciudadId: z.uuid().nullish(),
+  modalidadTrabajoId: z.uuid().nullish(),
+  disponibilidad: z
+    .union([
+      z.strictObject({ opcion: z.enum(["ahora", "una_semana", "dos_semanas", "un_mes"]) }),
+      z.strictObject({ fecha: fechaCivil }),
+    ])
+    .nullish(),
+  modalidadPruebaId: z.uuid().nullish(),
+  capacidad: corto(120),
+  anclaje: corto(120),
+  resumen: corto(1200),
+  vinculo: z.enum(["vinculado", "banco_no_vinculado", "fabrica"]).nullish(),
+  formacion: corto(160),
+  idiomas: z.array(z.string().max(60)).max(8).optional(),
+  selloPersonal: z.array(z.string().max(80)).max(3).optional(),
+  aporte: corto(280),
+  experiencias: z
+    .array(
+      z.strictObject({
+        id: z.uuid().nullish(),
+        cargo: z.string().trim().min(1).max(120),
+        cliente: corto(120),
+        desde: z.number().int().min(1970).max(2100).nullish(),
+        hasta: z.number().int().min(1970).max(2100).nullish(),
+        descripcion: z.string().trim().min(1).max(600),
+      }),
+    )
+    .max(12)
+    .optional(),
+});
+
+// Alcance que el profesional autorizó (HU-127).
+export const entradaConsentimiento = z.strictObject({
+  nombreApellido: z.boolean(),
+  trayectoria: z.boolean(),
+  clientes: z.boolean(),
+  fechaFirma: fechaCivil.nullish(),
+});
+
+export function codigoDe(req: Request): string | null {
+  const c = segmento(req, 1);
+  return c && /^PS-\d{4}$/.test(c) ? c : null;
+}
