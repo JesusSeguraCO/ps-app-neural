@@ -296,6 +296,19 @@ describe("estado: no publica, archiva (spec §3, HU-141)", () => {
     ]);
   });
 
+  it("un colocado no cambia de estado por importación: se libera desde su ficha", () => {
+    const pedro: FilaBanco = { ...laura, codigo: "PS-0145", estado: "colocado" };
+    const banco = new Map([...BANCO, ["PS-0145", pedro]]);
+    const archivar = plan([fila(2, { codigo: "PS-0145", estado: "archivado" })], { banco }).filas[0]!;
+    expect(archivar.grupo).toBe("con_error");
+    expect(archivar.errores[0]!.mensaje).toMatch(/colocado/);
+    // Repetir su estado no es un cambio de estado: lo demás de la fila se aplica.
+    const mismo = plan([fila(2, { codigo: "PS-0145", estado: "colocado", anclaje: "Otro anclaje" })], {
+      banco,
+    }).filas[0]!;
+    expect(mismo.grupo).toBe("actualizado");
+  });
+
   it("estado desconocido → error con las opciones", () => {
     const f = plan([fila(2, { codigo: "PS-0142", estado: "vacaciones" })]).filas[0]!;
     expect(f.errores[0]).toMatchObject({
@@ -371,6 +384,13 @@ describe("tipos y catálogos cerrados → error con opciones", () => {
   it("listas con tope: idiomas ≤ 8, Sello Personal ≤ 3", () => {
     const f = plan([fila(2, { codigo: "PS-0142", selloPersonal: "a; b; c; d" })]).filas[0]!;
     expect(f.errores[0]!.campo).toBe("selloPersonal");
+  });
+
+  it("sectores: varios valores (D23) con el mismo tope que el editor, 8", () => {
+    const ocho = plan([fila(2, { codigo: "PS-0142", sectores: "Banca; Seguros; Retail; a; b; c; d; e" })]);
+    expect(ocho.filas[0]!.grupo).toBe("actualizado");
+    const nueve = plan([fila(2, { codigo: "PS-0142", sectores: "Banca; Seguros; Retail; a; b; c; d; e; f" })]);
+    expect(nueve.filas[0]!.errores[0]).toMatchObject({ campo: "sectores", mensaje: "Máximo 8 (trae 9)" });
   });
 
   it("los mismos topes que el editor: 8 tecnologías, 12 experiencias, idioma ≤ 60 y competencia ≤ 80 caracteres", () => {

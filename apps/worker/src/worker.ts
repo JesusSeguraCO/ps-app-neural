@@ -110,6 +110,7 @@ const ctx: ContextoDespacho = {
     correoTalentoHumano: config.CORREO_TALENTO_HUMANO!,
     auditoria: { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! },
   },
+  importacion: { auditoria: { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! } },
 };
 const pausado = config.WORKER_PAUSADO === "1";
 

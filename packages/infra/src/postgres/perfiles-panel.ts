@@ -439,7 +439,7 @@ function foto(p: PerfilEditor | null): Record<string, string | null> {
   };
 }
 
-function diferencias(
+export function diferencias(
   antes: PerfilEditor | null,
   despues: PerfilEditor,
   autor: Autor,
@@ -563,6 +563,57 @@ async function escribirCampos(
   }
 }
 
+// Alta dentro de una transacción ya abierta: el panel (un perfil) y la importación (varios, en una
+// sola transacción, con el código que trae la fila) escriben por aquí. Nace en borrador.
+export async function altaEnTransaccion(
+  tx: pg.PoolClient,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  e: EntradaPerfil,
+  o: { origen: "panel" | "importacion"; ahora: Date; codigo?: string },
+): Promise<{ perfil: PerfilEditor; cambios: CambioAuditado[] }> {
+  const r = await resolver(tx, e, null);
+  let codigo = o.codigo;
+  if (!codigo) {
+    // El siguiente código bajo candado: dos altas a la vez no chocan.
+    await tx.query(`SELECT pg_advisory_xact_lock(hashtext('inventario.perfil_codigo'))`);
+    codigo = (
+      await tx.query(
+        `SELECT 'PS-' || lpad((COALESCE(max(substr(codigo, 4)::int), 0) + 1)::text, 4, '0') AS c FROM inventario.perfiles`,
+      )
+    ).rows[0].c as string;
+  }
+  const id = (
+    await tx.query(
+      `INSERT INTO inventario.perfiles (codigo, estado, origen_creacion, creado_por) VALUES ($1, $2, $3, $4) RETURNING id`,
+      [codigo, ESTADO_INICIAL, o.origen, autor.usuarioId],
+    )
+  ).rows[0].id as string;
+  // Clave propia del profesional: su auditoría se cifra con ella y se puede suprimir aparte (H42).
+  await tx.query(`INSERT INTO identidad.claves_titular (titular, clave_envuelta) VALUES ($1, $2)`, [
+    codigo,
+    envolverClave(claves.kek, randomBytes(32)),
+  ]);
+  await escribirCampos(tx, id, e, r, o.ahora, null);
+  const perfil = (await leerPerfil(tx, codigo))!;
+  return { perfil, cambios: diferencias(null, perfil, autor, o.origen) };
+}
+
+// Edición dentro de una transacción ya abierta, con el perfil ya bloqueado por quien llama y su
+// estado anterior leído (`antes`): solo escribe lo que trae la entrada.
+export async function edicionEnTransaccion(
+  tx: pg.PoolClient,
+  autor: Autor,
+  antes: PerfilEditor,
+  e: EntradaPerfil,
+  o: { origen: "panel" | "importacion"; ahora: Date },
+): Promise<{ perfil: PerfilEditor; cambios: CambioAuditado[] }> {
+  const r = await resolver(tx, e, antes.familia?.id ?? null);
+  await escribirCampos(tx, antes.id, e, r, o.ahora, antes);
+  const perfil = (await leerPerfil(tx, antes.codigo))!;
+  return { perfil, cambios: diferencias(antes, perfil, autor, o.origen) };
+}
+
 export async function crearPerfil(
   bd: pg.Pool,
   claves: ClavesAuditoria,
@@ -571,32 +622,11 @@ export async function crearPerfil(
   ahora = new Date(),
 ): Promise<PerfilEditor> {
   return conUnidadInventario(bd, claves, async (tx) => {
-    const r = await resolver(tx, e, null);
-    // El siguiente código bajo candado: dos altas a la vez no chocan.
-    await tx.query(`SELECT pg_advisory_xact_lock(hashtext('inventario.perfil_codigo'))`);
-    const codigo = (
-      await tx.query(
-        `SELECT 'PS-' || lpad((COALESCE(max(substr(codigo, 4)::int), 0) + 1)::text, 4, '0') AS c FROM inventario.perfiles`,
-      )
-    ).rows[0].c as string;
-    const id = (
-      await tx.query(
-        `INSERT INTO inventario.perfiles (codigo, estado, origen_creacion, creado_por) VALUES ($1, $2, 'panel', $3) RETURNING id`,
-        [codigo, ESTADO_INICIAL, autor.usuarioId],
-      )
-    ).rows[0].id as string;
-    // Clave propia del profesional: su auditoría se cifra con ella y se puede suprimir aparte (H42).
-    await tx.query(
-      `INSERT INTO identidad.claves_titular (titular, clave_envuelta) VALUES ($1, $2)`,
-      [codigo, envolverClave(claves.kek, randomBytes(32))],
-    );
-    await escribirCampos(tx, id, e, r, ahora, null);
-    const despues = (await leerPerfil(tx, codigo))!;
-    return {
-      resultado: despues,
-      cambios: diferencias(null, despues, autor, "panel"),
-      visible: false,
-    };
+    const { perfil, cambios } = await altaEnTransaccion(tx, claves, autor, e, {
+      origen: "panel",
+      ahora,
+    });
+    return { resultado: perfil, cambios, visible: false };
   });
 }
 
@@ -623,14 +653,11 @@ export async function guardarPerfil(
     // Un publicado se edita en dos pasos con su impacto a la vista (HU-126): no por esta vía.
     if (fila.estado !== "borrador")
       throw new RechazoInventario("editar_publicado", { estado: fila.estado });
-    const r = await resolver(tx, e, antes.familia?.id ?? null);
-    await escribirCampos(tx, fila.id, e, r, ahora, antes);
-    const despues = (await leerPerfil(tx, codigo))!;
-    return {
-      resultado: despues,
-      cambios: diferencias(antes, despues, autor, "panel"),
-      visible: false,
-    };
+    const { perfil, cambios } = await edicionEnTransaccion(tx, autor, antes, e, {
+      origen: "panel",
+      ahora,
+    });
+    return { resultado: perfil, cambios, visible: false };
   });
 }
 

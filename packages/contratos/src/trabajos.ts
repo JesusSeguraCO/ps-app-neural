@@ -15,10 +15,15 @@ export type PayloadRenovarEnlace = z.infer<typeof payloadRenovarEnlace>;
 export const payloadNotificar = z.strictObject({ motivo: z.literal("invitacion_solicitada"), ref: z.uuid() });
 export type PayloadNotificar = z.infer<typeof payloadNotificar>;
 
+// Aplicar un lote de importación confirmado (HU-141, contrato I-2): solo la referencia al lote.
+export const payloadAplicarImportacion = z.strictObject({ lote: z.uuid() });
+export type PayloadAplicarImportacion = z.infer<typeof payloadAplicarImportacion>;
+
 export const ESQUEMAS_PAYLOAD = {
   enviar_codigo: payloadEnviarCodigo,
   renovar_enlace: payloadRenovarEnlace,
   notificar: payloadNotificar,
+  aplicar_importacion: payloadAplicarImportacion,
 } as const;
 
 export type TipoConManejador = keyof typeof ESQUEMAS_PAYLOAD;

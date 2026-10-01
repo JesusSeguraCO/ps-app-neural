@@ -193,9 +193,17 @@ export async function registrarLote(bd: pg.Pool, autor: Autor, l: NuevoLote): Pr
   }
 }
 
+// «aplicando» no es un estado guardado: es un lote `calculado` ya confirmado, en la cola o en curso.
+export type FaseLote = "calculado" | "aplicando" | "aplicado" | "abortado" | "revertido";
+
 export interface LoteLeido {
   id: string;
   estado: string;
+  fase: FaseLote;
+  confirmadoPor: string | null;
+  confirmadoEn: string | null;
+  aplicadoEn: string | null;
+  motivoAborto: string | null;
   modo: Modo;
   formato: string;
   bloqueado: boolean;
@@ -217,7 +225,11 @@ export interface LoteLeido {
 export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | null> {
   const l = (
     await bd.query(
-      `SELECT id, estado, modo, formato, bloqueado, conteos, creado_en FROM inventario.lotes_importacion WHERE id = $1`,
+      `SELECT l.id, l.estado, l.modo, l.formato, l.bloqueado, l.conteos, l.creado_en, l.confirmado_en,
+              l.aplicado_en, l.motivo_aborto, u.correo AS confirmado_por
+         FROM inventario.lotes_importacion l
+         LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por
+        WHERE l.id = $1`,
       [id],
     )
   ).rows[0];
@@ -230,6 +242,11 @@ export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | n
   return {
     id: l.id,
     estado: l.estado,
+    fase: l.estado === "calculado" && l.confirmado_en ? "aplicando" : l.estado,
+    confirmadoPor: l.confirmado_por ?? null,
+    confirmadoEn: l.confirmado_en?.toISOString() ?? null,
+    aplicadoEn: l.aplicado_en?.toISOString() ?? null,
+    motivoAborto: l.motivo_aborto ?? null,
     modo: l.modo,
     formato: l.formato,
     bloqueado: l.bloqueado,
@@ -384,4 +401,59 @@ export async function leerPlantilla(bd: Consultor, id: string): Promise<Plantill
 // Perfiles del banco (todos los estados): lo que trae la exportación.
 export async function contarBanco(bd: Consultor): Promise<number> {
   return (await bd.query(`SELECT count(*)::int AS n FROM inventario.perfiles`)).rows[0].n;
+}
+
+// ─── confirmar (HU-141): quién confirma y el trabajo que lo aplica ──────────────────────────
+
+// Fija quién confirmó (el actor de cada cambio auditado) y encola `aplicar_importacion` una sola vez:
+// confirmar dos veces devuelve el mismo trabajo. Nada se escribe en `perfiles` aquí.
+export async function confirmarLote(
+  bd: pg.Pool,
+  autor: Autor,
+  id: string,
+): Promise<{ trabajoId: string }> {
+  const tx = await bd.connect();
+  try {
+    await tx.query("BEGIN");
+    const l = (
+      await tx.query(
+        `SELECT estado, bloqueado, trabajo_id FROM inventario.lotes_importacion WHERE id = $1 FOR UPDATE`,
+        [id],
+      )
+    ).rows[0];
+    if (!l) throw new RechazoInventario("no_existe");
+    if (l.trabajo_id) {
+      await tx.query("COMMIT");
+      return { trabajoId: String(l.trabajo_id) };
+    }
+    if (l.estado !== "calculado")
+      throw new RechazoInventario("lote_no_calculado", { estado: l.estado });
+    if (l.bloqueado) throw new RechazoInventario("codigo_repetido");
+    const aplicables = (
+      await tx.query(
+        `SELECT count(*)::int AS n FROM inventario.lote_filas
+          WHERE lote_id = $1 AND incluida AND grupo IN ('nuevo', 'actualizado', 'archivado')`,
+        [id],
+      )
+    ).rows[0].n as number;
+    if (!aplicables) throw new RechazoInventario("nada_que_aplicar");
+    const trabajo = (
+      await tx.query(`SELECT operacion.encolar_panel('aplicar_importacion', $1) AS id`, [
+        JSON.stringify({ lote: id }),
+      ])
+    ).rows[0].id;
+    await tx.query(
+      `UPDATE inventario.lotes_importacion
+          SET confirmado_por = $2, confirmado_en = now(), trabajo_id = $3, actualizado_en = now()
+        WHERE id = $1`,
+      [id, autor.usuarioId, trabajo],
+    );
+    await tx.query("COMMIT");
+    return { trabajoId: String(trabajo) };
+  } catch (e) {
+    await tx.query("ROLLBACK");
+    throw e;
+  } finally {
+    tx.release();
+  }
 }

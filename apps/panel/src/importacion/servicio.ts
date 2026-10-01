@@ -25,9 +25,12 @@ import {
   actualizarPlanLote,
   bancoEnFormato,
   catalogosImportacion,
+  confirmarLote,
   filasDelLote,
+  leerLote,
   leerPlantilla,
   registrarLote,
+  type LoteLeido,
 } from "@ps/infra/postgres/importacion";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { RechazoInventario } from "@ps/infra/postgres/unidad-inventario";
@@ -205,4 +208,20 @@ export async function recalcularLote(
   });
   await actualizarPlanLote(bd, id, m, plan);
   return { loteId: id, modo: m, plan };
+}
+
+// ─── paso 4–5: confirmar y seguir el resultado (HU-141) ──────────────────────────────────────
+
+// Confirmar encola el trabajo del worker (202): el panel no escribe en `perfiles`.
+export async function confirmar(
+  id: string,
+  autor: { usuarioId: string; correo: string },
+): Promise<{ trabajoId: string }> {
+  return confirmarLote(poolDe("panel"), autor, id);
+}
+
+export async function estadoDeLote(id: string): Promise<LoteLeido> {
+  const l = await leerLote(poolDe("panel"), id);
+  if (!l) throw new RechazoInventario("no_existe");
+  return l;
 }

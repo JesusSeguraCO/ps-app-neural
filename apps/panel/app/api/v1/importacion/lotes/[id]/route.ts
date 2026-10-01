@@ -1,12 +1,26 @@
-// PATCH /api/v1/importacion/lotes/{id} (HU-086): recalcula la vista previa de un lote `calculado` al
-// desmarcar tarjetas o cambiar el modo (desmarcar una de dos filas repetidas lo desbloquea).
-// 200 · 404 · 409 `lote_no_calculado` · 400 entrada · 403 observador.
+// /api/v1/importacion/lotes/{id}: GET devuelve el lote con su fase (calculado · aplicando · aplicado ·
+// abortado · revertido) para seguir el resultado (HU-141; también lo ve el observador, spec §8).
+// PATCH (HU-086) recalcula la vista previa de un lote `calculado` al desmarcar tarjetas o cambiar el
+// modo (desmarcar una de dos filas repetidas lo desbloquea).
+// 200 · 404 · 409 `lote_no_calculado` · 400 entrada · 403 observador (PATCH).
 import { conAutorizacion, conBorde, conCsrf, conSesionPanel, respuestaJson } from "@ps/infra/http/envoltorios";
 import { cuerpoDe, responderRechazos, uuidDe } from "../../../../../../src/inventario/api";
-import { entradaRecalcular, recalcularLote } from "../../../../../../src/importacion/servicio";
+import {
+  entradaRecalcular,
+  estadoDeLote,
+  recalcularLote,
+} from "../../../../../../src/importacion/servicio";
 import { permisos } from "./permisos";
 
 export const dynamic = "force-dynamic";
+
+export const GET = conBorde(
+  conSesionPanel(async (req) => {
+    const id = uuidDe(req, 2);
+    if (!id) return respuestaJson(404, { motivo: "no_existe" });
+    return responderRechazos(async () => respuestaJson(200, { lote: await estadoDeLote(id) }));
+  }),
+);
 
 export const PATCH = conBorde(
   conCsrf(

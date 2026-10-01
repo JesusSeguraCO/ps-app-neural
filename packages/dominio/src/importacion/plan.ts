@@ -152,6 +152,7 @@ const LARGO_MAXIMO: Partial<Record<ClaveCampo, number>> = {
 // Los mismos topes que acepta el editor del panel (entradaPerfil).
 const TOPE_LISTA: Partial<Record<ClaveCampo, number>> = {
   tecnologias: 8,
+  sectores: 8,
   idiomas: 8,
   selloPersonal: 3,
   experiencias: 12,
@@ -367,6 +368,11 @@ function evaluarFila(
   else if (celdaEstado) {
     const e = normalizar(celdaEstado);
     if (actual && e === normalizar(String(actual.estado ?? ""))) estado = String(actual.estado);
+    else if (actual?.estado === "colocado")
+      ctx.errores.push({
+        campo: "estado",
+        mensaje: "Un perfil colocado no cambia de estado por importación: se libera desde su ficha",
+      });
     else if (e === "publicado")
       ctx.avisos.push({
         campo: "estado",

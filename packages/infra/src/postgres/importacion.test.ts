@@ -286,7 +286,7 @@ describe.skipIf(!HAY_BD)(
         },
       });
       await bd.instalacion.query(
-        `UPDATE inventario.lotes_importacion SET estado = 'aplicado' WHERE id = $1`,
+        `UPDATE inventario.lotes_importacion SET estado = 'aplicado', aplicado_en = now() WHERE id = $1`,
         [id],
       );
       await expect(actualizarPlanLote(panel, id, "solo_crear", plan)).rejects.toMatchObject({
