@@ -60,4 +60,7 @@
   rechazo de página (`src/sesion/rechazo.ts`) en la edición, nuevo perfil y nuevo enlace, editor en consulta con
   `?vista=ficha`, «Avisar» (`POST /api/v1/perfiles/{código}/avisar`, `perfil.avisar`) y despacho al buzón de Talento
   Humano. BD de desarrollo en 0022. Tests: dominio 3, HTTP+worker 6, e2e 1. Mutación en `mutacion-9.4.md` (4/4). D37.
-- **Siguiente: 9.5** (enmiendas en el backlog arquitectónico), luego 9.6 (fidelidad MCP), 9.7 (journey y cierre). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
+- **9.5 hecha**: E-11 (ADR-0009: sin `sincronizar_colocados`, `notificar` del panel) y E-12 (ADR-0003: `colocado`
+  deja de ser estado; colocaciones, cargas y diferencias) en `docs/adr/_backlog-arquitectonico.md`; la fila UC-14 del
+  tablero las cita y suma ADR-0009.
+- **Siguiente: 9.6** (fidelidad MCP de las 11 pantallas), luego 9.7 (journey, e2e, mutación de 9.1, wiring, cierre). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
