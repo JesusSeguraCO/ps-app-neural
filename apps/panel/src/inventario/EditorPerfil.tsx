@@ -108,7 +108,7 @@ export function EditorPerfil(p: {
     inicial?.rol ? (p.opciones.roles.find((r) => r.id === inicial.rol!.id) ?? null) : null,
   );
   const [tecnologias, setTecnologias] = useState<ValorElegible[]>(inicial?.tecnologias ?? []);
-  const [sectorId, setSectorId] = useState(inicial?.sector?.id ?? "");
+  const [sectores, setSectores] = useState<ValorElegible[]>(inicial?.sectores ?? []);
   const [seniorityId, setSeniorityId] = useState(inicial?.seniority?.id ?? "");
   const [anios, setAnios] = useState(inicial?.aniosExperiencia?.toString() ?? "");
   const [ciudadId, setCiudadId] = useState(inicial?.ciudad?.id ?? "");
@@ -136,7 +136,7 @@ export function EditorPerfil(p: {
     (inicial?.experiencias ?? []).map((e) => ({ ...e, clave: e.id })),
   );
   const [hojaExp, setHojaExp] = useState<Experiencia | null>(null);
-  const [crear, setCrear] = useState<{ tipo: "rol" | "tecnologia"; texto: string } | null>(null);
+  const [crear, setCrear] = useState<{ tipo: "rol" | "tecnologia" | "sector"; texto: string } | null>(null);
   const [hojaConsent, setHojaConsent] = useState<"nuevo" | "anterior" | "alcance" | null>(null);
   const [rechazado, setRechazado] = useState<{
     fechaFirma: string | null;
@@ -193,7 +193,7 @@ export function EditorPerfil(p: {
       apellido,
       rol,
       tecnologias,
-      sectorId,
+      sectores,
       seniorityId,
       anios,
       ciudadId,
@@ -214,7 +214,7 @@ export function EditorPerfil(p: {
     primerApellido: apellido,
     rolId: rol?.id ?? null,
     tecnologiaIds: tecnologias.map((t) => t.id),
-    sectorId: sectorId || null,
+    sectorIds: sectores.map((x) => x.id),
     seniorityId: seniorityId || null,
     aniosExperiencia: anios === "" ? null : Number(anios),
     ciudadId: ciudadId || null,
@@ -589,23 +589,36 @@ export function EditorPerfil(p: {
                   </div>
                   <div className="pp-campo">
                     <label className="pp-label" htmlFor="pe-sector">
-                      Sector
+                      Sectores
                     </label>
-                    <div className="pp-select">
-                      <select
-                        className="pp-input"
-                        id="pe-sector"
-                        value={sectorId}
-                        onChange={(e) => setSectorId(e.target.value)}
-                      >
-                        <option value="">Elige un sector</option>
-                        {p.opciones.sectores.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.nombre}
-                          </option>
+                    {sectores.length > 0 && (
+                      <ul className="pe-valores" aria-label="Sectores elegidos">
+                        {sectores.map((x) => (
+                          <li key={x.id} className="pe-valor">
+                            {x.nombre}
+                            {editable && (
+                              <button
+                                type="button"
+                                className="pe-valor__quitar"
+                                aria-label={`Quitar ${x.nombre}`}
+                                onClick={() => setSectores((xs) => xs.filter((y) => y.id !== x.id))}
+                              >
+                                <Icono d="M6 6l12 12M18 6L6 18" />
+                              </button>
+                            )}
+                          </li>
                         ))}
-                      </select>
-                    </div>
+                      </ul>
+                    )}
+                    <BuscadorCatalogo
+                      id="pe-sector"
+                      tipo="sector"
+                      placeholder="Buscar en el catálogo"
+                      excluir={sectores.map((x) => x.id)}
+                      deshabilitado={!editable || sectores.length >= 8}
+                      alElegir={(v) => setSectores((xs) => [...xs, v])}
+                      alCrear={(texto) => setCrear({ tipo: "sector", texto })}
+                    />
                   </div>
                 </div>
               </div>
@@ -1162,6 +1175,10 @@ export function EditorPerfil(p: {
               setTecnologias((xs) =>
                 xs.some((x) => x.id === v.id) ? xs : [...xs, { id: v.id, nombre: v.nombre }],
               );
+            else if (crear.tipo === "sector")
+              setSectores((xs) =>
+                xs.some((x) => x.id === v.id) ? xs : [...xs, { id: v.id, nombre: v.nombre }],
+              );
             else {
               const r = roles.find((x) => x.id === v.id);
               if (r) {
@@ -1173,6 +1190,7 @@ export function EditorPerfil(p: {
           }}
           alCreado={(v, familiaId) => {
             if (crear.tipo === "tecnologia") setTecnologias((xs) => [...xs, v]);
+            else if (crear.tipo === "sector") setSectores((xs) => [...xs, v]);
             else if (familiaId) {
               const f = familias.find((x) => x.id === familiaId)!;
               const r: Rol = {
@@ -1582,7 +1600,7 @@ function HojaExperiencia(p: {
 }
 
 function HojaCrearValor(p: {
-  tipo: "rol" | "tecnologia";
+  tipo: "rol" | "tecnologia" | "sector";
   texto: string;
   familias: OpcionesEditor["familias"];
   familiaInicial: string | null;
@@ -1600,7 +1618,7 @@ function HojaCrearValor(p: {
   >({ tipo: "cargando" });
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const singular = p.tipo === "rol" ? "rol" : "tecnología";
+  const singular = { rol: "rol", tecnologia: "tecnología", sector: "sector" }[p.tipo];
 
   useEffect(() => {
     void (async () => {

@@ -12,7 +12,7 @@ export interface ValorElegible {
 
 export function BuscadorCatalogo(p: {
   id: string;
-  tipo: "rol" | "tecnologia";
+  tipo: "rol" | "tecnologia" | "sector";
   placeholder: string;
   // Valor elegido (rol) que se muestra en el campo mientras no se escribe.
   elegido?: string | null;

@@ -42,7 +42,8 @@ export interface EntradaPerfil {
   primerApellido?: string | null;
   rolId?: string | null;
   tecnologiaIds?: string[];
-  sectorId?: string | null;
+  // Varios sectores del catálogo, como las tecnologías; ninguno es válido (D23, D24).
+  sectorIds?: string[];
   seniorityId?: string | null;
   aniosExperiencia?: number | null;
   ciudadId?: string | null;
@@ -93,7 +94,7 @@ export interface PerfilEditor {
   rol: { id: string; nombre: string } | null;
   familia: { id: string; nombre: string; modalidades: number } | null;
   tecnologias: Array<{ id: string; nombre: string }>;
-  sector: { id: string; nombre: string } | null;
+  sectores: Array<{ id: string; nombre: string }>;
   seniority: { id: string; nombre: string } | null;
   aniosExperiencia: number | null;
   ciudad: { id: string; nombre: string; pais: string } | null;
@@ -218,7 +219,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
       ? { id: p.familia_id, nombre: p.familia_nombre, modalidades: p.familia_modalidades }
       : null,
     tecnologias,
-    sector: sectores[0] ?? null,
+    sectores,
     seniority: p.seniority_id ? { id: p.seniority_id, nombre: p.seniority_nombre } : null,
     aniosExperiencia: p.anios_experiencia,
     ciudad: p.ciudad_id ? { id: p.ciudad_id, nombre: p.ciudad_nombre, pais: p.pais_nombre } : null,
@@ -315,7 +316,6 @@ export interface OpcionValor {
 export interface OpcionesEditor {
   roles: Array<OpcionValor & { familiaId: string; familia: string; modalidades: number }>;
   familias: Array<OpcionValor & { modalidades: number }>;
-  sectores: OpcionValor[];
   seniorities: OpcionValor[];
   ciudades: Array<OpcionValor & { pais: string }>;
   modalidadesTrabajo: OpcionValor[];
@@ -334,9 +334,6 @@ export async function opcionesEditor(bd: Consultor): Promise<OpcionesEditor> {
       `SELECT f.id, f.nombre,
               (SELECT count(*)::int FROM inventario.catalogo_modalidades_prueba m WHERE m.familia_id = f.id AND m.activo) AS modalidades
          FROM inventario.catalogo_familias f WHERE f.activo ORDER BY f.nombre`,
-    ),
-    sectores: await q(
-      `SELECT id, nombre FROM inventario.catalogo_sectores WHERE activo ORDER BY nombre`,
     ),
     seniorities: await q(
       `SELECT id, nombre FROM inventario.catalogo_seniorities WHERE activo ORDER BY orden`,
@@ -361,7 +358,7 @@ export async function opcionesEditor(bd: Consultor): Promise<OpcionesEditor> {
 interface Resueltos {
   rol: { id: string; familia_id: string } | null;
   tecnologias: string[];
-  sector: string | null;
+  sectores: string[];
   ciudad: { id: string; pais_id: string } | null;
 }
 
@@ -383,7 +380,8 @@ async function resolver(
   const rol = e.rolId ? await activo("catalogo_roles", e.rolId, "id, familia_id") : null;
   const tecnologias = lista(e.tecnologiaIds);
   for (const t of tecnologias) await activo("catalogo_tecnologias", t);
-  if (e.sectorId) await activo("catalogo_sectores", e.sectorId);
+  const sectores = lista(e.sectorIds);
+  for (const s of sectores) await activo("catalogo_sectores", s);
   if (e.seniorityId) await activo("catalogo_seniorities", e.seniorityId);
   if (e.modalidadTrabajoId) await activo("catalogo_modalidades", e.modalidadTrabajoId);
   const ciudad = e.ciudadId ? await activo("catalogo_ciudades", e.ciudadId, "id, pais_id") : null;
@@ -396,7 +394,7 @@ async function resolver(
     if (clienteEnDescripcion(x.descripcion, texto(x.cliente)))
       throw new RechazoInventario("cliente_en_texto", { cargo: x.cargo, cliente: x.cliente });
   if ((e.selloPersonal?.length ?? 0) > 3) throw new RechazoInventario("sello_maximo_tres");
-  return { rol, tecnologias, sector: e.sectorId ?? null, ciudad };
+  return { rol, tecnologias, sectores, ciudad };
 }
 
 function fechaDisponibilidad(d: EntradaPerfil["disponibilidad"], ahora: Date): string | null {
@@ -413,7 +411,7 @@ function foto(p: PerfilEditor | null): Record<string, string | null> {
     primer_apellido: p?.primerApellido ?? null,
     rol: p?.rol?.id ?? null,
     tecnologias: j(p?.tecnologias.map((t) => t.id)),
-    sector: p?.sector?.id ?? null,
+    sectores: j(p?.sectores.map((s) => s.id)),
     seniority: p?.seniority?.id ?? null,
     anios_experiencia: p?.aniosExperiencia?.toString() ?? null,
     ciudad: p?.ciudad?.id ?? null,
@@ -525,7 +523,7 @@ async function escribirCampos(
   };
   if (e.rolId !== undefined) await hija("perfil_roles", r.rol ? [r.rol.id] : []);
   if (e.tecnologiaIds !== undefined) await hija("perfil_tecnologias", r.tecnologias);
-  if (e.sectorId !== undefined) await hija("perfil_sectores", r.sector ? [r.sector] : []);
+  if (e.sectorIds !== undefined) await hija("perfil_sectores", r.sectores);
 
   if (e.experiencias !== undefined) {
     const vigentes = new Set(anterior?.experiencias.map((x) => x.id) ?? []);

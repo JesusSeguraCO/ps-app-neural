@@ -79,7 +79,7 @@ export const entradaPerfil = z.strictObject({
   primerApellido: corto(80),
   rolId: z.uuid().nullish(),
   tecnologiaIds: z.array(z.uuid()).max(8).optional(),
-  sectorId: z.uuid().nullish(),
+  sectorIds: z.array(z.uuid()).max(8).optional(),
   seniorityId: z.uuid().nullish(),
   aniosExperiencia: z.number().int().min(0).max(60).nullish(),
   ciudadId: z.uuid().nullish(),

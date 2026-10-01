@@ -189,6 +189,26 @@ test.describe("editor de perfiles (HU-089, HU-125)", () => {
     await expect(page.getByRole("list", { name: "Tecnologías elegidas" }).getByRole("listitem")).toHaveCount(1);
   });
 
+  test("el sector admite varios valores del catálogo y se conservan al guardar y volver (D23)", async ({ page }) => {
+    await page.goto("/inventario/nuevo");
+    await page.getByLabel("Nombre", { exact: true }).fill("E2E");
+    const sector = page.getByRole("combobox", { name: "Sectores" });
+    const elegidos = page.getByRole("list", { name: "Sectores elegidos" });
+    for (const [q, nombre] of [["banc", "Banca"], ["segu", "Seguros"], ["reta", "Retail"]]) {
+      await sector.fill(q!);
+      await page.getByRole("option", { name: nombre! }).click();
+    }
+    await expect(elegidos.getByRole("listitem")).toHaveCount(3);
+    await elegidos.getByRole("button", { name: "Quitar Retail" }).click();
+    await page.getByRole("button", { name: "Guardar borrador" }).click();
+    await expect(page).toHaveURL(/\/inventario\/PS-\d{4}$/);
+    await page.reload();
+    await expect(page.getByRole("list", { name: "Sectores elegidos" }).getByRole("listitem")).toHaveText([
+      "Banca",
+      "Seguros",
+    ]);
+  });
+
   test("un rol que no existe muestra los parecidos antes de dejar crearlo", async ({ page }) => {
     await page.goto("/inventario/nuevo");
     const rol = page.getByRole("combobox", { name: "Rol" });

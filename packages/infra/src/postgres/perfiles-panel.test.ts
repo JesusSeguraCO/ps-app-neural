@@ -41,7 +41,7 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
   let portal: pg.Pool;
   let autor: { usuarioId: string; correo: string };
   const ids = {} as Record<
-    | "rol" | "java" | "kafka" | "banca" | "senior" | "medellin" | "hibrido" | "prueba" | "rolQa" | "creado" | "conConsentimiento",
+    | "rol" | "java" | "kafka" | "banca" | "seguros" | "senior" | "medellin" | "hibrido" | "prueba" | "rolQa" | "creado" | "conConsentimiento",
     string
   >;
 
@@ -54,7 +54,7 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
     primerApellido: "Salcedo",
     rolId: ids.rol,
     tecnologiaIds: [ids.java, ids.kafka],
-    sectorId: ids.banca,
+    sectorIds: [ids.banca, ids.seguros],
     seniorityId: ids.senior,
     aniosExperiencia: 8,
     ciudadId: ids.medellin,
@@ -91,6 +91,7 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
     ids.java = await id("catalogo_tecnologias", "Java");
     ids.kafka = await id("catalogo_tecnologias", "Kafka");
     ids.banca = await id("catalogo_sectores", "Banca");
+    ids.seguros = await id("catalogo_sectores", "Seguros");
     ids.senior = await id("catalogo_seniorities", "Senior");
     ids.medellin = await id("catalogo_ciudades", "Medellín");
     ids.hibrido = await id("catalogo_modalidades", "hibrido");
@@ -113,7 +114,8 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
       expect(p.rol?.nombre).toBe("Desarrolladora backend Java");
       expect(p.familia?.nombre).toBe("Desarrollo");
       expect(p.tecnologias.map((t) => t.nombre)).toEqual(["Java", "Kafka"]);
-      expect(p.sector?.nombre).toBe("Banca");
+      // El sector admite varios valores del catálogo, como las tecnologías (D23).
+      expect(p.sectores.map((x) => x.nombre)).toEqual(["Banca", "Seguros"]);
       expect(p.evaluacion.faltanDatos).toEqual([]);
       // Solo le falta el consentimiento (acto aparte, HU-127).
       expect(p.evaluacion.condiciones.filter((c) => !c.cumple).map((c) => c.clave)).toEqual([
@@ -252,6 +254,30 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
         [p.id],
       );
       expect(r.rows).toEqual([{ vigente: false }]);
+    });
+
+    it("los sectores se reemplazan por la lista enviada y se pueden dejar en ninguno (D23, D24)", async () => {
+      const p = (await leerPerfil(panel, ids.creado!))!;
+      expect(p.sectores.map((x) => x.nombre)).toEqual(["Banca", "Seguros"]);
+      // Guardar sin tocar los sectores no los pierde (antes solo se conservaba el primero).
+      const sinTocar = await guardarPerfil(panel, claves, autor, p.codigo, p.version, {
+        anclaje: "8 años en core bancario y seguros",
+      });
+      expect(sinTocar.sectores.map((x) => x.nombre)).toEqual(["Banca", "Seguros"]);
+      const uno = await guardarPerfil(panel, claves, autor, p.codigo, sinTocar.version, {
+        sectorIds: [ids.seguros],
+      });
+      expect(uno.sectores.map((x) => x.nombre)).toEqual(["Seguros"]);
+      const ninguno = await guardarPerfil(panel, claves, autor, p.codigo, uno.version, {
+        sectorIds: [],
+      });
+      expect(ninguno.sectores).toEqual([]);
+      expect(ninguno.evaluacion.faltanDatos.map((f) => f.campo)).not.toContain("sector");
+      await expect(
+        guardarPerfil(panel, claves, autor, p.codigo, ninguno.version, {
+          sectorIds: [ids.banca, ids.java],
+        }),
+      ).rejects.toMatchObject({ motivo: "valor_no_disponible" });
     });
 
     it("409 si el perfil cambió desde que se abrió", async () => {

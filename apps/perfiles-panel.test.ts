@@ -63,7 +63,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
       primerApellido: "Salcedo",
       rolId: await id("catalogo_roles", "Desarrolladora backend Java"),
       tecnologiaIds: [await id("catalogo_tecnologias", "Kafka")],
-      sectorId: await id("catalogo_sectores", "Banca"),
+      sectorIds: [await id("catalogo_sectores", "Banca")],
       seniorityId: await id("catalogo_seniorities", "Senior"),
       aniosExperiencia: 8,
       ciudadId: await id("catalogo_ciudades", "Medellín"),
@@ -131,6 +131,26 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
         const html = await r.text();
         expect(html).toMatch(/id="pe-tec"[^>]*role="combobox"|role="combobox"[^>]*id="pe-tec"/);
         expect(html).toContain("Solo valores del catálogo.");
+      });
+      it("el sector también se busca en el catálogo y admite varios valores (D23)", async () => {
+        const html = await (await leer("/inventario/nuevo")).text();
+        expect(html).toMatch(/id="pe-sector"[^>]*role="combobox"|role="combobox"[^>]*id="pe-sector"/);
+        expect(html).not.toMatch(/<select[^>]*id="pe-sector"/);
+        // El campo único de antes ya no existe: enviarlo es un campo de más.
+        const banca = await id("catalogo_sectores", "Banca");
+        expect((await enviar("/api/v1/perfiles", { sectorId: banca })).status).toBe(400);
+        const r = await enviar("/api/v1/perfiles", {
+          sectorIds: [banca, await id("catalogo_sectores", "Seguros")],
+        });
+        expect(r.status).toBe(201);
+        const { perfil } = await r.json();
+        expect(perfil.sectores.map((x: { nombre: string }) => x.nombre)).toEqual([
+          "Banca",
+          "Seguros",
+        ]);
+        const ficha = await (await leer(`/inventario/${perfil.codigo}`)).text();
+        expect(ficha).toContain("Banca");
+        expect(ficha).toContain("Seguros");
       });
     });
 

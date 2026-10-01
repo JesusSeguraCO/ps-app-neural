@@ -68,7 +68,7 @@ describe.skipIf(!HAY_BD)(
           await id("catalogo_tecnologias", "Kafka"),
           await id("catalogo_tecnologias", "Java"),
         ],
-        sectorId: await id("catalogo_sectores", "Banca"),
+        sectorIds: [await id("catalogo_sectores", "Banca")],
         seniorityId: await id("catalogo_seniorities", "Senior"),
         aniosExperiencia: 8,
         ciudadId: await id("catalogo_ciudades", "Medellín"),
