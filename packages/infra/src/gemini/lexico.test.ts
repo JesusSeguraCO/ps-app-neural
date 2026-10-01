@@ -38,7 +38,7 @@ describe("proponedorGemini", () => {
     const r = await p.proponer(lote);
     expect(r).toEqual({ ok: true, respuesta: respuestaValida });
     expect(url).toBe(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
     );
     expect(url).not.toContain("llave");
     expect((init.headers as Record<string, string>)["x-goog-api-key"]).toBe("llave-de-prueba");

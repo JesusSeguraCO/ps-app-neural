@@ -45,10 +45,10 @@
       "verified": [
         {
           "message_kind": "suggest-lexicon-entries",
-          "status": "na",
-          "reason_code": "no_credentials",
-          "at": "2026-10-01T00:05:00Z",
-          "detail": "GEMINI_API_KEY ausente en el entorno de construcción (EP-006 · sub-slice 1). Adaptador probado con fetch falso y doble; el intercambio real queda pendiente de un token personal de desarrollo con datos ficticios o de staging. Transitorio: se recomputa en cada slice."
+          "status": "ok",
+          "at": "2026-10-01T00:49:47Z",
+          "request_hash": "sha256:dbf372afc248965548b4c6b278fb49273874262e77360c4ee3d0125936a57155",
+          "detail": "HTTP 200 · res sha256:b5b74d79… · campos candidates,usageMetadata,modelVersion · modelo gemini-flash-lite-latest · respuesta dentro del esquema estricto (2 propuestas)"
         }
       ]
     },
