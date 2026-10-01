@@ -45,5 +45,9 @@
   Suite 1069 ✓, e2e 52 ✓.
 - Dev DB: migrada a 0021 con el flujo de dos pasos. PS-0137 (ficticio) quedó en borrador por no tener modalidad de
   prueba (sembrado antes de 0017); se reparó a mano: modalidad de su familia + publicado (como lo siembra hoy).
-- **Siguiente: 9.2** (registrar colocado en el panel + pestaña `/colocados`, destino del menú habilitado), luego 9.3,
-  9.4, 9.5, 9.6, 9.7. Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
+- **9.2 hecha**: dominio `inventario/colocados.ts` (validación, tabla por vencimiento ≤ 60 días, próximo cambio de
+  banda), infra `registrarColocado`/`listarColocados`, `POST /api/v1/colocados` (`colocados.escribir`), página
+  `/colocados` con hojas de registro y de asignación, menú habilitado, «Ver en Colocados» en la incoherencia.
+  Tests: dominio 12, infra 5, HTTP 6 (`apps/colocados-panel.test.ts`), e2e 1 + axe de `/colocados`. Mutación manual
+  en `mutacion-9.2.md` (3/3 muertos).
+- **Siguiente: 9.3** (carga de Operaciones), luego 9.4, 9.5, 9.6, 9.7. Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).

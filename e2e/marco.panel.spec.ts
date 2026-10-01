@@ -45,7 +45,7 @@ test.describe("marco del panel con sesión", () => {
     await abrirSesion(context, baseURL!);
   });
 
-  test("escritorio 1440: barra lateral y contenido en dos columnas, 5 destinos deshabilitados; Enlaces, Peticiones, Catálogos, Léxico, Inventario, Importar y Vigencia activos", async ({
+  test("escritorio 1440: barra lateral y contenido en dos columnas, 4 destinos deshabilitados; Enlaces, Peticiones, Catálogos, Léxico, Inventario, Importar, Vigencia y Colocados activos", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,8 +71,8 @@ test.describe("marco del panel con sesión", () => {
     expect(m.display).toBe("grid");
     expect(m.lateralAncho).toBeLessThan(400);
     expect(m.cuerpoALaDerecha).toBe(true);
-    expect(m.inactivos).toBe(5);
-    expect(m.conHref).toBe(7); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1); Inventario (2); Importar (3); Vigencia (7)
+    expect(m.inactivos).toBe(4);
+    expect(m.conHref).toBe(8); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1); Inventario (2); Importar (3); Vigencia (7); Colocados (9)
     expect(m.scroll).toBe(0);
     expect(errores).toEqual([]);
   });
@@ -146,6 +146,7 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/importar",
     "/importar?vista=historial",
     "/vigencia",
+    "/colocados",
     // Resultado y deshacer de las importaciones del recorrido del sub-slice 4 (revertidas).
     "/importar?lote=594f25ad-9513-4176-bb0b-0bcf0c98a682",
   ]) {
@@ -568,6 +569,85 @@ test.describe("coherencia y archivo (HU-134, HU-135)", () => {
       ]);
     } finally {
       await bd.end();
+    }
+    expect(errores).toEqual([]);
+  });
+});
+
+// Colocados (EP-006 · sub-slice 9, HU-137) en un navegador real: registrar sin fecha de liberación no
+// guarda y lo dice; con ella, el perfil aparece en el grupo de los próximos 60 días y su hoja dice lo
+// que ve el cliente. Perfil propio creado por la API, archivado al final (cierra su colocación).
+test.describe("colocados (HU-137)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("registrar sin liberación → aviso sin guardar → con liberación → fila destacada → hoja del cliente", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const marca = `Col${randomBytes(3).toString("hex").replace(/\d/g, (d) => "abcdefghij"[Number(d)]!)}`;
+    const codigo = await crearPublicado(page, marca, "Uno");
+    const nombre = `${marca} Uno`;
+    const liberacion = new Date(Date.now() - 5 * 3_600_000 + 40 * 86_400_000).toISOString().slice(0, 10);
+    try {
+      await page.goto("/colocados");
+      await page.getByRole("button", { name: "Registrar colocado" }).click();
+      const hoja = page.getByRole("dialog", { name: "Registrar colocado" });
+      await hoja.getByLabel("Perfil").selectOption(codigo);
+      await expect(hoja.getByText("Hoy: «Disponible ahora».")).toBeVisible();
+      await hoja.getByLabel("Cliente").fill("Cuenta e2e");
+      await hoja.getByRole("button", { name: "Guardar colocado" }).click();
+      await expect(
+        hoja.getByText(`Un colocado siempre lleva su fecha de liberación. No se guardó: ${nombre} sigue publicado con «Disponible ahora».`),
+      ).toBeVisible();
+      await expect(hoja.getByLabel("Fecha de liberación")).toHaveAttribute("aria-invalid", "true");
+      expect(
+        (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter(
+          (v) => v.impact === "serious" || v.impact === "critical",
+        ),
+      ).toEqual([]);
+
+      await hoja.getByLabel("Fecha de liberación").fill(liberacion);
+      await hoja.getByRole("button", { name: "Guardar colocado" }).click();
+      await expect(page.getByText(`${nombre} quedó colocado en Cuenta e2e`)).toBeVisible();
+      const fila = page.getByRole("row", { name: new RegExp(nombre) });
+      await expect(fila).toContainText("Cuenta e2e");
+      await expect(fila).toContainText("40 días");
+      await expect(fila.locator(".cl-faltan--pronto")).toBeVisible();
+
+      await fila.getByRole("button", { name: nombre }).click();
+      const detalle = page.getByRole("dialog", { name: nombre });
+      await expect(detalle.getByText("Lo que ve el cliente")).toBeVisible();
+      await expect(detalle.getByText("Publicado")).toBeVisible();
+      await expect(detalle.getByText("fin de la asignación")).toBeVisible();
+      await expect(detalle.getByRole("link", { name: "Abrir en el inventario" })).toHaveAttribute(
+        "href",
+        `/inventario/${codigo}`,
+      );
+      expect(
+        (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter(
+          (v) => v.impact === "serious" || v.impact === "critical",
+        ),
+      ).toEqual([]);
+      for (const ancho of [320, 390]) {
+        await page.setViewportSize({ width: ancho, height: 800 });
+        expect(
+          await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth),
+        ).toBe(0);
+      }
+    } finally {
+      const galletas = await page.context().cookies();
+      await page.request.post(`/api/v1/perfiles/${codigo}/archivar`, {
+        data: {},
+        headers: {
+          "x-ps-csrf": galletas.find((c) => c.name === "__Host-csrf")!.value,
+          origin: new URL(page.url()).origin,
+          cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
+        },
+      });
     }
     expect(errores).toEqual([]);
   });

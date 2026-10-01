@@ -62,7 +62,7 @@ export const MENU_PANEL: SeccionMenu[] = [
         icono:
           "M13.5 8a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0zM3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6",
       },
-      { clave: "colocados", etiqueta: "Colocados", ruta: null, icono: "M5 12l5 5L20 7" },
+      { clave: "colocados", etiqueta: "Colocados", ruta: "/colocados", icono: "M5 12l5 5L20 7" },
       {
         clave: "demanda",
         etiqueta: "Demanda",

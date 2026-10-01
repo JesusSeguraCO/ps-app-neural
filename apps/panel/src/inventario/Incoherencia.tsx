@@ -59,6 +59,7 @@ function acciones(c: Incoherencia, codigo: string, nombre: string): Accion[] {
       ];
     case "colocado_disponible_ahora":
       return [
+        { etiqueta: "Ver en Colocados", href: "/colocados" },
         {
           etiqueta: "Usar la fecha de liberación",
           principal: true,

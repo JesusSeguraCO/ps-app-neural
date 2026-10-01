@@ -1,0 +1,72 @@
+/* Pestaña de colocados (HU-137, HU-150; prototipo colocados y variantes): composición propia del
+   prototipo, prefijo cl-. Los patrones PP:* vienen de packages/ui y del marco. */
+    .cl-contenedor { max-width: 1120px; }
+    .cl-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .cl-lectura { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .cl-atraso { color: var(--tc-warn-ink-strong); font-weight: var(--tc-fw-medium); }
+    .cl-aviso { margin-bottom: var(--tc-sp-6); }
+    .cl-marco { max-height: none; }
+    .cl-tabla { min-width: 0; }
+    .cl-tabla .cl-der { text-align: right; }
+    .cl-tabla td.cl-chev { width: 1%; padding-left: 0; text-align: right; color: var(--tc-text-s); }
+    .cl-tabla tbody tr:not(.cl-grupo) { position: relative; }
+    .cl-tabla tbody tr:not(.cl-grupo):hover .cl-chev { color: var(--tc-text-h); }
+    .cl-grupo th { padding-top: var(--tc-sp-5); padding-bottom: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+    .cl-grupo:first-child th { padding-top: var(--tc-sp-3); }
+    .cl-grupo th span { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .cl-tabla tbody tr.cl-grupo:hover { background: none; }
+    .cl-nombre { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); text-decoration: none; }
+    .cl-nombre::after { content: ""; position: absolute; inset: 0; }
+    .cl-nombre:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .cl-nombre:focus-visible { outline: none; }
+    .cl-nombre:focus-visible::after { outline: 2px solid var(--tc-focus-ring); outline-offset: -2px; border-radius: var(--tc-r-sm); }
+    .cl-codigo { margin-left: var(--tc-sp-2); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .cl-cuenta { color: var(--tc-text-h); }
+    .cl-fecha { color: var(--tc-text-b); }
+    .cl-faltan { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .cl-faltan--pronto { font-weight: var(--tc-fw-semibold); color: var(--tc-warn-ink-strong); }
+    .cl-banda { color: var(--tc-text-m); }
+    .cl-fuente { margin-top: var(--tc-sp-1); }
+    @media (max-width: 1023px) { .cl-tabla tbody .cl-col-cuenta .cl-fuente { display: inline; margin: 0 0 0 var(--tc-sp-2); } }
+    .cl-pie { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* hoja lateral del edge */
+    .cl-hoja-seccion { display: grid; gap: var(--tc-sp-3); }
+    .cl-hoja-seccion .pp-seccion__cabecera { margin-bottom: 0; }
+    .cl-hoja-seccion p { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cl-vista { max-width: 360px; padding: var(--tc-sp-4) var(--tc-sp-5); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); }
+    .cl-vista__rol { margin: 0; font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .cl-vista__nombre, .cl-vista__meta { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .cl-vista__meta { margin-top: var(--tc-sp-3); display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-3); }
+    .cl-chev .pp-icono { display: block; margin-left: auto; }
+    @media (max-width: 1023px) {
+      /* la tabla se vuelve lista: nombre + cuenta + fechas a la izquierda, días y chevron a la derecha */
+      .cl-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .cl-tabla, .cl-tabla tbody { display: block; }
+      .cl-tabla tbody tr:not(.cl-grupo) { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto auto; grid-template-areas: "nombre nombre nombre banda faltan chev" "cuenta cuenta cuenta banda faltan chev" "inicio vence . banda faltan chev"; column-gap: 0; row-gap: var(--tc-sp-1); align-items: center; min-height: 64px; padding: var(--tc-sp-3) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+      .cl-tabla tbody tr:last-child { border-bottom: 0; }
+      .cl-tabla tbody tr > * { padding: 0; border: 0; }
+      .cl-tabla tbody tr > th { grid-area: nombre; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .cl-tabla tbody tr > th .pp-tabla__sub { display: inline; margin-left: var(--tc-sp-2); }
+      .cl-tabla tbody .cl-col-cuenta { grid-area: cuenta; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .cl-tabla tbody .cl-col-inicio { grid-area: inicio; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .cl-tabla tbody .cl-col-inicio .cl-fecha, .cl-tabla tbody .cl-col-vence .cl-fecha { color: inherit; }
+      .cl-tabla tbody .cl-col-inicio::after { content: "–"; margin: 0 var(--tc-sp-1); }
+      .cl-tabla tbody .cl-col-vence { grid-area: vence; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+      .cl-tabla tbody .cl-col-banda { grid-area: banda; padding-left: var(--tc-sp-4); font-size: var(--tc-fs-caption); white-space: nowrap; }
+      .cl-tabla tbody .cl-col-faltan { grid-area: faltan; min-width: 72px; padding-left: var(--tc-sp-4); }
+      .cl-tabla tbody td.cl-chev { grid-area: chev; width: auto; padding-left: var(--tc-sp-2); }
+      .cl-tabla tbody tr.cl-grupo { display: block; border-bottom: 1px solid var(--tc-border); }
+      .cl-tabla tbody tr.cl-grupo > th { display: block; padding: var(--tc-sp-4) var(--tc-sp-5) var(--tc-sp-2); }
+      .cl-tabla tbody tr.cl-grupo:first-child > th { padding-top: var(--tc-sp-3); }
+    }
+    @media (max-width: 767px) {
+      .cl-tabla tbody tr:not(.cl-grupo) { padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .cl-tabla tbody tr > th .pp-tabla__sub { display: none; }
+      /* la banda (lo que ve el cliente) sigue en la línea de fechas */
+      .cl-tabla tbody tr:not(.cl-grupo) { grid-template-columns: auto auto minmax(0, 1fr) auto auto; grid-template-areas: "nombre nombre nombre faltan chev" "cuenta cuenta cuenta faltan chev" "inicio vence . faltan chev" "banda banda banda faltan chev"; }
+      .cl-tabla tbody .cl-col-banda { min-width: 0; padding-left: 0; overflow: hidden; text-overflow: ellipsis; color: var(--tc-text-m); }
+      .cl-tabla tbody .cl-col-faltan { min-width: 0; padding-left: var(--tc-sp-3); }
+      .cl-tabla tbody tr.cl-grupo > th { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); }
+    }
+/* El nombre abre la hoja de la asignación: botón con el aspecto del enlace del prototipo. */
+button.cl-nombre { padding: 0; border: 0; background: none; font: inherit; font-weight: var(--tc-fw-medium); text-align: left; cursor: pointer; }

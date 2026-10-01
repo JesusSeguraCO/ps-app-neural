@@ -51,7 +51,7 @@ const cambio = (
   origen: "panel",
 });
 
-async function bloquear(tx: Consultor, codigo: string) {
+export async function bloquear(tx: Consultor, codigo: string) {
   const f = (
     await tx.query(
       `SELECT p.id, p.estado, p.version, p.disponibilidad_fecha::text AS disponibilidad_fecha,
@@ -93,7 +93,7 @@ async function vaciarDisponibilidad(
 }
 
 // Escribe la disponibilidad dentro de una unidad ya abierta y devuelve lo que hay que auditar.
-async function escribirDisponibilidad(
+export async function escribirDisponibilidad(
   tx: Consultor,
   autor: Autor,
   codigo: string,

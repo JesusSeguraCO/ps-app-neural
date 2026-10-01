@@ -162,8 +162,14 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - «Fecha ya pasada» (MEDIA) es la que era futura el día en que se actualizó y hoy ya pasó; «Disponible ahora» se guarda como la fecha de ese día y no vence (prototipo: «Disponible ahora · hace 3 días» sin aviso). La fecha de liberación ya pasada de un colocado es fecha vencida, no «Disponible ahora».
 - A un pausado se le pone fecha desde su fila (uno a la vez) y queda la ALTA señalada; en bloque sigue sin aplicar. Publicar con ALTA → 409 `incoherencia` con la contradicción (editor y bloque); «Publicar con esa disponibilidad» es reactivar con `confirmar` y la resuelve.
 - La importación no bloquea por coherencia: marca en la tarjeta la ALTA que la fila crearía, solo si la fila toca estado o disponibilidad.
-- Sin «Ver en Colocados» en la fila del colocado hasta que ss9 habilite ese destino; «Usar la fecha de liberación» sí.
+- Sin «Ver en Colocados» en la fila del colocado hasta que ss9 habilite ese destino; «Usar la fecha de liberación» sí. (ss9 lo añade.)
 - Menú «Más acciones» y la confirmación de archivar flotan fijos anclados al botón: dentro del marco desplazable de la tabla se recortaban con pocas filas.
+
+**Sub-slice 9 (HU-137, HU-150, HU-124; aprobadas por el modelo bajo D27, registradas en D33 y D35):**
+- Registrar colocado desde la pestaña con la hoja del prototipo; el selector lista solo los publicados sin colocación vigente. Cliente y liberación se avisan sin enviar si faltan; el servidor rechaza igual (422 `sin_liberacion`) sin escribir nada.
+- Fuente del dato por correo del autor (identidad del panel), no por nombre; los antiguos `colocado` migrados se marcan «Migración del antiguo estado «colocado»».
+- El nombre de la fila es un botón que abre la hoja de la asignación (el prototipo usa un enlace a la variante). «Lo que ve el cliente» muestra rol, nombre y banda con los rótulos del PRD; sin sectores ni modalidad.
+- La línea de meta y la columna de fuente muestran la fecha de corte de Operaciones desde la tarea 9.3.
 
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 

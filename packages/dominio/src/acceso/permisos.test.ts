@@ -25,6 +25,10 @@ describe("MatrizPermisos (ADR-0002 H19)", () => {
     expect(puede("administrador", "importacion.ejecutar")).toBe(true);
     expect(puede("observador", "importacion.ejecutar")).toBe(false);
   });
+  it("EP-006: solo la administradora registra colocados (HU-137)", () => {
+    expect(puede("administrador", "colocados.escribir")).toBe(true);
+    expect(puede("observador", "colocados.escribir")).toBe(false);
+  });
   it("una acción desconocida no es acción", () => {
     expect(esAccion("enlaces.generar")).toBe(true);
     expect(esAccion("inventario.borrar")).toBe(false);
