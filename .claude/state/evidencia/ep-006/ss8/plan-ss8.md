@@ -38,3 +38,7 @@
    del enlace curado con un archivado («fuera del banco», los demás normales).
 6. Fidelidad MCP `inventario-perfiles--incoherencia`, `--archivar`; journey 8.5; mutación; e2e; wiring
    (HU-134×5, HU-135×4).
+
+## Cierre (2026-10-01)
+- 8.1–8.5 [x]. Commits `769639d` (núcleo) + cierre. D32 registrada. Wiring ss8 (9) en passing con evidencia en `wiring/`.
+- Siguiente: sub-slice 9 (HU-137, HU-150, HU-124: colocados, carga de Operaciones, observador).

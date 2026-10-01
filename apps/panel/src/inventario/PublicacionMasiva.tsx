@@ -234,7 +234,7 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
     };
   if (f.motivos.includes("incoherencia"))
     return {
-      nota: `Su estado y su disponibilidad se contradicen: ${f.contradiccion ?? "resuélvelo en su fila."}`,
+      nota: f.contradiccion ?? "Su estado y su disponibilidad se contradicen: resuélvelo en su fila.",
       accion: "Resolver en su fila",
       href: `/inventario?estado=incoherencia&q=${encodeURIComponent(f.codigo)}`,
     };
@@ -299,24 +299,31 @@ export function ResultadoPublicacion() {
     <>
       <div
         className={`pp-aviso ${todos ? "pp-aviso--ok" : contradice ? "pp-aviso--danger" : "pp-aviso--warn"} ip-avisos`}
-        role="status"
+        role={contradice ? "alert" : "status"}
       >
         <span className="pp-aviso__icono" aria-hidden="true">
           {todos ? "✓" : "!"}
         </span>
-        <p>
-          <span className="pp-aviso__titulo">
-            {todos
-              ? n === 1
-                ? "Se publicó el perfil."
-                : `Se publicaron los ${n}.`
-              : `Se publicaron ${n} de ${r.total}.`}
-          </span>
-          {n > 0 &&
-            `${r.publicados.join(" y ").replace(/ y (?=.* y )/g, ", ")} ${n === 1 ? "ya está" : "ya están"} en el portal.`}
-          {!todos &&
-            ` ${r.fallos.length === 1 ? "El otro sigue" : `Los otros ${r.fallos.length} siguen`} como ${r.fallos.length === 1 ? "estaba" : "estaban"}, con su motivo; la operación no se canceló.`}
-        </p>
+        {contradice && n === 0 && r.fallos.length === 1 ? (
+          <p>
+            <span className="pp-aviso__titulo">{`No se publicó ${r.fallos[0]!.nombre} (${r.fallos[0]!.codigo}).`}</span>
+            Su estado y su disponibilidad se contradicen. Resuélvelo en su fila.
+          </p>
+        ) : (
+          <p>
+            <span className="pp-aviso__titulo">
+              {todos
+                ? n === 1
+                  ? "Se publicó el perfil."
+                  : `Se publicaron los ${n}.`
+                : `Se publicaron ${n} de ${r.total}.`}
+            </span>
+            {n > 0 &&
+              `${r.publicados.join(" y ").replace(/ y (?=.* y )/g, ", ")} ${n === 1 ? "ya está" : "ya están"} en el portal.`}
+            {!todos &&
+              ` ${r.fallos.length === 1 ? "El otro sigue" : `Los otros ${r.fallos.length} siguen`} como ${r.fallos.length === 1 ? "estaba" : "estaban"}, con su motivo; la operación no se canceló.`}
+          </p>
+        )}
       </div>
       {!todos && (
         <section className="ip-resultado" aria-labelledby="ip-res-t">

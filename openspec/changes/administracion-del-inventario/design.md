@@ -157,6 +157,14 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - La bandeja vacía nombra quién entra primero y cuándo, sin el botón «Ver los que entran esta semana».
 - «· en N enlaces activos» se cuenta sobre los enlaces curados activos y vigentes (`identidad.enlaces`).
 
+**Sub-slice 8 (HU-134, HU-135; evidencia `.claude/state/evidencia/ep-006/ss8/fidelidad-ss8.md`; aprobadas por el modelo bajo D27, registradas en D32):**
+- Pausar y archivar dejan la disponibilidad vacía (auditado como cambio de `disponibilidad_fecha`): la matriz D5 marca ALTA a un pausado o archivado con cualquier disponibilidad, y reactivar ya pide la nueva. La siembra ficticia sigue la misma regla.
+- «Fecha ya pasada» (MEDIA) es la que era futura el día en que se actualizó y hoy ya pasó; «Disponible ahora» se guarda como la fecha de ese día y no vence (prototipo: «Disponible ahora · hace 3 días» sin aviso). La fecha de liberación ya pasada de un colocado es fecha vencida, no «Disponible ahora».
+- A un pausado se le pone fecha desde su fila (uno a la vez) y queda la ALTA señalada; en bloque sigue sin aplicar. Publicar con ALTA → 409 `incoherencia` con la contradicción (editor y bloque); «Publicar con esa disponibilidad» es reactivar con `confirmar` y la resuelve.
+- La importación no bloquea por coherencia: marca en la tarjeta la ALTA que la fila crearía, solo si la fila toca estado o disponibilidad.
+- Sin «Ver en Colocados» en la fila del colocado hasta que ss9 habilite ese destino; «Usar la fecha de liberación» sí.
+- Menú «Más acciones» y la confirmación de archivar flotan fijos anclados al botón: dentro del marco desplazable de la tabla se recortaban con pocas filas.
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.

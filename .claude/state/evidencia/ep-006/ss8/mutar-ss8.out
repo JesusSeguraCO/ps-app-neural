@@ -1,0 +1,23 @@
+M1 pausado sin disponibilidad también es ALTA MUERTO
+M2 «Disponible ahora» de hace días cuenta como vencida MUERTO
+M3 colocado con fecha futura es ALTA MUERTO
+M4 30 días ya es MEDIA MUERTO
+M5 por confirmar no se dice MUERTO
+M6 borrador con contradicción MUERTO
+M7 la importación no marca la ALTA MUERTO
+M8 la importación marca aunque la fila no toque estado ni disponibilidad MUERTO
+M9 pausar conserva la disponibilidad MUERTO
+Traceback (most recent call last):
+  File "/Users/cmo/Local/claude/Apps/App People Service/.claude/state/evidencia/ep-006/ss8/mutar-ss8.py", line 41, in <module>
+    s = open(f).read(); assert a in s, nombre
+AssertionError: M10 archivar conserva la disponibilidad
+M10 archivar conserva la disponibilidad MUERTO
+M11 al pausado no se le puede poner fecha en su fila MUERTO
+M12 en bloque el pausado también recibe fecha MUERTO
+M13 quitar la disponibilidad a un publicado MUERTO
+M14 usar liberación no cambia la fecha MUERTO
+M15 publicar con ALTA MUERTO
+M16 la observadora quita la disponibilidad MUERTO
+M17 la observadora usa la liberación MUERTO
+M18 una ruta DELETE de perfiles aparece MUERTO
+M19 un DELETE FROM inventario.perfiles aparece MUERTO

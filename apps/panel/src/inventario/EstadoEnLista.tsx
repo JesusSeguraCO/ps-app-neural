@@ -202,6 +202,30 @@ export function AccionesFila(p: {
   const [menu, setMenu] = useState(false);
   const [archivar, setArchivar] = useState(false);
   const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
+  // El menú y la confirmación flotan anclados al botón (fijos en la ventana): dentro del marco
+  // desplazable de la tabla quedarían recortados cuando hay pocas filas.
+  const refBoton = useRef<HTMLButtonElement>(null);
+  const [ancla, setAncla] = useState<{ top: number; right: number } | null>(null);
+  const anclar = () => {
+    const r = refBoton.current?.getBoundingClientRect();
+    if (r) setAncla({ top: r.bottom + 4, right: window.innerWidth - r.right });
+  };
+  useEffect(() => {
+    if (!menu && !archivar) return;
+    const cerrar = () => {
+      setMenu(false);
+      setArchivar(false);
+    };
+    window.addEventListener("scroll", cerrar, true);
+    window.addEventListener("resize", cerrar);
+    return () => {
+      window.removeEventListener("scroll", cerrar, true);
+      window.removeEventListener("resize", cerrar);
+    };
+  }, [menu, archivar]);
+  const flota = ancla
+    ? { position: "fixed" as const, top: ancla.top, right: ancla.right }
+    : undefined;
   const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -253,7 +277,11 @@ export function AccionesFila(p: {
           aria-haspopup="menu"
           aria-expanded={menu}
           aria-label={`Más acciones para ${p.nombre}`}
-          onClick={() => setMenu((x) => !x)}
+          ref={refBoton}
+          onClick={() => {
+            anclar();
+            setMenu((x) => !x);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Escape") setMenu(false);
           }}
@@ -263,7 +291,12 @@ export function AccionesFila(p: {
           </svg>
         </button>
         {menu && (
-          <ul className="ip-menu__lista" role="menu" aria-label={`Acciones para ${p.nombre}`}>
+          <ul
+            className="ip-menu__lista"
+            role="menu"
+            aria-label={`Acciones para ${p.nombre}`}
+            style={flota}
+          >
             {p.pausar && (
               <li role="none">
                 <button
@@ -305,6 +338,7 @@ export function AccionesFila(p: {
         {archivar && (
           <div
             className="ip-pop"
+            style={flota}
             role="dialog"
             aria-labelledby={`ip-pop-${p.codigo}`}
             onKeyDown={(e) => {

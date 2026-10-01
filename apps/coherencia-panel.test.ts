@@ -195,6 +195,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       expect((await m.json()).resultados[0]).toMatchObject({
         ok: false,
         motivos: ["incoherencia"],
+        contradiccion: expect.stringMatching(/^Pausado y con disponibilidad «/),
       });
       expect(await fechaPortal(p.codigo)).toBeUndefined();
       expect(await auditorias(p.codigo)).toBe(n);

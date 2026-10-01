@@ -491,3 +491,84 @@ test.describe("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-136)", () =>
     expect(errores).toEqual([]);
   });
 });
+
+// Coherencia y archivo (EP-006 · sub-slice 8: HU-134, HU-135) en un navegador real: un publicado propio
+// se pausa (queda sin disponibilidad), se le pone fecha en su fila y la contradicción ALTA aparece en esa
+// misma fila; «Publicar con esa disponibilidad» la corrige y lo publica; después se archiva desde «Más
+// acciones» con su confirmación y un enlace curado que lo incluía lo ve «archivado» (fuera del banco).
+test.describe("coherencia y archivo (HU-134, HU-135)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("pausado con fecha → ALTA en la fila → publicar con esa disponibilidad → archivar → fuera del banco", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const marca = `Coh${randomBytes(3).toString("hex").replace(/\d/g, (d) => "abcdefghij"[Number(d)]!)}`;
+    const uno = await crearPublicado(page, marca, "Uno");
+    const dos = await crearPublicado(page, marca, "Dos");
+    const nombre = `${marca} Uno`;
+
+    await page.goto(`/inventario?q=${marca}`);
+    await page.getByRole("button", { name: `Más acciones para ${nombre}` }).click();
+    await page.getByRole("menuitem", { name: `Pausar a ${nombre}` }).click();
+    const hoja = page.getByRole("dialog", { name: `Pausar a ${nombre}` });
+    await hoja.getByRole("radio").first().check();
+    await hoja.getByRole("button", { name: "Pausar y ocultar del portal" }).click();
+    await expect(page.getByLabel(`Disponibilidad de ${nombre}`)).toBeVisible();
+    await expect(page.getByText("Bloquea la publicación")).toHaveCount(0);
+
+    await page.getByLabel(`Disponibilidad de ${nombre}`).selectOption({ label: "En 2 semanas" });
+    await expect(page.getByText("Bloquea la publicación")).toBeVisible();
+    await expect(page.getByText("Contradice el estado pausado")).toBeVisible();
+    expect(
+      (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter(
+        (v) => v.impact === "serious" || v.impact === "critical",
+      ),
+    ).toEqual([]);
+    await page.getByRole("button", { name: `Publicar con esa disponibilidad: ${nombre}` }).click();
+    await expect(page.getByText(`${nombre} volvió a publicado con esa disponibilidad.`)).toBeVisible();
+    await expect(page.getByText("Bloquea la publicación")).toHaveCount(0);
+
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    try {
+      const f = (
+        await bd.query(
+          `SELECT estado, disponibilidad_fecha IS NOT NULL AS con_fecha, pausado_en FROM inventario.perfiles WHERE codigo = $1`,
+          [uno],
+        )
+      ).rows[0];
+      expect(f).toMatchObject({ estado: "publicado", con_fecha: true, pausado_en: null });
+      await bd.query(
+        `INSERT INTO identidad.enlaces (cuenta_ref, cuenta_nombre, razon, codigos_perfil, vigente_desde, vigente_hasta, generado_por)
+         VALUES ('1', 'Cuenta e2e', 'Recorrido de coherencia.', $1, now() - interval '1 day', now() + interval '20 days', gen_random_uuid())`,
+        [[uno, dos]],
+      );
+
+      await page.getByRole("button", { name: `Más acciones para ${nombre}` }).click();
+      await page.getByRole("menuitem", { name: `Archivar a ${nombre}` }).click();
+      const pop = page.getByRole("dialog", { name: `¿Archivar a ${nombre}?` });
+      await expect(pop.getByText("Se archiva, no se borra.")).toBeVisible();
+      await pop.getByRole("button", { name: "Archivar perfil" }).click();
+      await expect(page.getByText(`${nombre} quedó archivado: no se borró`)).toBeVisible();
+
+      const sel = (
+        await bd.query(
+          `SELECT codigo, estado FROM operacion.estado_seleccion_perfil WHERE codigo = ANY($1) ORDER BY codigo`,
+          [[uno, dos]],
+        )
+      ).rows;
+      expect(sel).toEqual([
+        { codigo: uno, estado: "archivado" },
+        { codigo: dos, estado: "disponible" },
+      ]);
+    } finally {
+      await bd.end();
+    }
+    expect(errores).toEqual([]);
+  });
+});

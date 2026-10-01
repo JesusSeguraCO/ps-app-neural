@@ -1,0 +1,4 @@
+# EP-006 · sub-slice 8 — journey smoke
+
+1. **Playwright** — `e2e/marco.panel.spec.ts` «pausado con fecha → ALTA en la fila → publicar con esa disponibilidad → archivar → fuera del banco» ✓ (4,5 s): dos publicados propios → «Más acciones» → «Pausar» con motivo (queda sin disponibilidad, sin señal) → «En 2 semanas» en su fila → «Bloquea la publicación» + «Contradice el estado pausado», axe sin incidencias serias → «Publicar con esa disponibilidad» → aviso y sin señal; BD `publicado` con fecha y pausa limpia → enlace curado con los dos → «Archivar» con confirmación anclada → aviso «quedó archivado: no se borró» → `estado_seleccion_perfil`: el archivado «archivado», el otro «disponible». Consola sin errores.
+2. **MCP chrome-devtools (clics reales)** — ver `fidelidad-ss8.md`: pestaña «Con incoherencia», pausado con fecha en su fila, aviso «No se publicó …», las dos salidas, «Usar la fecha de liberación», archivar, vista previa de importación con la marca, 390.

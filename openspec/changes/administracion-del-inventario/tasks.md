@@ -73,11 +73,11 @@
 
 ## 8. Sub-slice 8 — Incoherencias y archivo (HU-134, HU-135)
 
-- [ ] 8.1 `evaluarCoherencia` con la matriz D5 corregida (colocado con fecha es coherente) y RF-8.14.4; tabla de verdad exhaustiva estado × colocado × disponibilidad × antigüedad; verificar los cinco escenarios de HU-134 y que ninguna otra combinación se marca
-- [ ] 8.2 Señal en la fila (rojo ALTA con la contradicción nombrada, MEDIA sin rojo), acción que corrige sin salir del listado, bloqueo al publicar y marca en la vista previa de importación; verificar en panel e importación
-- [ ] 8.3 Archivar: «eliminar» archiva con `archivado_en`, idempotente sin tocar fecha ni historial, observador 403 sin cambio, sin ninguna ruta de borrado físico (grep de `DELETE` en repositorios de inventario en CI); verificar los cuatro escenarios de HU-135 y la regresión del enlace curado con un archivado
-- [ ] 8.4 Fidelidad con captura MCP de `inventario-perfiles--incoherencia`, `inventario-perfiles--archivar`
-- [ ] 8.5 Journey smoke: pausado con fecha → incoherencia ALTA en la fila → corregir → publicar; archivar → el enlace curado lo muestra fuera del banco; evidencia en `ss8/` y checkpoint
+- [x] 8.1 `evaluarCoherencia` con la matriz D5 corregida (colocado con fecha es coherente) y RF-8.14.4; tabla de verdad exhaustiva estado × colocado × disponibilidad × antigüedad; verificar los cinco escenarios de HU-134 y que ninguna otra combinación se marca
+- [x] 8.2 Señal en la fila (rojo ALTA con la contradicción nombrada, MEDIA sin rojo), acción que corrige sin salir del listado, bloqueo al publicar y marca en la vista previa de importación; verificar en panel e importación
+- [x] 8.3 Archivar: «eliminar» archiva con `archivado_en`, idempotente sin tocar fecha ni historial, observador 403 sin cambio, sin ninguna ruta de borrado físico (grep de `DELETE` en repositorios de inventario en CI); verificar los cuatro escenarios de HU-135 y la regresión del enlace curado con un archivado
+- [x] 8.4 Fidelidad con captura MCP de `inventario-perfiles--incoherencia`, `inventario-perfiles--archivar`
+- [x] 8.5 Journey smoke: pausado con fecha → incoherencia ALTA en la fila → corregir → publicar; archivar → el enlace curado lo muestra fuera del banco; evidencia en `ss8/` y checkpoint
 
 ## 9. Sub-slice 9 — Colocados, carga de Operaciones y observador (HU-137, HU-150, HU-124)
 
