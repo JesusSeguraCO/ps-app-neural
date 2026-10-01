@@ -7,6 +7,7 @@ import {
   VACIAR,
   detectarFormato,
   escribirCsv,
+  escribirErrores,
   escribirJson,
   formatearExperiencia,
   leer,
@@ -124,5 +125,39 @@ describe("emparejamiento con las columnas reales del formato (HU-086)", () => {
       expect(camposEmparejados(e).map((c) => c.clave)).toEqual(CAMPOS_IMPORTACION.map((c) => c.clave));
       expect(e.some((c) => c.bloqueada)).toBe(false);
     }
+  });
+});
+
+describe("archivo de filas con error (HU-142)", () => {
+  const encabezados = ["Código", "Años", "Notas, con coma"];
+  const filas = [
+    { celdas: ["PS-1001", "muchos", 'dijo "hola"'], motivo: "Años: «muchos» no es un número" },
+    { celdas: ["PS-1002", "", "a\tb"], motivo: "Código: repetido" },
+  ];
+
+  it("CSV: el formato en que llegó, con la columna Motivo al final, y se vuelve a leer igual", () => {
+    const t = escribirErrores("csv", encabezados, filas);
+    const l = leer(t, "csv");
+    if (!l.ok) throw new Error(l.motivo);
+    expect(l.tabla.encabezados).toEqual([...encabezados, "Motivo"]);
+    expect(l.tabla.filas.map((f) => f.celdas)).toEqual([
+      ["PS-1001", "muchos", 'dijo "hola"', "Años: «muchos» no es un número"],
+      ["PS-1002", "", "a\tb", "Código: repetido"],
+    ]);
+  });
+
+  it("TSV (pegado de Excel): tabuladores como separador, celdas con tabulador entre comillas", () => {
+    const t = escribirErrores("tsv", encabezados, filas);
+    expect(t.split("\r\n")[0]).toBe("Código\tAños\tNotas, con coma\tMotivo");
+    const l = leer(t, "tsv");
+    if (!l.ok) throw new Error(l.motivo);
+    expect(l.tabla.filas[1]!.celdas).toEqual(["PS-1002", "", "a\tb", "Código: repetido"]);
+  });
+
+  it("JSON: un objeto por fila con las columnas que trajo y su motivo", () => {
+    expect(JSON.parse(escribirErrores("json", encabezados, filas))).toEqual([
+      { Código: "PS-1001", Años: "muchos", "Notas, con coma": 'dijo "hola"', motivo: "Años: «muchos» no es un número" },
+      { Código: "PS-1002", "Notas, con coma": "a\tb", motivo: "Código: repetido" },
+    ]);
   });
 });

@@ -175,5 +175,33 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       expect(h.lotes[0]).toMatchObject({ id: b, fase: "revertido", confirmadoPor: "karen@trycore.com" });
       expect(h.lotes.find((l: { id: string }) => l.id === a)).toMatchObject({ fase: "aplicado" });
     });
+    it("HU-142: el resumen dice cuántas fallaron y el adjunto trae solo esas, en el formato en que llegaron", async () => {
+      const r = await enviar("/api/v1/importacion/lotes", {
+        texto: "Código\tAños de experiencia\nPS-0223\t9\nPS-0230\tmuchos",
+        formato: "tsv",
+        modo: "crear_y_actualizar",
+        columnas: [
+          { columna: "Código", clave: "codigo" },
+          { columna: "Años de experiencia", clave: "aniosExperiencia" },
+        ],
+      });
+      const { loteId } = await r.json();
+      const estado = await (await leerLote(loteId)).json();
+      expect(estado.errores).toEqual({ filas: 1, todas: false, causaComun: null });
+      const archivo = await panel.pedir(`/api/v1/importacion/lotes/${loteId}/errores`, {
+        headers: { cookie: admin },
+      });
+      expect(archivo.status).toBe(200);
+      expect(archivo.headers.get("content-type")).toMatch(/text\/tab-separated-values/);
+      expect(archivo.headers.get("content-disposition")).toMatch(/filas-con-error-.*\.tsv/);
+      const texto = await archivo.text();
+      expect(texto.split("\r\n")[0]).toBe("Código\tAños de experiencia\tMotivo");
+      expect(texto).toContain("PS-0230\tmuchos\t");
+      expect(texto).not.toContain("PS-0223");
+      const obs = await panel.pedir(`/api/v1/importacion/lotes/${loteId}/errores`, {
+        headers: { cookie: observador },
+      });
+      expect(obs.status).toBe(403);
+    });
   },
 );

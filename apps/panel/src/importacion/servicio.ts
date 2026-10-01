@@ -9,6 +9,7 @@ import {
   CAMPOS_IMPORTACION,
   EJEMPLOS_PLANTILLA,
   escribirCsv,
+  escribirErrores,
   escribirJson,
   leer,
   type Formato,
@@ -26,6 +27,7 @@ import {
   bancoEnFormato,
   catalogosImportacion,
   confirmarLote,
+  erroresDelLote,
   filasDelLote,
   leerLote,
   leerPlantilla,
@@ -226,10 +228,35 @@ export async function confirmar(
   return confirmarLote(poolDe("panel"), autor, id);
 }
 
-export async function estadoDeLote(id: string): Promise<LoteLeido> {
-  const l = await leerLote(poolDe("panel"), id);
+export interface ResumenErrores {
+  filas: number;
+  todas: boolean;
+  causaComun: string | null;
+}
+
+export async function estadoDeLote(
+  id: string,
+): Promise<{ lote: LoteLeido; errores: ResumenErrores }> {
+  const bd = poolDe("panel");
+  const l = await leerLote(bd, id);
   if (!l) throw new RechazoInventario("no_existe");
-  return l;
+  const e = (await erroresDelLote(bd, id))!;
+  return { lote: l, errores: { filas: e.filas.length, todas: e.todas, causaComun: e.causaComun } };
+}
+
+// Las filas con error en el formato en que llegaron, con su motivo (HU-142).
+export async function archivoDeErrores(id: string): Promise<Response> {
+  const e = await erroresDelLote(poolDe("panel"), id);
+  if (!e) throw new RechazoInventario("no_existe");
+  const tipo = { csv: "text/csv", tsv: "text/tab-separated-values", json: "application/json" }[e.formato];
+  return new Response(escribirErrores(e.formato, e.encabezados, e.filas), {
+    status: 200,
+    headers: {
+      "content-type": `${tipo}; charset=utf-8`,
+      "content-disposition": `attachment; filename="filas-con-error-${hoyEnColombia()}.${e.formato}"`,
+      "cache-control": "no-store",
+    },
+  });
 }
 
 export const historial = () => listarLotes(poolDe("panel"));

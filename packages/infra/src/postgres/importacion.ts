@@ -5,6 +5,7 @@
 import "server-only";
 import type pg from "pg";
 import {
+  ETIQUETA_CAMPO_IMPORTACION,
   MODALIDAD_FORMATO,
   VINCULO_FORMATO,
   type ClaveCampo,
@@ -503,4 +504,60 @@ export async function listarLotes(bd: Consultor, limite = 50): Promise<LoteHisto
     revertidoEn: l.revertido_en?.toISOString() ?? null,
     motivoAborto: l.motivo_aborto ?? null,
   }));
+}
+
+// ─── filas con error (HU-142) ────────────────────────────────────────────────────────────────
+
+export interface ErroresDelLote {
+  formato: "csv" | "tsv" | "json";
+  // Las columnas que se importaron, con su nombre original y en su orden.
+  encabezados: string[];
+  filas: Array<{ numero: number; celdas: string[]; motivo: string }>;
+  total: number;
+  // Ninguna fila se pudo procesar.
+  todas: boolean;
+  // Si el problema es del archivo entero y no de cada fila, por qué.
+  causaComun: string | null;
+}
+
+export async function erroresDelLote(bd: Consultor, id: string): Promise<ErroresDelLote | null> {
+  const l = (
+    await bd.query(
+      `SELECT formato, emparejamiento, total_filas FROM inventario.lotes_importacion WHERE id = $1`,
+      [id],
+    )
+  ).rows[0];
+  if (!l) return null;
+  const columnas = (l.emparejamiento as ColumnaPlantilla[]).filter((c) => c.clave !== null);
+  const columnaDe = new Map(columnas.map((c) => [c.clave as ClaveCampo, c.columna]));
+  const r = await bd.query(
+    `SELECT numero, datos, errores FROM inventario.lote_filas
+      WHERE lote_id = $1 AND grupo = 'con_error' ORDER BY numero`,
+    [id],
+  );
+  const filas = r.rows.map((f) => ({
+    numero: f.numero as number,
+    celdas: columnas.map((c) => (f.datos as Record<string, string>)[c.clave as string] ?? ""),
+    motivo: (f.errores as Problema[])
+      .map((e) =>
+        e.campo
+          ? `${columnaDe.get(e.campo) ?? ETIQUETA_CAMPO_IMPORTACION[e.campo]}: ${e.mensaje}`
+          : e.mensaje,
+      )
+      .join("; "),
+  }));
+  const todas = filas.length === l.total_filas;
+  const causaComun = !columnaDe.has("codigo")
+    ? "Ninguna columna es el código: sin él no se puede reconocer ningún perfil"
+    : todas && filas.length > 1 && filas.every((f) => f.motivo === filas[0]!.motivo)
+      ? filas[0]!.motivo
+      : null;
+  return {
+    formato: l.formato,
+    encabezados: columnas.map((c) => c.columna),
+    filas,
+    total: l.total_filas,
+    todas,
+    causaComun,
+  };
 }
