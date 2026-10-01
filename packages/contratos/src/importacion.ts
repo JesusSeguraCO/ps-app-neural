@@ -228,7 +228,7 @@ export interface Tabla {
 }
 
 // CSV (RFC 4180: comillas dobles, comillas escapadas, saltos dentro de comillas) o TSV de Excel.
-export function leerTabular(texto: string, separador: "," | "\t"): Tabla {
+export function leerTabular(texto: string, separador: "," | "\t" | ";"): Tabla {
   const t = texto.replace(/^﻿/, "");
   const registros: Array<{ celdas: string[]; original: string }> = [];
   let celda = "";

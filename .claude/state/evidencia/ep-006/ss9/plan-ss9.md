@@ -50,4 +50,9 @@
   `/colocados` con hojas de registro y de asignación, menú habilitado, «Ver en Colocados» en la incoherencia.
   Tests: dominio 12, infra 5, HTTP 6 (`apps/colocados-panel.test.ts`), e2e 1 + axe de `/colocados`. Mutación manual
   en `mutacion-9.2.md` (3/3 muertos).
-- **Siguiente: 9.3** (carga de Operaciones), luego 9.4, 9.5, 9.6, 9.7. Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
+- **9.3 hecha**: lector `contratos/operaciones.ts` (formato, columnas mínimas con sinónimos, errores por fila,
+  `datoDesincronizado`), infra `cargarOperaciones`/`resumenCarga`/`ultimoCorte`/`listarDiferencias`/`decidirDiferencia`
+  (una unidad, origen `sincronizacion`, gana el panel), `POST /api/v1/colocados/cargas` y
+  `POST /api/v1/colocados/diferencias/{id}`, pestaña con resultado, filas con error, diferencias, corte y aviso.
+  Tests: lector 9, infra +4, HTTP +6, e2e 1. Mutación en `mutacion-9.3.md` (5/5). D36.
+- **Siguiente: 9.4** (observador), luego 9.5, 9.6, 9.7. Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).

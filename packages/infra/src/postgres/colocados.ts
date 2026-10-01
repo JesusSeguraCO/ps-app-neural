@@ -4,6 +4,7 @@
 // encadenada y versión del inventario).
 import "server-only";
 import type pg from "pg";
+import { leerOperaciones } from "@ps/contratos/operaciones";
 import { validarColocado, type EntradaColocado } from "@ps/dominio/inventario/colocados";
 import type { EstadoAlmacenado } from "@ps/dominio/inventario/estados";
 import { diaCivilDeColombia } from "@ps/dominio/inventario/vigencia";
@@ -250,4 +251,296 @@ export async function listarColocados(
     }),
   );
   return { colocados, candidatos };
+}
+
+// ─── carga de Operaciones (HU-150; D12, D15, D16) ──────────────────────────────────────────────
+
+const valorColocacion = (c: { cuenta: string; inicio: string | null; liberacion: string }) =>
+  `${c.cuenta} · desde ${c.inicio ?? "sin registrar"} · libera ${c.liberacion}`;
+
+// Carga el archivo de Operaciones en una sola unidad: un archivo que no es JSON ni CSV, sin las
+// columnas mínimas o sin filas se rechaza entero sin escribir nada (la pestaña conserva lo anterior).
+// Cada fila válida, contra el banco: sin colocación vigente → colocación de Operaciones y
+// disponibilidad = liberación; con una de una carga anterior → se reemplaza; con una del panel →
+// igual no hace nada, distinta queda como diferencia (gana el panel, D15). Lo que no se aplica queda
+// con su número y su motivo. `cargado_en` es la fecha de corte (D16). Auditado con origen
+// `sincronizacion`.
+export async function cargarOperaciones(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  archivo: { nombre: string; texto: string },
+  ahora = new Date(),
+): Promise<{ cargaId: string }> {
+  const lectura = leerOperaciones(archivo.nombre, archivo.texto, diaCivilDeColombia(ahora));
+  if (!lectura.ok)
+    throw new RechazoInventario(lectura.motivo, "faltan" in lectura ? { faltan: lectura.faltan } : {});
+  return conUnidadInventario(bd, claves, async (tx) => {
+    const carga = (
+      await tx.query(
+        `INSERT INTO inventario.cargas_operaciones
+           (cargado_por, archivo, formato, filas_aplicadas, filas_con_error, columnas_ignoradas)
+         VALUES ($1, $2, $3, 0, 0, $4) RETURNING id`,
+        [autor.usuarioId, archivo.nombre.slice(0, 200), lectura.formato, lectura.ignoradas],
+      )
+    ).rows[0].id as string;
+    const errores = [...lectura.errores];
+    const cambios: CambioAuditado[] = [];
+    let aplicadas = 0;
+    let visible = false;
+    for (const fila of lectura.filas) {
+      let f: Awaited<ReturnType<typeof bloquear>>;
+      try {
+        f = await bloquear(tx, fila.codigo);
+      } catch (e) {
+        if (!(e instanceof RechazoInventario)) throw e;
+        errores.push({
+          numero: fila.numero,
+          codigo: fila.codigo,
+          motivo: `No hay ningún perfil con el código ${fila.codigo}.`,
+        });
+        continue;
+      }
+      if (f.estado !== "publicado") {
+        errores.push({
+          numero: fila.numero,
+          codigo: fila.codigo,
+          motivo: `${fila.codigo} no está publicado: solo un perfil publicado puede estar colocado.`,
+        });
+        continue;
+      }
+      const cambio = (campo: string, antes: string | null, despues: string | null): CambioAuditado => ({
+        actor: autor.correo,
+        entidad: "perfiles",
+        entidadId: f.id,
+        campo,
+        titular: fila.codigo,
+        antes,
+        despues,
+        origen: "sincronizacion",
+      });
+      const vigente = (
+        await tx.query(
+          `SELECT id, cuenta, inicio::text AS inicio, liberacion::text AS liberacion, fuente
+             FROM inventario.colocaciones
+            WHERE perfil_id = $1 AND vigente AND liberacion > (now() AT TIME ZONE 'America/Bogota')::date`,
+          [f.id],
+        )
+      ).rows[0] as
+        | { id: string; cuenta: string; inicio: string | null; liberacion: string; fuente: string }
+        | undefined;
+      aplicadas++;
+      const igual =
+        vigente &&
+        vigente.cuenta === fila.cuenta &&
+        vigente.inicio === fila.inicio &&
+        vigente.liberacion === fila.liberacion;
+      if (vigente && vigente.fuente !== "operaciones") {
+        if (igual) continue;
+        // Gana el panel: la fila queda para decidir. Una diferencia pendiente anterior se actualiza.
+        const r = await tx.query(
+          `UPDATE inventario.diferencias_operaciones
+              SET carga_id = $2, numero_fila = $3, cuenta = $4, inicio = $5, liberacion = $6
+            WHERE colocacion_id = $1 AND decision IS NULL`,
+          [vigente.id, carga, fila.numero, fila.cuenta, fila.inicio, fila.liberacion],
+        );
+        if (r.rowCount === 0)
+          await tx.query(
+            `INSERT INTO inventario.diferencias_operaciones
+               (carga_id, colocacion_id, numero_fila, cuenta, inicio, liberacion)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [carga, vigente.id, fila.numero, fila.cuenta, fila.inicio, fila.liberacion],
+          );
+        continue;
+      }
+      // Sin colocación vigente o con una de una carga anterior: entra la de esta carga (la vencida o la
+      // anterior se cierran), con la disponibilidad en la liberación.
+      await tx.query(
+        `UPDATE inventario.colocaciones SET vigente = false, cerrada_en = now()
+          WHERE perfil_id = $1 AND vigente`,
+        [f.id],
+      );
+      await tx.query(
+        `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente, carga_id, registrado_por)
+         VALUES ($1, $2, $3, $4, 'operaciones', $5, $6)`,
+        [f.id, fila.cuenta, fila.inicio, fila.liberacion, carga, autor.usuarioId],
+      );
+      visible = true;
+      if (igual) continue;
+      cambios.push(cambio("colocacion", vigente ? valorColocacion(vigente) : null, valorColocacion(fila)));
+      if (f.disponibilidad_fecha !== fila.liberacion) {
+        const d = await escribirDisponibilidad(tx, autor, fila.codigo, f, { fecha: fila.liberacion }, ahora);
+        cambios.push(...d.cambios.map((c) => ({ ...c, origen: "sincronizacion" as const })));
+      }
+    }
+    errores.sort((a, b) => a.numero - b.numero);
+    await tx.query(
+      `UPDATE inventario.cargas_operaciones SET filas_aplicadas = $2, filas_con_error = $3, errores = $4
+        WHERE id = $1`,
+      [carga, aplicadas, errores.length, JSON.stringify(errores)],
+    );
+    return { resultado: { cargaId: carga }, cambios, visible };
+  });
+}
+
+export interface ResumenCarga {
+  id: string;
+  archivo: string;
+  cargadoEn: string;
+  filas: number;
+  aplicadas: number;
+  nuevos: number;
+  venian: number;
+  iguales: number;
+  diferencias: number;
+  ignoradas: string[];
+  errores: Array<{ numero: number; codigo: string | null; motivo: string }>;
+}
+
+// Lo que dejó una carga, para el aviso tras cargarla: cuántos entraron nuevos, cuántos ya venían de la
+// carga anterior (se cerró una de Operaciones en la misma transacción), cuántos coincidían con el
+// panel, cuántas diferencias y las filas que no se aplicaron.
+export async function resumenCarga(bd: Consultor, id: string): Promise<ResumenCarga | null> {
+  const f = (
+    await bd.query(
+      `SELECT k.id, k.archivo, k.cargado_en, k.filas_aplicadas, k.filas_con_error, k.columnas_ignoradas, k.errores,
+              (SELECT count(*)::int FROM inventario.colocaciones c WHERE c.carga_id = k.id) AS entraron,
+              (SELECT count(*)::int FROM inventario.colocaciones c
+                WHERE c.carga_id = k.id AND EXISTS (
+                  SELECT 1 FROM inventario.colocaciones a
+                   WHERE a.perfil_id = c.perfil_id AND a.fuente = 'operaciones' AND a.cerrada_en = k.cargado_en)) AS venian,
+              (SELECT count(*)::int FROM inventario.diferencias_operaciones d WHERE d.carga_id = k.id) AS diferencias
+         FROM inventario.cargas_operaciones k WHERE k.id = $1`,
+      [id],
+    )
+  ).rows[0];
+  if (!f) return null;
+  return {
+    id: f.id,
+    archivo: f.archivo,
+    cargadoEn: f.cargado_en.toISOString(),
+    filas: f.filas_aplicadas + f.filas_con_error,
+    aplicadas: f.filas_aplicadas,
+    nuevos: f.entraron - f.venian,
+    venian: f.venian,
+    iguales: f.filas_aplicadas - f.entraron - f.diferencias,
+    diferencias: f.diferencias,
+    ignoradas: f.columnas_ignoradas,
+    errores: f.errores,
+  };
+}
+
+// Fecha de corte: la última carga que aplicó alguna fila (una carga en la que todo falló no renueva
+// el dato de Operaciones).
+export async function ultimoCorte(bd: Consultor): Promise<Date | null> {
+  return (
+    (
+      await bd.query(
+        `SELECT max(cargado_en) AS corte FROM inventario.cargas_operaciones WHERE filas_aplicadas > 0`,
+      )
+    ).rows[0].corte ?? null
+  );
+}
+
+export interface DiferenciaOperaciones {
+  id: string;
+  codigo: string;
+  nombre: string;
+  numeroFila: number;
+  cargadoEn: string;
+  panel: { cuenta: string; inicio: string | null; liberacion: string; registradoPor: string | null };
+  operaciones: { cuenta: string; inicio: string; liberacion: string };
+}
+
+export async function listarDiferencias(bd: Consultor): Promise<DiferenciaOperaciones[]> {
+  return (
+    await bd.query(
+      `SELECT d.id, p.codigo, ${NOMBRE} AS nombre, d.numero_fila, k.cargado_en,
+              c.cuenta AS p_cuenta, c.inicio::text AS p_inicio, c.liberacion::text AS p_liberacion, u.correo AS p_autor,
+              d.cuenta, d.inicio::text AS inicio, d.liberacion::text AS liberacion
+         FROM inventario.diferencias_operaciones d
+         JOIN inventario.colocaciones c ON c.id = d.colocacion_id
+         JOIN inventario.perfiles p ON p.id = c.perfil_id
+         JOIN inventario.cargas_operaciones k ON k.id = d.carga_id
+         LEFT JOIN identidad_panel.usuarios_panel u ON u.id = c.registrado_por
+        WHERE d.decision IS NULL AND c.vigente
+        ORDER BY k.cargado_en DESC, d.numero_fila`,
+    )
+  ).rows.map((f) => ({
+    id: f.id,
+    codigo: f.codigo,
+    nombre: f.nombre,
+    numeroFila: f.numero_fila,
+    cargadoEn: f.cargado_en.toISOString(),
+    panel: { cuenta: f.p_cuenta, inicio: f.p_inicio, liberacion: f.p_liberacion, registradoPor: f.p_autor },
+    operaciones: { cuenta: f.cuenta, inicio: f.inicio, liberacion: f.liberacion },
+  }));
+}
+
+// Decidir una diferencia (D15): «Aceptar la de Operaciones» reemplaza el colocado del panel por la fila
+// (disponibilidad = su liberación); «Mantener la del panel» la descarta. Ambas quedan con su autor.
+export async function decidirDiferencia(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  id: string,
+  decision: "aceptada" | "descartada",
+  ahora = new Date(),
+): Promise<{ codigo: string }> {
+  return conUnidadInventario(bd, claves, async (tx) => {
+    const d = (
+      await tx.query(
+        `SELECT d.id, d.decision, d.carga_id, d.cuenta, d.inicio::text AS inicio, d.liberacion::text AS liberacion,
+                c.id AS colocacion_id, c.vigente, c.cuenta AS p_cuenta, c.inicio::text AS p_inicio,
+                c.liberacion::text AS p_liberacion, p.codigo
+           FROM inventario.diferencias_operaciones d
+           JOIN inventario.colocaciones c ON c.id = d.colocacion_id
+           JOIN inventario.perfiles p ON p.id = c.perfil_id
+          WHERE d.id = $1 FOR UPDATE OF d`,
+        [id],
+      )
+    ).rows[0];
+    if (!d) throw new RechazoInventario("no_existe");
+    if (d.decision) throw new RechazoInventario("ya_decidida", { decision: d.decision });
+    if (!d.vigente) throw new RechazoInventario("no_aplica");
+    const f = await bloquear(tx, d.codigo);
+    const cambio = (campo: string, antes: string | null, despues: string | null): CambioAuditado => ({
+      actor: autor.correo,
+      entidad: "perfiles",
+      entidadId: f.id,
+      campo,
+      titular: d.codigo,
+      antes,
+      despues,
+      origen: "panel",
+    });
+    await tx.query(
+      `UPDATE inventario.diferencias_operaciones SET decision = $2, decidida_por = $3, decidida_en = now()
+        WHERE id = $1`,
+      [id, decision, autor.usuarioId],
+    );
+    const panel = { cuenta: d.p_cuenta, inicio: d.p_inicio, liberacion: d.p_liberacion };
+    const ops = { cuenta: d.cuenta, inicio: d.inicio, liberacion: d.liberacion };
+    if (decision === "descartada")
+      return {
+        resultado: { codigo: d.codigo },
+        cambios: [cambio("diferencia_operaciones", valorColocacion(ops), "descartada: se mantiene la del panel")],
+        visible: false,
+      };
+    await tx.query(
+      `UPDATE inventario.colocaciones SET vigente = false, cerrada_en = now() WHERE id = $1`,
+      [d.colocacion_id],
+    );
+    await tx.query(
+      `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente, carga_id, registrado_por)
+       VALUES ($1, $2, $3, $4, 'operaciones', $5, $6)`,
+      [f.id, ops.cuenta, ops.inicio, ops.liberacion, d.carga_id, autor.usuarioId],
+    );
+    const cambios = [cambio("colocacion", valorColocacion(panel), valorColocacion(ops))];
+    if (f.disponibilidad_fecha !== ops.liberacion)
+      cambios.push(
+        ...(await escribirDisponibilidad(tx, autor, d.codigo, f, { fecha: ops.liberacion }, ahora)).cambios,
+      );
+    return { resultado: { codigo: d.codigo }, cambios, visible: true };
+  });
 }

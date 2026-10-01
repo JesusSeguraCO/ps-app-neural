@@ -170,6 +170,8 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - Fuente del dato por correo del autor (identidad del panel), no por nombre; los antiguos `colocado` migrados se marcan «Migración del antiguo estado «colocado»».
 - El nombre de la fila es un botón que abre la hoja de la asignación (el prototipo usa un enlace a la variante). «Lo que ve el cliente» muestra rol, nombre y banda con los rótulos del PRD; sin sectores ni modalidad.
 - La línea de meta y la columna de fuente muestran la fecha de corte de Operaciones desde la tarea 9.3.
+- Carga de Operaciones (D36): extensión y contenido deciden el formato; CSV con coma o punto y coma y fechas AAAA-MM-DD o DD/MM/AAAA; sin columnas mínimas, sin filas o con más de 200 filas → rechazo entero con el motivo, como otro formato. Errores de fila también por código inexistente, perfil no publicado, liberación ya llegada y código repetido. El resultado va en `?carga=`; el corte es la última carga que aplicó alguna fila.
+- Diferencias: una pendiente por colocado del panel, mostrando solo los campos que difieren; «Mantener la del panel» y «Aceptar la de Operaciones» con su autor en la auditoría.
 
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 

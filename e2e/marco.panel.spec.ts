@@ -652,3 +652,88 @@ test.describe("colocados (HU-137)", () => {
     expect(errores).toEqual([]);
   });
 });
+
+// Carga de Operaciones (EP-006 · sub-slice 9, HU-150) en un navegador real: una hoja de cálculo se
+// rechaza entera con su aviso; el CSV entra con su resultado y la columna ignorada; la fila distinta de
+// un colocado del panel queda como diferencia y se acepta. Perfiles propios, archivados al final.
+test.describe("carga de Operaciones (HU-150)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("xlsx rechazado → CSV aplicado con columna ignorada → diferencia con el panel aceptada", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const marca = `Ope${randomBytes(3).toString("hex").replace(/\d/g, (d) => "abcdefghij"[Number(d)]!)}`;
+    const nuevo = await crearPublicado(page, marca, "Uno");
+    const delPanel = await crearPublicado(page, marca, "Dos");
+    const dia = (n: number) => new Date(Date.now() - 5 * 3_600_000 + n * 86_400_000).toISOString().slice(0, 10);
+    const galletas = await page.context().cookies();
+    const cab = {
+      "x-ps-csrf": galletas.find((c) => c.name === "__Host-csrf")!.value,
+      origin: "http://127.0.0.1:3101",
+      cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
+    };
+    try {
+      expect(
+        (
+          await page.request.post("/api/v1/colocados", {
+            data: { codigo: delPanel, cuenta: "Seguros Altamira", inicio: dia(-100), liberacion: dia(43) },
+            headers: cab,
+          })
+        ).status(),
+      ).toBe(200);
+      await page.goto("/colocados");
+      const archivo = page.locator("#cl-archivo");
+      await archivo.setInputFiles({
+        name: "asignaciones-octubre.xlsx",
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        buffer: Buffer.from("PK\u0003\u0004"),
+      });
+      await expect(page.locator(".pp-aviso--danger")).toContainText("No se cargó asignaciones-octubre.xlsx.");
+      await expect(page.locator(".pp-aviso--danger")).toContainText("Solo se admite un archivo JSON o CSV.");
+
+      await archivo.setInputFiles({
+        name: "asignaciones-30sep.csv",
+        mimeType: "text/csv",
+        buffer: Buffer.from(
+          [
+            "Código del perfil,Cliente,Fecha de inicio,Fecha de liberación,Observaciones",
+            `${nuevo},Logística Magdalena,${dia(-30)},${dia(80)},renovación probable`,
+            `${delPanel},Seguros Altamira,${dia(-100)},${dia(60)},`,
+          ].join("\n"),
+        ),
+      });
+      await page.waitForURL(/\/colocados\?carga=/);
+      await expect(page.getByText("Carga aplicada: 2 filas de asignaciones-30sep.csv.")).toBeVisible();
+      await expect(page.getByText(/Se ignoró la columna «Observaciones»/)).toBeVisible();
+      const fila = page.getByRole("row", { name: new RegExp(`${marca} Uno`) });
+      await expect(fila).toContainText(/Operaciones · corte/);
+      const dif = page.getByRole("region", { name: "Diferencias con Operaciones" }).or(
+        page.locator("section[aria-labelledby=cl-dif-t]"),
+      );
+      await expect(dif).toContainText(`${marca} Dos`);
+      expect(
+        (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter(
+          (v) => v.impact === "serious" || v.impact === "critical",
+        ),
+      ).toEqual([]);
+      await page.getByRole("button", { name: `Aceptar la de Operaciones para ${marca} Dos` }).click();
+      await expect(page.getByText(`${marca} Dos queda con los datos de Operaciones.`)).toBeVisible();
+      await expect(page.locator("section[aria-labelledby=cl-dif-t]")).toHaveCount(0);
+      for (const ancho of [320, 390]) {
+        await page.setViewportSize({ width: ancho, height: 800 });
+        expect(
+          await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth),
+        ).toBe(0);
+      }
+    } finally {
+      for (const c of [nuevo, delPanel])
+        await page.request.post(`/api/v1/perfiles/${c}/archivar`, { data: {}, headers: cab });
+    }
+    expect(errores).toEqual([]);
+  });
+});

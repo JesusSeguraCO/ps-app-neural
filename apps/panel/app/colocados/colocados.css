@@ -70,3 +70,10 @@
     }
 /* El nombre abre la hoja de la asignación: botón con el aspecto del enlace del prototipo. */
 button.cl-nombre { padding: 0; border: 0; background: none; font: inherit; font-weight: var(--tc-fw-medium); text-align: left; cursor: pointer; }
+/* Variantes de la carga de Operaciones (prototipos colocados--diferencia-operaciones y --carga-filas-con-error). */
+.cl-grupo-extra { margin-bottom: var(--tc-sp-6); }
+.cl-valores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tc-sp-1) var(--tc-sp-4); margin: 0; }
+.cl-valores dt { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.cl-valores dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
+@media (max-width: 767px) { .cl-grupo-extra .pp-fila__acciones { flex-wrap: wrap; } .cl-grupo-extra .pp-fila__acciones .pp-btn { flex: 1 1 auto; } }
+.cl-archivo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

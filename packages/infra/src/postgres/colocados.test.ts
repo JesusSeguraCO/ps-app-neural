@@ -7,7 +7,15 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type pg from "pg";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
 import type { ClavesAuditoria } from "./auditoria";
-import { listarColocados, registrarColocado } from "./colocados";
+import {
+  cargarOperaciones,
+  decidirDiferencia,
+  listarColocados,
+  listarDiferencias,
+  registrarColocado,
+  resumenCarga,
+  ultimoCorte,
+} from "./colocados";
 import { archivarPerfil } from "./estado-perfil";
 import { crearPerfil, leerPerfil, publicarPerfil, registrarConsentimiento } from "./perfiles-panel";
 import { RechazoInventario } from "./unidad-inventario";
@@ -286,5 +294,179 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
     expect(candidatos.some((c) => c.codigo === a.codigo)).toBe(false);
     const libre = await publicado("Ceci");
     expect((await listarColocados(panel)).candidatos.map((c) => c.codigo)).toContain(libre.codigo);
+  });
+
+  describe("carga de Operaciones (HU-150)", () => {
+    const csv = (filas: string[]) =>
+      ["Código del perfil,Cliente,Fecha de inicio,Fecha de liberación,Observaciones", ...filas].join("\n");
+    const auditoriaOrigen = async (codigo: string) =>
+      (
+        await bd.instalacion.query(
+          `SELECT campo, origen FROM auditoria.auditoria WHERE titular = $1 ORDER BY seq`,
+          [codigo],
+        )
+      ).rows as Array<{ campo: string; origen: string }>;
+
+    it("happy: colocados nuevos de Operaciones con su carga, disponibilidad = liberación, columna ignorada y corte = momento de la carga", async () => {
+      const a = await publicado("Opa");
+      const b = await publicado("Opb");
+      const antes = new Date();
+      const { cargaId } = await cargarOperaciones(panel, claves, autor, {
+        nombre: "asignaciones-30sep.csv",
+        texto: csv([
+          `${a.codigo},Logística Magdalena,${enDias(-30)},${enDias(75)},renovación probable`,
+          `${b.codigo},Salud Integral Caribe,${enDias(-10)},${enDias(150)},`,
+        ]),
+      });
+      const r = (await resumenCarga(panel, cargaId))!;
+      expect(r).toMatchObject({
+        archivo: "asignaciones-30sep.csv",
+        filas: 2,
+        aplicadas: 2,
+        nuevos: 2,
+        venian: 0,
+        iguales: 0,
+        diferencias: 0,
+        ignoradas: ["Observaciones"],
+        errores: [],
+      });
+      expect(new Date(r.cargadoEn).getTime()).toBeGreaterThanOrEqual(antes.getTime() - 1000);
+      expect((await ultimoCorte(panel))!.toISOString()).toBe(r.cargadoEn);
+      const { colocados } = await listarColocados(panel);
+      expect(colocados.find((c) => c.codigo === a.codigo)).toMatchObject({
+        fuente: "operaciones",
+        cuenta: "Logística Magdalena",
+        corte: r.cargadoEn,
+        disponibilidadFecha: enDias(75),
+      });
+      expect(await enPortal(a.codigo)).toEqual({ fecha: enDias(75) });
+      expect((await auditoriaOrigen(a.codigo)).slice(-3).map((x) => x.origen)).toEqual([
+        "sincronizacion",
+        "sincronizacion",
+        "sincronizacion",
+      ]);
+
+      // Una carga nueva reemplaza la colocación de la anterior: «ya venían».
+      const { cargaId: segunda } = await cargarOperaciones(panel, claves, autor, {
+        nombre: "asignaciones-07oct.csv",
+        texto: csv([`${a.codigo},Logística Magdalena,${enDias(-30)},${enDias(90)},`]),
+      });
+      expect(await resumenCarga(panel, segunda)).toMatchObject({ nuevos: 0, venian: 1, aplicadas: 1 });
+      expect((await colocaciones(a.codigo)).map((c) => [c.liberacion, c.vigente])).toEqual([
+        [enDias(75), false],
+        [enDias(90), true],
+      ]);
+      expect(await enPortal(a.codigo)).toEqual({ fecha: enDias(90) });
+    });
+
+    it("filas con error: solo se aplican las válidas; cada error con número y motivo, también los del banco", async () => {
+      const a = await publicado("Opc");
+      const pausado = await publicado("Opd");
+      await bd.instalacion.query(
+        `UPDATE inventario.perfiles SET estado = 'borrador' WHERE codigo = $1`,
+        [pausado.codigo],
+      );
+      const { cargaId } = await cargarOperaciones(panel, claves, autor, {
+        nombre: "ops.csv",
+        texto: csv([
+          `${a.codigo},Uno,${enDias(-5)},${enDias(40)},`,
+          `PS-237,Dos,${enDias(-5)},${enDias(40)},`,
+          `PS-9998,Tres,${enDias(-5)},${enDias(40)},`,
+          `${pausado.codigo},Cuatro,${enDias(-5)},${enDias(40)},`,
+          `PS-0192,Cinco,${enDias(-5)},30/02/2027,`,
+        ]),
+      });
+      const r = (await resumenCarga(panel, cargaId))!;
+      expect(r).toMatchObject({ filas: 5, aplicadas: 1, nuevos: 1 });
+      expect(r.errores).toEqual([
+        { numero: 3, codigo: "PS-237", motivo: "El código no tiene el formato PS-XXXX (cuatro dígitos)." },
+        { numero: 4, codigo: "PS-9998", motivo: "No hay ningún perfil con el código PS-9998." },
+        {
+          numero: 5,
+          codigo: pausado.codigo,
+          motivo: `${pausado.codigo} no está publicado: solo un perfil publicado puede estar colocado.`,
+        },
+        { numero: 6, codigo: "PS-0192", motivo: "«30/02/2027» no es una fecha de liberación válida." },
+      ]);
+      expect(await colocaciones(pausado.codigo)).toEqual([]);
+    });
+
+    it("otro formato o sin columnas mínimas: rechazo entero, nada escrito y el corte anterior se conserva", async () => {
+      const corte = await ultimoCorte(panel);
+      const n = (await bd.instalacion.query(`SELECT count(*)::int AS n FROM inventario.cargas_operaciones`))
+        .rows[0].n;
+      expect(
+        (
+          await rechazo(
+            cargarOperaciones(panel, claves, autor, { nombre: "asignaciones-octubre.xlsx", texto: "PK\u0003" }),
+          )
+        ).motivo,
+      ).toBe("formato_no_admitido");
+      const e = await rechazo(
+        cargarOperaciones(panel, claves, autor, { nombre: "ops.csv", texto: "codigo,cliente\nPS-0001,X" }),
+      );
+      expect(e.motivo).toBe("faltan_columnas");
+      expect(e.detalle.faltan).toEqual(["fecha de inicio", "fecha de liberación"]);
+      expect(
+        (await bd.instalacion.query(`SELECT count(*)::int AS n FROM inventario.cargas_operaciones`)).rows[0].n,
+      ).toBe(n);
+      expect(await ultimoCorte(panel)).toEqual(corte);
+    });
+
+    it("gana el panel: la fila distinta no lo pisa y queda como diferencia; aceptarla la aplica, descartarla la deja", async () => {
+      const p = await publicado("Ope");
+      const q = await publicado("Opf");
+      const igual = await publicado("Opg");
+      for (const [x, lib] of [
+        [p, enDias(43)],
+        [q, enDias(50)],
+        [igual, enDias(70)],
+      ] as const)
+        await registrarColocado(panel, claves, autor, x.codigo, {
+          cuenta: "Seguros Altamira",
+          inicio: enDias(-100),
+          liberacion: lib,
+        });
+      const { cargaId } = await cargarOperaciones(panel, claves, autor, {
+        nombre: "ops.csv",
+        texto: csv([
+          `${p.codigo},Seguros Altamira,${enDias(-100)},${enDias(60)},`,
+          `${q.codigo},Seguros Altamira,${enDias(-100)},${enDias(65)},`,
+          `${igual.codigo},Seguros Altamira,${enDias(-100)},${enDias(70)},`,
+        ]),
+      });
+      expect(await resumenCarga(panel, cargaId)).toMatchObject({
+        aplicadas: 3,
+        nuevos: 0,
+        iguales: 1,
+        diferencias: 2,
+      });
+      // El panel conserva sus datos.
+      expect((await colocaciones(p.codigo)).map((c) => [c.fuente, c.liberacion, c.vigente])).toEqual([
+        ["panel", enDias(43), true],
+      ]);
+      expect((await leerPerfil(panel, p.codigo))!.disponibilidadFecha).toBe(enDias(43));
+      const difs = (await listarDiferencias(panel)).filter((d) => [p.codigo, q.codigo].includes(d.codigo));
+      expect(difs.map((d) => [d.codigo, d.numeroFila, d.panel.liberacion, d.operaciones.liberacion])).toEqual([
+        [p.codigo, 2, enDias(43), enDias(60)],
+        [q.codigo, 3, enDias(50), enDias(65)],
+      ]);
+      expect(difs[0]!.panel.registradoPor).toBe("karen@trycore.com");
+
+      await decidirDiferencia(panel, claves, autor, difs[0]!.id, "aceptada");
+      expect((await colocaciones(p.codigo)).map((c) => [c.fuente, c.liberacion, c.vigente])).toEqual([
+        ["panel", enDias(43), false],
+        ["operaciones", enDias(60), true],
+      ]);
+      expect(await enPortal(p.codigo)).toEqual({ fecha: enDias(60) });
+      await decidirDiferencia(panel, claves, autor, difs[1]!.id, "descartada");
+      expect((await colocaciones(q.codigo)).map((c) => [c.fuente, c.liberacion, c.vigente])).toEqual([
+        ["panel", enDias(50), true],
+      ]);
+      expect((await listarDiferencias(panel)).some((d) => [p.codigo, q.codigo].includes(d.codigo))).toBe(false);
+      expect(
+        (await rechazo(decidirDiferencia(panel, claves, autor, difs[1]!.id, "aceptada"))).motivo,
+      ).toBe("ya_decidida");
+    });
   });
 });

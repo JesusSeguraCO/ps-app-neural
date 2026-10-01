@@ -2,7 +2,9 @@
 // (`ps_panel`): registrar un colocado con su autor como fuente y la disponibilidad = liberación que el
 // portal (`ps_portal`) ve de inmediato; sin fecha de liberación no se guarda nada; la pestaña ordenada
 // por vencimiento con los de 60 días destacados; el colocado sigue publicado en el inventario; la
-// observadora la consulta sin registrar y recibe 403 al escribir. Base tomada de vigencia-panel.test.ts.
+// observadora la consulta sin registrar y recibe 403 al escribir. La carga de Operaciones (HU-150): JSON o
+// CSV con su resultado, filas con error, rechazo entero de otro formato, gana el panel con la diferencia
+// para decidir y el aviso «dato desincronizado» (7 → no, 8 → sí). Base tomada de vigencia-panel.test.ts.
 import { createHash, randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type pg from "pg";
@@ -20,7 +22,7 @@ const BOGOTA_MS = -5 * 3_600_000;
 const enDias = (n: number) =>
   new Date(Date.now() + BOGOTA_MS + n * 86_400_000).toISOString().slice(0, 10);
 
-describe.skipIf(!HAY_BD || !hayBuild("panel"))("Colocados en el panel (HU-137)", () => {
+describe.skipIf(!HAY_BD || !hayBuild("panel"))("Colocados en el panel (HU-137, HU-150)", () => {
   let bd: BdPrueba;
   let panel: ServidorPrueba;
   let portal: pg.Pool;
@@ -242,5 +244,153 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Colocados en el panel (HU-137)",
 
   it("el menú lleva a Colocados", async () => {
     expect(await pagina("/inventario")).toMatch(/href="\/colocados"/);
+  });
+
+  describe("carga de Operaciones (HU-150)", () => {
+    const csv = (filas: string[]) =>
+      [
+        "Código del perfil,Cliente,Fecha de inicio,Fecha de liberación,Observaciones",
+        ...filas,
+      ].join("\n");
+    const cargar = (archivo: string, contenido: string, cookie?: string) =>
+      pedir("/api/v1/colocados/cargas", { archivo, contenido }, cookie ? { cookie } : {});
+    const cargas = async () =>
+      (await bd.instalacion.query(`SELECT count(*)::int AS n FROM inventario.cargas_operaciones`))
+        .rows[0].n as number;
+
+    it("happy: 201 con el resumen; la pestaña marca los de Operaciones, muestra el corte e informa la columna ignorada", async () => {
+      const a = await publicado("Úrsula");
+      const r = await cargar(
+        "asignaciones-30sep.csv",
+        csv([`${a.codigo},Logística Magdalena,${enDias(-30)},${enDias(80)},renovación probable`]),
+      );
+      expect(r.status).toBe(201);
+      const { carga } = await r.json();
+      expect(carga).toMatchObject({
+        aplicadas: 1,
+        nuevos: 1,
+        ignoradas: ["Observaciones"],
+        errores: [],
+      });
+      expect(await fechaPortal(a.codigo)).toBe(enDias(80));
+      const html = await pagina(`/colocados?carga=${carga.id}`);
+      expect(html).toContain("Carga aplicada: 1 fila de asignaciones-30sep.csv.");
+      expect(html).toContain("Se ignoró la columna «Observaciones»");
+      expect(html).toContain("La fecha de corte es el momento de esta carga.");
+      expect(html).toMatch(/Operaciones · corte \d{1,2} [a-z]{3}/);
+      expect(html).toContain(" · corte ");
+      expect(html).not.toContain("dato desincronizado");
+    });
+
+    it("JSON con filas con error: se aplican las válidas y cada error sale con su número y motivo", async () => {
+      const a = await publicado("Vera");
+      const r = await cargar(
+        "ops.json",
+        JSON.stringify([
+          {
+            codigo: a.codigo,
+            cliente: "Retail Nogal",
+            fecha_inicio: enDias(-2),
+            fecha_liberacion: enDias(30),
+          },
+          {
+            codigo: "PS-237",
+            cliente: "X",
+            fecha_inicio: enDias(-2),
+            fecha_liberacion: enDias(30),
+          },
+        ]),
+      );
+      expect(r.status).toBe(201);
+      const { carga } = await r.json();
+      const html = await pagina(`/colocados?carga=${carga.id}`);
+      expect(html).toContain("Se aplicaron 1 de 2 filas de ops.json.");
+      expect(html).toContain("Filas que no se aplicaron");
+      expect(html).toContain("Fila 2");
+      expect(html).toContain("El código no tiene el formato PS-XXXX (cuatro dígitos).");
+    });
+
+    it("otro formato: 422 `formato_no_admitido`, nada escrito; sin columnas mínimas: 422 con cuáles faltan", async () => {
+      const n = await cargas();
+      const x = await cargar("asignaciones-octubre.xlsx", "PK\u0003\u0004");
+      expect(x.status).toBe(422);
+      expect((await x.json()).motivo).toBe("formato_no_admitido");
+      const c = await cargar("ops.csv", "codigo,cliente\nPS-0001,X");
+      expect(c.status).toBe(422);
+      expect(await c.json()).toEqual({
+        motivo: "faltan_columnas",
+        faltan: ["fecha de inicio", "fecha de liberación"],
+      });
+      expect(await cargas()).toBe(n);
+    });
+
+    it("gana el panel: la diferencia queda a la vista con los dos valores; aceptarla aplica la de Operaciones", async () => {
+      const p = await publicado("Wilma");
+      await pedir("/api/v1/colocados", {
+        codigo: p.codigo,
+        cuenta: "Seguros Altamira",
+        inicio: enDias(-100),
+        liberacion: enDias(43),
+      });
+      const r = await cargar(
+        "ops.csv",
+        csv([`${p.codigo},Seguros Altamira,${enDias(-100)},${enDias(60)},`]),
+      );
+      expect((await r.json()).carga).toMatchObject({ diferencias: 1, nuevos: 0 });
+      expect(await fechaPortal(p.codigo)).toBe(enDias(43));
+      const html = await pagina("/colocados");
+      expect(html).toContain("Diferencias con Operaciones");
+      expect(html).toContain("Aceptar la de Operaciones");
+      expect(html).toContain("En el panel · karen@trycore.com");
+      const id = (
+        await bd.instalacion.query(
+          `SELECT d.id FROM inventario.diferencias_operaciones d
+             JOIN inventario.colocaciones c ON c.id = d.colocacion_id
+             JOIN inventario.perfiles f ON f.id = c.perfil_id
+            WHERE f.codigo = $1 AND d.decision IS NULL`,
+          [p.codigo],
+        )
+      ).rows[0].id as string;
+      expect(
+        (
+          await pedir(
+            `/api/v1/colocados/diferencias/${id}`,
+            { decision: "aceptada" },
+            { cookie: observador },
+          )
+        ).status,
+      ).toBe(403);
+      expect(
+        (await pedir(`/api/v1/colocados/diferencias/${id}`, { decision: "aceptada" })).status,
+      ).toBe(200);
+      expect(await fechaPortal(p.codigo)).toBe(enDias(60));
+      expect(
+        (await pedir(`/api/v1/colocados/diferencias/${id}`, { decision: "descartada" })).status,
+      ).toBe(409);
+    });
+
+    it("la observadora no carga: sin botón y 403", async () => {
+      const n = await cargas();
+      expect(await pagina("/colocados", observador)).not.toContain("Cargar archivo de Operaciones");
+      expect((await cargar("ops.csv", csv([]), observador)).status).toBe(403);
+      expect(await cargas()).toBe(n);
+    });
+
+    it("dato desincronizado: con 7 días no aparece, con 8 sí, y los colocados de esa carga siguen visibles", async () => {
+      const atrasar = (dias: number) =>
+        bd.instalacion.query(
+          `UPDATE inventario.cargas_operaciones SET cargado_en = now() - make_interval(days => $1)`,
+          [dias],
+        );
+      await atrasar(7);
+      let html = await pagina("/colocados");
+      expect(html).not.toContain("dato desincronizado");
+      expect(html).toContain("Úrsula Salcedo");
+      await atrasar(8);
+      html = await pagina("/colocados");
+      expect(html).toContain("dato desincronizado");
+      expect(html).toContain("hace 8 días sin una nueva");
+      expect(html).toContain("Úrsula Salcedo");
+    });
   });
 });
