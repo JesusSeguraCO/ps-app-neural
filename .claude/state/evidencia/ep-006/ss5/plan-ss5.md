@@ -9,7 +9,7 @@
 - HU-128 escenario de importación: ya cubierto en ss4 (consentimiento rechazado) — no repetir.
 
 ## Pendientes operativos
-- V3-5 en DigitalOcean (staging/App Platform) para publicar el límite de filas definitivo (local: 200 filas en 0,63 s, 0 × 503).
-- Desviaciones de fidelidad de ss2–ss4 pendientes de visto bueno del sponsor (design.md §12).
+- V3-5 en DigitalOcean diferida por el sponsor (D26), no bloquea; repetir al desplegar (local: 200 filas en 0,63 s, 0 × 503).
+- Desviaciones ss2–ss4 aprobadas (D25). Autonomía D27: aprobar decisiones de diseño que den valor y registrarlas.
 - Hub: revisar cola/rechazados antiguos en la consola.
 - Fidelidad local: panel :3101 (`scripts/entorno-dev.sh panel`, sin EDGE_SECRET) + worker real (`scripts/entorno-dev.sh worker`, `node apps/worker/dist/worker.js`, dobles). Liberar :3101 antes del runner de e2e. Subidas MCP solo desde `.local/` (raíz del workspace).
