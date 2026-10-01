@@ -21,7 +21,22 @@ import "./vigencia.css";
 
 const corta = (aaaammdd: string) => fechaCivil(aaaammdd).replace(/ \d{4}$/, "");
 
+// A quién afecta: el prototipo añade «· en N enlaces activos» a la causa de un publicado vencido.
+const enEnlaces = (n: number) =>
+  n === 0 ? "" : ` · en ${n} ${n === 1 ? "enlace activo" : "enlaces activos"}`;
+
 function causa(
+  tipo: "por_confirmar" | "publicado" | "pausado",
+  f: FilaVigencia,
+  p: PerfilEnBandeja,
+  hoy: string,
+): string {
+  return tipo === "pausado"
+    ? causaSinEnlaces(tipo, f, p, hoy)
+    : causaSinEnlaces(tipo, f, p, hoy) + enEnlaces(p.enlacesActivos);
+}
+
+function causaSinEnlaces(
   tipo: "por_confirmar" | "publicado" | "pausado",
   f: FilaVigencia,
   p: PerfilEnBandeja,

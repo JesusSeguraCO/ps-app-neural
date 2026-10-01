@@ -232,6 +232,33 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
       expect(f).toEqual({ pausado_en: null, motivo_pausa_id: null });
     });
 
+    it("un motivo retirado del catálogo no sirve para pausar y el perfil sigue a la vista", async () => {
+      const p = await publicado();
+      const retirado = (
+        await bd.instalacion.query(
+          `INSERT INTO inventario.catalogo_motivos_pausa (nombre, activo) VALUES ('Motivo retirado', false) RETURNING id`,
+        )
+      ).rows[0].id as string;
+      expect((await rechazo(pausarPerfil(panel, claves, autor, p.codigo, retirado))).motivo).toBe(
+        "motivo_no_disponible",
+      );
+      expect((await leerPerfil(panel, p.codigo))!.estado).toBe("publicado");
+      expect(await enPortal(p.codigo)).toBeDefined();
+    });
+
+    it("reactivar pasa las guardas de publicar: si falta algo, dice qué y sigue pausado", async () => {
+      const p = await publicado();
+      await pausarPerfil(panel, claves, autor, p.codigo, motivo);
+      await bd.instalacion.query(
+        `UPDATE inventario.perfiles SET modalidad_prueba_id = NULL WHERE codigo = $1`,
+        [p.codigo],
+      );
+      const e = await rechazo(reactivarPerfil(panel, claves, autor, p.codigo, { opcion: "ahora" }));
+      expect(e.motivo).toBe("no_publicable");
+      expect((await leerPerfil(panel, p.codigo))!.estado).toBe("pausado");
+      expect(await enPortal(p.codigo)).toBeUndefined();
+    });
+
     it("archivar saca del banco una vez; repetirlo informa sin escribir", async () => {
       const p = await publicado();
       await pausarPerfil(panel, claves, autor, p.codigo, motivo);
@@ -263,6 +290,23 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
       const fila = b.pausados.find((x) => x.codigo === pausado31.codigo)!;
       expect(fila).toMatchObject({ dias: 31, motivoPausa: "En licencia o ausencia temporal" });
       expect(b.perfiles[pausado31.codigo]).toMatchObject({ nombre: "Lorena Salcedo" });
+    });
+
+    it("cada fila dice en cuántos enlaces activos y vigentes está (los revocados y vencidos no cuentan)", async () => {
+      const viejo = await publicado();
+      await atrasar(viejo.codigo, "disponibilidad_actualizada_en", 45);
+      const enlace = (desde: string, hasta: string, estado = "activo") =>
+        bd.instalacion.query(
+          `INSERT INTO identidad.enlaces (cuenta_ref, cuenta_nombre, razon, codigos_perfil, vigente_desde, vigente_hasta, estado, generado_por)
+           VALUES ('1', 'Bancolombia', 'Pagos.', $1, now() + $2::interval, now() + $3::interval, $4, gen_random_uuid())`,
+          [[viejo.codigo, "PS-0187"], desde, hasta, estado],
+        );
+      await enlace("-1 day", "20 days");
+      await enlace("-2 days", "10 days");
+      await enlace("-1 day", "20 days", "revocado");
+      await enlace("-40 days", "-10 days");
+      const b = await listarVigencia(panel);
+      expect(b.perfiles[viejo.codigo]!.enlacesActivos).toBe(2);
     });
   });
 });

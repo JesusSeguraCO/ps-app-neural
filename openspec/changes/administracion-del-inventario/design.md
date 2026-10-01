@@ -149,6 +149,14 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - Selección del inventario con barra `ip-lote` «N seleccionados · Publicar los N»; el sub-slice 7 la amplía con la disponibilidad en bloque. Tope de 200 perfiles por publicación masiva.
 - El disparador de la 0017 actúa al entrar en publicado (como el de la 0005) con el código P0001 de siempre.
 
+**Sub-slice 7 (HU-132, HU-133, HU-136; evidencia `.claude/state/evidencia/ep-006/ss7/fidelidad-ss7.md`; aprobadas por el modelo bajo D27, registradas en D31):**
+- «Pausar» va en el menú «Más acciones» de la fila (como el prototipo `inventario-perfiles--lote`): suelto junto a «Editar» desbordaba la tabla a 1440. En ss8 el mismo menú recibe «Archivar».
+- Los motivos de pausa son un tipo más de Catálogos (`motivo_pausa`, con ayuda y fusión; RF-8.16): el prototipo los da fijos.
+- La fila del listado dice cuándo se actualizó la disponibilidad pero no quién: el autor está en la auditoría y se consulta descifrado en el registro del perfil (HU-138, sub-slice 10).
+- El aviso de la bandeja tras actualizar, confirmar, reactivar o archivar no ofrece «Deshacer»: cada acción queda auditada y se corrige con la acción contraria desde el inventario.
+- La bandeja vacía nombra quién entra primero y cuándo, sin el botón «Ver los que entran esta semana».
+- «· en N enlaces activos» se cuenta sobre los enlaces curados activos y vigentes (`identidad.enlaces`).
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.

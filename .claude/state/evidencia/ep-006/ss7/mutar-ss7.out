@@ -1,0 +1,23 @@
+M1 días por horas UTC, no civiles de Bogotá (V3-4) MUERTO
+M2 30 días ya entra en «por revisar» MUERTO
+M3 pausado de 30 días entra MUERTO
+M4 orden del más reciente al más antiguo MUERTO
+M5 «por confirmar» mezclado con «por revisar» MUERTO
+M6 sin fecha de actualización cuenta como al día MUERTO
+M7 un pausado admite disponibilidad MUERTO
+M8 en bloque, uno que falla aborta el resto MUERTO
+M9 confirmar sin cambios no renueva la fecha de revisión MUERTO
+M10 pausa sin auditar el motivo MUERTO
+M11 pausar con motivo inactivo o fusionado VIVO
+M12 reactivar sin las guardas de publicar VIVO
+M13 archivar repetido reescribe MUERTO
+M14 la pausa no guarda desde cuándo MUERTO
+M15 al salir de la pausa no se limpia el motivo MUERTO
+M16 la observadora puede pausar MUERTO
+M17 la observadora puede cambiar disponibilidad MUERTO
+# Tras añadir en estado-perfil.test.ts «un motivo retirado del catálogo no sirve para pausar…» y
+# «reactivar pasa las guardas de publicar…» (los dos supervivientes):
+M11 pausar con motivo inactivo o fusionado MUERTO
+M12 reactivar sin las guardas de publicar MUERTO
+# Nota: la primera corrida sin BD_INSTALACION_URL dio VIVO en M7–M17 porque los tests con BD se
+# saltaban; esta salida es la corrida con `eval "$(scripts/bd-local.sh entorno)"`.

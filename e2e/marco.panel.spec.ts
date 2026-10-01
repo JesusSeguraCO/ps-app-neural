@@ -124,7 +124,7 @@ test("HU-123: al pedir el código, el foco pasa a la primera casilla (prototipo 
   await expect(page.getByLabel("Dígito 1")).toBeFocused();
 });
 
-test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: HU-089, HU-143, HU-139, HU-125, HU-127)", () => {
+test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: HU-089, HU-143, HU-139, HU-125, HU-127, HU-136)", () => {
   test.beforeEach(async ({ context, baseURL }, info) => {
     test.skip(info.project.name !== "panel", "solo el panel");
     await abrirSesion(context, baseURL!);
@@ -137,6 +137,7 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/peticiones/renovaciones",
     "/catalogos",
     "/catalogos?tipo=modalidad_prueba",
+    "/catalogos?tipo=motivo_pausa",
     "/lexico",
     "/lexico?vista=candidatas",
     "/inventario",
@@ -144,6 +145,7 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/inventario/PS-0187",
     "/importar",
     "/importar?vista=historial",
+    "/vigencia",
     // Resultado y deshacer de las importaciones del recorrido del sub-slice 4 (revertidas).
     "/importar?lote=594f25ad-9513-4176-bb0b-0bcf0c98a682",
   ]) {
@@ -274,6 +276,58 @@ test.describe("editor de perfiles (HU-089, HU-125)", () => {
   });
 });
 
+// Crea un perfil publicado por la API del panel (alta → consentimiento → publicar) y devuelve su código.
+async function crearPublicado(
+  page: import("@playwright/test").Page,
+  nombre = "E2E",
+  primerApellido = "Publicada",
+): Promise<string> {
+  await page.goto("/inventario");
+  // La API de peticiones de Playwright no envía cookies `Secure` por http: van en la cabecera.
+  const galletas = await page.context().cookies();
+  const csrf = galletas.find((c) => c.name === "__Host-csrf")!.value;
+  const cab = {
+    "x-ps-csrf": csrf,
+    origin: new URL(page.url()).origin,
+    cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
+  };
+  const bd = new pg.Client({ connectionString: INSTALACION });
+  await bd.connect();
+  const id = async (t: string, n: string) =>
+    (await bd.query(`SELECT id FROM inventario.${t} WHERE nombre = $1`, [n])).rows[0].id as string;
+  const cuerpo = {
+    nombre,
+    primerApellido,
+    rolId: await id("catalogo_roles", "Desarrolladora backend Java"),
+    tecnologiaIds: [await id("catalogo_tecnologias", "Java")],
+    seniorityId: await id("catalogo_seniorities", "Senior"),
+    aniosExperiencia: 8,
+    ciudadId: await id("catalogo_ciudades", "Medellín"),
+    modalidadTrabajoId: await id("catalogo_modalidades", "hibrido"),
+    disponibilidad: { opcion: "ahora" },
+    modalidadPruebaId: await id("catalogo_modalidades_prueba", "Prueba práctica revisada por un arquitecto"),
+    experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
+  };
+  await bd.end();
+  const alta = await page.request.post("/api/v1/perfiles", { data: cuerpo, headers: cab });
+  expect(alta.status(), await alta.text()).toBe(201);
+  const p = (await alta.json()).perfil;
+  const c = (
+    await (
+      await page.request.post(`/api/v1/perfiles/${p.codigo}/consentimiento`, {
+        data: { nombreApellido: true, trayectoria: true, clientes: true },
+        headers: cab,
+      })
+    ).json()
+  ).perfil;
+  const r = await page.request.post(`/api/v1/perfiles/${p.codigo}/publicar`, {
+    data: {},
+    headers: { ...cab, "if-match": `"${c.version}"` },
+  });
+  expect(r.status()).toBe(200);
+  return p.codigo as string;
+}
+
 // Editar un publicado y su reporte de validación (EP-006 · sub-slice 6: HU-126, HU-140, HU-130 edge)
 // en un navegador real: guardar declara el impacto y confirmar lo aplica; un cambio que deja el perfil
 // incompleto pregunta y «Pasar a borrador» lo saca del portal; el borrador del reporte sale de la
@@ -285,52 +339,6 @@ test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () =>
     await abrirSesion(context, baseURL!);
   });
 
-  async function publicado(page: import("@playwright/test").Page): Promise<string> {
-    await page.goto("/inventario");
-    // La API de peticiones de Playwright no envía cookies `Secure` por http: van en la cabecera.
-    const galletas = await page.context().cookies();
-    const csrf = galletas.find((c) => c.name === "__Host-csrf")!.value;
-    const cab = {
-      "x-ps-csrf": csrf,
-      origin: new URL(page.url()).origin,
-      cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
-    };
-    const bd = new pg.Client({ connectionString: INSTALACION });
-    await bd.connect();
-    const id = async (t: string, n: string) =>
-      (await bd.query(`SELECT id FROM inventario.${t} WHERE nombre = $1`, [n])).rows[0].id as string;
-    const cuerpo = {
-      nombre: "E2E",
-      primerApellido: "Publicada",
-      rolId: await id("catalogo_roles", "Desarrolladora backend Java"),
-      tecnologiaIds: [await id("catalogo_tecnologias", "Java")],
-      seniorityId: await id("catalogo_seniorities", "Senior"),
-      aniosExperiencia: 8,
-      ciudadId: await id("catalogo_ciudades", "Medellín"),
-      modalidadTrabajoId: await id("catalogo_modalidades", "hibrido"),
-      disponibilidad: { opcion: "ahora" },
-      modalidadPruebaId: await id("catalogo_modalidades_prueba", "Prueba práctica revisada por un arquitecto"),
-      experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
-    };
-    await bd.end();
-    const alta = await page.request.post("/api/v1/perfiles", { data: cuerpo, headers: cab });
-    expect(alta.status(), await alta.text()).toBe(201);
-    const p = (await alta.json()).perfil;
-    const c = (
-      await (
-        await page.request.post(`/api/v1/perfiles/${p.codigo}/consentimiento`, {
-          data: { nombreApellido: true, trayectoria: true, clientes: true },
-          headers: cab,
-        })
-      ).json()
-    ).perfil;
-    const r = await page.request.post(`/api/v1/perfiles/${p.codigo}/publicar`, {
-      data: {},
-      headers: { ...cab, "if-match": `"${c.version}"` },
-    });
-    expect(r.status()).toBe(200);
-    return p.codigo as string;
-  }
   const axeGraves = async (page: import("@playwright/test").Page) =>
     (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations
       .filter((v) => v.impact === "serious" || v.impact === "critical")
@@ -341,7 +349,7 @@ test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () =>
     page.on("console", (m) => {
       if (m.type() === "error") errores.push(m.text());
     });
-    const codigo = await publicado(page);
+    const codigo = await crearPublicado(page);
     await page.goto(`/inventario/${codigo}`);
     await page.getByRole("spinbutton", { name: "Años de experiencia" }).fill("9");
     await page.getByRole("button", { name: "Guardar cambios" }).click();
@@ -367,7 +375,7 @@ test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () =>
     page.on("console", (m) => {
       if (m.type() === "error") errores.push(m.text());
     });
-    const codigo = await publicado(page);
+    const codigo = await crearPublicado(page);
     await page.goto(`/inventario/${codigo}`);
     await page.getByRole("button", { name: "Registrar reporte detallado" }).click();
     await expect(page.getByRole("heading", { name: "Borrador de la validación técnica" })).toBeVisible();
@@ -392,6 +400,93 @@ test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () =>
       await page.setViewportSize({ width: ancho, height: 800 });
       const scroll = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
       expect(scroll, `vista previa a ${ancho}`).toBe(0);
+    }
+    expect(errores).toEqual([]);
+  });
+});
+
+// Disponibilidad, pausa y vigencia (EP-006 · sub-slice 7: HU-132, HU-133, HU-136) en un navegador
+// real: dos publicados propios se actualizan en bloque con resultado por perfil; uno se pausa con un
+// motivo del catálogo; con su pausa llevada a 31 días (solo ese perfil propio) la bandeja lo muestra con
+// el motivo y «Reactivar» lo devuelve a publicado con la banda elegida. Los ficticios no se tocan.
+test.describe("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-136)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("actualizar en bloque → pausar con motivo → a los 31 días en la bandeja → reactivar", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const marca = `Vig${randomBytes(3).toString("hex").replace(/\d/g, (d) => "abcdefghij"[Number(d)]!)}`;
+    const uno = await crearPublicado(page, marca, "Uno");
+    const dos = await crearPublicado(page, marca, "Dos");
+
+    await page.goto(`/inventario?q=${marca}`);
+    await page.getByRole("checkbox", { name: `Seleccionar a ${marca} Uno` }).check();
+    await page.getByRole("checkbox", { name: `Seleccionar a ${marca} Dos` }).check();
+    const lote = page.getByRole("region", { name: "Acciones sobre los perfiles seleccionados" });
+    await expect(lote.getByText("2 seleccionados")).toBeVisible();
+    await lote.getByLabel("Disponibilidad").selectOption({ label: "En 2 semanas" });
+    await lote.getByRole("button", { name: "Aplicar a los 2" }).click();
+    await expect(page.getByText("Disponibilidad actualizada en 2 de 2")).toBeVisible();
+
+    await page.getByRole("button", { name: `Más acciones para ${marca} Uno` }).click();
+    await page.getByRole("menuitem", { name: `Pausar a ${marca} Uno` }).click();
+    const hoja = page.getByRole("dialog", { name: `Pausar a ${marca} Uno` });
+    await hoja.getByRole("radio").first().check();
+    await hoja.getByRole("button", { name: "Pausar y ocultar del portal" }).click();
+    await expect(hoja).toBeHidden();
+
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    try {
+      const f = (
+        await bd.query(
+          `SELECT estado, motivo_pausa_id, pausado_en FROM inventario.perfiles WHERE codigo = $1`,
+          [uno],
+        )
+      ).rows[0];
+      expect(f.estado).toBe("pausado");
+      expect(f.motivo_pausa_id).not.toBeNull();
+      expect(f.pausado_en).not.toBeNull();
+      // El reloj de la bandeja es el de Bogotá: se lleva la pausa de este perfil propio a 31 días.
+      await bd.query(
+        `UPDATE inventario.perfiles SET pausado_en = now() - interval '31 days' WHERE codigo = $1`,
+        [uno],
+      );
+    } finally {
+      await bd.end();
+    }
+
+    await page.goto("/vigencia");
+    const fila = page.getByRole("listitem", { name: `${marca} Uno` });
+    await expect(fila.getByText("31 días")).toBeVisible();
+    await expect(fila.getByText("Pausado").first()).toBeVisible();
+    await expect(page.getByRole("listitem", { name: `${marca} Dos` })).toHaveCount(0);
+    await fila.getByRole("button", { name: `Reactivar a ${marca} Uno` }).click();
+    const form = page.getByRole("form", { name: `Reactivar o archivar a ${marca} Uno` });
+    await form.getByLabel("Disponibilidad al reactivar").selectOption({ label: "Disponible ahora" });
+    await form.getByRole("button", { name: "Reactivar" }).click();
+    await expect(page.getByText(/Volvió al portal con «/)).toBeVisible();
+    await expect(page.getByRole("listitem", { name: `${marca} Uno` })).toHaveCount(0);
+
+    const bd2 = new pg.Client({ connectionString: INSTALACION });
+    await bd2.connect();
+    try {
+      const r = (
+        await bd2.query(
+          `SELECT codigo, estado, pausado_en, motivo_pausa_id FROM inventario.perfiles WHERE codigo = ANY($1) ORDER BY codigo`,
+          [[uno, dos]],
+        )
+      ).rows;
+      expect(r.map((x) => x.estado)).toEqual(["publicado", "publicado"]);
+      expect(r[0].pausado_en).toBeNull();
+      expect(r[0].motivo_pausa_id).toBeNull();
+    } finally {
+      await bd2.end();
     }
     expect(errores).toEqual([]);
   });

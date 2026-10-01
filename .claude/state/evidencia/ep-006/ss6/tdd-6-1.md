@@ -1,0 +1,10 @@
+# EP-006 · sub-slice 6 · tarea 6.1 — editar un publicado en dos pasos (HU-126; HU-129 edge)
+
+- Base: `dd013a7` + cambios de 6.1 (sin commit al escribir esta nota) · rama `feature/ep-006-administracion-del-inventario` · 2026-10-01
+- Entorno: PostgreSQL 16 + PgBouncer local con roles reales (`ps_panel`, `ps_portal`, `ps_worker`); panel standalone compilado; Chrome por MCP.
+- Tests nuevos: `packages/contratos/src/cambios-ficha.test.ts` (6, diff puro sobre la ficha), `packages/infra/src/postgres/editar-publicado.test.ts` (8, BD real), `apps/editar-publicado-panel.test.ts` (6, HTTP contra el standalone). Suite completa: 902 ✓, 3 omitidos preexistentes.
+- Mutación (`mutar-ss6-1.py` + mutante de ruta con recompilación): previsualizar con COMMIT · confirmar incompleto · descartar que escribe · a_borrador sin motivo · a_borrador que no sale del portal · lo interno como dato · diff vacío · banda como texto · ruta que ignora `?previsualizar` → **9/9 MUERTOS**, árbol restaurado y en verde.
+- Clic real (panel :3101, BD de desarrollo, PS-1314 creado por la API): cambiar disponibilidad + motivación → hoja «Esto cambia para el cliente» (Disponibilidad 2 semanas → Inmediato; motivación como dato interno) mientras el portal (`ps_portal`) seguía con 2026-10-15 → «Confirmar cambios» → portal con 2026-10-01 y auditoría `disponibilidad_fecha`/`aporte` con `admin@trycore.com`/`panel`. Quitar las tres tecnologías → hoja «Este cambio deja el perfil incompleto» → «Descartar el cambio» → 21 filas de auditoría antes y después, portal `{Java,Kafka,PostgreSQL}`. Consola sin errores ni avisos.
+- Capturas: `app-perfil-editor--cambios-declarados-1440.png`, `app-perfil-editor--incompleto-al-guardar-1440.png`.
+- Desviación: la cabecera de la hoja no dice «en N enlaces curados» (los enlaces curados aún no existen en la BD; llegan con su épica).
+- HU-129 edge por clic: resumen sin guardar en PS-1314 → «Vista previa» lo muestra con «Cambios sin guardar… el portal sigue con la versión vigente» (`app-vista-previa-ficha--publicado-con-cambios-1440.png`); `ficha_publicable` con `ps_portal` seguía sin resumen.

@@ -269,6 +269,8 @@ export interface PerfilEnBandeja {
   disponibilidadActualizadaEn: string | null;
   pausadoEn: string | null;
   motivoPausa: string | null;
+  // En cuántos enlaces curados activos y vigentes está: a quién afecta lo que ve el cliente.
+  enlacesActivos: number;
 }
 
 export async function listarVigencia(
@@ -280,7 +282,10 @@ export async function listarVigencia(
       `SELECT p.codigo, p.nombre, p.primer_apellido, p.estado, p.disponibilidad_fecha::text AS disponibilidad_fecha,
               p.disponibilidad_actualizada_en, p.pausado_en, m.nombre AS motivo, s.nombre AS seniority,
               (SELECT r.nombre FROM inventario.perfil_roles h JOIN inventario.catalogo_roles r ON r.id = h.valor_id
-                WHERE h.perfil_id = p.id ORDER BY h.orden LIMIT 1) AS rol
+                WHERE h.perfil_id = p.id ORDER BY h.orden LIMIT 1) AS rol,
+              (SELECT count(*)::int FROM identidad.enlaces e
+                WHERE e.estado = 'activo' AND now() >= e.vigente_desde AND now() < e.vigente_hasta
+                  AND p.codigo = ANY (e.codigos_perfil)) AS enlaces_activos
          FROM inventario.perfiles p
          LEFT JOIN inventario.catalogo_motivos_pausa m ON m.id = p.motivo_pausa_id
          LEFT JOIN inventario.catalogo_seniorities s ON s.id = p.seniority_id
@@ -312,6 +317,7 @@ export async function listarVigencia(
       disponibilidadActualizadaEn: f.disponibilidad_actualizada_en?.toISOString() ?? null,
       pausadoEn: f.pausado_en?.toISOString() ?? null,
       motivoPausa: f.motivo,
+      enlacesActivos: f.enlaces_activos,
     };
   return { ...bandeja, perfiles };
 }

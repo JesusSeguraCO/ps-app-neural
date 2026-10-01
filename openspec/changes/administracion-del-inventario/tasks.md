@@ -65,11 +65,11 @@
 
 ## 7. Sub-slice 7 — Disponibilidad, vigencia y pausa (HU-132, HU-136, HU-133)
 
-- [ ] 7.1 Cambio de disponibilidad desde el listado, uno o en bloque con resultado por perfil, fecha de actualización y auditoría; observador sin control y 403; verificar los tres escenarios de HU-132 y la banda del portal de inmediato
-- [ ] 7.2 Pausa con motivo del catálogo (sale del portal, `pausado_en`, auditoría) y la salida «eso no es una pausa sino disponibilidad»; verificar los escenarios «pausa con motivo» y «el motivo es una fecha» de HU-133
-- [ ] 7.3 Bandeja de vigencia con `Reloj.fechaHoy()` de Bogotá: publicados sin actualizar > 30 días por antigüedad, «por confirmar» al principio, pausados > 30 días con motivo, fecha y días, «dato incompleto», vacía explícita, acciones en fila (dos clics, reactivar, archivar); verificar los cinco escenarios de HU-136, los dos de umbral de HU-133 (31 días sí, 30 no) y V3-4
-- [ ] 7.4 Fidelidad con captura MCP de `inventario-perfiles--lote`, `inventario-perfiles--pausar-motivo`, `bandeja-vigencia`, `bandeja-vigencia--vacia`, `bandeja-vigencia--pausado-reactivar`
-- [ ] 7.5 Journey smoke: actualizar en bloque → pausar con motivo → con reloj a +31 días la bandeja lo muestra → reactivar desde la bandeja; evidencia en `ss7/` y checkpoint
+- [x] 7.1 Cambio de disponibilidad desde el listado, uno o en bloque con resultado por perfil, fecha de actualización y auditoría; observador sin control y 403; verificar los tres escenarios de HU-132 y la banda del portal de inmediato
+- [x] 7.2 Pausa con motivo del catálogo (sale del portal, `pausado_en`, auditoría) y la salida «eso no es una pausa sino disponibilidad»; verificar los escenarios «pausa con motivo» y «el motivo es una fecha» de HU-133
+- [x] 7.3 Bandeja de vigencia con `Reloj.fechaHoy()` de Bogotá: publicados sin actualizar > 30 días por antigüedad, «por confirmar» al principio, pausados > 30 días con motivo, fecha y días, «dato incompleto», vacía explícita, acciones en fila (dos clics, reactivar, archivar); verificar los cinco escenarios de HU-136, los dos de umbral de HU-133 (31 días sí, 30 no) y V3-4
+- [x] 7.4 Fidelidad con captura MCP de `inventario-perfiles--lote`, `inventario-perfiles--pausar-motivo`, `bandeja-vigencia`, `bandeja-vigencia--vacia`, `bandeja-vigencia--pausado-reactivar`
+- [x] 7.5 Journey smoke: actualizar en bloque → pausar con motivo → con reloj a +31 días la bandeja lo muestra → reactivar desde la bandeja; evidencia en `ss7/` y checkpoint
 
 ## 8. Sub-slice 8 — Incoherencias y archivo (HU-134, HU-135)
 

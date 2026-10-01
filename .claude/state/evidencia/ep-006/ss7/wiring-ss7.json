@@ -1,0 +1,14 @@
+[
+ {"item_id": "HU-132-ac1-listado", "kind": "hu_ac", "ref": "HU-132 · Cambio desde el listado: sin abrir la ficha, portal con la banda nueva, queda quién y cuándo"},
+ {"item_id": "HU-132-ac2-observador", "kind": "hu_ac", "ref": "HU-132 · Observador no puede cambiar la disponibilidad; no cambia ni queda registro"},
+ {"item_id": "HU-132-ac3-bloque", "kind": "hu_ac", "ref": "HU-132 · Varios a la vez: se aplica a todos con resultado por perfil"},
+ {"item_id": "HU-133-ac1-pausa-motivo", "kind": "hu_ac", "ref": "HU-133 · Pausa con motivo del catálogo: sale del portal, motivo con autor y desde cuándo"},
+ {"item_id": "HU-133-ac2-motivo-fecha", "kind": "hu_ac", "ref": "HU-133 · El motivo es una fecha: desvío a disponibilidad, sigue publicado"},
+ {"item_id": "HU-133-ac3-mas-30", "kind": "hu_ac", "ref": "HU-133 · Pausado > 30 días: en la bandeja con motivo y días; reactivar o archivar"},
+ {"item_id": "HU-133-ac4-umbral", "kind": "hu_ac", "ref": "HU-133 · Pausado 30 días o menos no aparece"},
+ {"item_id": "HU-136-ac1-por-revisar", "kind": "hu_ac", "ref": "HU-136 · Publicados > 30 días por antigüedad, actualizar en dos clics desde la fila"},
+ {"item_id": "HU-136-ac2-pausado", "kind": "hu_ac", "ref": "HU-136 · Pausado > 30 días junto a los vencidos con motivo y fecha"},
+ {"item_id": "HU-136-ac3-dato-incompleto", "kind": "hu_ac", "ref": "HU-136 · Sin fecha de actualización: «dato incompleto», nunca al día"},
+ {"item_id": "HU-136-ac4-vacia", "kind": "hu_ac", "ref": "HU-136 · Bandeja vacía lo declara explícitamente"},
+ {"item_id": "HU-136-ac5-por-confirmar", "kind": "hu_ac", "ref": "HU-136 · Lo que ya se ve «por confirmar» va primero e indica la advertencia"}
+]
