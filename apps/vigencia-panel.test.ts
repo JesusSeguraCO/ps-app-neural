@@ -162,7 +162,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Disponibilidad, pausa y vigencia
   it("pausar con motivo: sale del portal; el listado lo muestra con su motivo y la hoja trae el desvío", async () => {
     const p = await publicado();
     const html = await pagina("/inventario");
-    expect(html).toContain("Pausar a Lorena Salcedo");
+    expect(html).toContain("Más acciones para Lorena Salcedo");
     const r = await pedir("POST", `/api/v1/perfiles/${p.codigo}/pausar`, { motivoId: await motivoId() });
     expect(r.status).toBe(200);
     expect((await r.json()).perfil.estado).toBe("pausado");

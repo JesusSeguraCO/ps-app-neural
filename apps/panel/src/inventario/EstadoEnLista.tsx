@@ -184,6 +184,7 @@ export function PausarPerfil(p: {
   motivos: MotivoPausa[];
 }) {
   const [abierta, setAbierta] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -210,14 +211,44 @@ export function PausarPerfil(p: {
 
   return (
     <>
-      <button
-        type="button"
-        className="pp-btn pp-btn--fantasma pp-btn--sm"
-        aria-label={`Pausar a ${p.nombre}`}
-        onClick={() => setAbierta(true)}
-      >
-        Pausar
-      </button>
+      <span className="ip-menu">
+        <button
+          type="button"
+          className="pp-btn pp-btn--fantasma pp-btn--sm pp-btn--icono"
+          aria-haspopup="menu"
+          aria-expanded={menu}
+          aria-label={`Más acciones para ${p.nombre}`}
+          onClick={() => setMenu((x) => !x)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setMenu(false);
+          }}
+        >
+          <svg className="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h.01M12 12h.01M19 12h.01" strokeWidth="3" />
+          </svg>
+        </button>
+        {menu && (
+          <ul className="ip-menu__lista" role="menu" aria-label={`Acciones para ${p.nombre}`}>
+            <li role="none">
+              <button
+                type="button"
+                role="menuitem"
+                className="ip-menu__item"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setMenu(false);
+                }}
+                onClick={() => {
+                  setMenu(false);
+                  setAbierta(true);
+                }}
+              >
+                {`Pausar a ${p.nombre}`}
+              </button>
+            </li>
+          </ul>
+        )}
+      </span>
       {abierta && (
         <Hoja
           titulo={`Pausar a ${p.nombre}`}

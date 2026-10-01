@@ -117,3 +117,9 @@
 .ip-lote__ayuda { flex-basis: 100%; margin: 0; }
 .ip-desvio__accion { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
 .ip-col-acc { white-space: nowrap; }
+.ip-menu { position: relative; display: inline-flex; }
+.ip-menu__lista { position: absolute; top: 100%; right: 0; z-index: 20; min-width: 200px; margin: var(--tc-sp-1) 0 0; padding: var(--tc-sp-1); list-style: none; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-3); }
+.ip-menu__item { display: block; width: 100%; padding: var(--tc-sp-2) var(--tc-sp-3); border: 0; border-radius: var(--tc-r-sm); background: none; font: inherit; font-size: var(--tc-fs-small); text-align: left; color: var(--tc-text-h); cursor: pointer; }
+.ip-menu__item:hover, .ip-menu__item:focus-visible { background: var(--tc-surface-quiet); }
+/* La hoja de pausa se monta dentro de la celda de acciones: no hereda su texto en una línea. */
+.ip-col-acc .pp-hoja { white-space: normal; text-align: left; }

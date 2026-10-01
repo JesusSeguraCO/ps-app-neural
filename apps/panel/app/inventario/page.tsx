@@ -303,6 +303,13 @@ export default async function Inventario({
                       )}
                     </td>
                     <td className="pp-tabla__acciones ip-col-acc">
+                      <a
+                        className="pp-btn pp-btn--fantasma pp-btn--sm ip-editar"
+                        href={`/inventario/${f.codigo}`}
+                        aria-label={`${escribe ? "Editar" : "Ver"} el perfil de ${nombre}`}
+                      >
+                        {escribe ? "Editar" : "Ver"}
+                      </a>
                       {escribe && (f.estado === "publicado" || f.estado === "colocado") && (
                         <PausarPerfil
                           codigo={f.codigo}
@@ -311,13 +318,6 @@ export default async function Inventario({
                           motivos={motivos}
                         />
                       )}
-                      <a
-                        className="pp-btn pp-btn--fantasma pp-btn--sm"
-                        href={`/inventario/${f.codigo}`}
-                        aria-label={`${escribe ? "Editar" : "Ver"} el perfil de ${nombre}`}
-                      >
-                        {escribe ? "Editar" : "Ver"}
-                      </a>
                     </td>
                   </tr>
                 );
