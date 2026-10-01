@@ -65,4 +65,6 @@
   tablero las cita y suma ADR-0009.
 - **9.6 hecha**: 11 pantallas FIEL con clics reales (`fidelidad-ss9.md`, capturas `app-*.png`, archivos subidos en
   `archivos/`). Datos de prueba PS-1464…1473 archivados al terminar.
-- **Siguiente: 9.7** (journey smoke, mutación de 9.1, wiring y checkpoint de cierre del sub-slice). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
+- **9.7 hecha**: `journey-ss9.md`; mutación de 9.1 4/4 (`mutar-ss9.py` → `mutar-ss9.out`); wiring ss9 (12 items de
+  HU-137, HU-150 y HU-124) sembrado y en passing con evidencia en `wiring/`; checkpoint en el runtime.
+- **Sub-slice 9 cerrado.** Siguiente: sub-slice 10 (HU-151, HU-147, HU-138). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).

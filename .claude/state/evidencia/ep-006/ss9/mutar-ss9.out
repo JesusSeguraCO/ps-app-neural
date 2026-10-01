@@ -1,0 +1,4 @@
+M1 la 0021 no se niega con colocados sin migrar MUERTO
+M2 migrar_colocados no fija la disponibilidad MUERTO
+M3 la vista no deriva «colocado» de la colocación MUERTO
+M4 la importación cambia el estado de un colocado MUERTO

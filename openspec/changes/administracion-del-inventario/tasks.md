@@ -87,7 +87,7 @@
 - [x] 9.4 Observador: inventario, enlaces y colocados sin controles de escritura; rechazo por ruta directa explicado y auditado como `acceso_rechazado`; botón de aviso a la administradora por `notificar` con el perfil identificado; matriz completa de acciones de EP-006 con V2-3; verificar los tres escenarios de HU-124 y el delta de `acceso-panel`
 - [x] 9.5 Registrar en `docs/adr/_backlog-arquitectonico.md` la enmienda de ADR-0009 (`sincronizar_colocados` no se construye en v1, D8) y la de ADR-0003 (estado `colocado` retirado); verificar que el tablero las cita
 - [x] 9.6 Fidelidad con captura MCP de `colocados`, `colocados--registrar`, `colocados--sin-fecha-liberacion`, `colocados--en-el-portal`, `colocados--carga-operaciones`, `colocados--carga-filas-con-error`, `colocados--diferencia-operaciones`, `colocados--formato-no-admitido`, `colocados--corte-desactualizado`, `inventario-perfiles--observador`, `perfil-editor--observador`
-- [ ] 9.7 Journey smoke: registrar un colocado → pestaña ordenada → cargar Operaciones con una diferencia → el panel gana → entrar como observador y ver sin editar; evidencia en `ss9/` y checkpoint
+- [x] 9.7 Journey smoke: registrar un colocado → pestaña ordenada → cargar Operaciones con una diferencia → el panel gana → entrar como observador y ver sin editar; evidencia en `ss9/` y checkpoint
 
 ## 10. Sub-slice 10 — Accesos, contacto y auditoría (HU-151, HU-147, HU-138)
 
