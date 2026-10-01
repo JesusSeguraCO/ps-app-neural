@@ -1,6 +1,7 @@
 // Nuevo perfil (HU-125; prototipo perfil-editor): el editor vacío. Guardar lo crea siempre en borrador
-// y lleva a su ficha en el panel. Solo la administradora crea perfiles (la observadora vuelve al
-// inventario; el servidor además responde 403). Protegida: la guarda va en la primera línea.
+// y lleva a su ficha en el panel. Solo la administradora crea perfiles: la observadora vuelve al
+// inventario con el aviso de consulta y el intento queda registrado (HU-124); el servidor además
+// responde 403. Protegida: la guarda va en la primera línea.
 import { redirect } from "next/navigation";
 import { puede } from "@ps/dominio/acceso/permisos";
 import { opcionesEditor } from "@ps/infra/postgres/perfiles-panel";
@@ -9,6 +10,7 @@ import { EditorPerfil } from "../../../src/inventario/EditorPerfil";
 import { AvisoDecision } from "../../../src/marco/Hoja";
 import { MarcoPanel } from "../../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../../src/sesion/exigirSesion";
+import { registrarRechazoDePagina } from "../../../src/sesion/rechazo";
 import { hoyEnColombia } from "../hoy";
 import "../../../src/marco/marco.css";
 import "@ps/ui/ficha.css";
@@ -17,11 +19,24 @@ import "../vista-previa.css";
 
 export default async function NuevoPerfil() {
   const sesion = await exigirSesion();
-  if (!puede(sesion.rol, "perfil.escribir")) redirect("/inventario");
+  if (!puede(sesion.rol, "perfil.escribir")) {
+    await registrarRechazoDePagina(sesion, "perfil.escribir", "/inventario/nuevo");
+    redirect("/inventario?rechazado=nuevo");
+  }
   const opciones = await opcionesEditor(poolDe("panel"));
   return (
-    <MarcoPanel sesion={sesion} activo="inventario" migas={[{ texto: "Inventario", href: "/inventario" }, "Nuevo perfil"]}>
-      <EditorPerfil perfil={null} opciones={opciones} escribe registraConsentimiento hoy={hoyEnColombia()} />
+    <MarcoPanel
+      sesion={sesion}
+      activo="inventario"
+      migas={[{ texto: "Inventario", href: "/inventario" }, "Nuevo perfil"]}
+    >
+      <EditorPerfil
+        perfil={null}
+        opciones={opciones}
+        escribe
+        registraConsentimiento
+        hoy={hoyEnColombia()}
+      />
       <AvisoDecision />
     </MarcoPanel>
   );

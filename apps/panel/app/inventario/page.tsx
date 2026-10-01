@@ -24,6 +24,7 @@ import {
   ResultadoPublicacion,
 } from "../../src/inventario/PublicacionMasiva";
 import { AtajoBuscador } from "../../src/marco/FiltroAuto";
+import { AvisarTalentoHumano } from "../../src/inventario/Avisar";
 import { AvisoDecision } from "../../src/marco/Hoja";
 import { MarcoPanel } from "../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
@@ -88,7 +89,7 @@ function detalleEstado(f: FilaInventario, ahora: Date): string | null {
 export default async function Inventario({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; q?: string; pagina?: string }>;
+  searchParams: Promise<{ estado?: string; q?: string; pagina?: string; rechazado?: string }>;
 }) {
   const sesion = await exigirSesion();
   const p = await searchParams;
@@ -150,6 +151,19 @@ export default async function Inventario({
         )}
       </div>
 
+      {!escribe && p.rechazado === "nuevo" && (
+        <div className="pp-aviso pp-aviso--info ip-avisos" role="status">
+          <span className="pp-aviso__icono" aria-hidden="true">
+            i
+          </span>
+          <p>
+            <span className="pp-aviso__titulo">Tu rol es de consulta.</span>
+            Llegaste por la dirección para crear un perfil: no se creó nada y el intento quedó en la
+            auditoría. Si un dato está desactualizado, usa «Avisar» en su fila y le llega a Talento
+            Humano con el perfil identificado.
+          </p>
+        </div>
+      )}
       {escribe && <ResultadoPublicacion />}
       {escribe && <ResultadoDisponibilidadBloque />}
 
@@ -229,7 +243,7 @@ export default async function Inventario({
                 <th scope="col">Estado</th>
                 <th scope="col">Disponibilidad</th>
                 <th scope="col" className="pp-tabla__acciones">
-                  <span className="pp-sr">Acciones</span>
+                  {escribe ? <span className="pp-sr">Acciones</span> : "¿Dato desactualizado?"}
                 </th>
               </tr>
             </thead>
@@ -237,8 +251,7 @@ export default async function Inventario({
               {enPagina.map((f) => {
                 const nombre = nombreDe(f);
                 const detalle = detalleEstado(f, ahora);
-                const visible =
-                  f.estado === "publicado" || f.estado === "borrador";
+                const visible = f.estado === "publicado" || f.estado === "borrador";
                 const contradice =
                   f.coherencia?.clave === "pausado_con_disponibilidad"
                     ? "Contradice el estado pausado"
@@ -264,7 +277,11 @@ export default async function Inventario({
                       <th scope="row">
                         <a
                           className="pp-tabla__perfil pp-enlace--sutil ip-nombre"
-                          href={`/inventario/${f.codigo}`}
+                          href={
+                            escribe
+                              ? `/inventario/${f.codigo}`
+                              : `/inventario/${f.codigo}?vista=ficha`
+                          }
                         >
                           {nombre}
                         </a>
@@ -320,13 +337,17 @@ export default async function Inventario({
                         )}
                       </td>
                       <td className="pp-tabla__acciones ip-col-acc">
-                        <a
-                          className="pp-btn pp-btn--fantasma pp-btn--sm ip-editar"
-                          href={`/inventario/${f.codigo}`}
-                          aria-label={`${escribe ? "Editar" : "Ver"} el perfil de ${nombre}`}
-                        >
-                          {escribe ? "Editar" : "Ver"}
-                        </a>
+                        {escribe ? (
+                          <a
+                            className="pp-btn pp-btn--fantasma pp-btn--sm ip-editar"
+                            href={`/inventario/${f.codigo}`}
+                            aria-label={`Editar el perfil de ${nombre}`}
+                          >
+                            Editar
+                          </a>
+                        ) : (
+                          <AvisarTalentoHumano codigo={f.codigo} nombre={nombre} corto />
+                        )}
                         {escribe && f.estado !== "archivado" && (
                           <AccionesFila
                             codigo={f.codigo}

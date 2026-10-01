@@ -25,6 +25,7 @@ import {
   mensajeAvisoRenovacion,
   mensajeEnlaceRenovado,
 } from "@ps/dominio/enlaces/renovacion";
+import { mensajeDatoDesactualizado } from "@ps/dominio/inventario/observador";
 import type { EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { abortarLote, aplicarLote, type OpcionesAplicar } from "@ps/infra/postgres/aplicar-importacion";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
@@ -279,9 +280,34 @@ async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenova
   await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
 }
 
-// Aviso a Talento Humano de una petición de invitación nueva (HU-095, `notificar` de ADR-0006/0009).
+// Aviso a Talento Humano (`notificar` de ADR-0006/0009): una petición de invitación nueva (HU-095) o un
+// dato desactualizado que vio el observador (HU-124), con el perfil identificado.
 async function notificar(ctx: ContextoDespacho, t: Trabajo, p: PayloadNotificar): Promise<void> {
   const deps = ctx.renovacion!;
+  if (p.motivo === "dato_desactualizado") {
+    const f = (
+      await ctx.bd.query(
+        `SELECT coalesce(nullif(concat_ws(' ', p.nombre, p.primer_apellido), ''), p.codigo) AS nombre, u.correo
+           FROM inventario.perfiles p, identidad_panel.usuarios_panel u
+          WHERE p.codigo = $1 AND u.id = $2`,
+        [p.codigo, p.usuario],
+      )
+    ).rows[0];
+    if (!f) {
+      await cerrar(ctx, t.id, { estado: "hecho" });
+      return;
+    }
+    const m = mensajeDatoDesactualizado({
+      avisa: f.correo,
+      nombre: f.nombre,
+      codigo: p.codigo,
+      nota: p.nota,
+      enlace: `Inventario › ${p.codigo}`,
+    });
+    const { resultado } = await ctx.correo.enviar({ para: deps.correoTalentoHumano, asunto: m.asunto, texto: m.texto, html: m.html });
+    await cerrarSegunResultado(ctx, t, resultado);
+    return;
+  }
   const r = await ctx.bd.query(
     `SELECT s.correo_propuesto, s.nombre_propuesto, s.para_que, s.estado, i.correo AS pide, e.codigo, e.cuenta_nombre, e.proyecto
        FROM identidad.invitaciones_solicitadas s

@@ -68,6 +68,8 @@ export function VistaPrevia(p: {
   puedePublicar: boolean;
   publicando: boolean;
   alVolver: (campo?: string) => void;
+  // La observadora no edita: el botón de volver la lleva a los datos del perfil (HU-124).
+  etiquetaVolver?: string;
   alPublicar: () => void;
   alRegistrarConsentimiento?: () => void;
 }) {
@@ -123,7 +125,7 @@ export function VistaPrevia(p: {
         </div>
         <div className="pp-encabezado__acciones">
           <button type="button" className="pp-btn pp-btn--contorno" onClick={() => p.alVolver()}>
-            Volver a editar
+            {p.etiquetaVolver ?? "Volver a editar"}
           </button>
           {!p.publicado && p.puedePublicar && (
             <button

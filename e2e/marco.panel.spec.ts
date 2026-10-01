@@ -16,15 +16,19 @@ function claveCorreo(): string {
   return salida.match(/^export EMAIL_HMAC_KEY=(.*)$/m)![1]!;
 }
 
-async function abrirSesion(context: BrowserContext, baseURL: string): Promise<void> {
+async function abrirSesion(
+  context: BrowserContext,
+  baseURL: string,
+  quien: { correo: string; rol: "administrador" | "observador" } = { correo: CORREO, rol: "administrador" },
+): Promise<void> {
   const bd = new pg.Client({ connectionString: INSTALACION });
   await bd.connect();
   try {
-    const hmac = createHmac("sha256", claveCorreo()).update(CORREO).digest();
+    const hmac = createHmac("sha256", claveCorreo()).update(quien.correo).digest();
     const u = await bd.query(
-      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ($1, $2, 'administrador')
+      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ($1, $2, $3)
        ON CONFLICT (correo_hmac) DO UPDATE SET activo = true RETURNING id`,
-      [CORREO, hmac],
+      [quien.correo, hmac, quien.rol],
     );
     const id = randomBytes(32).toString("base64url");
     await bd.query(
@@ -733,6 +737,60 @@ test.describe("carga de Operaciones (HU-150)", () => {
     } finally {
       for (const c of [nuevo, delPanel])
         await page.request.post(`/api/v1/perfiles/${c}/archivar`, { data: {}, headers: cab });
+    }
+    expect(errores).toEqual([]);
+  });
+});
+
+// Observador (EP-006 · sub-slice 9, HU-124) en un navegador real: la dirección de edición muestra el
+// formulario inerte con «tu rol es de consulta» y «Avisar a Talento Humano» deja el aviso con el perfil
+// identificado. El trabajo encolado se cierra al final para que el worker local no envíe el aviso.
+test.describe("observador (HU-124)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!, { correo: "e2e-observador@trycore.com", rol: "observador" });
+  });
+
+  test("dirección de edición → consulta explicada → avisar a Talento Humano con el perfil", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    try {
+      const codigo = (
+        await bd.query(`SELECT codigo FROM inventario.perfiles WHERE estado = 'publicado' ORDER BY codigo LIMIT 1`)
+      ).rows[0].codigo as string;
+      await page.goto("/inventario");
+      await expect(page.getByRole("columnheader", { name: "¿Dato desactualizado?" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Crear perfil" })).toHaveCount(0);
+
+      await page.goto(`/inventario/${codigo}`);
+      await expect(page.getByText("Tu rol es de consulta.")).toBeVisible();
+      await expect(page.getByText(/Llegaste por la dirección de edición de/)).toBeVisible();
+      await expect(page.getByLabel("Nombre", { exact: true })).toBeDisabled();
+      expect(
+        (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter(
+          (v) => v.impact === "serious" || v.impact === "critical",
+        ),
+      ).toEqual([]);
+
+      await page.getByRole("button", { name: "Avisar a Talento Humano" }).click();
+      const hoja = page.getByRole("dialog", { name: "Avisar a Talento Humano" });
+      await expect(hoja).toContainText(codigo);
+      await hoja.getByLabel(/¿Qué está desactualizado\?/).fill("Prueba e2e: ya no está disponible.");
+      await hoja.getByRole("button", { name: "Enviar aviso" }).click();
+      await expect(page.getByText(/Aviso enviado a Talento Humano sobre/)).toBeVisible();
+      const t = (
+        await bd.query(
+          `SELECT id, payload FROM operacion.trabajos WHERE tipo = 'notificar' AND origen = 'panel' ORDER BY id DESC LIMIT 1`,
+        )
+      ).rows[0];
+      expect(t.payload).toMatchObject({ motivo: "dato_desactualizado", codigo, nota: "Prueba e2e: ya no está disponible." });
+      await bd.query(`UPDATE operacion.trabajos SET estado = 'caducado', ultimo_error = 'e2e' WHERE id = $1`, [t.id]);
+    } finally {
+      await bd.end();
     }
     expect(errores).toEqual([]);
   });

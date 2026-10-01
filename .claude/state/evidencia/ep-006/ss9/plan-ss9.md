@@ -55,4 +55,9 @@
   (una unidad, origen `sincronizacion`, gana el panel), `POST /api/v1/colocados/cargas` y
   `POST /api/v1/colocados/diferencias/{id}`, pestaña con resultado, filas con error, diferencias, corte y aviso.
   Tests: lector 9, infra +4, HTTP +6, e2e 1. Mutación en `mutacion-9.3.md` (5/5). D36.
-- **Siguiente: 9.4** (observador), luego 9.5, 9.6, 9.7. Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
+- **9.4 hecha**: 0022 (`acceso_rechazado` en `accesos_log` con usuario/acción/recurso; `encolar_panel` y
+  `origen_permitido` admiten `notificar` `dato_desactualizado`), 403 explicado y registrado en `conAutorizacion`,
+  rechazo de página (`src/sesion/rechazo.ts`) en la edición, nuevo perfil y nuevo enlace, editor en consulta con
+  `?vista=ficha`, «Avisar» (`POST /api/v1/perfiles/{código}/avisar`, `perfil.avisar`) y despacho al buzón de Talento
+  Humano. BD de desarrollo en 0022. Tests: dominio 3, HTTP+worker 6, e2e 1. Mutación en `mutacion-9.4.md` (4/4). D37.
+- **Siguiente: 9.5** (enmiendas en el backlog arquitectónico), luego 9.6 (fidelidad MCP), 9.7 (journey y cierre). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).

@@ -23,6 +23,7 @@ import * as m0018 from "./0018_validaciones";
 import * as m0019 from "./0019_pausa_y_vigencia";
 import * as m0020 from "./0020_colocaciones";
 import * as m0021 from "./0021_retirar_colocado";
+import * as m0022 from "./0022_observador";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -46,4 +47,5 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0019_pausa_y_vigencia": m0019,
   "0020_colocaciones": m0020,
   "0021_retirar_colocado": m0021,
+  "0022_observador": m0022,
 };

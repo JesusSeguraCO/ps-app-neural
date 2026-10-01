@@ -29,6 +29,7 @@ import { Hoja, recargarConAviso } from "../marco/Hoja";
 import { BuscadorCatalogo, type ValorElegible } from "./BuscadorCatalogo";
 import type { PerfilParaFicha } from "./ficha";
 import { VistaPrevia } from "./VistaPrevia";
+import { AvisarTalentoHumano } from "./Avisar";
 
 type Rol = OpcionesEditor["roles"][number];
 type Experiencia = ExperienciaEntrada & { clave: string };
@@ -107,6 +108,10 @@ export function EditorPerfil(p: {
   hoy: string;
   // Correo de quien edita: la hoja de impacto dice con qué autor queda la auditoría (D25).
   autor?: string;
+  modoInicial?: "editar" | "previa";
+  // Rol de consulta (HU-124): el formulario inerte dice por qué y ofrece avisar a Talento Humano;
+  // `porDireccionDeEdicion` cuando llegó por la dirección de edición (el intento quedó registrado).
+  consulta?: { porDireccionDeEdicion: boolean };
 }) {
   const inicial = p.perfil;
   const [perfil, setPerfil] = useState(inicial);
@@ -165,7 +170,9 @@ export function EditorPerfil(p: {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [intento, setIntento] = useState(Boolean(inicial));
-  const [modo, setModo] = useState<"editar" | "previa">("editar");
+  const [modo, setModo] = useState<"editar" | "previa">(
+    p.modoInicial === "previa" && p.perfil ? "previa" : "editar",
+  );
   const [publicando, setPublicando] = useState(false);
   const [intentoPublicar, setIntentoPublicar] = useState(false);
   // Lo que el servidor dijo que falta, si discrepó del cálculo local (otro cambio en paralelo).
@@ -508,6 +515,7 @@ export function EditorPerfil(p: {
           publicado={perfil.estado === "publicado"}
           sinGuardar={sinGuardar}
           puedePublicar={editable && !enPortal}
+          etiquetaVolver={p.consulta ? "Ver los datos del perfil" : undefined}
           publicando={publicando}
           alVolver={(campo) => {
             setModo("editar");
@@ -573,6 +581,7 @@ export function EditorPerfil(p: {
         </div>
         {(editable || perfil) && (
           <div className="pp-encabezado__acciones">
+            {p.consulta && perfil && <AvisarTalentoHumano codigo={perfil.codigo} nombre={titulo} />}
             {perfil && (
               <button
                 type="button"
@@ -632,6 +641,28 @@ export function EditorPerfil(p: {
         )}
       </div>
 
+      {p.consulta && perfil && (
+        <div className="pe-alerta">
+          <div className="pp-aviso pp-aviso--info" role="status">
+            <span className="pp-aviso__icono" aria-hidden="true">
+              i
+            </span>
+            <p>
+              <span className="pp-aviso__titulo">Tu rol es de consulta.</span>
+              {p.consulta.porDireccionDeEdicion ? (
+                <>
+                  {"Llegaste por la dirección de edición de "}
+                  <span className="pp-mono">{perfil.codigo}</span>
+                  {": no se cambió nada y el intento quedó en la auditoría. "}
+                </>
+              ) : (
+                "Ves los datos del perfil sin poder cambiarlos. "
+              )}
+              Si ves un dato desactualizado, avisa a Talento Humano con el perfil ya identificado.
+            </p>
+          </div>
+        </div>
+      )}
       {bloqueo && perfil && (
         <AvisoBloqueo
           codigo={perfil.codigo}

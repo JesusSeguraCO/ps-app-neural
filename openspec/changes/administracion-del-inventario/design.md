@@ -172,6 +172,7 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - La línea de meta y la columna de fuente muestran la fecha de corte de Operaciones desde la tarea 9.3.
 - Carga de Operaciones (D36): extensión y contenido deciden el formato; CSV con coma o punto y coma y fechas AAAA-MM-DD o DD/MM/AAAA; sin columnas mínimas, sin filas o con más de 200 filas → rechazo entero con el motivo, como otro formato. Errores de fila también por código inexistente, perfil no publicado, liberación ya llegada y código repetido. El resultado va en `?carga=`; el corte es la última carga que aplicó alguna fila.
 - Diferencias: una pendiente por colocado del panel, mostrando solo los campos que difieren; «Mantener la del panel» y «Aceptar la de Operaciones» con su autor en la auditoría.
+- Observador (D37): consulta del perfil en `?vista=ficha`; la dirección de edición, `/inventario/nuevo` y `/enlaces/nuevo` explican el rol de consulta y registran `acceso_rechazado` en `identidad.accesos_log` (0022), igual que el 403 de la API, que ahora trae el mensaje. La matriz conserva las acciones por familia de los sub-slices 1–8 en vez de la lista fina de §9; se suma `perfil.avisar` (ambos roles). «Avisar» va en la fila del listado y en el perfil, con nota opcional, por `notificar` (`dato_desactualizado`).
 
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 

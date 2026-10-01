@@ -5,6 +5,7 @@
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { esAccion, puede, type AccionPanel } from "@ps/dominio/acceso/permisos";
+import { MENSAJE_CONSULTA } from "@ps/dominio/inventario/observador";
 import {
   CABECERA_CSRF,
   COOKIE_CSRF,
@@ -17,7 +18,12 @@ import {
 } from "@ps/dominio/acceso/sesion";
 import { CABECERA_BORDE, bordeValido } from "../perimetro";
 import { poolDe } from "../postgres/pool";
-import { buscarSesionPanel, buscarSesionPortal, refrescarActividadPanel } from "../postgres/sesiones";
+import { registrarAccesoRechazado } from "../postgres/observador";
+import {
+  buscarSesionPanel,
+  buscarSesionPortal,
+  refrescarActividadPanel,
+} from "../postgres/sesiones";
 
 export { CABECERA_CSRF, COOKIE_CSRF };
 
@@ -28,7 +34,10 @@ export function ipDelCliente(req: Request): string | null {
     const cf = req.headers.get("cf-connecting-ip");
     if (cf) return cf;
   }
-  return req.headers.get("do-connecting-ip") ?? (req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null);
+  return (
+    req.headers.get("do-connecting-ip") ??
+    (req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null)
+  );
 }
 
 type Manejador<C> = (req: Request, ctx: C) => Promise<Response> | Response;
@@ -60,7 +69,8 @@ export function conBorde<C>(h: Manejador<C>): Manejador<C> {
     const secretos = [process.env.EDGE_SECRET, process.env.EDGE_SECRET_PREV].filter(
       (s): s is string => Boolean(s),
     );
-    if (secretos.length > 0 && !bordeValido(req.headers.get(CABECERA_BORDE), secretos)) return json(403);
+    if (secretos.length > 0 && !bordeValido(req.headers.get(CABECERA_BORDE), secretos))
+      return json(403);
     return h(req, ctx);
   };
 }
@@ -127,8 +137,22 @@ export function conAutorizacion(
   h: (req: Request, sesion: ContextoPanel) => Promise<Response> | Response,
 ): (req: Request, sesion: ContextoPanel) => Promise<Response> | Response {
   if (!esAccion(accion)) throw new Error(`acción desconocida en MatrizPermisos: ${accion}`);
-  return (req, sesion) =>
-    puede(sesion.rol, accion) ? h(req, sesion) : json(403, { motivo: "sin_permiso" });
+  return async (req, sesion) => {
+    if (puede(sesion.rol, accion)) return h(req, sesion);
+    // HU-124: el rechazo explica el rol y queda en el registro de accesos; si el registro fallara, el
+    // rechazo se mantiene igual.
+    try {
+      await registrarAccesoRechazado(poolDe("panel"), {
+        usuarioId: sesion.usuarioId,
+        accion,
+        recurso: `${req.method} ${new URL(req.url).pathname}`,
+        ip: ipDelCliente(req),
+      });
+    } catch {
+      // Sin registro el panel sigue sin escribir nada.
+    }
+    return json(403, { motivo: "sin_permiso", mensaje: MENSAJE_CONSULTA });
+  };
 }
 
 export { json as respuestaJson };
