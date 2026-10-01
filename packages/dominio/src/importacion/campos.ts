@@ -61,3 +61,22 @@ export const ETIQUETA_CAMPO_IMPORTACION: Record<ClaveCampo, string> = {
   experiencias: "Experiencia",
   motivoPausa: "Motivo de pausa (interno)",
 };
+
+// Forma comparable de un encabezado: sin mayúsculas, acentos, paréntesis, «· interno» ni puntuación.
+const SIN_ACENTO: Record<string, string> = {
+  á: "a",
+  é: "e",
+  í: "i",
+  ó: "o",
+  ú: "u",
+  ü: "u",
+  ñ: "n",
+};
+export function normalizarEncabezado(t: string): string {
+  return t
+    .toLowerCase()
+    .replace(/[áéíóúüñ]/g, (c) => SIN_ACENTO[c]!)
+    .replace(/\(.*?\)|·.*$/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}

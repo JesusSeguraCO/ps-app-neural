@@ -110,3 +110,19 @@ describe("exportar y plantilla (HU-088)", () => {
     expect(normalizarEncabezado("  Código ")).toBe("codigo");
   });
 });
+
+describe("emparejamiento con las columnas reales del formato (HU-086)", () => {
+  it("los encabezados de la exportación y las claves del JSON se emparejan solos, uno a uno", async () => {
+    const { proponerEmparejamiento, camposEmparejados } = await import(
+      "@ps/dominio/importacion/emparejar"
+    );
+    for (const nombres of [
+      CAMPOS_IMPORTACION.map((c) => c.encabezado),
+      CAMPOS_IMPORTACION.map((c) => c.clave),
+    ]) {
+      const e = proponerEmparejamiento(nombres, CAMPOS_IMPORTACION);
+      expect(camposEmparejados(e).map((c) => c.clave)).toEqual(CAMPOS_IMPORTACION.map((c) => c.clave));
+      expect(e.some((c) => c.bloqueada)).toBe(false);
+    }
+  });
+});

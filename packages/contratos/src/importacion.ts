@@ -188,23 +188,7 @@ export const CAMPO: Record<ClaveCampo, CampoImportacion> = Object.fromEntries(
 
 // ─── normalización de encabezados ───────────────────────────────────────────────────────────
 
-const SIN_ACENTO: Record<string, string> = {
-  á: "a",
-  é: "e",
-  í: "i",
-  ó: "o",
-  ú: "u",
-  ü: "u",
-  ñ: "n",
-};
-export function normalizarEncabezado(t: string): string {
-  return t
-    .toLowerCase()
-    .replace(/[áéíóúüñ]/g, (c) => SIN_ACENTO[c]!)
-    .replace(/\(.*?\)|·.*$/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
+export { normalizarEncabezado } from "@ps/dominio/importacion/campos";
 
 // ─── detección del formato y lectura ────────────────────────────────────────────────────────
 

@@ -27,7 +27,7 @@
 
 ## 3. Sub-slice 3 — Exportar, pegar y emparejar (HU-088, HU-086, HU-148)
 
-- [ ] 3.1 Contrato único del formato en `packages/contratos/importacion` (columnas, encabezados autoexplicativos, `;` en listas, `[vaciar]`, marca de internos, sin consentimiento); verificar con tests de contrato
+- [x] 3.1 Contrato único del formato en `packages/contratos/importacion` (columnas, encabezados autoexplicativos, `;` en listas, `[vaciar]`, marca de internos, sin consentimiento); verificar con tests de contrato
 - [ ] 3.2 Exportación del banco en CSV y JSON y plantilla de muestra con tres ejemplos (actualizar, crear, archivar), con respaldo en área de texto si la descarga se bloquea; verificar los cinco escenarios de HU-088
 - [ ] 3.3 Detección de formato (JSON/TSV/CSV, pregunta si es ambiguo) y emparejamiento propuesto por nombre, corregible, con columnas fuera del modelo o B.4 ignoradas e informadas; verificar escenario «pegar desde la hoja de cálculo» de HU-086 y que ninguna columna B.4 llega a `perfiles`
 - [ ] 3.4 Migración `lotes_importacion`/`lote_filas` (estado `calculado`) y `calcularPlan` puro: grupos con conteo, diff solo de lo que cambia, duplicados a error y bloqueo, valores nuevos de taxonomía con conteo, exclusión por tarjeta, nada escrito en el banco; verificar escenarios 2–5 de HU-086 y la ida y vuelta exportar → pegar → todo «sin cambios»
