@@ -14,7 +14,6 @@ const completo: DatosParaPublicar = {
   primerApellido: "Salcedo",
   rol: true,
   tecnologias: 4,
-  sector: true,
   seniority: true,
   aniosExperiencia: 8,
   ciudad: true,
@@ -36,6 +35,12 @@ describe("evaluarPublicacion (HU-125)", () => {
       ["disponibilidad", true],
       ["modalidad_prueba", true],
     ]);
+    expect(r.faltanDatos).toEqual([]);
+  });
+
+  it("el sector es opcional (D24): sin sector el perfil se publica igual y no se señala", () => {
+    const r = evaluarPublicacion(completo);
+    expect(r.publicable).toBe(true);
     expect(r.faltanDatos).toEqual([]);
   });
 

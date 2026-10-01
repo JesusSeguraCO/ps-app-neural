@@ -44,7 +44,6 @@ const ERROR_CAMPO: Record<CampoObligatorio, { id: string; texto: string }> = {
   primer_apellido: { id: "pe-apellido", texto: "Falta el primer apellido." },
   rol: { id: "pe-rol", texto: "Falta el rol." },
   tecnologias: { id: "pe-tec", texto: "Falta al menos una tecnología." },
-  sector: { id: "pe-sector", texto: "Falta el sector." },
   seniority: { id: "pe-seniority", texto: "Falta el seniority." },
   anios_experiencia: { id: "pe-anios", texto: "Faltan los años de experiencia." },
   ciudad: { id: "pe-ciudad", texto: "Falta la ciudad." },
@@ -174,7 +173,6 @@ export function EditorPerfil(p: {
         primerApellido: apellido,
         rol: Boolean(rol),
         tecnologias: tecnologias.length,
-        sector: Boolean(sectorId),
         seniority: Boolean(seniorityId),
         aniosExperiencia: anios === "" ? null : Number(anios),
         ciudad: Boolean(ciudadId),
@@ -598,8 +596,6 @@ export function EditorPerfil(p: {
                         className="pp-input"
                         id="pe-sector"
                         value={sectorId}
-                        aria-invalid={falta("sector") || undefined}
-                        aria-describedby={err("sector")}
                         onChange={(e) => setSectorId(e.target.value)}
                       >
                         <option value="">Elige un sector</option>
@@ -610,9 +606,6 @@ export function EditorPerfil(p: {
                         ))}
                       </select>
                     </div>
-                    {falta("sector") && (
-                      <ErrorCampo id="pe-sector-error" texto={ERROR_CAMPO.sector.texto} />
-                    )}
                   </div>
                 </div>
               </div>

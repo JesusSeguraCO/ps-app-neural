@@ -8,7 +8,6 @@ export interface DatosParaPublicar {
   primerApellido: string;
   rol: boolean;
   tecnologias: number;
-  sector: boolean;
   seniority: boolean;
   aniosExperiencia: number | null;
   ciudad: boolean;
@@ -25,7 +24,6 @@ export type CampoObligatorio =
   | "primer_apellido"
   | "rol"
   | "tecnologias"
-  | "sector"
   | "seniority"
   | "anios_experiencia"
   | "ciudad"
@@ -38,7 +36,6 @@ export const ETIQUETA_CAMPO: Record<CampoObligatorio, string> = {
   primer_apellido: "Primer apellido",
   rol: "Rol",
   tecnologias: "Tecnologías",
-  sector: "Sector",
   seniority: "Seniority",
   anios_experiencia: "Años de experiencia",
   ciudad: "Ciudad",
@@ -72,7 +69,6 @@ export function evaluarPublicacion(d: DatosParaPublicar): EvaluacionPublicacion 
   if (!lleno(d.primerApellido)) faltas.push("primer_apellido");
   if (!d.rol) faltas.push("rol");
   if (d.tecnologias < 1) faltas.push("tecnologias");
-  if (!d.sector) faltas.push("sector");
   if (!d.seniority) faltas.push("seniority");
   if (d.aniosExperiencia === null) faltas.push("anios_experiencia");
   if (!d.ciudad) faltas.push("ciudad");

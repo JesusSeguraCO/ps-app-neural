@@ -133,6 +133,7 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - La nota de formato muestra `[vaciar]` y el límite de 200 filas por importación (spec §6 y §8).
 - El panel no se deja incrustar (`X-Frame-Options: DENY`): el respaldo «¿No arranca la descarga? Ver para copiar» cubre cualquier bloqueo de descarga del navegador.
 - El emparejamiento final se reaplica en el servidor como una plantilla sobre los mismos encabezados: una columna B.4 o de consentimiento sigue bloqueada aunque el navegador pida otra cosa.
+- **Sector (D23, D24, sponsor 2026-10-01):** campo de perfilamiento con varios valores, como las tecnologías, y opcional para publicar. El editor deja de exigirlo; el selector múltiple llega al inicio del sub-slice 4.
 - Lo que el prototipo muestra y entrega el sub-slice 4, sin construir aquí: «Importar N perfiles», el resultado, «Historial», descargar errores y deshacer (HU-141, HU-142, HU-087).
 
 ## Sub-slices (orden del DoR, `dor-pass.md`)

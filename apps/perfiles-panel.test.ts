@@ -163,7 +163,9 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
           perfil.evaluacion.faltanDatos.map((f: { etiqueta: string }) => f.etiqueta),
         ).toContain("Primer apellido");
         const html = await (await leer(`/inventario/${perfil.codigo}`)).text();
-        expect(html).toContain("Completar 10 datos obligatorios");
+        // El sector es opcional (D24): 9 obligatorios, no 10.
+        expect(html).toContain("Completar 9 datos obligatorios");
+        expect(html).not.toContain("Falta el sector.");
         expect(html).toContain("Falta el primer apellido.");
       });
       it("un campo de la lista negra B.4 se rechaza entero", async () => {

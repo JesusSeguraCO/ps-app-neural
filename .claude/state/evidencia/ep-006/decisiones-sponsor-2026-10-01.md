@@ -1,0 +1,8 @@
+# EP-006 · decisiones del sponsor — 2026-10-01 (Jesús Segura, en sesión)
+
+- **D20 · «Qué le interesa aportar» es Motivación.** Valor cualitativo para humanizar el perfil. Por B.4/RF-3.7 la motivación nunca cruza al portal: se guarda como dato interno (`perfiles.aporte`) y no entra en ninguna vista de `operacion`. Si en algún momento se quiere mostrar al cliente, es un cambio de discovery (enmienda de B.4 y RF-3.7), no de construcción.
+- **D21 · El consentimiento es gestión interna de la administradora y Talento Humano.** El profesional nunca accede al portal. Ante el cliente, un perfil revocado se muestra con el estado genérico de EP-001 («No publicado») sin revelar la causa.
+- **D22 · Rol con buscador escribible** (desviación 1 del sub-slice 2) aprobada.
+- Abierta: autor del consentimiento por correo (identidad del panel) en lugar del nombre del prototipo.
+- **D23 · El sector es un campo de perfilamiento más, con varios valores.** Se comporta como las tecnologías: lista de valores del catálogo, sin tope de uno; en la ficha se le da más peso visual. El editor del panel (HU-125) pasa a admitir varios sectores, coherente con la BD (`perfil_sectores`), la exportación y la importación (spec §9). Se corrige al inicio del sub-slice 4, antes de que la importación escriba en el banco.
+- **D24 · El sector es opcional para publicar.** Un perfil puede tener uno, varios o ninguno (p. ej. un arquitecto con experiencia transversal). Deja de figurar entre los datos obligatorios de `evaluarPublicacion` (9 obligatorios, antes 10); la tarjeta del portal ya omite el sector cuando no hay. Sugerencia de redacción para el PRD (RF-3.1): «… 3–5 tecnologías ancla, sector (si lo tiene), modalidad…».

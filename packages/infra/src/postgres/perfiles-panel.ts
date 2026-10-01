@@ -246,7 +246,6 @@ function evaluar(p: Omit<PerfilEditor, "evaluacion">): EvaluacionPublicacion {
     primerApellido: p.primerApellido ?? "",
     rol: Boolean(p.rol),
     tecnologias: p.tecnologias.length,
-    sector: Boolean(p.sector),
     seniority: Boolean(p.seniority),
     aniosExperiencia: p.aniosExperiencia,
     ciudad: Boolean(p.ciudad),

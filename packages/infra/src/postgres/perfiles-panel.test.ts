@@ -158,7 +158,6 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
         "primer_apellido",
         "rol",
         "tecnologias",
-        "sector",
         "seniority",
         "anios_experiencia",
         "ciudad",
