@@ -124,6 +124,17 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - Lo que el prototipo del editor muestra y entregan sub-slices posteriores, sin construir aquí: «Vista previa» y «Publicar» (sub-slice 5, HU-128/129/130); evaluador, fecha, resultado, reporte detallado y artefacto (sub-slice 6, HU-131/140). En el listado: disponibilidad editable en la fila, selección en bloque y «Más acciones» (sub-slice 7), pestaña «Con incoherencia» (8), «Importar» (3).
 - «Qué le interesa aportar» es Motivación (D20, sponsor 2026-10-01): dato interno (`aporte`, 280) que no cruza al portal (B.4, RF-3.7). Un perfil revocado se muestra al cliente con el estado genérico «No publicado» sin revelar la causa (D21).
 
+**Desviaciones del sub-slice 3** (evidencia `.claude/state/evidencia/ep-006/ss3/fidelidad-ss3.md`; pendientes del visto bueno del sponsor):
+- Aviso «Valores nuevos en la taxonomía» en la vista previa con el valor exacto, cuántas veces se repite y la sugerencia: HU-086 lo exige; el prototipo solo marca el valor en la tarjeta (eso también se hace).
+- La disponibilidad se muestra en la vista previa como la fecha que se guarda (AAAA-MM-DD); los rótulos de banda del prototipo son anteriores a la decisión del 2026-09-28.
+- Las migas no suben a un tercer nivel «Vista previa»: el asistente cambia de paso sin recargar la página.
+- Lista de emparejamientos guardados sin «Ver columnas»: las columnas en «no importar» van en la línea de meta; autor por correo (identidad del panel).
+- Formato ambiguo: el asistente pregunta si es hoja de cálculo, CSV o JSON (spec §2); el prototipo siempre lo reconoce.
+- La nota de formato muestra `[vaciar]` y el límite de 200 filas por importación (spec §6 y §8).
+- El panel no se deja incrustar (`X-Frame-Options: DENY`): el respaldo «¿No arranca la descarga? Ver para copiar» cubre cualquier bloqueo de descarga del navegador.
+- El emparejamiento final se reaplica en el servidor como una plantilla sobre los mismos encabezados: una columna B.4 o de consentimiento sigue bloqueada aunque el navegador pida otra cosa.
+- Lo que el prototipo muestra y entrega el sub-slice 4, sin construir aquí: «Importar N perfiles», el resultado, «Historial», descargar errores y deshacer (HU-141, HU-142, HU-087).
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.

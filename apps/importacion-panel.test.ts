@@ -430,6 +430,8 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
         ])
           expect(html, t).toContain(t);
         expect(html).toMatch(/<a class="pp-sidelink" href="\/importar" aria-current="page">/);
+        // Respaldo de HU-088: el área de texto para copiar existe aunque la descarga no arranque.
+        expect(html).toMatch(/<textarea[^>]*id="copiar-plantilla"[^>]*readOnly|<textarea[^>]*readonly[^>]*id="copiar-plantilla"/i);
       });
     });
   },

@@ -10,7 +10,7 @@
 - Paso 2: `packages/dominio/src/importacion/plan.ts` `calcularPlan` + `mapearFilas` (+ test, 30 ✓; mutaciones en `ss3/3.4-plan.md`). Ayudantes de celda (`[vaciar]`, listas, experiencia) en `dominio/importacion/celdas.ts`, re-exportados por el contrato. Incoherencias RF-8.14 en la vista previa quedan para la tarea 8.2.
 
 - Pasos 3–5: migración 0015 (+ `rechazadas`), infra (`bancoEnFormato`, `catalogosImportacion`, lotes, recálculo, plantillas), rutas `/api/v1/importacion/*` (acción `importacion.ejecutar`), pantalla `/importar` (menú habilitado), `apps/importacion-panel.test.ts` 15 ✓ contra el panel real; vitest completo 822 ✓ en c7e38af. BD dev migrada a 0015.
-- Bloqueo 2026-10-01: la fidelidad MCP no arranca porque otra sesión de Claude Code (PID 38045) tiene el Chrome del MCP. Panel standalone en :3101 sin EDGE_SECRET; sesión local de admin@trycore.com en `$TMPDIR/sesion-fid.txt`.
+- 2026-10-01: Chrome de otra sesión cerrado con autorización del usuario. Fidelidad de las 6 pantallas (`fidelidad-ss3.md`), journey 3.7 (`journey-ss3.md`), mutación 14/14 (`mutacion-ss3.json`), checklist `wiring-ss3.json` en passing. **Sub-slice 3 completo**; sigue el sub-slice 4.
 
 ## Por hacer (orden)
 1. ~~emparejar.ts~~ HECHO — `packages/dominio/src/importacion/emparejar.ts`: proponer columna→campo por encabezado normalizado (encabezado, clave, alias); columnas B.4 (tel/teléfono/celular/correo/email/foto/cv/hoja de vida/motivación/promedio/disc) bloqueadas en «no importar» con motivo («Datos de contacto: nunca se importan»); `consentimiento`/`resultadoValidacion` → rechazadas con motivo; desconocidas → sin emparejar e informadas; aplicar plantilla: conocidas como se guardó, faltantes listadas (sus campos no se tocan), nuevas sin emparejar.
