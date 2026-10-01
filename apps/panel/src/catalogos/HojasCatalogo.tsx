@@ -302,7 +302,7 @@ function HojaValor({
           {tipo === "tecnologia" && (
             <div className="pp-campo">
               <label className="pp-label" htmlFor="ct-grupo">
-                Grupo <span className="pp-label__opcional">(opcional)</span>
+                Grupo
               </label>
               <div className="pp-select">
                 <select

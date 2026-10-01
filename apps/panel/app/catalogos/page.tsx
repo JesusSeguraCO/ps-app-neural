@@ -24,7 +24,7 @@ import {
   AccionesFila,
   type ContextoCatalogo,
 } from "../../src/catalogos/HojasCatalogo";
-import { SelectAuto } from "../../src/marco/FiltroAuto";
+import { AtajoBuscador, SelectAuto } from "../../src/marco/FiltroAuto";
 import { AvisoDecision } from "../../src/marco/Hoja";
 import { MarcoPanel } from "../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
@@ -182,11 +182,13 @@ export default async function Catalogos({
             </svg>
             <input
               className="pp-input"
+              id="ct-buscar"
               type="search"
               name="q"
               placeholder={`Nombre ${FEMENINO[tipo] ? "de la" : "del"} ${et.singular}`}
               defaultValue={q}
             />
+            <AtajoBuscador id="ct-buscar" />
           </label>
         </form>
       </div>

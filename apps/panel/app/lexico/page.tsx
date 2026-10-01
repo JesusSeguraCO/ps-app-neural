@@ -13,9 +13,10 @@ import {
   propuestasPendientes,
   type Candidata,
 } from "@ps/infra/postgres/lexico";
+import { valoresActivos } from "@ps/infra/postgres/catalogos-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { Equivalencias, PantallaLexico } from "../../src/lexico/Lexico";
-import { SelectAuto } from "../../src/marco/FiltroAuto";
+import { AtajoBuscador, SelectAuto } from "../../src/marco/FiltroAuto";
 import { AvisoDecision } from "../../src/marco/Hoja";
 import { MarcoPanel } from "../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
@@ -110,14 +111,14 @@ function FilaCandidata({ c, escribe }: { c: Candidata; escribe: boolean }) {
               </button>
               <button
                 type="button"
-                className="pp-btn pp-btn--contorno pp-btn--sm"
+                className="pp-btn pp-btn--fantasma pp-btn--sm"
                 data-lx="reclutamiento"
                 data-id={c.id}
               >
                 Llevar a reclutamiento
               </button>
               <a
-                className="pp-btn pp-btn--primario pp-btn--sm"
+                className="pp-btn pp-btn--contorno pp-btn--sm"
                 href="#lx-alta"
                 data-lx="llevar-lexico"
                 data-id={c.id}
@@ -149,10 +150,13 @@ export default async function Lexico({
   const q = (p.q ?? "").slice(0, 200);
   const bd = poolDe("panel");
   const ahora = new Date();
-  const [terminos, propuestas, periodos] = await Promise.all([
+  const [terminos, propuestas, periodos, roles, tecnologias, sectores] = await Promise.all([
     listarLexico(bd),
     propuestasPendientes(bd),
     periodosCandidatas(bd),
+    valoresActivos(bd, "rol"),
+    valoresActivos(bd, "tecnologia"),
+    valoresActivos(bd, "sector"),
   ]);
   const periodo = periodos.includes(p.periodo ?? "") ? p.periodo! : periodos[0];
   const candidatas = periodo ? await candidatasDelPeriodo(bd, periodo) : [];
@@ -231,6 +235,7 @@ export default async function Lexico({
               placeholder="Término o valor del catálogo"
               defaultValue={q}
             />
+            <AtajoBuscador id="lx-buscar" />
           </form>
         ) : (
           periodos.length > 0 && (
@@ -376,7 +381,7 @@ export default async function Lexico({
   );
 
   return (
-    <MarcoPanel sesion={sesion} activo="lexico" migas={["Banco de perfiles", "Léxico"]}>
+    <MarcoPanel sesion={sesion} activo="lexico" migas={["Banco de perfiles", "Léxico de búsqueda"]}>
       <div className="pp-encabezado">
         <div className="pp-encabezado__texto">
           <h1 className="pp-encabezado__titulo">Léxico de búsqueda</h1>
@@ -406,6 +411,11 @@ export default async function Lexico({
           .filter((c) => c.destino === null)
           .map((c) => ({ id: c.id, consulta: c.consulta, sugerido: sugerido(c) }))}
         candidataInicial={p.candidata}
+        valores={{
+          rol: roles.map((v) => v.nombre),
+          tecnologia: tecnologias.map((v) => v.nombre),
+          sector: sectores.map((v) => v.nombre),
+        }}
         lista={listado}
       />
       <AvisoDecision />

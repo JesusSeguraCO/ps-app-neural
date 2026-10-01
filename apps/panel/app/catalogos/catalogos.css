@@ -3,6 +3,8 @@
 .ct-barra__derecha .pp-buscador { width: 260px; margin-bottom: 0; }
 .ct-filtro { width: 152px; flex: none; }
 .pp-hoja { width: min(480px, 100%); }
+/* La hoja de una fila nace dentro de la celda de acciones: no hereda su alineación ni su nowrap. */
+.ct-acc .pp-hoja, .ct-acc .pp-hoja-velo { text-align: left; white-space: normal; font-weight: var(--tc-fw-regular); }
 .ct-filtro .pp-input { min-height: 36px; font-size: var(--tc-fs-small); }
 .ct-marco { max-height: none; }
 .ct-marco .pp-tabla { min-width: 620px; table-layout: fixed; }

@@ -107,6 +107,14 @@ Registrar un colocado es una operación del `ServicioPerfiles` que crea la `colo
 
 Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f671c), con tokens y componentes de `packages/ui`; el menú del panel habilita sus destinos a medida que cada sub-slice los entrega (hoy deshabilitados). Fidelidad verificada con captura real (MCP chrome-devtools) en la fase smoke de cada sub-slice; toda desviación se registra aquí con su razón y la aprobación del sponsor. No se generan pantallas sin aprobación humana.
 
+**Desviaciones del sub-slice 1** (evidencia `.claude/state/evidencia/ep-006/ss1/fidelidad-ss1.md`; pendientes del visto bueno del sponsor):
+- Alta/edición de modalidad de prueba sin pantalla en el prototipo: hoja PP:hoja con nombre, familia, texto de cara al cliente (obligatorio, RF-8.16.8), reto, entregables y criterios (plantilla de HU-140).
+- Menú emergente «Más acciones» por fila (Editar, Desactivar, Fusionar / Reactivar): el prototipo solo dibuja el botón; en móvil es la única vía a Editar.
+- Hoja de fusión con «Elegir otros valores» para cambiar el par antes de ver el impacto.
+- Aviso tras guardar un término sin «Deshacer»: ninguna HU lo pide; se corrige con «Editar».
+- El reconocimiento de candidatas usa el intérprete determinista mínimo (catálogo + léxico); textos como «Reconoció «ingeniero»» del prototipo dependen del intérprete de EP-009.
+- Paginación de 25 (catálogos) y 20 (léxico) filas; grupos de tecnología como lista fija del dominio.
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.

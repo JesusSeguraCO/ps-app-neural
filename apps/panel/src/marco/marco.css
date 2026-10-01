@@ -5,3 +5,7 @@
 /* Ancla los textos solo para lector (.pp-sr, absolutos) dentro del menú: sin ella escapan del menú
    horizontal con scroll en móvil y ensanchan todo el documento. */
 .pp-sidebar { position: relative; }
+/* La hoja recibe el foco al abrir (para Escape y lectores) sin dibujar un borde de foco propio. */
+.pp-hoja[tabindex="-1"]:focus { outline: none; }
+/* Menú horizontal en pantallas estrechas: la marca y el destino actual van primero (prototipo). */
+@media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }

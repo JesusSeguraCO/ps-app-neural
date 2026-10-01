@@ -45,7 +45,7 @@ test.describe("marco del panel con sesión", () => {
     await abrirSesion(context, baseURL!);
   });
 
-  test("escritorio 1440: barra lateral y contenido en dos columnas, 10 destinos deshabilitados; Enlaces y Peticiones activos", async ({
+  test("escritorio 1440: barra lateral y contenido en dos columnas, 8 destinos deshabilitados; Enlaces, Peticiones, Catálogos y Léxico activos", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,8 +71,8 @@ test.describe("marco del panel con sesión", () => {
     expect(m.display).toBe("grid");
     expect(m.lateralAncho).toBeLessThan(400);
     expect(m.cuerpoALaDerecha).toBe(true);
-    expect(m.inactivos).toBe(10);
-    expect(m.conHref).toBe(2); // Enlaces (sub-slice 4) y Peticiones (sub-slice 6b)
+    expect(m.inactivos).toBe(8);
+    expect(m.conHref).toBe(4); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1)
     expect(m.scroll).toBe(0);
     expect(errores).toEqual([]);
   });
@@ -124,13 +124,22 @@ test("HU-123: al pedir el código, el foco pasa a la primera casilla (prototipo 
   await expect(page.getByLabel("Dígito 1")).toBeFocused();
 });
 
-test.describe("pantallas de enlaces y peticiones con sesión (HU-122, HU-145, HU-146)", () => {
+test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: HU-089, HU-143, HU-139)", () => {
   test.beforeEach(async ({ context, baseURL }, info) => {
     test.skip(info.project.name !== "panel", "solo el panel");
     await abrirSesion(context, baseURL!);
   });
 
-  for (const ruta of ["/enlaces", "/enlaces/nuevo", "/peticiones", "/peticiones/renovaciones"]) {
+  for (const ruta of [
+    "/enlaces",
+    "/enlaces/nuevo",
+    "/peticiones",
+    "/peticiones/renovaciones",
+    "/catalogos",
+    "/catalogos?tipo=modalidad_prueba",
+    "/lexico",
+    "/lexico?vista=candidatas",
+  ]) {
     test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
       const errores: string[] = [];
       page.on("console", (m) => {

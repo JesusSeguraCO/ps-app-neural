@@ -1,6 +1,7 @@
 "use client";
+// Controles de las barras de filtro del panel.
 // Select de filtro que envía su formulario GET al cambiar (sin botón «Aplicar»).
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 export function SelectAuto(p: { id: string; name: string; valor: string; etiqueta: string; className?: string; children: ReactNode }) {
   return (
@@ -18,5 +19,24 @@ export function SelectAuto(p: { id: string; name: string; valor: string; etiquet
         {p.children}
       </select>
     </div>
+  );
+}
+
+// Atajo «/» del buscador (prototipo: pp-kbd en el campo): lleva el foco al buscador de la página.
+export function AtajoBuscador({ id }: { id: string }) {
+  useEffect(() => {
+    const tecla = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (e.key !== "/" || t.closest("input, textarea, select, [contenteditable]")) return;
+      e.preventDefault();
+      document.getElementById(id)?.focus();
+    };
+    document.addEventListener("keydown", tecla);
+    return () => document.removeEventListener("keydown", tecla);
+  }, [id]);
+  return (
+    <span className="pp-kbd pp-buscador__atajo" aria-hidden="true">
+      /
+    </span>
   );
 }

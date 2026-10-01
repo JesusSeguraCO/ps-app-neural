@@ -86,7 +86,15 @@ export function Equivalencias({ lista, bloque }: { lista: EquivalenciaVista[]; b
   );
 }
 
-function Formulario({ modo, alCancelar }: { modo: Modo; alCancelar: (() => void) | null }) {
+function Formulario({
+  modo,
+  alCancelar,
+  valores,
+}: {
+  modo: Modo;
+  alCancelar: (() => void) | null;
+  valores: Record<Tipo, string[]>;
+}) {
   const inicial = (() => {
     if (modo.tipo === "termino" || modo.tipo === "propuesta") {
       const f = modo.tipo === "termino" ? modo.termino : modo.propuesta;
@@ -277,7 +285,9 @@ function Formulario({ modo, alCancelar }: { modo: Modo; alCancelar: (() => void)
             className="pp-input"
             id="lx-valor"
             type="text"
-            placeholder="Escribe el valor tal como está en el catálogo"
+            placeholder="Escribe y elige de la lista"
+            list={`lx-valores-${tipo}`}
+            autoComplete="off"
             value={valor}
             onChange={(e) => (setValor(e.target.value), setInvalido(null))}
             aria-invalid={invalido ? true : undefined}
@@ -330,10 +340,17 @@ function Formulario({ modo, alCancelar }: { modo: Modo; alCancelar: (() => void)
             <p className="pp-ayuda" id="lx-valor-msg">
               {quitadas.length > 0
                 ? `Quitaste «${quitadas.map((q) => `${ETIQUETA[q.tipo][0]}: ${q.nombre}`).join("», «")}» que proponía Gemini. Solo valores que existen en el catálogo.`
-                : "Solo valores que existen en el catálogo. Varios del mismo tipo, separados por coma."}
+                : "Solo valores que existen en el catálogo."}
             </p>
           )}
         </div>
+        {TIPOS.map((t) => (
+          <datalist key={t} id={`lx-valores-${t}`}>
+            {valores[t].map((v) => (
+              <option key={v} value={v} />
+            ))}
+          </datalist>
+        ))}
         {error && (
           <p className="pp-error" role="alert">
             {error}
@@ -361,6 +378,8 @@ export function PantallaLexico(p: {
   terminos: TerminoVista[];
   candidatas: Array<CandidataVista & { sugerido: string }>;
   candidataInicial?: string;
+  // Valores activos del catálogo por tipo, para elegir de la lista al escribir.
+  valores: Record<Tipo, string[]>;
 }) {
   const inicialCandidata = p.candidatas.find((c) => c.id === p.candidataInicial);
   const [modo, setModo] = useState<Modo>(
@@ -476,14 +495,14 @@ export function PantallaLexico(p: {
                         </button>
                         <button
                           type="button"
-                          className="pp-btn pp-btn--contorno pp-btn--sm"
+                          className="pp-btn pp-btn--fantasma pp-btn--sm"
                           onClick={() => setModo({ tipo: "propuesta", propuesta: x })}
                         >
                           Editar
                         </button>
                         <button
                           type="button"
-                          className="pp-btn pp-btn--primario pp-btn--sm"
+                          className="pp-btn pp-btn--contorno pp-btn--sm"
                           onClick={() =>
                             decidir(
                               `/api/v1/lexico/propuestas/${x.id}/aprobar`,
@@ -513,6 +532,7 @@ export function PantallaLexico(p: {
         <Formulario
           key={clave}
           modo={modo}
+          valores={p.valores}
           alCancelar={modo.tipo === "alta" ? null : () => setModo({ tipo: "alta" })}
         />
       )}
