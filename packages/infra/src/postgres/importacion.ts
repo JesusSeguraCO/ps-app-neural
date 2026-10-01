@@ -163,23 +163,24 @@ export async function registrarLote(bd: pg.Pool, autor: Autor, l: NuevoLote): Pr
         ],
       )
     ).rows[0].id as string;
-    const datos = new Map(l.filas.map((f) => [f.numero, f.celdas]));
+    const entrada = new Map(l.filas.map((f) => [f.numero, f]));
     for (const f of l.plan.filas)
       await tx.query(
         `INSERT INTO inventario.lote_filas
-           (lote_id, numero, codigo, grupo, incluida, datos, cambios, errores, avisos, motivo_omision)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+           (lote_id, numero, codigo, grupo, incluida, datos, cambios, errores, avisos, motivo_omision, rechazadas)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [
           id,
           f.numero,
           f.codigo,
           f.grupo,
           f.incluida,
-          JSON.stringify(datos.get(f.numero) ?? {}),
+          JSON.stringify(entrada.get(f.numero)?.celdas ?? {}),
           JSON.stringify(f.cambios),
           JSON.stringify(f.errores),
           JSON.stringify(f.avisos),
           f.motivoOmision ?? null,
+          JSON.stringify(entrada.get(f.numero)?.rechazadas ?? []),
         ],
       );
     await tx.query("COMMIT");
@@ -248,6 +249,80 @@ export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | n
   };
 }
 
+// Lo necesario para recalcular el plan de un lote (desmarcar tarjetas, cambiar el modo): sus filas
+// tal como se emparejaron, con las columnas rechazadas.
+export async function filasDelLote(
+  bd: Consultor,
+  id: string,
+): Promise<{ estado: string; modo: Modo; filas: FilaMapeada[] } | null> {
+  const l = (
+    await bd.query(`SELECT estado, modo FROM inventario.lotes_importacion WHERE id = $1`, [id])
+  ).rows[0];
+  if (!l) return null;
+  const r = await bd.query(
+    `SELECT numero, datos, rechazadas FROM inventario.lote_filas WHERE lote_id = $1 ORDER BY numero`,
+    [id],
+  );
+  return {
+    estado: l.estado,
+    modo: l.modo,
+    filas: r.rows.map((f) =>
+      f.rechazadas.length
+        ? { numero: f.numero, celdas: f.datos, rechazadas: f.rechazadas }
+        : { numero: f.numero, celdas: f.datos },
+    ),
+  };
+}
+
+// Reescribe el plan de un lote que sigue `calculado` (bloqueado con FOR UPDATE: un aplicar en curso
+// del sub-slice 4 no ve un plan a medias).
+export async function actualizarPlanLote(
+  bd: pg.Pool,
+  id: string,
+  modo: Modo,
+  plan: Plan,
+): Promise<void> {
+  const tx = await bd.connect();
+  try {
+    await tx.query("BEGIN");
+    const l = (
+      await tx.query(`SELECT estado FROM inventario.lotes_importacion WHERE id = $1 FOR UPDATE`, [
+        id,
+      ])
+    ).rows[0];
+    if (!l) throw new RechazoInventario("no_existe");
+    if (l.estado !== "calculado")
+      throw new RechazoInventario("lote_no_calculado", { estado: l.estado });
+    await tx.query(
+      `UPDATE inventario.lotes_importacion SET modo = $2, conteos = $3, bloqueado = $4, actualizado_en = now()
+        WHERE id = $1`,
+      [id, modo, JSON.stringify(plan.conteos), plan.bloqueado],
+    );
+    for (const f of plan.filas)
+      await tx.query(
+        `UPDATE inventario.lote_filas
+            SET grupo = $3, incluida = $4, cambios = $5, errores = $6, avisos = $7, motivo_omision = $8
+          WHERE lote_id = $1 AND numero = $2`,
+        [
+          id,
+          f.numero,
+          f.grupo,
+          f.incluida,
+          JSON.stringify(f.cambios),
+          JSON.stringify(f.errores),
+          JSON.stringify(f.avisos),
+          f.motivoOmision ?? null,
+        ],
+      );
+    await tx.query("COMMIT");
+  } catch (e) {
+    await tx.query("ROLLBACK");
+    throw e;
+  } finally {
+    tx.release();
+  }
+}
+
 // ─── plantillas de emparejamiento (HU-148) ───────────────────────────────────────────────────
 
 export interface PlantillaGuardada {
@@ -300,4 +375,8 @@ export async function listarPlantillas(bd: Consultor): Promise<PlantillaGuardada
     autor: f.autor,
     actualizadaEn: f.actualizada_en.toISOString(),
   }));
+}
+
+export async function leerPlantilla(bd: Consultor, id: string): Promise<PlantillaGuardada | null> {
+  return (await listarPlantillas(bd)).find((p) => p.id === id) ?? null;
 }

@@ -13,7 +13,10 @@ import {
   bancoEnFormato,
   catalogosImportacion,
   guardarPlantilla,
+  actualizarPlanLote,
+  filasDelLote,
   leerLote,
+  leerPlantilla,
   listarPlantillas,
   registrarLote,
 } from "./importacion";
@@ -206,6 +209,93 @@ describe.skipIf(!HAY_BD)(
       expect(despues.rows[0]).toEqual(antes.rows[0]);
     });
 
+    it("recalcular: desmarcar una de dos filas repetidas desbloquea y conserva las columnas rechazadas", async () => {
+      const banco = await bancoEnFormato(panel);
+      const contexto = {
+        banco: new Map(banco.map((f) => [f.codigo as string, f])),
+        catalogos: await catalogosImportacion(panel),
+        hoy: HOY,
+      };
+      const filas = [
+        {
+          numero: 2,
+          celdas: { codigo: "PS-0142", ciudad: "Cali" },
+          rechazadas: [{ columna: "Consentimiento", detalle: "no se concede" }],
+        },
+        { numero: 3, celdas: { codigo: "PS-0142", ciudad: "Bogotá" } },
+      ];
+      const plan = calcularPlan({ ...contexto, filas, modo: "crear_y_actualizar" });
+      expect(plan.bloqueado).toBe(true);
+      const id = await registrarLote(panel, autor, {
+        archivoHash: "c".repeat(64),
+        formato: "csv",
+        modo: "crear_y_actualizar",
+        emparejamiento: [],
+        filas,
+        plan,
+      });
+      const guardado = await filasDelLote(panel, id);
+      expect(guardado).toMatchObject({ estado: "calculado", modo: "crear_y_actualizar" });
+      expect(guardado!.filas).toEqual(filas);
+      const nuevo = calcularPlan({
+        ...contexto,
+        filas: guardado!.filas,
+        modo: "crear_y_actualizar",
+        excluidas: new Set([3]),
+      });
+      await actualizarPlanLote(panel, id, "crear_y_actualizar", nuevo);
+      const lote = (await leerLote(panel, id))!;
+      expect(lote.bloqueado).toBe(false);
+      expect(lote.filas.map((f) => [f.numero, f.grupo, f.incluida])).toEqual([
+        [2, "actualizado", true],
+        [3, "actualizado", false],
+      ]);
+      expect(lote.filas[0]!.avisos).toEqual([
+        { campo: null, mensaje: "Columna «Consentimiento» rechazada: no se concede" },
+      ]);
+    });
+
+    it("un lote que ya no está calculado no se recalcula", async () => {
+      const plan = calcularPlan({
+        filas: [],
+        modo: "crear_y_actualizar",
+        banco: new Map(),
+        catalogos: await catalogosImportacion(panel),
+        hoy: HOY,
+      });
+      const id = await registrarLote(panel, autor, {
+        archivoHash: "d".repeat(64),
+        formato: "csv",
+        modo: "crear_y_actualizar",
+        emparejamiento: [],
+        filas: [{ numero: 2, celdas: { codigo: "PS-0142" } }],
+        plan: {
+          ...plan,
+          filas: [
+            {
+              numero: 2,
+              codigo: "PS-0142",
+              grupo: "sin_cambios",
+              incluida: true,
+              cambios: [],
+              errores: [],
+              avisos: [],
+            },
+          ],
+        },
+      });
+      await bd.instalacion.query(
+        `UPDATE inventario.lotes_importacion SET estado = 'aplicado' WHERE id = $1`,
+        [id],
+      );
+      await expect(actualizarPlanLote(panel, id, "solo_crear", plan)).rejects.toMatchObject({
+        motivo: "lote_no_calculado",
+      });
+      await expect(
+        actualizarPlanLote(panel, "00000000-0000-4000-8000-000000000000", "solo_crear", plan),
+      ).rejects.toMatchObject({ motivo: "no_existe" });
+    });
+
     it("plantillas: guardar con nombre, listarlas y rechazar el nombre repetido", async () => {
       const columnas = [
         { columna: "Cód.", clave: "codigo" as const },
@@ -216,6 +306,11 @@ describe.skipIf(!HAY_BD)(
         columnas,
       });
       expect(p).toMatchObject({ nombre: "Disponibilidad mensual", columnas });
+      expect(await leerPlantilla(panel, p.id)).toMatchObject({
+        nombre: "Disponibilidad mensual",
+        columnas,
+      });
+      expect(await leerPlantilla(panel, "00000000-0000-4000-8000-000000000000")).toBeNull();
       const lista = await listarPlantillas(panel);
       expect(lista.map((x) => x.nombre)).toContain("Disponibilidad mensual");
       expect(lista.find((x) => x.id === p.id)).toMatchObject({

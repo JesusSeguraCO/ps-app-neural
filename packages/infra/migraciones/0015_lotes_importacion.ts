@@ -3,6 +3,7 @@
 //    (`calculado`·`aplicando`·`aplicado`·`abortado`·`revertido`). En este sub-slice solo nace
 //    `calculado`; aplicar y revertir son del worker (sub-slice 4), que lee y actualiza.
 //  - `lote_filas`: por fila, su grupo, las celdas ya emparejadas, el diff, los errores y los avisos.
+//    `rechazadas` guarda el nombre de las columnas rechazadas para recalcular al desmarcar.
 //    Solo claves del formato (la lista se fija aquí, copia de CLAVES_CAMPO a esta fecha): una columna
 //    B.4 no tiene dónde guardarse. El texto original de la fila (HU-142) lo decide el sub-slice 4.
 //  - `plantillas_emparejamiento`: nombre único normalizado y `columnas` (columna → campo o null).
@@ -79,6 +80,8 @@ CREATE TABLE inventario.lote_filas (
   cambios   jsonb NOT NULL DEFAULT '[]' CHECK (jsonb_typeof(cambios) = 'array'),
   errores   jsonb NOT NULL DEFAULT '[]' CHECK (jsonb_typeof(errores) = 'array'),
   avisos    jsonb NOT NULL DEFAULT '[]' CHECK (jsonb_typeof(avisos) = 'array'),
+  -- Columnas rechazadas (consentimiento, validación) que traían algo: solo su nombre y el motivo.
+  rechazadas jsonb NOT NULL DEFAULT '[]' CHECK (jsonb_typeof(rechazadas) = 'array'),
   motivo_omision text,
   PRIMARY KEY (lote_id, numero)
 );
