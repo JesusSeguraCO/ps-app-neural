@@ -1,7 +1,7 @@
 ---
 id: flow-006-administracion-del-inventario
 epica: EP-006
-historias_cubiertas: [HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-131, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-150, HU-151]
+historias_cubiertas: [HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-150, HU-151]
 ---
 
 # Flow 006 — Administración del inventario
@@ -181,7 +181,6 @@ sequenceDiagram
 sequenceDiagram
   participant TH as Talento Humano
   participant P as Panel
-  participant M as Mercadeo
   participant C as Cliente
 
   %% HU-127
@@ -207,29 +206,10 @@ sequenceDiagram
     P-->>TH: Puede publicarse con la experiencia despersonalizada, sin clientes nombrados
   end
 
-  %% HU-131
-  TH->>P: Adjunta el artefacto de evidencia tal como lo tiene
-  %% HU-131
-  P-->>TH: Lo almacena internamente, lo asocia a esa validación y lo deja recuperable
-
-  %% HU-131
-  TH->>P: Abre el artefacto desde el perfil en el panel
-  %% HU-131
-  P-->>TH: Lo descarga tal como se adjuntó, sin resumirlo ni extraer datos de él
-
-  %% HU-131
-  M->>P: Intenta descargar el artefacto con rol observador
-  %% HU-131
-  P-->>M: No lo entrega, explica que solo la administradora lo descarga y muestra que existe, sin enlace
-
-  %% HU-131
-  alt Video o archivo de más de 64 MB
-    %% HU-131
-    P-->>TH: Lo rechaza, dice qué admite y conserva lo ya registrado del perfil
-  end
+  %% D29 (sponsor, 2026-10-01): adjuntar el artefacto se difiere a v2; sus arcos de adjuntar, descargar, observador y formato se retiran de esta versión
 
   %% HU-140
-  TH->>P: Pide el borrador de un perfil con modalidad de prueba y artefacto adjunto
+  TH->>P: Pide el borrador de un perfil con modalidad de prueba elegida
   %% HU-140
   P-->>TH: Precarga reto, entregables y criterios desde la modalidad de prueba, marcando su origen
 
@@ -336,12 +316,7 @@ sequenceDiagram
 
   %% HU-129
   P-->>C: La ficha publicada coincide con lo previsualizado
-  %% HU-131
-  P-->>C: Muestra el reporte estructurado, nunca el artefacto crudo ni un enlace a él
-  %% HU-131
-  C->>P: Pide la dirección de descarga del artefacto con su sesión del portal
-  %% HU-131
-  P-->>C: No responde con el artefacto
+  %% D29: adjuntar el artefacto se difiere a v2; el arco «el artefacto nunca se publica» se retira con ella; sin artefacto guardado no hay nada que exponer
 ```
 
 ## Diagrama — mantenimiento y gobierno
@@ -681,7 +656,6 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
 | Corregir lo que falló | HU-142 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Revertir importación | HU-087 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Registrar consentimiento | HU-127 | AC-1 (happy) · AC-2 y AC-3 (error) · AC-4 (edge) |
-| Adjuntar, descargar y ver el artefacto en el panel | HU-131 | AC-1 y AC-2 (happy) · AC-3 y AC-4 (error) · AC-5 (edge) |
 | Precargar borrador desde la modalidad de prueba | HU-140 | AC-1 (happy) · AC-2 (error) · AC-3 (edge) |
 | Previsualizar | HU-129 | AC-1 (happy) · AC-2 (error) · AC-3 y AC-4 (edge) |
 | Bloqueo sin consentimiento o sin modalidad | HU-128 | AC-1 (happy) · AC-2 y AC-3 (error) · AC-4 (edge) |
@@ -722,6 +696,7 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
   - **D13 · HU-151:** alta, cambio de rol y baja en la lista de acceso, con correo externo rechazado y guarda del último administrador. El rechazo al observador lo cubren los arcos de HU-124 (ruta directa).
   - **D15–D18 (mismo día):** HU-150 gana el ramal «diferencia con Operaciones» (gana el panel) y fecha el corte en el momento de la carga con columnas ignoradas informadas; el límite de 7 días exactos sale del diagrama (vive en las notas de HU-150); HU-151 corta la sesión en la siguiente petición al dar de baja o pasar a observador; HU-131 niega la descarga al observador, que solo ve que el artefacto existe (Mercadeo entra como participante del segundo diagrama).
   - **D14 · HU-124:** el observador ve inventario, enlaces de acceso y colocados; demanda y cobertura se añaden con EP-010.
+- **D29 · HU-131 diferida a v2 (sponsor, 2026-10-01):** adjuntar, descargar y ver el artefacto sale de EP-006 en esta versión porque cuesta más en producción; es diferir con acuerdo del sponsor, no descartar. Se retiran del segundo diagrama sus arcos (adjuntar, descargar en el panel, observador sin descarga, formato o tamaño no admitido, el artefacto nunca se publica) y su fila de cobertura, y Mercadeo deja de participar en ese diagrama. HU-140 pide el borrador sin artefacto adjunto. Los arcos se recuperan de la historia cuando se retome.
 - **Correcciones de fidelidad a los AC:** HU-088 exporta los campos internos marcados (no los omite); HU-086 manda los códigos duplicados al grupo con error en vez de rechazar el archivo; HU-087 deja elegir si incluir los perfiles cambiados a mano; HU-125 advierte al elegir el rol en el editor (la advertencia al crear el rol es de HU-089); la advertencia de fichas dependientes al desactivar es el happy path de HU-143.
 
 **Tres diagramas y no uno.** El ciclo del panel no es un recorrido lineal: son tres momentos con actores y disparadores distintos —quien consulta y carga, quien publica, quien mantiene y gobierna—. Forzarlos en un solo diagrama produciría algo ilegible sin ganar precisión.
@@ -730,7 +705,7 @@ La numeración AC-n sigue el orden de los escenarios en la sección de criterios
 
 **D-8 cerró el 2026-09-18 en CRUD completo**, así que todo lo diagramado está comprometido. **D-22** fija los dos roles: administrador de inventario escribe, observador consulta.
 
-**Dependencias duras:** HU-138 (auditoría) no existe sin la identidad de HU-123 (EP-001) — RF-8.1.3. **HU-140 no existe sin HU-131**: sin artefacto guardado no hay borrador que pedir. **HU-148 no existe sin HU-086**: guarda el emparejamiento que HU-086 propone. **HU-150 no existe sin HU-137**: carga en la pestaña de colocados que HU-137 construye. **HU-151 no existe sin HU-123** (EP-001): mantiene la lista de acceso que HU-123 aplica al entrar.
+**Dependencias duras:** HU-138 (auditoría) no existe sin la identidad de HU-123 (EP-001) — RF-8.1.3. ~~HU-140 no existe sin HU-131~~ *(corregida el 2026-10-01, D29: HU-140 no depende de HU-131; el borrador sale de la modalidad de prueba, no del artefacto, D11 y D19)*. **HU-148 no existe sin HU-086**: guarda el emparejamiento que HU-086 propone. **HU-150 no existe sin HU-137**: carga en la pestaña de colocados que HU-137 construye. **HU-151 no existe sin HU-123** (EP-001): mantiene la lista de acceso que HU-123 aplica al entrar.
 
 **Divisiones.** El 2026-09-22 HU-086 se partió en HU-086, HU-141 y HU-142; HU-089 en HU-089 y HU-143; HU-131 en HU-131 y HU-140. El 2026-09-30 HU-086 cedió el guardado del emparejamiento a HU-148 y HU-140 cedió el reconocimiento de fecha y resultado a HU-149; tras el DoR, HU-137 cedió la carga de Operaciones a HU-150 (D12). Todas son particiones, no recortes: se construyen en EP-006. **HU-149 se descartó** por decisión del sponsor (D11), no del modelo.
 

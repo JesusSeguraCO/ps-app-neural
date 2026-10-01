@@ -7,7 +7,6 @@ complejidad: S
 estado: lista
 fase: panel-crud
 prd_version: 4.15
-depende_de: [HU-131]
 ---
 
 # HU-140 — Precargar el borrador desde la modalidad de prueba
@@ -65,15 +64,17 @@ Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, p
 
 **Revisión DoR 2026-09-30: aplicada D11** (sponsor). No hay lectura automática del artefacto y HU-149 se descarta (no se construye). HU-140 se mantiene tal cual: nunca leyó el contenido del artefacto, así que no necesita librería de PDF o Word. La fecha y el resultado de la validación los escribe Talento Humano en la ficha; ya no hay sugerencia «sin confirmar» que venga del artefacto.
 
+**Revisión 2026-10-01: aplicada D29** (sponsor). HU-131 (adjuntar el artefacto) se difiere a una versión futura, así que se retira de `depende_de`: el borrador nunca necesitó artefacto adjunto (D11, D19) y sale solo de la modalidad de prueba. Los criterios no cambian: en los dos edge, «el artefacto» es la evidencia que la administradora tiene a mano fuera del panel (el documento, la transcripción o el repositorio de la prueba); es ella quien contrasta el campo contra esa evidencia, no el sistema, y en esta versión no hay artefacto guardado en el panel.
+
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9, D11 y D19 (sponsor, 2026-09-30) · ADR-0003 · depende de HU-131
+Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9, D11 y D19 (sponsor, 2026-09-30) · ADR-0003 · D29 (sponsor, 2026-10-01): sin dependencia de HU-131, diferida a v2
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: se construye junto a HU-131 (misma pantalla de evidencia), aunque el borrador no exige artefacto (D19); necesita la modalidad elegida en HU-125; ninguna otra historia depende de esta tras el descarte de HU-149 (D11) |
+| I | Independiente | ✓ no depende de HU-131 (diferida a v2 por D29; el borrador no exige artefacto, D19); necesita la modalidad elegida en HU-125; ninguna otra historia depende de esta tras el descarte de HU-149 (D11) |
 | N | Negociable | ✓ fija el resultado (precarga por plantilla, origen visible, confirmación humana, nada sale del servidor); cómo se presenta el borrador en el panel es negociable |
 | V | Valiosa | ✓ Talento Humano deja de transcribir en cada perfil el enunciado, los entregables y los criterios que ya viven en el catálogo |
 | E | Estimable | ✓ copiar tres textos del catálogo de la modalidad a un borrador con estado (generado → revisado) y confirmarlo o descartarlo; sin IA ni lectura del artefacto |

@@ -67,9 +67,11 @@ Cubre la primera mitad de **RF-8.11**, sus límites de **RF-8.11.1** y la prohib
 
 **Revisión INVEST 2026-09-30:** en el error, la acción sale del Dado (que queda como estado) y los límites concretos —formatos admitidos, 64 MB, sin video— pasan al Entonces; el edge case se vuelve falsable: «la ficha no incluye enlace ni referencia al artefacto» en lugar de «no hay ninguna ruta que lo alcance».
 
+**Revisión 2026-10-01: diferida a una versión futura por D29** (sponsor Jesús Segura, en sesión). Motivo del sponsor: «hacerlo nos va a costar más en producción» (almacenamiento de objetos privado, descarga prefirmada, CSP del panel con el bucket y un almacenamiento S3 compatible en CI). **Es diferir con acuerdo del sponsor, no descartar:** la historia, sus cinco escenarios y su INVEST se conservan intactos para cuando se retome, y sigue perteneciendo a EP-006 como capacidad de la épica, pero **sale del alcance de EP-006 en esta versión** y pasa a la línea **v2** del mapa de historias. En esta versión la evidencia de la parte técnica es la que Talento Humano registra a mano en el reporte de validación —evaluador, fecha, resultado, enunciado, entregables y criterios— (HU-130 «el detalle llega después» y HU-140); ningún archivo se sube al panel. HU-140 no depende de esta historia (D11, D19). RF-8.11 y RF-8.11.1 se enmiendan en la v4.17 del PRD; la enmienda de ADR-0010 (Spaces y almacenamiento S3 de CI) queda registrada en el backlog arquitectónico para cuando se retome.
+
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (D11) · RF-8.11.1 · Anexo B.8.4 · D11 y D18 (sponsor, 2026-09-30) · dividida de la HU-131 original el 2026-09-22
+Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (D11) · RF-8.11.1 · Anexo B.8.4 · D11 y D18 (sponsor, 2026-09-30) · dividida de la HU-131 original el 2026-09-22 · **diferida a v2 por D29 (sponsor, 2026-10-01)**
 
 ## INVEST
 

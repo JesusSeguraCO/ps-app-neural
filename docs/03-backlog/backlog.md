@@ -1,10 +1,10 @@
 ---
 artefacto: backlog
 proyecto: portal-people-service
-version: 5.5
-fecha: 2026-09-30
+version: 5.6
+fecha: 2026-10-01
 prd_version: 4.13
-epicas_version: 5.5
+epicas_version: 5.6
 historias_escritas: 87
 historias_descartadas: 2
 ---
@@ -19,9 +19,9 @@ historias_descartadas: 2
 | Artefacto | Versión | Dónde |
 |---|---|---|
 | PRD | **4.13** | `docs/01-prd/portal-people-service.md` |
-| Épicas | **5.5** — 11 épicas, con requisitos por épica | `docs/03-backlog/epicas.md` |
-| Mapa de historias | **3.3** — alineado a PRD 4.13 y épicas 5.5 | `docs/02-user-story-map/portal-people-service.md` |
-| Historias escritas | **85** activas, 2 descartadas (HU-079, HU-149) | `docs/04-historias/` |
+| Épicas | **5.6** — 11 épicas, con requisitos por épica | `docs/03-backlog/epicas.md` |
+| Mapa de historias | **3.5** — alineado a PRD 4.13 y épicas 5.5 | `docs/02-user-story-map/portal-people-service.md` |
+| Historias escritas | **85** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01) | `docs/04-historias/` |
 | Prototipo Low-Fi (v1) | entregado | `prototipo-portal-people-service.html` |
 | Prototipo Mid-Fi (v2) | entregado, con llamada real al modelo | `prototipo-midfi-portal-people-service.html` |
 | Auditoría de usabilidad (Krug) | 1.0 — 7 hallazgos corregidos | `docs/08-usabilidad/auditoria-krug.md` |
@@ -105,7 +105,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-128** | Ser bloqueada si intento publicar sin consentimiento o sin modalidad de prueba | EP-006 | alta | S | lista | Depende de HU-127, HU-086 y HU-125 · modalidad obligatoria para publicar (D10, 2026-09-30) |
 | **HU-129** | Previsualizar la ficha exactamente como la verá el cliente | EP-006 | alta | S | lista | — |
 | **HU-130** | Publicar un perfil sin esperar el reporte detallado | EP-006 | alta | S | lista | — |
-| **HU-131** | Adjuntar el artefacto de evidencia tal como lo tengo | EP-006 | media | M | lista | *Dividida el 22-sep* |
+| **HU-131** | Adjuntar el artefacto de evidencia tal como lo tengo | EP-006 | media | M | lista | **DIFERIDA a v2** por el sponsor el 2026-10-01 (D29): fuera del alcance de EP-006 en esta versión («hacerlo nos va a costar más en producción»); se conserva con sus AC para cuando se retome. La evidencia de esta versión es el reporte de validación que registra Talento Humano (HU-130, HU-140) · *Dividida el 22-sep* |
 | **HU-132** | Actualizar la disponibilidad en dos clics | EP-006 | alta | S | lista | Condición operativa de O5 |
 | **HU-133** | Pausar un perfil declarando el motivo | EP-006 | alta | S | lista | — |
 | **HU-134** | Corregir incoherencias entre estado y disponibilidad | EP-006 | alta | M | lista | — |
@@ -115,8 +115,8 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-150** | Cargar la información de colocados de Operaciones | EP-006 | media | M | lista | Depende de HU-137 · sale de HU-137 el 2026-09-30 (D12, partición, no recorte): JSON o CSV, fecha de corte, «dato desincronizado» a los más de 7 días |
 | **HU-138** | Consultar quién cambió qué y cuándo | EP-006 | alta | M | lista | Depende de HU-123 |
 | **HU-139** | Administrar el léxico de búsqueda | EP-006 | media | M | lista | — |
-| **HU-140** | Precargar el borrador desde la modalidad de prueba | EP-006 | media | S | lista | Depende de HU-131 · plantilla determinista sin IA (T-2, 2026-09-25) · la marca «candidata a v2» no es un acuerdo del equipo: diferirla exige ese acuerdo |
-| **HU-149** | Reconocer fecha y resultado por patrones en el artefacto | EP-006 | media | M | **descartada** | DESCARTADA por el sponsor el 2026-09-30 (D11): sin lectura automática del artefacto; la evidencia se descarga y se ve en el panel (HU-131) |
+| **HU-140** | Precargar el borrador desde la modalidad de prueba | EP-006 | media | S | lista | Sin dependencia de HU-131 (D29, 2026-10-01: el borrador sale de la modalidad, no del artefacto; D11, D19) · plantilla determinista sin IA (T-2, 2026-09-25) · la marca «candidata a v2» no es un acuerdo del equipo: diferirla exige ese acuerdo |
+| **HU-149** | Reconocer fecha y resultado por patrones en el artefacto | EP-006 | media | M | **descartada** | DESCARTADA por el sponsor el 2026-09-30 (D11): sin lectura automática del artefacto; la evidencia se descarga y se ve en el panel (HU-131, diferida a v2 por D29) |
 | **HU-142** | Corregir solo las filas que fallaron | EP-006 | media | S | lista | Depende de HU-141 |
 | **HU-143** | Retirar y fusionar valores sin romper los perfiles que los usan | EP-006 | media | M | lista | Depende de HU-089 |
 | **HU-144** | Abrir el enlace y encontrar la selección que me armaron | EP-001 | alta | S | borrador | Depende de HU-122 |

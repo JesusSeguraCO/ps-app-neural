@@ -4,9 +4,9 @@ proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
 prd_version: 4.14
 epicas_origen: docs/03-backlog/epicas.md
-epicas_version: 5.5
-version: 3.4
-fecha: 2026-09-27
+epicas_version: 5.6
+version: 3.5
+fecha: 2026-10-01
 historias_escritas: 79
 historias_descartadas: 1
 historias_anticipadas_sin_redactar: 13
@@ -61,7 +61,7 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 |---|---|---|---|---|
 | *EP-006 · EP-001* | *EP-006* | *EP-006* | *EP-006* | *EP-006* |
 | **━━━━━━━━━━ MVP ━━━━━━━━━━** | | | | |
-| HU-123 Entrar al panel con mi correo corporativo · *EP-001* | HU-131 Adjuntar el artefacto de evidencia | HU-127 Registrar el consentimiento nominal | HU-132 Actualizar la disponibilidad en dos clics | HU-089 Crear valores de catálogo sin duplicar |
+| HU-123 Entrar al panel con mi correo corporativo · *EP-001* | HU-140 Precargar el borrador desde la modalidad de prueba *(plantilla determinista sin IA, T-2)* | HU-127 Registrar el consentimiento nominal | HU-132 Actualizar la disponibilidad en dos clics | HU-089 Crear valores de catálogo sin duplicar |
 | HU-125 Crear un perfil eligiendo del catálogo | | HU-128 Ser bloqueada si publico sin consentimiento | HU-133 Pausar declarando el motivo | HU-139 Administrar el léxico de búsqueda |
 | HU-126 Editar un perfil publicado sin sorpresas | | HU-129 Previsualizar la ficha | HU-134 Corregir incoherencias estado/disponibilidad | |
 | HU-124 Consultar el banco sin poder modificarlo | | HU-130 Publicar sin esperar el reporte detallado | HU-136 Revisar la bandeja de vigencia | |
@@ -74,9 +74,11 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 | HU-087 Deshacer una importación que salió mal | | | | |
 | HU-088 Descargar una plantilla o el banco para editarlo y devolverlo | | | | |
 | **━━━━━━━━━━ v2 ━━━━━━━━━━** | | | | |
-| | HU-140 Obtener un borrador de los campos desde el artefacto *(plantilla determinista sin IA, T-2)* | | | |
+| | HU-131 Adjuntar el artefacto de evidencia *(diferida por el sponsor el 2026-10-01, D29)* | | | |
 
 > **Este backbone era el hueco grande del proyecto. Se cerró el 2026-09-21.** EP-006 declaraba RF-8 completo —46 líneas de requisitos— con solo 4 historias, todas de importación y catálogos. Se redactaron **HU-123 a HU-139** y la épica pasó de 4 a 21. El CRUD, la validación, el consentimiento, la publicación y el mantenimiento ya tienen backlog, y con ellos **O5, el objetivo habilitante**.
+
+> **HU-131 pasa a v2 desde el 2026-10-01 (D29, sponsor Jesús Segura).** Adjuntar, descargar y ver el artefacto de evidencia en el panel se difiere a una versión futura: «hacerlo nos va a costar más en producción». Es diferir con acuerdo del sponsor, no descartar: la historia y sus criterios se conservan y sigue siendo de EP-006. En esta versión la evidencia es el reporte de validación que Talento Humano registra a mano (HU-130, HU-140). **HU-140 sube a la línea MVP**: el sponsor la mantuvo en EP-006 (la marca «candidata a v2» nunca fue un recorte) y no necesita artefacto (D11, D19); la columna B la refleja ahora donde se construye.
 
 > **HU-123 pertenece a EP-001 desde el 2026-09-27** (T-19, épicas v5.5). Sigue en este backbone porque su actor es Talento Humano, no el cliente, y la columna 1 del backbone 1 es la entrada del cliente. La construye EP-001 porque la caparazón necesita el login del panel para generar enlaces (HU-122, columna F del backbone 3).
 
