@@ -8,7 +8,7 @@
 //  - Rol, tecnología o sector que no existen se destacan como valor nuevo, sin bloquear (§6).
 import { clasificarNombre, masCercanos, normalizar } from "../catalogo/parecidos";
 import { OPCIONES_DISPONIBILIDAD, clienteEnDescripcion } from "../inventario/perfil";
-import { CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
+import { CAMPOS_LISTA, CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
 import { VACIAR, formatearExperiencia, leerExperiencia, partirLista } from "./celdas";
 import type { ColumnaEmparejada } from "./emparejar";
 
@@ -145,7 +145,14 @@ const LARGO_MAXIMO: Partial<Record<ClaveCampo, number>> = {
   resumen: 1200,
   formacion: 160,
 };
-const TOPE_LISTA: Partial<Record<ClaveCampo, number>> = { idiomas: 8, selloPersonal: 3 };
+// Los mismos topes que acepta el editor del panel (entradaPerfil).
+const TOPE_LISTA: Partial<Record<ClaveCampo, number>> = {
+  tecnologias: 8,
+  idiomas: 8,
+  selloPersonal: 3,
+  experiencias: 12,
+};
+const LARGO_ELEMENTO: Partial<Record<ClaveCampo, number>> = { idiomas: 60, selloPersonal: 80 };
 const ETIQUETA_TIPO_NUEVO = { rol: "rol", tecnologia: "tecnología", sector: "sector" } as const;
 
 function sumarDias(fecha: string, dias: number): string {
@@ -224,12 +231,24 @@ function leerCampo(ctx: Contexto, campo: ClaveCampo, celda: string): Valor | und
       ctx.errores.push({ campo, mensaje: "Este campo no se puede vaciar" });
       return undefined;
     }
-    return campo === "tecnologias" ||
-      campo === "sectores" ||
-      campo in TOPE_LISTA ||
-      campo === "experiencias"
-      ? []
-      : null;
+    return CAMPOS_LISTA.has(campo) ? [] : null;
+  }
+  if (CAMPOS_LISTA.has(campo)) {
+    const lista = partirLista(celda);
+    const tope = TOPE_LISTA[campo];
+    if (tope && lista.length > tope) {
+      ctx.errores.push({ campo, mensaje: `Máximo ${tope} (trae ${lista.length})` });
+      return undefined;
+    }
+    const largoElemento = LARGO_ELEMENTO[campo];
+    const largo = largoElemento && lista.find((x) => x.length > largoElemento);
+    if (largo) {
+      ctx.errores.push({
+        campo,
+        mensaje: `Máximo ${largoElemento} caracteres por elemento: «${largo.slice(0, 40)}…»`,
+      });
+      return undefined;
+    }
   }
   const largo = LARGO_MAXIMO[campo];
   if (largo && celda.length > largo) {
@@ -281,15 +300,8 @@ function leerCampo(ctx: Contexto, campo: ClaveCampo, celda: string): Valor | und
     case "sectores":
       return partirLista(celda).map((v) => abierto(ctx, campo, "sector", v, k.sectores));
     case "idiomas":
-    case "selloPersonal": {
-      const lista = partirLista(celda);
-      const tope = TOPE_LISTA[campo]!;
-      if (lista.length > tope) {
-        ctx.errores.push({ campo, mensaje: `Máximo ${tope} (trae ${lista.length})` });
-        return undefined;
-      }
-      return lista;
-    }
+    case "selloPersonal":
+      return partirLista(celda);
     case "experiencias": {
       const salida: string[] = [];
       for (const t of partirLista(celda)) {

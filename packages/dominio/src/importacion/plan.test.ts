@@ -373,6 +373,33 @@ describe("tipos y catálogos cerrados → error con opciones", () => {
     expect(f.errores[0]!.campo).toBe("selloPersonal");
   });
 
+  it("los mismos topes que el editor: 8 tecnologías, 12 experiencias, idioma ≤ 60 y competencia ≤ 80 caracteres", () => {
+    const p = plan(
+      [
+        fila(2, {
+          codigo: "PS-0142",
+          tecnologias: "Java; Kafka; Python; Figma; Spring Boot; a; b; c; d",
+        }),
+        fila(3, { codigo: "PS-0143", idiomas: "x".repeat(61) }),
+        fila(4, { codigo: "PS-0144", selloPersonal: "y".repeat(81) }),
+        fila(5, {
+          codigo: "PS-0142",
+          experiencias: Array.from(
+            { length: 13 },
+            (_, i) => `Cargo ${i} · · 2020-2021: hizo ${i}`,
+          ).join("; "),
+        }),
+      ],
+      { excluidas: new Set([2]) },
+    );
+    expect(p.filas.map((f) => [f.grupo, f.errores[0]?.campo])).toEqual([
+      ["con_error", "tecnologias"],
+      ["con_error", "idiomas"],
+      ["con_error", "selloPersonal"],
+      ["con_error", "experiencias"],
+    ]);
+  });
+
   it("experiencia ilegible o que nombra al cliente en el texto → error", () => {
     const p = plan([
       fila(2, { codigo: "PS-0142", experiencias: "sin dos puntos" }),
