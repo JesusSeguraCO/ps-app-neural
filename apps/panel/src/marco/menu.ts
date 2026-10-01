@@ -28,7 +28,7 @@ export const MENU_PANEL: SeccionMenu[] = [
       {
         clave: "vigencia",
         etiqueta: "Vigencia",
-        ruta: null,
+        ruta: "/vigencia",
         icono: "M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z",
       },
       {

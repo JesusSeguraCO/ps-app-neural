@@ -226,6 +226,17 @@ async function valor(
   return i.rows[0].id;
 }
 
+// Los tres motivos de pausa de RF-8.14.2, con la ayuda que se ve al elegirlos (HU-133). En producción
+// se crean desde Catálogos (RF-8.16); aquí, para local, CI y staging.
+export const MOTIVOS_PAUSA_FICTICIOS = [
+  { nombre: "En proceso de selección con otro cliente", descripcion: "Entrevistas en curso sin decisión." },
+  {
+    nombre: "En licencia o ausencia temporal",
+    descripcion: "Incapacidad, licencia o vacaciones largas sin fecha de regreso.",
+  },
+  { nombre: "Decisión de Talento Humano", descripcion: "Se revisa el perfil o su evidencia." },
+];
+
 function fechaEnDias(dias: number): string {
   return new Date(Date.now() + dias * 86_400_000).toISOString().slice(0, 10);
 }
@@ -235,6 +246,12 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
     throw new Error("sembrar_ficticios: bloqueado en producción (solo local, CI y staging)");
   }
   let creados = 0;
+  for (const m of MOTIVOS_PAUSA_FICTICIOS)
+    await ctx.bd.query(
+      `INSERT INTO inventario.catalogo_motivos_pausa (nombre, descripcion)
+       SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_motivos_pausa WHERE nombre = $1)`,
+      [m.nombre, m.descripcion],
+    );
   for (const p of PERFILES_FICTICIOS) {
     const creado = await conAuditoria(ctx.bd, ctx.auditoria, async (tx) => {
       const existe = await tx.query(`SELECT 1 FROM inventario.perfiles WHERE codigo = $1`, [
@@ -301,9 +318,13 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
           `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'dato ficticio de prueba: nombre, trayectoria y clientes')`,
           [id],
         );
+        // Un pausado lleva su motivo del catálogo (HU-133; migración 0019).
         await tx.query(
-          `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3 WHERE id = $1`,
-          [id, p.estado, p.liberaEn ?? null],
+          `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3,
+                  motivo_pausa_id = CASE WHEN $2 = 'pausado'
+                    THEN (SELECT id FROM inventario.catalogo_motivos_pausa WHERE nombre = $4) END
+            WHERE id = $1`,
+          [id, p.estado, p.liberaEn ?? null, MOTIVOS_PAUSA_FICTICIOS[1]!.nombre],
         );
       }
       await tx.query(

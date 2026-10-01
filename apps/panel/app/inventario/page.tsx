@@ -1,22 +1,29 @@
 // Inventario (HU-125; prototipo inventario-perfiles): listado base del banco con pestañas por estado,
 // búsqueda por nombre, código o rol y lo que le falta a cada borrador para publicarse. Habilita el
 // destino «Inventario» del menú. La administradora selecciona filas y las publica a la vez (HU-128,
-// prototipo inventario-perfiles--publicacion-masiva). Los controles que entregan los sub-slices
-// siguientes (disponibilidad en la fila y en bloque, pausar y archivar, incoherencias) se añaden con
-// ellos. Protegida: la guarda va en la primera línea.
+// prototipo inventario-perfiles--publicacion-masiva). Disponibilidad en la fila y en bloque, y pausar
+// con motivo (HU-132, HU-133; prototipos inventario-perfiles--lote y --pausar-motivo); la observadora
+// solo lee. Archivar e incoherencias llegan con el sub-slice 8. Protegida: la guarda va en la primera línea.
 import { puede } from "@ps/dominio/acceso/permisos";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
 import { normalizar } from "@ps/dominio/catalogo/parecidos";
 import { momentoDeColombia } from "@ps/dominio/fecha/colombia";
 import { ETIQUETA_ESTADO, type EstadoAlmacenado } from "@ps/dominio/inventario/estados";
 import { ETIQUETA_BANDA_PANEL } from "@ps/dominio/inventario/perfil";
+import { listarMotivosPausa, listarVigencia } from "@ps/infra/postgres/estado-perfil";
 import { listarInventario, type FilaInventario } from "@ps/infra/postgres/perfiles-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
-import { BarraSeleccion, ResultadoPublicacion } from "../../src/inventario/PublicacionMasiva";
+import { DisponibilidadFila, PausarPerfil } from "../../src/inventario/EstadoEnLista";
+import {
+  BarraSeleccion,
+  ResultadoDisponibilidadBloque,
+  ResultadoPublicacion,
+} from "../../src/inventario/PublicacionMasiva";
 import { AtajoBuscador } from "../../src/marco/FiltroAuto";
 import { AvisoDecision } from "../../src/marco/Hoja";
 import { MarcoPanel } from "../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
+import { hoyEnColombia } from "./hoy";
 import "../../src/marco/marco.css";
 import "./inventario.css";
 
@@ -48,11 +55,28 @@ const enPestana = (f: FilaInventario, p: Pestana) =>
 const nombreDe = (f: FilaInventario) =>
   [f.nombre, f.primerApellido].filter(Boolean).join(" ") || "Sin nombre todavía";
 
-function detalleEstado(f: FilaInventario): string | null {
+function detalleEstado(f: FilaInventario, ahora: Date): string | null {
+  if (f.estado === "pausado") {
+    const dias = f.pausa?.desde
+      ? Math.max(0, Math.round((ahora.getTime() - Date.parse(f.pausa.desde)) / 86_400_000))
+      : null;
+    return [
+      f.pausa?.motivo ?? "Sin motivo registrado",
+      dias === null
+        ? null
+        : dias === 0
+          ? "desde hoy"
+          : `hace ${dias} ${dias === 1 ? "día" : "días"}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  }
   if (f.estado !== "borrador") return null;
   if (f.faltan === 0) return "Listo para publicar";
   if (!f.consentimiento) return "Falta el consentimiento de publicación";
-  return f.faltan === 1 ? "Falta 1 condición para publicar" : `Faltan ${f.faltan} condiciones para publicar`;
+  return f.faltan === 1
+    ? "Falta 1 condición para publicar"
+    : `Faltan ${f.faltan} condiciones para publicar`;
 }
 
 export default async function Inventario({
@@ -62,17 +86,26 @@ export default async function Inventario({
 }) {
   const sesion = await exigirSesion();
   const p = await searchParams;
-  const pestana: Pestana = PESTANAS.some((x) => x.clave === p.estado) ? (p.estado as Pestana) : "todos";
+  const pestana: Pestana = PESTANAS.some((x) => x.clave === p.estado)
+    ? (p.estado as Pestana)
+    : "todos";
   const q = (p.q ?? "").slice(0, 200);
-  const filas = await listarInventario(poolDe("panel"));
+  const bd = poolDe("panel");
+  const [filas, motivos, vigencia] = await Promise.all([
+    listarInventario(bd),
+    listarMotivosPausa(bd),
+    listarVigencia(bd),
+  ]);
+  const porRevisar =
+    vigencia.porConfirmar.length + vigencia.porRevisar.length + vigencia.pausados.length;
+  const hoy = hoyEnColombia();
   const ahora = new Date();
   const texto = normalizar(q);
   const visibles = filas
     .filter((f) => enPestana(f, pestana))
     .filter(
       (f) =>
-        !texto ||
-        [nombreDe(f), f.codigo, f.rol ?? ""].some((x) => normalizar(x).includes(texto)),
+        !texto || [nombreDe(f), f.codigo, f.rol ?? ""].some((x) => normalizar(x).includes(texto)),
     );
   const paginas = Math.max(1, Math.ceil(visibles.length / POR_PAGINA));
   const pagina = Math.min(Math.max(1, Number(p.pagina) || 1), paginas);
@@ -92,7 +125,15 @@ export default async function Inventario({
       <div className="pp-encabezado">
         <div className="pp-encabezado__texto">
           <h1 className="pp-encabezado__titulo">Inventario</h1>
-          <p className="pp-encabezado__meta">{`${publicados} ${publicados === 1 ? "publicado" : "publicados"}`}</p>
+          <p className="pp-encabezado__meta">
+            {`${publicados} ${publicados === 1 ? "publicado" : "publicados"}`}
+            {porRevisar > 0 && (
+              <>
+                {" · "}
+                <a className="pp-enlace" href="/vigencia">{`${porRevisar} por revisar vigencia`}</a>
+              </>
+            )}
+          </p>
         </div>
         {escribe && (
           <div className="pp-encabezado__acciones">
@@ -104,6 +145,7 @@ export default async function Inventario({
       </div>
 
       {escribe && <ResultadoPublicacion />}
+      {escribe && <ResultadoDisponibilidadBloque />}
 
       <div className="pp-barra">
         <nav className="pp-pestanas" aria-label="Filtrar por estado">
@@ -115,7 +157,9 @@ export default async function Inventario({
               aria-current={t.clave === pestana ? "page" : undefined}
             >
               {t.etiqueta}{" "}
-              <span className="pp-pestana__conteo">{filas.filter((f) => enPestana(f, t.clave)).length}</span>
+              <span className="pp-pestana__conteo">
+                {filas.filter((f) => enPestana(f, t.clave)).length}
+              </span>
             </a>
           ))}
         </nav>
@@ -123,7 +167,11 @@ export default async function Inventario({
           {pestana !== "todos" && <input type="hidden" name="estado" value={pestana} />}
           <label className="pp-buscador">
             <span className="pp-sr">Buscar en el inventario</span>
-            <svg className="pp-icono pp-icono--sm pp-buscador__icono" viewBox="0 0 24 24" aria-hidden="true">
+            <svg
+              className="pp-icono pp-icono--sm pp-buscador__icono"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <circle cx="11" cy="11" r="7" />
               <path d="M20 20l-4-4" />
             </svg>
@@ -144,10 +192,19 @@ export default async function Inventario({
 
       {enPagina.length === 0 ? (
         <div className="pp-vacio">
-          <p>{filas.length === 0 ? "Aún no hay perfiles en el banco." : "Ningún perfil coincide con la búsqueda."}</p>
+          <p>
+            {filas.length === 0
+              ? "Aún no hay perfiles en el banco."
+              : "Ningún perfil coincide con la búsqueda."}
+          </p>
         </div>
       ) : (
-        <div className="pp-tabla-marco ip-marco" tabIndex={0} role="region" aria-label="Perfiles del inventario">
+        <div
+          className="pp-tabla-marco ip-marco"
+          tabIndex={0}
+          role="region"
+          aria-label="Perfiles del inventario"
+        >
           <table className={`pp-tabla ip-tabla ${escribe ? "ip-tabla--admin" : "ip-tabla--obs"}`}>
             <caption className="pp-sr">
               Perfiles del banco con su estado y su disponibilidad (el portal la muestra como banda)
@@ -173,20 +230,29 @@ export default async function Inventario({
             <tbody>
               {enPagina.map((f) => {
                 const nombre = nombreDe(f);
-                const detalle = detalleEstado(f);
-                const visible = f.estado === "publicado" || f.estado === "colocado" || f.estado === "borrador";
+                const detalle = detalleEstado(f, ahora);
+                const visible =
+                  f.estado === "publicado" || f.estado === "colocado" || f.estado === "borrador";
                 return (
                   <tr key={f.codigo}>
                     {escribe && (
                       <td className="ip-col-sel">
                         <label className="ip-sel">
-                          <input type="checkbox" name="ip-sel" value={f.codigo} data-nombre={nombre} />
+                          <input
+                            type="checkbox"
+                            name="ip-sel"
+                            value={f.codigo}
+                            data-nombre={nombre}
+                          />
                           <span className="pp-sr">{`Seleccionar a ${nombre}`}</span>
                         </label>
                       </td>
                     )}
                     <th scope="row">
-                      <a className="pp-tabla__perfil pp-enlace--sutil ip-nombre" href={`/inventario/${f.codigo}`}>
+                      <a
+                        className="pp-tabla__perfil pp-enlace--sutil ip-nombre"
+                        href={`/inventario/${f.codigo}`}
+                      >
                         {nombre}
                       </a>
                       <span className="pp-tabla__sub ip-trunc">
@@ -195,11 +261,21 @@ export default async function Inventario({
                       </span>
                     </th>
                     <td className="ip-col-estado">
-                      <span className={`pp-estado ${CLASE_ESTADO[f.estado]}`}>{ETIQUETA_ESTADO[f.estado]}</span>
+                      <span className={`pp-estado ${CLASE_ESTADO[f.estado]}`}>
+                        {ETIQUETA_ESTADO[f.estado]}
+                      </span>
                       {detalle && <span className="pp-tabla__sub ip-trunc">{detalle}</span>}
                     </td>
                     <td className="ip-col-disp">
-                      {visible ? (
+                      {visible && escribe ? (
+                        <DisponibilidadFila
+                          codigo={f.codigo}
+                          nombre={nombre}
+                          fecha={f.disponibilidadFecha}
+                          actualizadaEn={f.disponibilidadActualizadaEn}
+                          hoy={hoy}
+                        />
+                      ) : visible ? (
                         <>
                           <span className="ip-disp-texto">
                             {f.disponibilidadFecha
@@ -227,6 +303,14 @@ export default async function Inventario({
                       )}
                     </td>
                     <td className="pp-tabla__acciones ip-col-acc">
+                      {escribe && (f.estado === "publicado" || f.estado === "colocado") && (
+                        <PausarPerfil
+                          codigo={f.codigo}
+                          nombre={nombre}
+                          rol={f.rol}
+                          motivos={motivos}
+                        />
+                      )}
                       <a
                         className="pp-btn pp-btn--fantasma pp-btn--sm"
                         href={`/inventario/${f.codigo}`}
@@ -247,7 +331,10 @@ export default async function Inventario({
           <span>{`${(pagina - 1) * POR_PAGINA + 1}–${(pagina - 1) * POR_PAGINA + enPagina.length} de ${visibles.length}`}</span>
           <div>
             {pagina > 1 ? (
-              <a className="pp-btn pp-btn--contorno pp-btn--sm" href={url({ pagina: String(pagina - 1) })}>
+              <a
+                className="pp-btn pp-btn--contorno pp-btn--sm"
+                href={url({ pagina: String(pagina - 1) })}
+              >
                 Anterior
               </a>
             ) : (
@@ -256,7 +343,10 @@ export default async function Inventario({
               </button>
             )}
             {pagina < paginas ? (
-              <a className="pp-btn pp-btn--contorno pp-btn--sm" href={url({ pagina: String(pagina + 1) })}>
+              <a
+                className="pp-btn pp-btn--contorno pp-btn--sm"
+                href={url({ pagina: String(pagina + 1) })}
+              >
                 Siguiente
               </a>
             ) : (

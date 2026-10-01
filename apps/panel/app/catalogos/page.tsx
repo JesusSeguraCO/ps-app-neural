@@ -38,6 +38,7 @@ const CABECERA: Record<TipoCatalogo, string> = {
   tecnologia: "Tecnología",
   sector: "Sector",
   modalidad_prueba: "Modalidad de prueba",
+  motivo_pausa: "Motivo de pausa",
 };
 const COLUMNA: Record<TipoCatalogo, string> = {
   rol: "Familia",
@@ -45,11 +46,13 @@ const COLUMNA: Record<TipoCatalogo, string> = {
   tecnologia: "Grupo",
   sector: "Publicados",
   modalidad_prueba: "Familia",
+  motivo_pausa: "Ayuda al elegirlo",
 };
 
 function segundaColumna(tipo: TipoCatalogo, v: ValorListado): string {
   if (tipo === "familia") return v.modalidades ? `${v.modalidades}` : "Sin modalidades";
   if (tipo === "sector") return `${v.publicados}`;
+  if (tipo === "motivo_pausa") return v.descripcion ?? "—";
   return v.grupo ?? "—";
 }
 
@@ -268,6 +271,7 @@ export default async function Catalogos({
                           enunciadoReto: v.enunciadoReto,
                           entregables: v.entregables,
                           criterios: v.criterios,
+                          descripcion: v.descripcion,
                         }}
                       />
                     )}

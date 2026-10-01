@@ -106,3 +106,14 @@
 .ip-resultado { margin-bottom: var(--tc-sp-6); }
 /* Composición propia: el formulario GET del buscador no altera la barra del prototipo. */
 .ip-busqueda { display: contents; }
+
+/* Disponibilidad en la fila y en bloque, pausa con motivo (sub-slice 7; HU-132, HU-133) */
+.ip-disp { display: grid; gap: var(--tc-sp-1); min-width: 0; }
+.ip-disp__fecha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); }
+.ip-disp__fecha .pp-input { min-height: 36px; width: 168px; font-size: var(--tc-fs-small); }
+.ip-lote__disp { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--tc-sp-2) var(--tc-sp-3); }
+.ip-lote__disp .pp-select { width: 200px; }
+.ip-lote__disp input[type="date"] { width: 168px; }
+.ip-lote__ayuda { flex-basis: 100%; margin: 0; }
+.ip-desvio__accion { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+.ip-col-acc { white-space: nowrap; }

@@ -86,7 +86,7 @@ describe.skipIf(!HAY_BD)("revertir la última importación (HU-087)", () => {
     );
     autor = { usuarioId: u.rows[0].id, correo: "karen@trycore.com" };
     await bd.instalacion.query(
-      `INSERT INTO inventario.catalogo_motivos_pausa (nombre) VALUES ('En licencia o ausencia temporal')`,
+      `INSERT INTO inventario.catalogo_motivos_pausa (nombre) VALUES ('En licencia o ausencia temporal') ON CONFLICT (nombre) DO NOTHING`,
     );
   }, 60_000);
 

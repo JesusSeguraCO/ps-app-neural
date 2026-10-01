@@ -122,15 +122,16 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("acceso al panel (HU-123, V8-5, H
       "Medición", "Envíos", "Fallos",
     ];
     // Habilitados por la épica que los entregó: Enlaces y Peticiones (EP-001), Catálogos, Léxico,
-    // Inventario e Importar (EP-006).
-    const habilitados = ["Enlaces", "Peticiones", "Catálogos", "Léxico", "Inventario", "Importar"];
+    // Inventario, Importar y Vigencia (EP-006).
+    const habilitados = ["Enlaces", "Peticiones", "Catálogos", "Léxico", "Inventario", "Importar", "Vigencia"];
     for (const d of destinos.filter((x) => !habilitados.includes(x))) expect(html, d).toMatch(new RegExp(`aria-disabled="true"[^>]*>(<svg[\\s\\S]*?</svg>)?${d}<`));
-    expect(html.match(/class="pp-sidelink[^"]*"[^>]*aria-disabled="true"/g)?.length).toBe(6);
+    expect(html.match(/class="pp-sidelink[^"]*"[^>]*aria-disabled="true"/g)?.length).toBe(5);
     expect(html).toMatch(/<a class="pp-sidelink" href="\/enlaces">/);
     expect(html).toMatch(/<a class="pp-sidelink" href="\/catalogos">/);
     expect(html).toMatch(/<a class="pp-sidelink" href="\/lexico">/);
     expect(html).toMatch(/<a class="pp-sidelink" href="\/inventario">/);
     expect(html).toMatch(/<a class="pp-sidelink" href="\/importar">/);
+    expect(html).toMatch(/<a class="pp-sidelink" href="\/vigencia">/);
     expect(html).toContain(">Administración<");
     expect(html).toMatch(/Sesión hasta las \d{1,2}:\d{2}(\s|&nbsp;)[ap]\. m\./);
     expect(html).toContain("Cerrar sesión");

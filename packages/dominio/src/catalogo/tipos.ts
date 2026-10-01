@@ -7,6 +7,8 @@ export const TIPOS_CATALOGO = [
   "tecnologia",
   "sector",
   "modalidad_prueba",
+  // Motivos de pausa (RF-8.14.2, RF-8.16; HU-133): lista corta que administra Talento Humano.
+  "motivo_pausa",
 ] as const;
 export type TipoCatalogo = (typeof TIPOS_CATALOGO)[number];
 
@@ -27,6 +29,7 @@ export const ETIQUETA_TIPO: Record<
     plural: "modalidades de prueba",
     pestana: "Modalidades de prueba",
   },
+  motivo_pausa: { singular: "motivo de pausa", plural: "motivos de pausa", pestana: "Motivos de pausa" },
 };
 
 // Género gramatical para los textos («desactivado»/«desactivada», «Crear rol»/«Crear tecnología»).
@@ -36,6 +39,7 @@ export const FEMENINO: Record<TipoCatalogo, boolean> = {
   tecnologia: true,
   sector: false,
   modalidad_prueba: true,
+  motivo_pausa: false,
 };
 
 // Grupo que orienta la tecnología en la lista (no filtra al cliente).

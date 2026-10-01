@@ -17,6 +17,7 @@ const TABLA: Record<TipoCatalogo, string> = {
   tecnologia: "catalogo_tecnologias",
   sector: "catalogo_sectores",
   modalidad_prueba: "catalogo_modalidades_prueba",
+  motivo_pausa: "catalogo_motivos_pausa",
 };
 
 // Perfiles que usan cada valor (archivados fuera: ya no están en el banco).
@@ -26,6 +27,7 @@ const USO: Record<TipoCatalogo, string> = {
   sector: `SELECT h.valor_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfil_sectores h JOIN inventario.perfiles p ON p.id = h.perfil_id`,
   familia: `SELECT p.familia_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.familia_id IS NOT NULL`,
   modalidad_prueba: `SELECT p.modalidad_prueba_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.modalidad_prueba_id IS NOT NULL`,
+  motivo_pausa: `SELECT p.motivo_pausa_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.motivo_pausa_id IS NOT NULL`,
 };
 
 export interface ValorListado {
@@ -44,6 +46,8 @@ export interface ValorListado {
   enunciadoReto?: string | null;
   entregables?: string | null;
   criterios?: string | null;
+  // Motivo de pausa: la ayuda que se ve al elegirlo.
+  descripcion?: string | null;
 }
 
 export async function listarCatalogo(bd: Consultor, tipo: TipoCatalogo): Promise<ValorListado[]> {
@@ -64,6 +68,7 @@ export async function listarCatalogo(bd: Consultor, tipo: TipoCatalogo): Promise
             (SELECT count(*)::int FROM uso WHERE uso.id = v.id AND uso.estado = 'publicado') AS publicados
             ${tipo === "familia" ? `, (SELECT count(*)::int FROM inventario.catalogo_modalidades_prueba m WHERE m.familia_id = v.id AND m.activo) AS modalidades` : ""}
             ${tipo === "modalidad_prueba" ? `, v.texto_cliente, v.enunciado_reto, v.entregables, v.criterios` : ""}
+            ${tipo === "motivo_pausa" ? `, v.descripcion` : ""}
        FROM inventario.${TABLA[tipo]} v ${union}
       ORDER BY v.activo DESC, perfiles DESC, v.nombre`,
   );
@@ -85,6 +90,7 @@ export async function listarCatalogo(bd: Consultor, tipo: TipoCatalogo): Promise
           criterios: f.criterios,
         }
       : {}),
+    ...(tipo === "motivo_pausa" ? { descripcion: f.descripcion } : {}),
   }));
 }
 
@@ -94,7 +100,8 @@ export async function conteosCatalogos(bd: Consultor): Promise<Record<TipoCatalo
             (SELECT count(*) FROM inventario.catalogo_familias WHERE fusionado_en_id IS NULL)::int AS familia,
             (SELECT count(*) FROM inventario.catalogo_tecnologias WHERE fusionado_en_id IS NULL)::int AS tecnologia,
             (SELECT count(*) FROM inventario.catalogo_sectores WHERE fusionado_en_id IS NULL)::int AS sector,
-            (SELECT count(*) FROM inventario.catalogo_modalidades_prueba WHERE fusionado_en_id IS NULL)::int AS modalidad_prueba`,
+            (SELECT count(*) FROM inventario.catalogo_modalidades_prueba WHERE fusionado_en_id IS NULL)::int AS modalidad_prueba,
+            (SELECT count(*) FROM inventario.catalogo_motivos_pausa WHERE fusionado_en_id IS NULL)::int AS motivo_pausa`,
   );
   return r.rows[0];
 }
@@ -179,6 +186,8 @@ export interface DatosValor {
   criterios?: string | null;
   // Confirmación explícita de que el nombre parecido es un valor distinto (HU-089).
   confirmarDistinto?: boolean;
+  // Motivo de pausa: ayuda breve que se ve al elegirlo (HU-133).
+  descripcion?: string | null;
 }
 
 export type MotivoRechazoValor =
@@ -275,6 +284,7 @@ export async function crearValor(
     const columnas: Record<string, string | null> = { nombre };
     if (familia) columnas.familia_id = familia.id;
     if (tipo === "tecnologia") columnas.grupo = recortar(d.grupo);
+    if (tipo === "motivo_pausa") columnas.descripcion = recortar(d.descripcion);
     if (tipo === "modalidad_prueba") {
       columnas.texto_cliente = recortar(d.textoCliente);
       columnas.enunciado_reto = recortar(d.enunciadoReto);
@@ -327,6 +337,7 @@ export async function editarValor(
     const nuevos: Record<string, string | null> = { nombre };
     if (familia) nuevos.familia_id = familia.id;
     if (tipo === "tecnologia") nuevos.grupo = recortar(d.grupo);
+    if (tipo === "motivo_pausa") nuevos.descripcion = recortar(d.descripcion);
     if (tipo === "modalidad_prueba") {
       nuevos.texto_cliente = recortar(d.textoCliente);
       nuevos.enunciado_reto = recortar(d.enunciadoReto);
@@ -469,6 +480,7 @@ const CAMPO_PERFIL: Record<TipoCatalogo, string> = {
   sector: "sectores",
   familia: "familia",
   modalidad_prueba: "modalidad_prueba",
+  motivo_pausa: "motivo_pausa",
 };
 
 // Fusión confirmada: una transacción reasigna, sube la versión de cada perfil (disparador) y la global,

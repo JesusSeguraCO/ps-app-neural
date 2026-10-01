@@ -241,7 +241,7 @@ SELECT jsonb_build_object(
   'familia_id', p.familia_id, 'seniority_id', p.seniority_id, 'anios_experiencia', p.anios_experiencia,
   'modalidad_id', p.modalidad_id, 'pais_id', p.pais_id, 'ciudad_id', p.ciudad_id,
   'disponibilidad_fecha', p.disponibilidad_fecha, 'disponibilidad_actualizada_en', p.disponibilidad_actualizada_en,
-  'motivo_pausa_id', p.motivo_pausa_id, 'modalidad_prueba_id', p.modalidad_prueba_id,
+  'motivo_pausa_id', p.motivo_pausa_id, 'pausado_en', p.pausado_en, 'modalidad_prueba_id', p.modalidad_prueba_id,
   'capacidad', p.capacidad, 'anclaje', p.anclaje, 'resumen', p.resumen, 'vinculo', p.vinculo,
   'formacion', p.formacion, 'idiomas', to_jsonb(p.idiomas), 'sello_personal', to_jsonb(p.sello_personal),
   'roles', (SELECT COALESCE(jsonb_agg(h.valor_id ORDER BY h.orden), '[]') FROM inventario.perfil_roles h WHERE h.perfil_id = p.id),

@@ -1,9 +1,11 @@
 // Marco del panel (prototipo admin-shell, patrón PP:panel): barra lateral navy con el menú canónico,
 // barra superior con migas, correo de la sesión (identidad de auditoría) y «Cerrar sesión», y el pie
 // con rol y fin de la jornada. Sin enlace al portal del cliente (HU-123, edge case). Los destinos con
-// trabajo pendiente llevan su conteo (hoy: peticiones de invitación sin decidir).
+// trabajo pendiente llevan su conteo: peticiones de invitación sin decidir y perfiles por revisar en la
+// bandeja de vigencia (HU-136).
 import type { ReactNode } from "react";
 import { horaCortaDeColombia } from "@ps/dominio/fecha/colombia";
+import { listarVigencia } from "@ps/infra/postgres/estado-perfil";
 import { contarPeticionesPendientes } from "@ps/infra/postgres/invitaciones-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
 import type { SesionVerificada } from "../sesion/exigirSesion";
@@ -29,7 +31,12 @@ export async function MarcoPanel({
   migas: Array<string | { texto: string; href: string }>;
   children: ReactNode;
 }) {
-  const conteos: Record<string, number> = { peticiones: await contarPeticionesPendientes(poolDe("panel")) };
+  const bd = poolDe("panel");
+  const [peticiones, vigencia] = await Promise.all([contarPeticionesPendientes(bd), listarVigencia(bd)]);
+  const conteos: Record<string, number> = {
+    peticiones,
+    vigencia: vigencia.porConfirmar.length + vigencia.porRevisar.length + vigencia.pausados.length,
+  };
   return (
     <div className="pp-panel">
       <nav className="pp-sidebar" aria-label="Panel de People Service">

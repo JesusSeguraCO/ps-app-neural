@@ -25,6 +25,7 @@ export interface ValorFila {
   enunciadoReto?: string | null;
   entregables?: string | null;
   criterios?: string | null;
+  descripcion?: string | null;
 }
 
 export interface ContextoCatalogo {
@@ -84,6 +85,7 @@ function HojaValor({
   const [enunciadoReto, setEnunciadoReto] = useState(valor?.enunciadoReto ?? "");
   const [entregables, setEntregables] = useState(valor?.entregables ?? "");
   const [criterios, setCriterios] = useState(valor?.criterios ?? "");
+  const [descripcion, setDescripcion] = useState(valor?.descripcion ?? "");
   const [distinto, setDistinto] = useState(false);
   const [revision, setRevision] = useState<Revision>({ tipo: "vacio" });
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +125,7 @@ function HojaValor({
       nombre,
       ...(conFamilia(tipo) ? { familiaId } : {}),
       ...(tipo === "tecnologia" ? { grupo: grupo || null } : {}),
+      ...(tipo === "motivo_pausa" ? { descripcion: descripcion || null } : {}),
       ...(tipo === "modalidad_prueba"
         ? {
             textoCliente,
@@ -317,6 +320,25 @@ function HojaValor({
                   ))}
                 </select>
               </div>
+            </div>
+          )}
+          {tipo === "motivo_pausa" && (
+            <div className="pp-campo">
+              <label className="pp-label" htmlFor="ct-descripcion">
+                Ayuda al elegirlo
+              </label>
+              <input
+                className="pp-input"
+                id="ct-descripcion"
+                maxLength={200}
+                value={descripcion}
+                aria-describedby="ct-descripcion-ayuda"
+                onChange={(e) => setDescripcion(e.target.value)}
+              />
+              <p className="pp-ayuda" id="ct-descripcion-ayuda">
+                Una frase que distingue este motivo de los demás al pausar un perfil. Si la causa es una
+                fecha en que queda libre, no es una pausa: es disponibilidad.
+              </p>
             </div>
           )}
           {tipo === "modalidad_prueba" && (

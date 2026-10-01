@@ -116,6 +116,8 @@ export interface PerfilEditor {
   // pendiente, si lo hay (HU-140).
   reporte: ReportePerfil | null;
   borradorValidacion: { id: string; creadaEn: string } | null;
+  // Pausado (HU-133): con qué motivo y desde cuándo.
+  pausa: { motivo: string | null; desde: string | null } | null;
   evaluacion: EvaluacionPublicacion;
 }
 
@@ -149,7 +151,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
             s.nombre AS seniority_nombre, ci.nombre AS ciudad_nombre, pa.nombre AS pais_nombre,
             mo.nombre AS modalidad_nombre, mo.texto_cliente AS modalidad_texto,
             mp.nombre AS prueba_nombre, mp.activo AS prueba_activa, mp.texto_cliente AS prueba_texto,
-            mp.familia_id AS prueba_familia
+            mp.familia_id AS prueba_familia, mz.nombre AS motivo_pausa_nombre
        FROM inventario.perfiles p
        LEFT JOIN inventario.catalogo_familias f ON f.id = p.familia_id
        LEFT JOIN inventario.catalogo_seniorities s ON s.id = p.seniority_id
@@ -157,6 +159,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
        LEFT JOIN inventario.catalogo_paises pa ON pa.id = p.pais_id
        LEFT JOIN inventario.catalogo_modalidades mo ON mo.id = p.modalidad_id
        LEFT JOIN inventario.catalogo_modalidades_prueba mp ON mp.id = p.modalidad_prueba_id
+       LEFT JOIN inventario.catalogo_motivos_pausa mz ON mz.id = p.motivo_pausa_id
       WHERE p.codigo = $1`,
     [codigo],
   );
@@ -286,6 +289,10 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
     borradorValidacion: pendiente
       ? { id: pendiente.id, creadaEn: pendiente.creada_en.toISOString() }
       : null,
+    pausa:
+      p.estado === "pausado"
+        ? { motivo: p.motivo_pausa_nombre ?? null, desde: p.pausado_en?.toISOString() ?? null }
+        : null,
   };
   return { ...perfil, evaluacion: evaluar(perfil) };
 }
@@ -327,6 +334,7 @@ export interface FilaInventario {
   actualizadoEn: string;
   consentimiento: boolean;
   faltan: number;
+  pausa: PerfilEditor["pausa"];
 }
 
 // Listado base del inventario (tarea 2.5): todos los perfiles (las pestañas filtran por estado), con lo
@@ -352,6 +360,7 @@ export async function listarInventario(bd: Consultor): Promise<FilaInventario[]>
       consentimiento: Boolean(p.consentimiento?.vigente),
       faltan:
         p.evaluacion.faltanDatos.length + p.evaluacion.condiciones.filter((c) => !c.cumple).length,
+      pausa: p.pausa,
     });
   }
   return filas;

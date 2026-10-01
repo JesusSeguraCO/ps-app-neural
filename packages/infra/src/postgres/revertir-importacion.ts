@@ -32,6 +32,7 @@ const COLUMNAS = [
   "disponibilidad_fecha",
   "disponibilidad_actualizada_en",
   "motivo_pausa_id",
+  "pausado_en",
   "modalidad_prueba_id",
   "capacidad",
   "anclaje",

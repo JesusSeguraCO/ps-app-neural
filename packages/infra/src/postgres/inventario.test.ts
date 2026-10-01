@@ -91,8 +91,16 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
     }
     if (estado !== "borrador") {
       await darModalidadDePrueba(i, id);
+      // Un pausado lleva motivo del catálogo (0019).
+      if (estado === "pausado")
+        await i.query(
+          `INSERT INTO inventario.catalogo_motivos_pausa (nombre) VALUES ('Decisión de Talento Humano') ON CONFLICT (nombre) DO NOTHING`,
+        );
       await i.query(
-        `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3 WHERE id = $1`,
+        `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3,
+                motivo_pausa_id = CASE WHEN $2 = 'pausado'
+                  THEN (SELECT id FROM inventario.catalogo_motivos_pausa ORDER BY nombre LIMIT 1) END
+          WHERE id = $1`,
         [id, estado, opciones.liberaEn ?? null],
       );
     }

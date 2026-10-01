@@ -5,9 +5,17 @@
 // a las demás con su motivo, sin abortar; el resultado se guarda para mostrarlo tras recargar
 // (`ResultadoPublicacion`), con la salida directa a resolver cada motivo.
 import { useEffect, useState } from "react";
+import { OPCIONES_DISPONIBILIDAD } from "@ps/dominio/inventario/perfil";
 import { enviarJson } from "../acceso/cliente";
+import { bandaCliente, cuerpoDisponibilidad, type EleccionDisponibilidad } from "./EstadoEnLista";
 
 const CLAVE = "pp-publicacion-masiva";
+// Disponibilidad en bloque (HU-132 edge): el resultado se muestra por perfil tras recargar.
+const CLAVE_DISP = "pp-disponibilidad-bloque";
+interface ResultadoBloque {
+  banda: string | null;
+  filas: Array<{ codigo: string; nombre: string; ok: boolean; motivo?: string; estado?: string }>;
+}
 
 interface Fallo {
   codigo: string;
@@ -31,6 +39,9 @@ export function BarraSeleccion() {
   const [elegidos, setElegidos] = useState<string[]>([]);
   const [publicando, setPublicando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [eleccion, setEleccion] = useState<EleccionDisponibilidad>("");
+  const [dia, setDia] = useState("");
+  const [aplicando, setAplicando] = useState(false);
 
   useEffect(() => {
     const leer = () =>
@@ -94,12 +105,99 @@ export function BarraSeleccion() {
     }
   }
 
+  const nombreDe = (codigo: string) =>
+    casillas().find((c) => c.value === codigo)?.dataset.nombre ?? codigo;
+
+  async function aplicarDisponibilidad() {
+    if (!eleccion || (eleccion === "fecha" && !dia)) return;
+    setAplicando(true);
+    setError(null);
+    try {
+      const r = await enviarJson("/api/v1/perfiles/disponibilidad", {
+        codigos: elegidos,
+        disponibilidad: cuerpoDisponibilidad(eleccion, dia),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setError("No se pudo actualizar la disponibilidad. Inténtalo de nuevo.");
+        return;
+      }
+      const resultado: ResultadoBloque = {
+        banda: bandaCliente(eleccion, dia),
+        filas: d.resultados.map(
+          (x: { codigo: string; ok: boolean; motivo?: string; estado?: string }) => ({
+            ...x,
+            nombre: nombreDe(x.codigo),
+          }),
+        ),
+      };
+      try {
+        sessionStorage.setItem(CLAVE_DISP, JSON.stringify(resultado));
+      } catch {
+        // Sin almacenamiento solo se pierde el detalle tras recargar.
+      }
+      window.location.reload();
+    } finally {
+      setAplicando(false);
+    }
+  }
+
   const n = elegidos.length;
+  const banda = bandaCliente(eleccion, dia);
   return (
     <div className="ip-lote" role="region" aria-label="Acciones sobre los perfiles seleccionados">
       <p className="ip-lote__cuenta" aria-live="polite">
         {n === 1 ? "1 seleccionado" : `${n} seleccionados`}
       </p>
+      <div className="ip-lote__disp">
+        <label className="pp-label" htmlFor="ip-lote-disp">
+          Disponibilidad
+        </label>
+        <div className="pp-select">
+          <select
+            className="pp-input"
+            id="ip-lote-disp"
+            value={eleccion}
+            onChange={(e) => setEleccion(e.target.value as EleccionDisponibilidad)}
+          >
+            <option value="">Elegir…</option>
+            {Object.entries(OPCIONES_DISPONIBILIDAD).map(([k, o]) => (
+              <option key={k} value={k}>
+                {o.etiqueta}
+              </option>
+            ))}
+            <option value="fecha">Elegir una fecha…</option>
+          </select>
+        </div>
+        {eleccion === "fecha" && (
+          <>
+            <label className="pp-sr" htmlFor="ip-lote-fecha">
+              Quedan libres el
+            </label>
+            <input
+              className="pp-input"
+              id="ip-lote-fecha"
+              type="date"
+              value={dia}
+              onChange={(e) => setDia(e.target.value)}
+            />
+          </>
+        )}
+        <button
+          type="button"
+          className="pp-btn pp-btn--contorno pp-btn--sm"
+          disabled={!eleccion || (eleccion === "fecha" && !dia) || aplicando}
+          aria-describedby="ip-lote-ayuda"
+          onClick={aplicarDisponibilidad}
+        >
+          {aplicando ? "Aplicando…" : n === 1 ? "Aplicar al seleccionado" : `Aplicar a los ${n}`}
+        </button>
+        <p className="pp-ayuda ip-lote__ayuda" id="ip-lote-ayuda">
+          {banda
+            ? `El cliente verá «${banda}», no la fecha.`
+            : "El cliente verá la banda, no la fecha."}
+        </p>
+      </div>
       <div className="ip-lote__acciones">
         <button type="button" className="pp-btn pp-btn--fantasma pp-btn--sm" onClick={quitar}>
           Quitar la selección
@@ -243,5 +341,59 @@ export function ResultadoPublicacion() {
         </section>
       )}
     </>
+  );
+}
+
+const MOTIVO_DISP: Record<string, string> = {
+  no_aplica: "No aplica en su estado",
+  no_existe: "Ya no existe en el inventario",
+  sin_fecha: "No tiene una fecha que confirmar",
+};
+
+// Resultado por perfil de la disponibilidad en bloque (HU-132: «no un mensaje global»).
+export function ResultadoDisponibilidadBloque() {
+  const [r, setR] = useState<ResultadoBloque | null>(null);
+  useEffect(() => {
+    try {
+      const v = sessionStorage.getItem(CLAVE_DISP);
+      if (v) {
+        sessionStorage.removeItem(CLAVE_DISP);
+        setR(JSON.parse(v));
+      }
+    } catch {
+      // Sin almacenamiento no hay resultado que mostrar.
+    }
+  }, []);
+  if (!r) return null;
+  const ok = r.filas.filter((f) => f.ok).length;
+  return (
+    <section className="ip-resultado" aria-labelledby="ip-disp-res-t">
+      <div className="pp-seccion__cabecera">
+        <h2 className="pp-seccion__titulo" id="ip-disp-res-t">
+          {`Disponibilidad actualizada en ${ok} de ${r.filas.length}`}
+        </h2>
+        {r.banda && <span className="pp-meta">{`El cliente ve «${r.banda}»`}</span>}
+      </div>
+      <ul className="pp-filas" aria-labelledby="ip-disp-res-t">
+        {r.filas.map((f) => (
+          <li className="pp-fila" key={f.codigo}>
+            <div className="pp-fila__principal">
+              <p className="pp-fila__titulo">
+                <span>{f.nombre}</span>
+                <span className="pp-mono pp-meta">{f.codigo}</span>
+              </p>
+              <p className="pp-fila__nota">
+                {f.ok
+                  ? "Actualizada."
+                  : `${MOTIVO_DISP[f.motivo ?? ""] ?? "No se actualizó"}${f.estado ? ` (${f.estado})` : ""}: sigue como estaba.`}
+              </p>
+            </div>
+            <span className={`pp-estado ${f.ok ? "pp-estado--ok" : "pp-estado--warn"}`}>
+              {f.ok ? "Hecho" : "Sin cambio"}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
