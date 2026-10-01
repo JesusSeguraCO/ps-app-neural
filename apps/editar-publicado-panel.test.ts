@@ -186,14 +186,14 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Editar un publicado en el panel 
     expect(await filasAuditoria(p.codigo)).toBe(n + 1);
   });
 
-  it("deja incompleto: 409 `deja_incompleto` con la pregunta, al previsualizar y al confirmar", async () => {
+  it("deja incompleto: `deja_incompleto` con la pregunta (200 al previsualizar, 409 al confirmar)", async () => {
     const p = await publicado();
-    for (const ruta of [
-      `/api/v1/perfiles/${p.codigo}?previsualizar`,
-      `/api/v1/perfiles/${p.codigo}`,
-    ]) {
+    for (const [ruta, status] of [
+      [`/api/v1/perfiles/${p.codigo}?previsualizar`, 200],
+      [`/api/v1/perfiles/${p.codigo}`, 409],
+    ] as const) {
       const r = await pedir("PATCH", ruta, { tecnologiaIds: [] }, { version: p.version });
-      expect(r.status).toBe(409);
+      expect(r.status).toBe(status);
       const d = await r.json();
       expect(d.motivo).toBe("deja_incompleto");
       expect(d.pregunta).toBe(

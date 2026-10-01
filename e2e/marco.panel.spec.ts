@@ -273,3 +273,126 @@ test.describe("editor de perfiles (HU-089, HU-125)", () => {
     await expect(page.getByRole("link", { name: "Registrar el consentimiento nominal" })).toBeVisible();
   });
 });
+
+// Editar un publicado y su reporte de validación (EP-006 · sub-slice 6: HU-126, HU-140, HU-130 edge)
+// en un navegador real: guardar declara el impacto y confirmar lo aplica; un cambio que deja el perfil
+// incompleto pregunta y «Pasar a borrador» lo saca del portal; el borrador del reporte sale de la
+// modalidad, se confirma con la revisión y la ficha pasa a Nivel 1. Perfiles propios creados por la
+// API (los ficticios no se tocan). axe sin incidencias serias en las hojas y en el borrador.
+test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  async function publicado(page: import("@playwright/test").Page): Promise<string> {
+    await page.goto("/inventario");
+    // La API de peticiones de Playwright no envía cookies `Secure` por http: van en la cabecera.
+    const galletas = await page.context().cookies();
+    const csrf = galletas.find((c) => c.name === "__Host-csrf")!.value;
+    const cab = {
+      "x-ps-csrf": csrf,
+      origin: new URL(page.url()).origin,
+      cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
+    };
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    const id = async (t: string, n: string) =>
+      (await bd.query(`SELECT id FROM inventario.${t} WHERE nombre = $1`, [n])).rows[0].id as string;
+    const cuerpo = {
+      nombre: "E2E",
+      primerApellido: "Publicada",
+      rolId: await id("catalogo_roles", "Desarrolladora backend Java"),
+      tecnologiaIds: [await id("catalogo_tecnologias", "Java")],
+      seniorityId: await id("catalogo_seniorities", "Senior"),
+      aniosExperiencia: 8,
+      ciudadId: await id("catalogo_ciudades", "Medellín"),
+      modalidadTrabajoId: await id("catalogo_modalidades", "hibrido"),
+      disponibilidad: { opcion: "ahora" },
+      modalidadPruebaId: await id("catalogo_modalidades_prueba", "Prueba práctica revisada por un arquitecto"),
+      experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
+    };
+    await bd.end();
+    const alta = await page.request.post("/api/v1/perfiles", { data: cuerpo, headers: cab });
+    expect(alta.status(), await alta.text()).toBe(201);
+    const p = (await alta.json()).perfil;
+    const c = (
+      await (
+        await page.request.post(`/api/v1/perfiles/${p.codigo}/consentimiento`, {
+          data: { nombreApellido: true, trayectoria: true, clientes: true },
+          headers: cab,
+        })
+      ).json()
+    ).perfil;
+    const r = await page.request.post(`/api/v1/perfiles/${p.codigo}/publicar`, {
+      data: {},
+      headers: { ...cab, "if-match": `"${c.version}"` },
+    });
+    expect(r.status()).toBe(200);
+    return p.codigo as string;
+  }
+  const axeGraves = async (page: import("@playwright/test").Page) =>
+    (await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+
+  test("guardar declara el impacto y confirmar lo aplica; incompleto pregunta y pasa a borrador", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const codigo = await publicado(page);
+    await page.goto(`/inventario/${codigo}`);
+    await page.getByRole("spinbutton", { name: "Años de experiencia" }).fill("9");
+    await page.getByRole("button", { name: "Guardar cambios" }).click();
+    const hoja = page.getByRole("dialog", { name: "Esto cambia para el cliente" });
+    await expect(hoja.getByText("Años de experiencia")).toBeVisible();
+    expect(await axeGraves(page)).toEqual([]);
+    await hoja.getByRole("button", { name: "Confirmar cambios" }).click();
+    await expect(page.getByText("Cambios confirmados. El portal ya los muestra.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Quitar Java" }).click();
+    await page.getByRole("button", { name: "Guardar cambios" }).click();
+    const pregunta = page.getByRole("dialog", { name: "Este cambio deja el perfil incompleto" });
+    await expect(pregunta.getByText("¿Descarto el cambio o paso el perfil a borrador?")).toBeVisible();
+    expect(await axeGraves(page)).toEqual([]);
+    await pregunta.getByRole("button", { name: "Pasar a borrador" }).click();
+    await expect(page.getByText("Cambio guardado. El perfil salió del portal y quedó en borrador.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Guardar borrador" })).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
+  test("el reporte sale de la modalidad, se confirma con la revisión y la ficha pasa a Nivel 1", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    const codigo = await publicado(page);
+    await page.goto(`/inventario/${codigo}`);
+    await page.getByRole("button", { name: "Registrar reporte detallado" }).click();
+    await expect(page.getByRole("heading", { name: "Borrador de la validación técnica" })).toBeVisible();
+    await expect(page.getByText("De la modalidad de prueba").first()).toBeVisible();
+    expect(await axeGraves(page)).toEqual([]);
+    await page.getByRole("textbox", { name: "Entregables esperados" }).fill("Solo el repositorio");
+    await expect(page.getByText("Editado por ti")).toBeVisible();
+    await page.getByRole("textbox", { name: "Evaluador" }).fill("Célula de arquitectura de Trycore");
+    await page.getByLabel("Fecha de la validación").fill("2026-09-29");
+    await page.getByRole("textbox", { name: "Resultado" }).fill("Aprobada, nivel senior");
+    // Sin la revisión el botón va `aria-disabled` pero se puede pulsar y dice qué falta (D28).
+    await page.getByRole("button", { name: "Confirmar borrador" }).click({ force: true });
+    await expect(page.getByText("Marca «Revisé cada campo» para confirmar.")).toBeVisible();
+    await page.getByRole("checkbox", { name: "Revisé cada campo" }).check();
+    await page.getByRole("button", { name: "Confirmar borrador" }).click();
+    await expect(page).toHaveURL(new RegExp(`/inventario/${codigo}$`));
+    await expect(page.getByText("Reporte confirmado. La ficha del portal ya lo muestra, sin republicar.")).toBeVisible();
+    await page.getByRole("button", { name: "Vista previa" }).click();
+    await expect(page.locator("#vp-fila-validacion")).toContainText("Aprobada, nivel senior");
+    await expect(page.locator("#vp-fila-validacion")).toContainText("Evaluó:");
+    for (const ancho of [320, 390]) {
+      await page.setViewportSize({ width: ancho, height: 800 });
+      const scroll = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
+      expect(scroll, `vista previa a ${ancho}`).toBe(0);
+    }
+    expect(errores).toEqual([]);
+  });
+});

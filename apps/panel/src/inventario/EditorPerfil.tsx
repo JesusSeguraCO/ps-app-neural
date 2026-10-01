@@ -386,8 +386,8 @@ export function EditorPerfil(p: {
         { "if-match": `"${perfil.version}"` },
       );
       const d = await r.json().catch(() => ({}));
-      if (r.ok) setImpacto({ incompleto: false, ...d.impacto });
-      else if (d.motivo === "deja_incompleto") setImpacto({ incompleto: true, ...d.impacto });
+      if (d.motivo === "deja_incompleto") setImpacto({ incompleto: true, ...d.impacto });
+      else if (r.ok) setImpacto({ incompleto: false, ...d.impacto });
       else setError(MOTIVO[d.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
     } finally {
       setGuardando(false);

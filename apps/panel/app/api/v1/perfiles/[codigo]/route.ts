@@ -1,8 +1,8 @@
 // /api/v1/perfiles/{codigo} (HU-125, HU-126): GET el perfil para el editor con lo que le falta para
 // publicar; PATCH guarda con la versión que se abrió (`If-Match`). Un borrador se guarda tal cual; un
 // publicado se edita en dos pasos (D1, D3): `?previsualizar` devuelve qué cambia de cara al cliente
-// sin escribir, y el PATCH sin él confirma. Si el cambio deja el perfil incompleto, 409
-// `deja_incompleto` con la pregunta y nada escrito; se responde reenviando con
+// sin escribir, y el PATCH sin él confirma. Si el cambio deja el perfil incompleto, `motivo:
+// deja_incompleto` con la pregunta y nada escrito (200 al previsualizar, 409 al confirmar); se responde reenviando con
 // `?resolucion=descartar` (nada se escribe ni se audita) o `?resolucion=a_borrador` (se guarda y sale
 // del portal, auditado). 409 `version_distinta` con el perfil vigente · 428 sin `If-Match` · 422 valor
 // fuera del catálogo · 403 observador.
@@ -78,7 +78,9 @@ export const PATCH = conBorde(
             case "impacto":
               return respuestaJson(200, { perfil: r.antes, impacto: impacto(r.antes, r.propuesto, r.internos) });
             case "deja_incompleto":
-              return respuestaJson(409, {
+              // Previsualizar es una pregunta, no un conflicto: 200 con la pregunta. Confirmar sin
+              // haberla respondido sí lo es: 409.
+              return respuestaJson(q.has("previsualizar") ? 200 : 409, {
                 motivo: "deja_incompleto",
                 pregunta: PREGUNTA_INCOMPLETO,
                 perfil: r.antes,
