@@ -648,11 +648,33 @@ function etiquetaError(f: FilaPlan): string {
   return `${etiquetaCampo(e.campo)}: no válido`;
 }
 
+const listaO = (xs: string[]) =>
+  xs.length > 1 ? `${xs.slice(0, -1).join(", ")} o ${xs[xs.length - 1]}` : (xs[0] ?? "");
+
+// El valor de una lista con los que no existen en el banco marcados (spec §6: valores nuevos).
+function ValorConNuevos(p: { valor: Valor; nuevos: Plan["valoresNuevos"] }) {
+  const lista = Array.isArray(p.valor) ? p.valor : [String(p.valor)];
+  const esNuevo = (x: string) => p.nuevos.some((n) => n.valor.toLowerCase() === x.toLowerCase());
+  if (!lista.some(esNuevo)) return <>{texto(p.valor)}</>;
+  return (
+    <>
+      {lista.map((x, i) => (
+        <span key={i}>
+          {i > 0 && "; "}
+          {esNuevo(x) ? <mark className="ip-nuevo">{x}</mark> : x}
+        </span>
+      ))}{" "}
+      <span className="pp-meta">nuevo en la taxonomía</span>
+    </>
+  );
+}
+
 function Tarjeta(p: {
   f: FilaPlan;
   nuevos: Plan["valoresNuevos"];
   alIncluir: (numero: number, incluir: boolean) => void;
   ocupado: boolean;
+  primera: boolean;
 }) {
   const { f } = p;
   const titulo = f.persona.nombre ?? "Sin nombre";
@@ -689,7 +711,13 @@ function Tarjeta(p: {
       )}
       <details
         className="ip-fila__det"
-        open={f.grupo === "con_error" && f.incluida ? true : undefined}
+        open={
+          f.incluida &&
+          (f.grupo === "con_error" ||
+            ((f.grupo === "actualizado" || f.grupo === "nuevo") && (p.primera || valorNuevo)))
+            ? true
+            : undefined
+        }
       >
         <summary className={`ip-fila__resumen${conCuerpo ? "" : " ip-fila__resumen--fija"}`}>
           <span className="ip-fila__codigo">{f.codigo ?? "—"}</span>
@@ -734,7 +762,7 @@ function Tarjeta(p: {
                       <span>
                         <span className="pp-sr">Después: </span>
                         {texto(c.despues) ? (
-                          texto(c.despues)
+                          <ValorConNuevos valor={c.despues} nuevos={p.nuevos} />
                         ) : (
                           <>
                             <span className="ip-vacio">Vacío</span>{" "}
@@ -751,8 +779,8 @@ function Tarjeta(p: {
             )}
             {f.errores.map((e, i) => (
               <p key={i} className="ip-motivo">
-                {e.mensaje}
-                {e.opciones?.length ? ` Opciones: ${e.opciones.join(", ")}.` : ""}
+                {e.mensaje.endsWith(".") ? e.mensaje : `${e.mensaje}.`}
+                {e.opciones?.length ? ` Usa ${listaO(e.opciones)}.` : ""}
               </p>
             ))}
             {f.motivoOmision && <p className="ip-motivo">{f.motivoOmision}</p>}
@@ -811,6 +839,7 @@ function SeccionGrupo(p: {
             nuevos={p.nuevos}
             alIncluir={p.alIncluir}
             ocupado={p.ocupado}
+            primera={f === visibles[0]}
           />
         ))}
       </ul>
