@@ -318,11 +318,14 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
           `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'dato ficticio de prueba: nombre, trayectoria y clientes')`,
           [id],
         );
-        // Un pausado lleva su motivo del catálogo (HU-133; migración 0019).
+        // Un pausado lleva su motivo del catálogo (HU-133; migración 0019); pausado y archivado no
+        // tienen disponibilidad (matriz D5, D32).
         await tx.query(
           `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3,
                   motivo_pausa_id = CASE WHEN $2 = 'pausado'
-                    THEN (SELECT id FROM inventario.catalogo_motivos_pausa WHERE nombre = $4) END
+                    THEN (SELECT id FROM inventario.catalogo_motivos_pausa WHERE nombre = $4) END,
+                  disponibilidad_fecha = CASE WHEN $2 IN ('pausado', 'archivado') THEN NULL
+                    ELSE disponibilidad_fecha END
             WHERE id = $1`,
           [id, p.estado, p.liberaEn ?? null, MOTIVOS_PAUSA_FICTICIOS[1]!.nombre],
         );

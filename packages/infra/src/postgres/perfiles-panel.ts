@@ -8,6 +8,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
+import { evaluarCoherencia, type Incoherencia } from "@ps/dominio/inventario/coherencia";
 import { ESTADO_INICIAL, transicion, type EstadoAlmacenado } from "@ps/dominio/inventario/estados";
 import {
   clienteEnDescripcion,
@@ -118,7 +119,11 @@ export interface PerfilEditor {
   borradorValidacion: { id: string; creadaEn: string } | null;
   // Pausado (HU-133): con qué motivo y desde cuándo.
   pausa: { motivo: string | null; desde: string | null } | null;
+  // Colocado (hasta el contract del sub-slice 9): fecha en que queda libre.
+  fechaLiberacion: string | null;
   evaluacion: EvaluacionPublicacion;
+  // Contradicción entre estado y disponibilidad (HU-134, matriz D5): ALTA bloquea publicar.
+  coherencia: Incoherencia | null;
 }
 
 export interface ReportePerfil {
@@ -240,7 +245,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
   ).rows;
   const confirmada = v.find((x) => x.estado === "confirmada");
   const pendiente = v.find((x) => x.estado === "borrador");
-  const perfil: Omit<PerfilEditor, "evaluacion"> = {
+  const perfil: Omit<PerfilEditor, "evaluacion" | "coherencia"> = {
     id: p.id,
     codigo: p.codigo,
     estado: p.estado,
@@ -293,11 +298,26 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
       p.estado === "pausado"
         ? { motivo: p.motivo_pausa_nombre ?? null, desde: p.pausado_en?.toISOString() ?? null }
         : null,
+    fechaLiberacion: fecha(p.fecha_liberacion),
   };
-  return { ...perfil, evaluacion: evaluar(perfil) };
+  return {
+    ...perfil,
+    evaluacion: evaluar(perfil),
+    coherencia: evaluarCoherencia(
+      {
+        estado: perfil.estado,
+        colocadoVigente: false,
+        fecha: perfil.disponibilidadFecha,
+        actualizadaEn: perfil.disponibilidadActualizadaEn
+          ? new Date(perfil.disponibilidadActualizadaEn)
+          : null,
+      },
+      new Date(),
+    ),
+  };
 }
 
-function evaluar(p: Omit<PerfilEditor, "evaluacion">): EvaluacionPublicacion {
+function evaluar(p: Omit<PerfilEditor, "evaluacion" | "coherencia">): EvaluacionPublicacion {
   return evaluarPublicacion({
     nombre: p.nombre ?? "",
     primerApellido: p.primerApellido ?? "",
@@ -335,6 +355,7 @@ export interface FilaInventario {
   consentimiento: boolean;
   faltan: number;
   pausa: PerfilEditor["pausa"];
+  coherencia: Incoherencia | null;
 }
 
 // Listado base del inventario (tarea 2.5): todos los perfiles (las pestañas filtran por estado), con lo
@@ -361,6 +382,7 @@ export async function listarInventario(bd: Consultor): Promise<FilaInventario[]>
       faltan:
         p.evaluacion.faltanDatos.length + p.evaluacion.condiciones.filter((c) => !c.cumple).length,
       pausa: p.pausa,
+      coherencia: p.coherencia,
     });
   }
   return filas;
@@ -872,6 +894,13 @@ export async function publicarPerfil(
         evaluacion: antes.evaluacion,
         familia: antes.familia,
       });
+    // Una contradicción ALTA bloquea publicar hasta resolverla en su fila (HU-134 error). La salida
+    // «Publicar con esa disponibilidad» del pausado es reactivar, que la resuelve a sabiendas.
+    if (antes.coherencia?.severidad === "alta")
+      throw new RechazoInventario("incoherencia", {
+        clave: antes.coherencia.clave,
+        contradiccion: antes.coherencia.contradiccion,
+      });
     await tx.query(`UPDATE inventario.perfiles SET estado = $2 WHERE id = $1`, [fila.id, t.a]);
     const despues = (await leerPerfil(tx, codigo))!;
     return {
@@ -906,6 +935,8 @@ export type ResultadoPublicacion =
       evaluacion?: EvaluacionPublicacion;
       familia?: PerfilEditor["familia"];
       estado?: string;
+      // La contradicción ALTA que lo impidió (HU-134).
+      contradiccion?: string;
     };
 
 // Publicación masiva (HU-128 edge): cada perfil en su propia unidad de trabajo, para que uno que no
@@ -941,6 +972,9 @@ export async function publicarVarios(
           : [e.motivo],
         ...(ev ? { evaluacion: ev, familia: e.detalle.familia as PerfilEditor["familia"] } : {}),
         ...(typeof e.detalle.estado === "string" ? { estado: e.detalle.estado } : {}),
+        ...(typeof e.detalle.contradiccion === "string"
+          ? { contradiccion: e.detalle.contradiccion }
+          : {}),
       });
     }
   }

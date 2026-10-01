@@ -677,7 +677,8 @@ function rechazosDe(f: FilaPlan): Array<{ campo: string; valor: string | null }>
   return f.avisos.flatMap((a): Array<{ campo: string; valor: string | null }> => {
     const columna = /^Columna «(.+)» rechazada/.exec(a.mensaje)?.[1];
     if (columna) return [{ campo: columna, valor: null }];
-    if (/^Estado «publicado» rechazado/.test(a.mensaje)) return [{ campo: "Estado", valor: "publicado" }];
+    if (/^Estado «publicado» rechazado/.test(a.mensaje))
+      return [{ campo: "Estado", valor: "publicado" }];
     return [];
   });
 }
@@ -755,7 +756,10 @@ function Tarjeta(p: {
             {!f.incluida
               ? "Excluida por ti"
               : rechazos.length
-                ? [nCambian, `${rechazos.length} ${rechazos.length === 1 ? "rechazado" : "rechazados"}`]
+                ? [
+                    nCambian,
+                    `${rechazos.length} ${rechazos.length === 1 ? "rechazado" : "rechazados"}`,
+                  ]
                     .filter(Boolean)
                     .join(" · ")
                 : f.grupo === "actualizado"
@@ -829,6 +833,14 @@ function Tarjeta(p: {
               const sugerencia =
                 valor &&
                 p.nuevos.find((n) => n.valor.toLowerCase() === valor.toLowerCase())?.sugerencias[0];
+              const contradiccion = /^Contradicción alta: (.+)$/.exec(a.mensaje)?.[1];
+              if (contradiccion)
+                return (
+                  <p key={i} className="ip-nota">
+                    <span className="pp-estado pp-estado--danger">Contradicción alta</span>{" "}
+                    {`${contradiccion} Al aplicar se señalará en su fila del inventario; corrígelo en tu hoja o desmarca la fila.`}
+                  </p>
+                );
               return (
                 <p key={i} className="ip-nota">
                   {valor
@@ -967,8 +979,8 @@ function PasoVistaPrevia(p: {
                 ? "1 fila intenta conceder consentimiento o publicar."
                 : `${conRechazos} filas intentan conceder consentimiento o publicar.`}
             </span>{" "}
-            Rechazamos esos campos; el resto de cada fila se importa. Ningún perfil queda publicado por
-            esta importación.
+            Rechazamos esos campos; el resto de cada fila se importa. Ningún perfil queda publicado
+            por esta importación.
           </p>
         </div>
       )}

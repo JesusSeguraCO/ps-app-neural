@@ -460,6 +460,8 @@ export function EditorPerfil(p: {
       const d = await r.json().catch(() => ({}));
       if (!r.ok) {
         if (d.motivo === "no_publicable") setBloqueoServidor(d.evaluacion);
+        else if (d.motivo === "incoherencia")
+          setError(`No se publicó: ${d.contradiccion} Resuélvelo en su fila del inventario.`);
         else setError(MOTIVO[d.motivo] ?? "No se pudo publicar. Inténtalo de nuevo.");
         return;
       }

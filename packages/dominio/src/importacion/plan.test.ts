@@ -296,16 +296,58 @@ describe("estado: no publica, archiva (spec §3, HU-141)", () => {
     ]);
   });
 
+  it("marca la contradicción ALTA que la fila crearía entre estado y disponibilidad (HU-134, D5)", () => {
+    const alta = (i: number) =>
+      p.filas[i]!.avisos.filter((x) => x.mensaje.startsWith("Contradicción alta: "));
+    const p = plan(
+      [
+        fila(2, { codigo: "PS-0144", disponibilidad: "2026-12-01" }),
+        fila(3, {
+          codigo: "PS-0143",
+          estado: "pausado",
+          motivoPausa: "en licencia o ausencia temporal",
+        }),
+        fila(4, { codigo: "PS-0142", disponibilidad: VACIAR }),
+        fila(5, {
+          codigo: "PS-0143",
+          estado: "pausado",
+          motivoPausa: "en licencia o ausencia temporal",
+          disponibilidad: VACIAR,
+        }),
+      ],
+      { excluidas: new Set([3]) },
+    );
+    expect(p.filas[0]!.grupo).toBe("actualizado");
+    expect(alta(0).map((x) => x.mensaje)).toEqual([
+      "Contradicción alta: Pausado y con disponibilidad «Más de 1 mes». Si está ocupado hasta una fecha, no es una pausa: debe seguir publicado con esa disponibilidad.",
+    ]);
+    expect(alta(0)[0]!.campo).toBe("disponibilidad");
+    expect(alta(1)).toHaveLength(1);
+    expect(alta(2).map((x) => x.mensaje)).toEqual([
+      "Contradicción alta: Publicado sin ninguna disponibilidad: el cliente no puede saber cuándo arranca.",
+    ]);
+    expect(alta(3)).toEqual([]);
+  });
+
+  it("no marca lo que la fila no toca: el pausado del banco con fecha no se señala si la fila no cambia su estado ni su disponibilidad", () => {
+    const p = plan([fila(2, { codigo: "PS-0144", resumen: "Otro resumen." })]);
+    expect(p.filas[0]!.avisos.filter((x) => x.mensaje.startsWith("Contradicción"))).toEqual([]);
+  });
+
   it("un colocado no cambia de estado por importación: se libera desde su ficha", () => {
     const pedro: FilaBanco = { ...laura, codigo: "PS-0145", estado: "colocado" };
     const banco = new Map([...BANCO, ["PS-0145", pedro]]);
-    const archivar = plan([fila(2, { codigo: "PS-0145", estado: "archivado" })], { banco }).filas[0]!;
+    const archivar = plan([fila(2, { codigo: "PS-0145", estado: "archivado" })], { banco })
+      .filas[0]!;
     expect(archivar.grupo).toBe("con_error");
     expect(archivar.errores[0]!.mensaje).toMatch(/colocado/);
     // Repetir su estado no es un cambio de estado: lo demás de la fila se aplica.
-    const mismo = plan([fila(2, { codigo: "PS-0145", estado: "colocado", anclaje: "Otro anclaje" })], {
-      banco,
-    }).filas[0]!;
+    const mismo = plan(
+      [fila(2, { codigo: "PS-0145", estado: "colocado", anclaje: "Otro anclaje" })],
+      {
+        banco,
+      },
+    ).filas[0]!;
     expect(mismo.grupo).toBe("actualizado");
   });
 
@@ -387,10 +429,17 @@ describe("tipos y catálogos cerrados → error con opciones", () => {
   });
 
   it("sectores: varios valores (D23) con el mismo tope que el editor, 8", () => {
-    const ocho = plan([fila(2, { codigo: "PS-0142", sectores: "Banca; Seguros; Retail; a; b; c; d; e" })]);
+    const ocho = plan([
+      fila(2, { codigo: "PS-0142", sectores: "Banca; Seguros; Retail; a; b; c; d; e" }),
+    ]);
     expect(ocho.filas[0]!.grupo).toBe("actualizado");
-    const nueve = plan([fila(2, { codigo: "PS-0142", sectores: "Banca; Seguros; Retail; a; b; c; d; e; f" })]);
-    expect(nueve.filas[0]!.errores[0]).toMatchObject({ campo: "sectores", mensaje: "Máximo 8 (trae 9)" });
+    const nueve = plan([
+      fila(2, { codigo: "PS-0142", sectores: "Banca; Seguros; Retail; a; b; c; d; e; f" }),
+    ]);
+    expect(nueve.filas[0]!.errores[0]).toMatchObject({
+      campo: "sectores",
+      mensaje: "Máximo 8 (trae 9)",
+    });
   });
 
   it("los mismos topes que el editor: 8 tecnologías, 12 experiencias, idioma ≤ 60 y competencia ≤ 80 caracteres", () => {

@@ -28,7 +28,9 @@ export type ResultadoDisponibilidad =
   | { codigo: string; ok: false; motivo: "no_existe" | "no_aplica" | "sin_fecha"; estado?: string };
 
 const visible = (e: EstadoAlmacenado) => e === "publicado" || e === "colocado";
-// La disponibilidad aplica a lo que está o puede estar en el banco a la vista; un pausado no la usa.
+// La disponibilidad aplica a lo que está o puede estar en el banco a la vista. A un pausado se le puede
+// poner una fecha desde su fila (uno a la vez): queda la contradicción ALTA señalada con su salida
+// (HU-134, D6). En bloque no aplica, para no crear contradicciones en masa sin verlas (D32).
 const ADMITE_DISPONIBILIDAD = new Set<EstadoAlmacenado>(["borrador", "publicado", "colocado"]);
 
 const cambio = (
@@ -53,7 +55,8 @@ async function bloquear(tx: Consultor, codigo: string) {
   const f = (
     await tx.query(
       `SELECT p.id, p.estado, p.version, p.disponibilidad_fecha::text AS disponibilidad_fecha,
-              p.disponibilidad_actualizada_en, m.nombre AS motivo
+              p.disponibilidad_actualizada_en, p.fecha_liberacion::text AS fecha_liberacion,
+              m.nombre AS motivo
          FROM inventario.perfiles p
          LEFT JOIN inventario.catalogo_motivos_pausa m ON m.id = p.motivo_pausa_id
         WHERE p.codigo = $1 FOR UPDATE OF p`,
@@ -67,8 +70,24 @@ async function bloquear(tx: Consultor, codigo: string) {
     version: number;
     disponibilidad_fecha: string | null;
     disponibilidad_actualizada_en: Date | null;
+    fecha_liberacion: string | null;
     motivo: string | null;
   };
+}
+
+// Deja la disponibilidad vacía (pausar, archivar, «Quitar la disponibilidad»): la matriz D5 marca ALTA
+// a un pausado o archivado con cualquier disponibilidad (D32).
+async function vaciarDisponibilidad(
+  tx: Consultor,
+  autor: Autor,
+  codigo: string,
+  f: Awaited<ReturnType<typeof bloquear>>,
+): Promise<CambioAuditado[]> {
+  if (!f.disponibilidad_fecha) return [];
+  await tx.query(`UPDATE inventario.perfiles SET disponibilidad_fecha = NULL WHERE id = $1`, [
+    f.id,
+  ]);
+  return [cambio(autor, f, codigo, "disponibilidad_fecha", f.disponibilidad_fecha, null)];
 }
 
 // Escribe la disponibilidad dentro de una unidad ya abierta y devuelve lo que hay que auditar.
@@ -124,7 +143,8 @@ export async function actualizarDisponibilidad(
     try {
       const fecha = await conUnidadInventario(bd, claves, async (tx) => {
         const f = await bloquear(tx, codigo);
-        if (!ADMITE_DISPONIBILIDAD.has(f.estado))
+        const pausadoSolo = f.estado === "pausado" && unicos.length === 1;
+        if (!ADMITE_DISPONIBILIDAD.has(f.estado) && !pausadoSolo)
           throw new RechazoInventario("no_aplica", { estado: f.estado });
         const r = await escribirDisponibilidad(tx, autor, codigo, f, c, ahora);
         return { resultado: r.fecha, cambios: r.cambios, visible: visible(f.estado) };
@@ -182,9 +202,11 @@ export async function pausarPerfil(
       `UPDATE inventario.perfiles SET estado = 'pausado', motivo_pausa_id = $2, fecha_liberacion = NULL WHERE id = $1`,
       [f.id, motivoId],
     );
+    const vaciada = await vaciarDisponibilidad(tx, autor, codigo, f);
     return {
       resultado: (await leerPerfil(tx, codigo))!,
       cambios: [
+        ...vaciada,
         cambio(autor, f, codigo, "estado", f.estado, "pausado"),
         cambio(autor, f, codigo, "motivo_pausa", f.motivo, m.nombre),
       ],
@@ -235,24 +257,76 @@ export async function archivarPerfil(
   autor: Autor,
   codigo: string,
 ): Promise<{ yaArchivado: boolean; perfil: PerfilEditor }> {
-  return conUnidadInventario<{ yaArchivado: boolean; perfil: PerfilEditor }>(bd, claves, async (tx) => {
-    const f = await bloquear(tx, codigo);
-    const t = transicion(f.estado, "archivar");
-    if (!t.ok)
+  return conUnidadInventario<{ yaArchivado: boolean; perfil: PerfilEditor }>(
+    bd,
+    claves,
+    async (tx) => {
+      const f = await bloquear(tx, codigo);
+      const t = transicion(f.estado, "archivar");
+      if (!t.ok)
+        return {
+          resultado: { yaArchivado: true, perfil: (await leerPerfil(tx, codigo))! },
+          cambios: [],
+          visible: false,
+        };
+      await tx.query(
+        `UPDATE inventario.perfiles SET estado = 'archivado', archivado_en = now(), fecha_liberacion = NULL WHERE id = $1`,
+        [f.id],
+      );
+      const cambios = [
+        ...(await vaciarDisponibilidad(tx, autor, codigo, f)),
+        cambio(autor, f, codigo, "estado", f.estado, "archivado"),
+      ];
+      if (f.motivo) cambios.push(cambio(autor, f, codigo, "motivo_pausa", f.motivo, null));
       return {
-        resultado: { yaArchivado: true, perfil: (await leerPerfil(tx, codigo))! },
-        cambios: [],
-        visible: false,
+        resultado: { yaArchivado: false, perfil: (await leerPerfil(tx, codigo))! },
+        cambios,
+        visible: visible(f.estado),
       };
-    await tx.query(
-      `UPDATE inventario.perfiles SET estado = 'archivado', archivado_en = now(), fecha_liberacion = NULL WHERE id = $1`,
-      [f.id],
+    },
+  );
+}
+
+// «Quitar la disponibilidad» (HU-134): la salida de un pausado o archivado con fecha. A lo que está a la
+// vista no se le quita: quedaría publicado sin disponibilidad (otra ALTA).
+export async function quitarDisponibilidad(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  codigo: string,
+): Promise<PerfilEditor> {
+  return conUnidadInventario(bd, claves, async (tx) => {
+    const f = await bloquear(tx, codigo);
+    if (f.estado !== "pausado" && f.estado !== "archivado")
+      throw new RechazoInventario("no_aplica", { estado: f.estado });
+    const cambios = await vaciarDisponibilidad(tx, autor, codigo, f);
+    return { resultado: (await leerPerfil(tx, codigo))!, cambios, visible: false };
+  });
+}
+
+// «Usar la fecha de liberación» (HU-134): un colocado con «Disponible ahora» pasa a mostrar la fecha en
+// que queda libre (RF-8.13.2).
+export async function usarFechaLiberacion(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  codigo: string,
+  ahora = new Date(),
+): Promise<PerfilEditor> {
+  return conUnidadInventario(bd, claves, async (tx) => {
+    const f = await bloquear(tx, codigo);
+    if (!f.fecha_liberacion) throw new RechazoInventario("no_aplica", { estado: f.estado });
+    const d = await escribirDisponibilidad(
+      tx,
+      autor,
+      codigo,
+      f,
+      { fecha: f.fecha_liberacion },
+      ahora,
     );
-    const cambios = [cambio(autor, f, codigo, "estado", f.estado, "archivado")];
-    if (f.motivo) cambios.push(cambio(autor, f, codigo, "motivo_pausa", f.motivo, null));
     return {
-      resultado: { yaArchivado: false, perfil: (await leerPerfil(tx, codigo))! },
-      cambios,
+      resultado: (await leerPerfil(tx, codigo))!,
+      cambios: d.cambios,
       visible: visible(f.estado),
     };
   });

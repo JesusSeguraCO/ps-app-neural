@@ -3,7 +3,10 @@
 // destino «Inventario» del menú. La administradora selecciona filas y las publica a la vez (HU-128,
 // prototipo inventario-perfiles--publicacion-masiva). Disponibilidad en la fila y en bloque, y pausar
 // con motivo (HU-132, HU-133; prototipos inventario-perfiles--lote y --pausar-motivo); la observadora
-// solo lee. Archivar e incoherencias llegan con el sub-slice 8. Protegida: la guarda va en la primera línea.
+// solo lee. Las contradicciones entre estado y disponibilidad se señalan en la propia fila con la acción
+// que las corrige, con su pestaña (HU-134; prototipo --incoherencia); «Archivar» en «Más acciones»
+// (HU-135; prototipo --archivar). Protegida: la guarda va en la primera línea.
+import { Fragment } from "react";
 import { puede } from "@ps/dominio/acceso/permisos";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
 import { normalizar } from "@ps/dominio/catalogo/parecidos";
@@ -13,7 +16,8 @@ import { ETIQUETA_BANDA_PANEL } from "@ps/dominio/inventario/perfil";
 import { listarMotivosPausa, listarVigencia } from "@ps/infra/postgres/estado-perfil";
 import { listarInventario, type FilaInventario } from "@ps/infra/postgres/perfiles-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
-import { DisponibilidadFila, PausarPerfil } from "../../src/inventario/EstadoEnLista";
+import { AccionesFila, DisponibilidadFila } from "../../src/inventario/EstadoEnLista";
+import { IncoherenciaFila } from "../../src/inventario/Incoherencia";
 import {
   BarraSeleccion,
   ResultadoDisponibilidadBloque,
@@ -34,6 +38,7 @@ const PESTANAS = [
   { clave: "borrador", etiqueta: "Borradores" },
   { clave: "pausado", etiqueta: "Pausados" },
   { clave: "archivado", etiqueta: "Archivados" },
+  { clave: "incoherencia", etiqueta: "Con incoherencia" },
 ] as const;
 type Pestana = (typeof PESTANAS)[number]["clave"];
 
@@ -48,9 +53,11 @@ const CLASE_ESTADO: Record<EstadoAlmacenado, string> = {
 const enPestana = (f: FilaInventario, p: Pestana) =>
   p === "todos"
     ? true
-    : p === "publicado"
-      ? f.estado === "publicado" || f.estado === "colocado"
-      : f.estado === p;
+    : p === "incoherencia"
+      ? f.coherencia !== null
+      : p === "publicado"
+        ? f.estado === "publicado" || f.estado === "colocado"
+        : f.estado === p;
 
 const nombreDe = (f: FilaInventario) =>
   [f.nombre, f.primerApellido].filter(Boolean).join(" ") || "Sin nombre todavía";
@@ -152,7 +159,7 @@ export default async function Inventario({
           {PESTANAS.map((t) => (
             <a
               key={t.clave}
-              className="pp-pestana"
+              className={`pp-pestana${t.clave === "incoherencia" ? " ip-pestana--alerta" : ""}`}
               href={t.clave === "todos" ? "/inventario" : `/inventario?estado=${t.clave}`}
               aria-current={t.clave === pestana ? "page" : undefined}
             >
@@ -233,93 +240,115 @@ export default async function Inventario({
                 const detalle = detalleEstado(f, ahora);
                 const visible =
                   f.estado === "publicado" || f.estado === "colocado" || f.estado === "borrador";
+                const contradice =
+                  f.coherencia?.clave === "pausado_con_disponibilidad"
+                    ? "Contradice el estado pausado"
+                    : f.coherencia?.severidad === "alta"
+                      ? "Contradice su estado"
+                      : undefined;
                 return (
-                  <tr key={f.codigo}>
-                    {escribe && (
-                      <td className="ip-col-sel">
-                        <label className="ip-sel">
-                          <input
-                            type="checkbox"
-                            name="ip-sel"
-                            value={f.codigo}
-                            data-nombre={nombre}
-                          />
-                          <span className="pp-sr">{`Seleccionar a ${nombre}`}</span>
-                        </label>
+                  <Fragment key={f.codigo}>
+                    <tr className={f.coherencia ? "ip-con-detalle" : undefined}>
+                      {escribe && (
+                        <td className="ip-col-sel">
+                          <label className="ip-sel">
+                            <input
+                              type="checkbox"
+                              name="ip-sel"
+                              value={f.codigo}
+                              data-nombre={nombre}
+                            />
+                            <span className="pp-sr">{`Seleccionar a ${nombre}`}</span>
+                          </label>
+                        </td>
+                      )}
+                      <th scope="row">
+                        <a
+                          className="pp-tabla__perfil pp-enlace--sutil ip-nombre"
+                          href={`/inventario/${f.codigo}`}
+                        >
+                          {nombre}
+                        </a>
+                        <span className="pp-tabla__sub ip-trunc">
+                          {f.rol ? `${f.rol} · ` : ""}
+                          <span className="pp-mono">{f.codigo}</span>
+                        </span>
+                      </th>
+                      <td className="ip-col-estado">
+                        <span className={`pp-estado ${CLASE_ESTADO[f.estado]}`}>
+                          {ETIQUETA_ESTADO[f.estado]}
+                        </span>
+                        {detalle && <span className="pp-tabla__sub ip-trunc">{detalle}</span>}
                       </td>
-                    )}
-                    <th scope="row">
-                      <a
-                        className="pp-tabla__perfil pp-enlace--sutil ip-nombre"
-                        href={`/inventario/${f.codigo}`}
-                      >
-                        {nombre}
-                      </a>
-                      <span className="pp-tabla__sub ip-trunc">
-                        {f.rol ? `${f.rol} · ` : ""}
-                        <span className="pp-mono">{f.codigo}</span>
-                      </span>
-                    </th>
-                    <td className="ip-col-estado">
-                      <span className={`pp-estado ${CLASE_ESTADO[f.estado]}`}>
-                        {ETIQUETA_ESTADO[f.estado]}
-                      </span>
-                      {detalle && <span className="pp-tabla__sub ip-trunc">{detalle}</span>}
-                    </td>
-                    <td className="ip-col-disp">
-                      {visible && escribe ? (
-                        <DisponibilidadFila
-                          codigo={f.codigo}
-                          nombre={nombre}
-                          fecha={f.disponibilidadFecha}
-                          actualizadaEn={f.disponibilidadActualizadaEn}
-                          hoy={hoy}
-                        />
-                      ) : visible ? (
-                        <>
-                          <span className="ip-disp-texto">
-                            {f.disponibilidadFecha
-                              ? ETIQUETA_BANDA_PANEL[
-                                  bandaDeDisponibilidad(
-                                    {
-                                      fecha: f.disponibilidadFecha,
-                                      actualizadaEn: f.disponibilidadActualizadaEn
-                                        ? new Date(f.disponibilidadActualizadaEn)
-                                        : null,
-                                    },
-                                    ahora,
-                                  )
-                                ]
-                              : "Sin disponibilidad"}
-                          </span>
-                          {f.disponibilidadActualizadaEn && (
-                            <span className="pp-tabla__sub ip-trunc ip-meta-disp">
-                              {`Actualizada ${momentoDeColombia(new Date(f.disponibilidadActualizadaEn), ahora)}`}
+                      <td className="ip-col-disp">
+                        {(visible || f.estado === "pausado") && escribe ? (
+                          <DisponibilidadFila
+                            codigo={f.codigo}
+                            nombre={nombre}
+                            fecha={f.disponibilidadFecha}
+                            actualizadaEn={f.disponibilidadActualizadaEn}
+                            hoy={hoy}
+                            contradice={contradice}
+                            recargar={f.estado === "pausado"}
+                          />
+                        ) : visible ? (
+                          <>
+                            <span className="ip-disp-texto">
+                              {f.disponibilidadFecha
+                                ? ETIQUETA_BANDA_PANEL[
+                                    bandaDeDisponibilidad(
+                                      {
+                                        fecha: f.disponibilidadFecha,
+                                        actualizadaEn: f.disponibilidadActualizadaEn
+                                          ? new Date(f.disponibilidadActualizadaEn)
+                                          : null,
+                                      },
+                                      ahora,
+                                    )
+                                  ]
+                                : "Sin disponibilidad"}
                             </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="ip-na">{`No aplica: ${ETIQUETA_ESTADO[f.estado].toLowerCase()}`}</span>
-                      )}
-                    </td>
-                    <td className="pp-tabla__acciones ip-col-acc">
-                      <a
-                        className="pp-btn pp-btn--fantasma pp-btn--sm ip-editar"
-                        href={`/inventario/${f.codigo}`}
-                        aria-label={`${escribe ? "Editar" : "Ver"} el perfil de ${nombre}`}
-                      >
-                        {escribe ? "Editar" : "Ver"}
-                      </a>
-                      {escribe && (f.estado === "publicado" || f.estado === "colocado") && (
-                        <PausarPerfil
-                          codigo={f.codigo}
-                          nombre={nombre}
-                          rol={f.rol}
-                          motivos={motivos}
-                        />
-                      )}
-                    </td>
-                  </tr>
+                            {f.disponibilidadActualizadaEn && (
+                              <span className="pp-tabla__sub ip-trunc ip-meta-disp">
+                                {`Actualizada ${momentoDeColombia(new Date(f.disponibilidadActualizadaEn), ahora)}`}
+                              </span>
+                            )}
+                          </>
+                        ) : contradice ? (
+                          <span className="ip-na">{contradice}</span>
+                        ) : (
+                          <span className="ip-na">{`No aplica: ${ETIQUETA_ESTADO[f.estado].toLowerCase()}`}</span>
+                        )}
+                      </td>
+                      <td className="pp-tabla__acciones ip-col-acc">
+                        <a
+                          className="pp-btn pp-btn--fantasma pp-btn--sm ip-editar"
+                          href={`/inventario/${f.codigo}`}
+                          aria-label={`${escribe ? "Editar" : "Ver"} el perfil de ${nombre}`}
+                        >
+                          {escribe ? "Editar" : "Ver"}
+                        </a>
+                        {escribe && f.estado !== "archivado" && (
+                          <AccionesFila
+                            codigo={f.codigo}
+                            nombre={nombre}
+                            rol={f.rol}
+                            motivos={motivos}
+                            pausar={f.estado === "publicado" || f.estado === "colocado"}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                    {f.coherencia && (
+                      <IncoherenciaFila
+                        codigo={f.codigo}
+                        nombre={nombre}
+                        coherencia={f.coherencia}
+                        columnas={escribe ? 5 : 4}
+                        escribe={escribe}
+                      />
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>

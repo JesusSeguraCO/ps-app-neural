@@ -14,9 +14,18 @@ import {
   listarMotivosPausa,
   listarVigencia,
   pausarPerfil,
+  quitarDisponibilidad,
   reactivarPerfil,
+  usarFechaLiberacion,
 } from "./estado-perfil";
-import { crearPerfil, leerPerfil, publicarPerfil, registrarConsentimiento } from "./perfiles-panel";
+import {
+  crearPerfil,
+  leerPerfil,
+  listarInventario,
+  publicarPerfil,
+  publicarVarios,
+  registrarConsentimiento,
+} from "./perfiles-panel";
 import { RechazoInventario } from "./unidad-inventario";
 import { sembrarFicticios } from "../../../../apps/worker/src/sembrar-ficticios";
 import { sembrarLexicoFicticio } from "../../../../apps/worker/src/sembrar-lexico";
@@ -195,7 +204,7 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
           .slice(n)
           .map((x) => x.campo)
           .sort(),
-      ).toEqual(["estado", "motivo_pausa"]);
+      ).toEqual(["disponibilidad_fecha", "estado", "motivo_pausa"]);
       const f = (
         await bd.instalacion.query(`SELECT pausado_en FROM inventario.perfiles WHERE codigo = $1`, [
           p.codigo,
@@ -265,6 +274,143 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
       expect((await archivarPerfil(panel, claves, autor, p.codigo)).yaArchivado).toBe(false);
       const n = (await auditoria(p.codigo)).length;
       expect((await archivarPerfil(panel, claves, autor, p.codigo)).yaArchivado).toBe(true);
+      expect((await auditoria(p.codigo)).length).toBe(n);
+    });
+  });
+
+  describe("HU-134 · coherencia entre estado y disponibilidad", () => {
+    it("pausar deja la disponibilidad vacía: un pausado recién pausado es coherente (D32)", async () => {
+      const p = await publicado();
+      const r = await pausarPerfil(panel, claves, autor, p.codigo, motivo);
+      expect(r.disponibilidadFecha).toBeNull();
+      expect(r.coherencia).toBeNull();
+    });
+
+    it("un pausado al que le ponen fecha queda en ALTA con la contradicción nombrada (D6)", async () => {
+      const p = await publicado();
+      await pausarPerfil(panel, claves, autor, p.codigo, motivo);
+      const [r] = await actualizarDisponibilidad(panel, claves, autor, [p.codigo], {
+        fecha: "2026-12-01",
+      });
+      expect(r!.ok).toBe(true);
+      const leido = (await leerPerfil(panel, p.codigo))!;
+      expect(leido.estado).toBe("pausado");
+      expect(leido.coherencia).toMatchObject({
+        severidad: "alta",
+        clave: "pausado_con_disponibilidad",
+      });
+      expect(await enPortal(p.codigo)).toBeUndefined();
+      const fila = (await listarInventario(panel)).find((f) => f.codigo === p.codigo)!;
+      expect(fila.coherencia?.clave).toBe("pausado_con_disponibilidad");
+    });
+
+    it("en bloque, un pausado sigue sin aplicar: no se crean contradicciones en masa", async () => {
+      const a = await publicado();
+      const c = await publicado();
+      await pausarPerfil(panel, claves, autor, c.codigo, motivo);
+      const r = await actualizarDisponibilidad(panel, claves, autor, [a.codigo, c.codigo], {
+        opcion: "ahora",
+      });
+      expect(r.map((x) => x.ok)).toEqual([true, false]);
+      expect((await leerPerfil(panel, c.codigo))!.disponibilidadFecha).toBeNull();
+    });
+
+    it("publicar un pausado con ALTA se impide y dice la contradicción; el perfil no cambia", async () => {
+      const p = await publicado();
+      await pausarPerfil(panel, claves, autor, p.codigo, motivo);
+      await actualizarDisponibilidad(panel, claves, autor, [p.codigo], { fecha: "2026-12-01" });
+      const n = (await auditoria(p.codigo)).length;
+      const e = await rechazo(publicarPerfil(panel, claves, autor, p.codigo));
+      expect(e.motivo).toBe("incoherencia");
+      expect(e.detalle.contradiccion).toMatch(/^Pausado y con disponibilidad «/);
+      const [m] = await publicarVarios(panel, claves, autor, [p.codigo]);
+      expect(m).toMatchObject({ ok: false, motivos: ["incoherencia"] });
+      expect((await leerPerfil(panel, p.codigo))!.estado).toBe("pausado");
+      expect((await auditoria(p.codigo)).length).toBe(n);
+    });
+
+    it("las dos salidas desde la fila: quitar la disponibilidad o publicar con ella", async () => {
+      const a = await publicado();
+      const b = await publicado();
+      for (const x of [a, b]) {
+        await pausarPerfil(panel, claves, autor, x.codigo, motivo);
+        await actualizarDisponibilidad(panel, claves, autor, [x.codigo], { fecha: "2026-12-01" });
+      }
+      const q = await quitarDisponibilidad(panel, claves, autor, a.codigo);
+      expect(q).toMatchObject({ estado: "pausado", disponibilidadFecha: null, coherencia: null });
+      const r = await reactivarPerfil(panel, claves, autor, b.codigo, { confirmar: true });
+      expect(r).toMatchObject({
+        estado: "publicado",
+        disponibilidadFecha: "2026-12-01",
+        coherencia: null,
+      });
+      expect(await enPortal(b.codigo)).toEqual({ fecha: "2026-12-01" });
+      // Quitar la disponibilidad a lo que está a la vista lo dejaría en ALTA: no se permite.
+      expect((await rechazo(quitarDisponibilidad(panel, claves, autor, b.codigo))).motivo).toBe(
+        "no_aplica",
+      );
+    });
+
+    it("colocado con «Disponible ahora» es ALTA y «Usar la fecha de liberación» lo corrige", async () => {
+      const p = await publicado();
+      await bd.instalacion.query(
+        `UPDATE inventario.perfiles SET estado = 'colocado', fecha_liberacion = '2026-11-13', disponibilidad_fecha = current_date
+          WHERE codigo = $1`,
+        [p.codigo],
+      );
+      expect((await leerPerfil(panel, p.codigo))!.coherencia?.clave).toBe(
+        "colocado_disponible_ahora",
+      );
+      const r = await usarFechaLiberacion(panel, claves, autor, p.codigo);
+      expect(r).toMatchObject({ disponibilidadFecha: "2026-11-13", coherencia: null });
+      expect((await auditoria(p.codigo)).at(-1)?.campo).toBe("disponibilidad_actualizada_en");
+    });
+
+    it("MEDIA no bloquea: vencida y más de 30 días se lee «por confirmar» y sigue en el portal", async () => {
+      const p = await publicado({ disponibilidad: { fecha: "2026-11-15" } });
+      await bd.instalacion.query(
+        `UPDATE inventario.perfiles SET disponibilidad_fecha = current_date - 15,
+                disponibilidad_actualizada_en = now() - interval '46 days' WHERE codigo = $1`,
+        [p.codigo],
+      );
+      const leido = (await leerPerfil(panel, p.codigo))!;
+      expect(leido.coherencia).toMatchObject({
+        severidad: "media",
+        clave: "por_confirmar",
+        porConfirmar: true,
+      });
+      expect(await enPortal(p.codigo)).toBeDefined();
+      const b = await listarVigencia(panel);
+      expect(b.porConfirmar.map((x) => x.codigo)).toContain(p.codigo);
+    });
+  });
+
+  describe("HU-135 · archivar en lugar de borrar", () => {
+    it("archivar deja de mostrarse, pone archivado_en y vacía la disponibilidad; repetirlo no toca nada", async () => {
+      const p = await publicado();
+      const r = await archivarPerfil(panel, claves, autor, p.codigo);
+      expect(r).toMatchObject({
+        yaArchivado: false,
+        perfil: { estado: "archivado", disponibilidadFecha: null },
+      });
+      expect(r.perfil.coherencia).toBeNull();
+      expect(await enPortal(p.codigo)).toBeUndefined();
+      const antes = (
+        await bd.instalacion.query(
+          `SELECT archivado_en FROM inventario.perfiles WHERE codigo = $1`,
+          [p.codigo],
+        )
+      ).rows[0].archivado_en as Date;
+      expect(antes).toBeInstanceOf(Date);
+      const n = (await auditoria(p.codigo)).length;
+      expect((await archivarPerfil(panel, claves, autor, p.codigo)).yaArchivado).toBe(true);
+      const despues = (
+        await bd.instalacion.query(
+          `SELECT archivado_en FROM inventario.perfiles WHERE codigo = $1`,
+          [p.codigo],
+        )
+      ).rows[0].archivado_en as Date;
+      expect(despues.getTime()).toBe(antes.getTime());
       expect((await auditoria(p.codigo)).length).toBe(n);
     });
   });

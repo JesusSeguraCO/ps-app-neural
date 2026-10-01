@@ -7,6 +7,8 @@
 //  - Nunca publica: `estado: publicado` se rechaza con aviso; los nuevos nacen en borrador (§3).
 //  - Rol, tecnología o sector que no existen se destacan como valor nuevo, sin bloquear (§6).
 import { clasificarNombre, masCercanos, normalizar } from "../catalogo/parecidos";
+import { evaluarCoherencia } from "../inventario/coherencia";
+import type { EstadoAlmacenado } from "../inventario/estados";
 import { OPCIONES_DISPONIBILIDAD, clienteEnDescripcion } from "../inventario/perfil";
 import { CAMPOS_LISTA, CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
 import { VACIAR, formatearExperiencia, leerExperiencia, partirLista } from "./celdas";
@@ -471,6 +473,30 @@ function evaluarFila(
         despues: leidos[c] ?? null,
       }))
     : [];
+
+  // Contradicción ALTA que la fila crearía entre estado y disponibilidad (HU-134, D5): se marca en su
+  // tarjeta sin bloquear (la importación hace lo que dice el archivo). Solo si la fila los toca.
+  if (
+    actual &&
+    !ctx.errores.length &&
+    cambios.some((c) => c.campo === "estado" || c.campo === "disponibilidad")
+  ) {
+    const coherencia = evaluarCoherencia(
+      {
+        estado: String(resultante.estado) as EstadoAlmacenado,
+        colocadoVigente: false,
+        fecha: typeof resultante.disponibilidad === "string" ? resultante.disponibilidad : null,
+        // La importación renueva la fecha de actualización de lo que toca.
+        actualizadaEn: new Date(`${hoy}T17:00:00Z`),
+      },
+      new Date(`${hoy}T17:00:00Z`),
+    );
+    if (coherencia?.severidad === "alta")
+      ctx.avisos.push({
+        campo: "disponibilidad",
+        mensaje: `Contradicción alta: ${coherencia.contradiccion}`,
+      });
+  }
 
   const base = { cambios, errores: ctx.errores, avisos: ctx.avisos, nuevos: ctx.nuevos };
   if (ctx.errores.length) return { ...base, cambios: [], grupo: "con_error" };

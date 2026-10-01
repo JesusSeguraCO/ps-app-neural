@@ -25,6 +25,8 @@ interface Fallo {
   condiciones?: Array<{ clave: string; detalle?: string }>;
   faltanDatos?: Array<{ campo: string; etiqueta: string }>;
   familia?: { nombre: string; modalidades: number } | null;
+  // Contradicción ALTA entre estado y disponibilidad que impidió publicarlo (HU-134).
+  contradiccion?: string;
 }
 interface Resultado {
   total: number;
@@ -230,6 +232,12 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
       accion: "Ver el inventario",
       href: "/inventario",
     };
+  if (f.motivos.includes("incoherencia"))
+    return {
+      nota: `Su estado y su disponibilidad se contradicen: ${f.contradiccion ?? "resuélvelo en su fila."}`,
+      accion: "Resolver en su fila",
+      href: `/inventario?estado=incoherencia&q=${encodeURIComponent(f.codigo)}`,
+    };
   if (f.motivos.includes("transicion_invalida"))
     return {
       nota:
@@ -286,10 +294,11 @@ export function ResultadoPublicacion() {
   if (!r) return null;
   const n = r.publicados.length;
   const todos = r.fallos.length === 0;
+  const contradice = r.fallos.some((f) => f.motivos.includes("incoherencia"));
   return (
     <>
       <div
-        className={`pp-aviso ${todos ? "pp-aviso--ok" : "pp-aviso--warn"} ip-avisos`}
+        className={`pp-aviso ${todos ? "pp-aviso--ok" : contradice ? "pp-aviso--danger" : "pp-aviso--warn"} ip-avisos`}
         role="status"
       >
         <span className="pp-aviso__icono" aria-hidden="true">

@@ -3,6 +3,9 @@
 // --pausar-motivo). En la fila: elegir la disponibilidad la guarda sin abrir la ficha (dos clics) y
 // dice qué banda verá el cliente. «Pausar» abre la hoja con los motivos del catálogo y el desvío
 // «¿Está ocupada hasta una fecha?», que lleva a poner la fecha en la misma fila: eso no es una pausa.
+// «Archivar» (HU-135; prototipo inventario-perfiles--archivar) va en el mismo menú, con confirmación
+// anclada a la fila: se archiva, no se borra. A un pausado se le puede poner fecha en su fila: queda la
+// contradicción señalada con su salida (HU-134, D6).
 import { useEffect, useRef, useState } from "react";
 import { bandaDeDisponibilidad, ROTULO_BANDA } from "@ps/dominio/catalogo/banda";
 import {
@@ -40,6 +43,10 @@ export function DisponibilidadFila(p: {
   fecha: string | null;
   actualizadaEn: string | null;
   hoy: string;
+  // La disponibilidad contradice el estado (HU-134): el selector se marca y lo dice.
+  contradice?: string;
+  // Tras guardar se recarga la página para mostrar o quitar la señal de la fila (pausado).
+  recargar?: boolean;
 }) {
   const [fecha, setFecha] = useState(p.fecha);
   const [actualizadaEn, setActualizadaEn] = useState(p.actualizadaEn);
@@ -89,6 +96,10 @@ export function DisponibilidadFila(p: {
         );
         return;
       }
+      if (p.recargar)
+        return recargarConAviso(
+          `Guardada. ${p.nombre} sigue pausado: resuelve la contradicción en su fila.`,
+        );
       setFecha(res.fecha);
       setActualizadaEn(new Date().toISOString());
       setModoFecha(false);
@@ -106,6 +117,7 @@ export function DisponibilidadFila(p: {
           className="pp-input"
           id={id}
           aria-label={`Disponibilidad de ${p.nombre}`}
+          aria-invalid={p.contradice ? true : undefined}
           value=""
           disabled={guardando}
           onChange={(e) => {
@@ -166,6 +178,7 @@ export function DisponibilidadFila(p: {
       )}
       <span className="pp-tabla__sub ip-trunc ip-meta-disp" role="status">
         {estado ??
+          p.contradice ??
           (actualizadaEn ? `Actualizada ${momento(actualizadaEn)}` : "Sin fecha de actualización")}
       </span>
     </div>
@@ -177,17 +190,39 @@ function momento(iso: string): string {
   return dias <= 0 ? "hoy" : dias === 1 ? "ayer" : `hace ${dias} días`;
 }
 
-export function PausarPerfil(p: {
+export function AccionesFila(p: {
   codigo: string;
   nombre: string;
   rol: string | null;
   motivos: MotivoPausa[];
+  // Solo lo que está a la vista se pausa; todo lo que no está archivado se archiva.
+  pausar: boolean;
 }) {
   const [abierta, setAbierta] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [archivar, setArchivar] = useState(false);
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
   const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function confirmarArchivo() {
+    setEnviando(true);
+    setErrorArchivo(null);
+    try {
+      const r = await enviarJson(`/api/v1/perfiles/${p.codigo}/archivar`, {});
+      const d = await r.json().catch(() => ({}));
+      if (r.ok)
+        return recargarConAviso(
+          d.yaArchivado
+            ? `${p.nombre} ya estaba archivado: no se cambió nada.`
+            : `${p.nombre} quedó archivado: no se borró y los clientes con enlace lo ven «Fuera del banco».`,
+        );
+      setErrorArchivo("No se pudo archivar. Inténtalo de nuevo.");
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   async function pausar() {
     if (!motivo) return setError("Elige el motivo de la pausa.");
@@ -229,24 +264,84 @@ export function PausarPerfil(p: {
         </button>
         {menu && (
           <ul className="ip-menu__lista" role="menu" aria-label={`Acciones para ${p.nombre}`}>
+            {p.pausar && (
+              <li role="none">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="ip-menu__item"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setMenu(false);
+                  }}
+                  onClick={() => {
+                    setMenu(false);
+                    setAbierta(true);
+                  }}
+                >
+                  {`Pausar a ${p.nombre}`}
+                </button>
+              </li>
+            )}
             <li role="none">
               <button
                 type="button"
                 role="menuitem"
                 className="ip-menu__item"
-                autoFocus
+                autoFocus={!p.pausar}
                 onKeyDown={(e) => {
                   if (e.key === "Escape") setMenu(false);
                 }}
                 onClick={() => {
                   setMenu(false);
-                  setAbierta(true);
+                  setArchivar(true);
                 }}
               >
-                {`Pausar a ${p.nombre}`}
+                {`Archivar a ${p.nombre}`}
               </button>
             </li>
           </ul>
+        )}
+        {archivar && (
+          <div
+            className="ip-pop"
+            role="dialog"
+            aria-labelledby={`ip-pop-${p.codigo}`}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setArchivar(false);
+            }}
+          >
+            <p className="ip-pop__titulo" id={`ip-pop-${p.codigo}`}>
+              {`¿Archivar a ${p.nombre}?`}
+            </p>
+            <p className="ip-pop__texto">
+              Se archiva, no se borra. Los clientes con enlace lo verán como «Fuera del banco».
+            </p>
+            {errorArchivo && (
+              <p className="pp-error" role="alert">
+                <span aria-hidden="true">!</span>
+                {errorArchivo}
+              </p>
+            )}
+            <div className="ip-pop__acciones">
+              <button
+                type="button"
+                className="pp-btn pp-btn--fantasma pp-btn--sm"
+                onClick={() => setArchivar(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="pp-btn pp-btn--contorno pp-btn--sm"
+                autoFocus
+                disabled={enviando}
+                onClick={() => void confirmarArchivo()}
+              >
+                Archivar perfil
+              </button>
+            </div>
+          </div>
         )}
       </span>
       {abierta && (
