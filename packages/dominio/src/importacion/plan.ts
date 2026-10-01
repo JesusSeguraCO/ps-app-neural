@@ -96,6 +96,9 @@ export interface EntradaPlan {
   // Fecha civil de hoy en Bogotá (AAAA-MM-DD): traduce las bandas a fecha.
   hoy: string;
   excluidas?: ReadonlySet<number>;
+  // Colocaciones vigentes por código (HU-137): el colocado sigue publicado; su asignación no viaja en
+  // el archivo y no cambia por importación.
+  colocados?: ReadonlyMap<string, { cuenta: string; liberacion: string }>;
 }
 
 // ─── de la tabla emparejada a celdas por campo ───────────────────────────────────────────────
@@ -349,6 +352,7 @@ function evaluarFila(
   actual: FilaBanco | undefined,
   catalogos: Catalogos,
   hoy: string,
+  colocacion?: { cuenta: string; liberacion: string },
 ): Omit<FilaPlan, "numero" | "codigo" | "incluida" | "persona"> & { nuevos: Contexto["nuevos"] } {
   const ctx: Contexto = { catalogos, hoy, errores: [], avisos: [], nuevos: [] };
   for (const r of f.rechazadas ?? [])
@@ -370,10 +374,10 @@ function evaluarFila(
   else if (celdaEstado) {
     const e = normalizar(celdaEstado);
     if (actual && e === normalizar(String(actual.estado ?? ""))) estado = String(actual.estado);
-    else if (actual?.estado === "colocado")
+    else if (colocacion)
       ctx.errores.push({
         campo: "estado",
-        mensaje: "Un perfil colocado no cambia de estado por importación: se libera desde su ficha",
+        mensaje: `Un perfil colocado (${colocacion.cuenta}, hasta el ${colocacion.liberacion}) no cambia de estado por importación`,
       });
     else if (e === "publicado")
       ctx.avisos.push({
@@ -484,7 +488,7 @@ function evaluarFila(
     const coherencia = evaluarCoherencia(
       {
         estado: String(resultante.estado) as EstadoAlmacenado,
-        colocadoVigente: false,
+        colocadoVigente: Boolean(colocacion),
         fecha: typeof resultante.disponibilidad === "string" ? resultante.disponibilidad : null,
         // La importación renueva la fecha de actualización de lo que toca.
         actualizadaEn: new Date(`${hoy}T17:00:00Z`),
@@ -495,6 +499,16 @@ function evaluarFila(
       ctx.avisos.push({
         campo: "disponibilidad",
         mensaje: `Contradicción alta: ${coherencia.contradiccion}`,
+      });
+    // Un colocado cuya disponibilidad quede antes del fin de su asignación (spec de importación §6).
+    else if (
+      colocacion &&
+      typeof resultante.disponibilidad === "string" &&
+      resultante.disponibilidad < colocacion.liberacion
+    )
+      ctx.avisos.push({
+        campo: "disponibilidad",
+        mensaje: `Contradicción alta: Colocado en ${colocacion.cuenta} hasta el ${colocacion.liberacion} y con disponibilidad antes de esa fecha. Un colocado muestra su fecha de liberación.`,
       });
   }
 
@@ -579,7 +593,14 @@ export function calcularPlan(e: EntradaPlan): Plan {
         errores: [],
         motivoOmision: `El código ${codigo} no existe y el modo es solo actualizar`,
       };
-    const { nuevos, ...r } = evaluarFila(f, codigo, actual, e.catalogos, e.hoy);
+    const { nuevos, ...r } = evaluarFila(
+      f,
+      codigo,
+      actual,
+      e.catalogos,
+      e.hoy,
+      e.colocados?.get(codigo),
+    );
     if (incluida && r.grupo !== "con_error") nuevosVistos.push(...nuevos);
     return r.grupo === "con_error" ? { ...comun, ...r, cruda } : { ...comun, ...r };
   });

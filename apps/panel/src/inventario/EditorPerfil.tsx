@@ -146,14 +146,21 @@ export function EditorPerfil(p: {
     (inicial?.experiencias ?? []).map((e) => ({ ...e, clave: e.id })),
   );
   const [hojaExp, setHojaExp] = useState<Experiencia | null>(null);
-  const [crear, setCrear] = useState<{ tipo: "rol" | "tecnologia" | "sector"; texto: string } | null>(null);
+  const [crear, setCrear] = useState<{
+    tipo: "rol" | "tecnologia" | "sector";
+    texto: string;
+  } | null>(null);
   const [hojaConsent, setHojaConsent] = useState<"nuevo" | "anterior" | "alcance" | null>(null);
   const [rechazado, setRechazado] = useState<{
     fechaFirma: string | null;
     alcance: { nombreApellido: boolean; trayectoria: boolean; clientes: boolean };
   } | null>(null);
   const [hojaRevocar, setHojaRevocar] = useState(false);
-  const [alcancePropuesto, setAlcancePropuesto] = useState<{ nombreApellido: boolean; trayectoria: boolean; clientes: boolean } | null>(null);
+  const [alcancePropuesto, setAlcancePropuesto] = useState<{
+    nombreApellido: boolean;
+    trayectoria: boolean;
+    clientes: boolean;
+  } | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -166,7 +173,7 @@ export function EditorPerfil(p: {
   const [base, setBase] = useState<string | null>(null);
 
   // Un publicado también se edita, en dos pasos y con su impacto a la vista (HU-126).
-  const enPortal = perfil?.estado === "publicado" || perfil?.estado === "colocado";
+  const enPortal = perfil?.estado === "publicado";
   const editable = p.escribe && (!perfil || perfil.estado === "borrador" || enPortal);
   const [impacto, setImpacto] = useState<Impacto | null>(null);
   const prueba = p.opciones.modalidadesPrueba.find((m) => m.id === pruebaId) ?? null;
@@ -345,14 +352,21 @@ export function EditorPerfil(p: {
     setErrorReporte(null);
     const alSelector = (texto: string) => {
       // Sin rol el selector está cerrado: se lleva primero al rol, que abre las modalidades de su familia.
-      setErrorReporte(rol ? texto : `${texto} Elige primero el rol: la modalidad sale del catálogo de su familia.`);
+      setErrorReporte(
+        rol
+          ? texto
+          : `${texto} Elige primero el rol: la modalidad sale del catálogo de su familia.`,
+      );
       const el = document.getElementById(rol ? "pe-prueba" : "pe-rol");
       el?.scrollIntoView({ block: "center" });
       el?.focus();
     };
-    if (!pruebaId) return alSelector("El borrador sale de la modalidad de prueba: elige una para este perfil.");
+    if (!pruebaId)
+      return alSelector("El borrador sale de la modalidad de prueba: elige una para este perfil.");
     if (sinGuardar)
-      return setErrorReporte("Guarda primero los cambios del perfil: el borrador sale de la modalidad guardada.");
+      return setErrorReporte(
+        "Guarda primero los cambios del perfil: el borrador sale de la modalidad guardada.",
+      );
     setPidiendo(true);
     try {
       const r = await enviarJson(`/api/v1/perfiles/${perfil.codigo}/validacion`, {});
@@ -480,7 +494,8 @@ export function EditorPerfil(p: {
   const sinPrueba = evaluacion.condiciones.find((c) => c.clave === "modalidad_prueba" && !c.cumple);
   const consent = perfil?.consentimiento ?? null;
   // Tras intentar publicar: lo que falta según el servidor si discrepó, si no el cálculo en vivo.
-  const bloqueo = bloqueoServidor ?? (intentoPublicar && !evaluacion.publicable ? evaluacion : null);
+  const bloqueo =
+    bloqueoServidor ?? (intentoPublicar && !evaluacion.publicable ? evaluacion : null);
 
   if (modo === "previa" && perfil) {
     const vista = enEdicion()!;
@@ -490,7 +505,7 @@ export function EditorPerfil(p: {
           perfil={vista}
           evaluacion={evaluacion}
           estado={perfil.estado}
-          publicado={perfil.estado === "publicado" || perfil.estado === "colocado"}
+          publicado={perfil.estado === "publicado"}
           sinGuardar={sinGuardar}
           puedePublicar={editable && !enPortal}
           publicando={publicando}
@@ -530,9 +545,7 @@ export function EditorPerfil(p: {
         <div className="pp-encabezado__texto">
           <h1 className="pp-encabezado__titulo">{titulo}</h1>
           <p className="pp-encabezado__meta pe-meta">
-            <span
-              className={`pp-estado ${enPortal ? "pp-estado--ok" : "pp-estado--borrador"}`}
-            >
+            <span className={`pp-estado ${enPortal ? "pp-estado--ok" : "pp-estado--borrador"}`}>
               {perfil ? ETIQUETA_ESTADO[perfil.estado] : "Borrador"}
             </span>
             {perfil && (
@@ -544,7 +557,9 @@ export function EditorPerfil(p: {
                 {enPortal && cambiosSinGuardar > 0 && (
                   <>
                     <span className="pe-sep">·</span>
-                    {cambiosSinGuardar === 1 ? "1 cambio sin guardar" : `${cambiosSinGuardar} cambios sin guardar`}
+                    {cambiosSinGuardar === 1
+                      ? "1 cambio sin guardar"
+                      : `${cambiosSinGuardar} cambios sin guardar`}
                   </>
                 )}
               </>
@@ -624,7 +639,9 @@ export function EditorPerfil(p: {
           familia={rol?.familia ?? perfil.familia?.nombre ?? null}
           modalidadesFamilia={modalidadesFamilia}
           alRegistrarConsentimiento={
-            p.registraConsentimiento ? () => setHojaConsent(consent?.vigente ? "alcance" : "nuevo") : undefined
+            p.registraConsentimiento
+              ? () => setHojaConsent(consent?.vigente ? "alcance" : "nuevo")
+              : undefined
           }
         />
       )}
@@ -705,7 +722,10 @@ export function EditorPerfil(p: {
                         onChange={(e) => setApellido(e.target.value)}
                       />
                       {falta("primer_apellido") && (
-                        <ErrorCampo id="pe-apellido-error" texto={ERROR_CAMPO.primer_apellido.texto} />
+                        <ErrorCampo
+                          id="pe-apellido-error"
+                          texto={ERROR_CAMPO.primer_apellido.texto}
+                        />
                       )}
                     </div>
                   </div>
@@ -835,7 +855,10 @@ export function EditorPerfil(p: {
                         onChange={(e) => setAnios(e.target.value.replace(/\D/g, "").slice(0, 2))}
                       />
                       {falta("anios_experiencia") && (
-                        <ErrorCampo id="pe-anios-error" texto={ERROR_CAMPO.anios_experiencia.texto} />
+                        <ErrorCampo
+                          id="pe-anios-error"
+                          texto={ERROR_CAMPO.anios_experiencia.texto}
+                        />
                       )}
                     </div>
                   </div>
@@ -1099,7 +1122,8 @@ export function EditorPerfil(p: {
                       )}
                       {perfil.reporte && !reporteVigente && (
                         <p className="pp-meta">
-                          El reporte confirmado es de otra modalidad de prueba: con esta, la ficha vuelve a Nivel 0.
+                          El reporte confirmado es de otra modalidad de prueba: con esta, la ficha
+                          vuelve a Nivel 0.
                         </p>
                       )}
                       {p.escribe && (
@@ -1585,7 +1609,7 @@ export function EditorPerfil(p: {
             setHojaRevocar(false);
             aplicar(nuevo);
             recargarConAviso(
-              perfil.estado === "publicado" || perfil.estado === "colocado"
+              perfil.estado === "publicado"
                 ? "Revocación registrada. El perfil salió del portal y quedó en borrador."
                 : "Revocación registrada.",
             );
@@ -1651,8 +1675,8 @@ function AvisoBloqueo(p: {
   } else if (unica?.clave === "modalidad_prueba" && unica.detalle === "familia_sin_modalidades") {
     texto = (
       <>
-        No se publicó {codigo}: la familia {p.familia ?? "del rol"} no tiene modalidades de prueba. Sin
-        una, ningún perfil de esa familia puede publicarse.
+        No se publicó {codigo}: la familia {p.familia ?? "del rol"} no tiene modalidades de prueba.
+        Sin una, ningún perfil de esa familia puede publicarse.
       </>
     );
     accion = (
@@ -1667,8 +1691,8 @@ function AvisoBloqueo(p: {
     texto =
       unica.detalle === "modalidad_inactiva" ? (
         <>
-          No se publicó {codigo}: la modalidad de prueba elegida ya no está activa o no es de la familia
-          del rol. Elige otra.
+          No se publicó {codigo}: la modalidad de prueba elegida ya no está activa o no es de la
+          familia del rol. Elige otra.
         </>
       ) : (
         <>
@@ -1732,7 +1756,11 @@ function SeccionConsentimiento(p: {
   alRegistrar: () => void;
   alRevocar: () => void;
   alVerAnterior: () => void;
-  alCambiarAlcance: (a: { nombreApellido: boolean; trayectoria: boolean; clientes: boolean }) => void;
+  alCambiarAlcance: (a: {
+    nombreApellido: boolean;
+    trayectoria: boolean;
+    clientes: boolean;
+  }) => void;
 }) {
   const c = p.perfil?.consentimiento ?? null;
   const nombre = [p.perfil?.nombre, p.perfil?.primerApellido].filter(Boolean).join(" ");
@@ -1812,16 +1840,28 @@ function SeccionConsentimiento(p: {
           <legend className="pp-label">Alcance autorizado</legend>
           {(
             [
-              ["nombreApellido", "Nombre y primer apellido", `${nombre || "Su nombre"}, tal como aparecerá en la tarjeta.`],
+              [
+                "nombreApellido",
+                "Nombre y primer apellido",
+                `${nombre || "Su nombre"}, tal como aparecerá en la tarjeta.`,
+              ],
               ["trayectoria", "Trayectoria", null],
-              ["clientes", "Clientes nombrados", "Sin esta autorización la experiencia se muestra sin el nombre del cliente."],
+              [
+                "clientes",
+                "Clientes nombrados",
+                "Sin esta autorización la experiencia se muestra sin el nombre del cliente.",
+              ],
             ] as const
           ).map(([k, texto, ayuda]) => {
             const actual = { nombreApellido: true, trayectoria: true, clientes: c.incluyeClientes };
             return (
               <label key={k} className="pp-check">
                 {/* Cambiar el alcance es registrar uno nuevo: la casilla abre la hoja con el cambio. */}
-                <input type="checkbox" checked={actual[k]} onChange={(e) => p.alCambiarAlcance({ ...actual, [k]: e.target.checked })} />
+                <input
+                  type="checkbox"
+                  checked={actual[k]}
+                  onChange={(e) => p.alCambiarAlcance({ ...actual, [k]: e.target.checked })}
+                />
                 <span className="pp-check__texto">
                   {texto}
                   {ayuda && <span className="pp-check__ayuda">{ayuda}</span>}
@@ -2013,7 +2053,9 @@ function HojaExperiencia(p: {
             aria-invalid={(intento && (faltaTexto || enTexto)) || undefined}
             onChange={(x) => setE({ ...e, descripcion: x.target.value })}
           />
-          {intento && faltaTexto && <ErrorCampo id="ex-texto-error" texto="Falta describir qué hizo." />}
+          {intento && faltaTexto && (
+            <ErrorCampo id="ex-texto-error" texto="Falta describir qué hizo." />
+          )}
           {enTexto && (
             <ErrorCampo
               id="ex-texto-cliente"
@@ -2324,10 +2366,7 @@ function HojaRevocar(p: {
 }) {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const publicado =
-    p.perfil.estado === "publicado" ||
-    p.perfil.estado === "colocado" ||
-    p.perfil.estado === "pausado";
+  const publicado = p.perfil.estado === "publicado" || p.perfil.estado === "pausado";
   async function revocar() {
     setEnviando(true);
     setError(null);
@@ -2434,9 +2473,14 @@ function HojaImpacto(p: {
     setEnviando(true);
     setError(null);
     try {
-      const r = await enviarJson(`/api/v1/perfiles/${p.perfil.codigo}${consulta}`, p.cuerpo, "PATCH", {
-        "if-match": `"${p.perfil.version}"`,
-      });
+      const r = await enviarJson(
+        `/api/v1/perfiles/${p.perfil.codigo}${consulta}`,
+        p.cuerpo,
+        "PATCH",
+        {
+          "if-match": `"${p.perfil.version}"`,
+        },
+      );
       const d = await r.json().catch(() => ({}));
       if (r.ok) {
         recargarConAviso(
@@ -2521,19 +2565,24 @@ function HojaImpacto(p: {
               <strong>¿Descarto el cambio o paso el perfil a borrador?</strong>
             </p>
             {lista}
-            <p className="pp-meta">Mientras no respondas, el perfil sigue publicado sin el cambio.</p>
+            <p className="pp-meta">
+              Mientras no respondas, el perfil sigue publicado sin el cambio.
+            </p>
           </div>
           <div className="pe-hoja-bloque">
             <dl className="pp-datos">
               <div className="pp-datos__fila">
                 <dt>Descartar el cambio</dt>
-                <dd>Conserva exactamente los valores que tenía. Sigue publicado y no queda nada en la auditoría.</dd>
+                <dd>
+                  Conserva exactamente los valores que tenía. Sigue publicado y no queda nada en la
+                  auditoría.
+                </dd>
               </div>
               <div className="pp-datos__fila">
                 <dt>Pasar a borrador</dt>
                 <dd>
-                  Guarda el cambio y lo saca del portal. La auditoría registra que salió de publicado por
-                  esta edición, contigo y la hora.
+                  Guarda el cambio y lo saca del portal. La auditoría registra que salió de
+                  publicado por esta edición, contigo y la hora.
                 </dd>
               </div>
             </dl>

@@ -36,6 +36,7 @@ import {
   registrarLote,
   type LoteLeido,
 } from "@ps/infra/postgres/importacion";
+import { colocadosVigentes } from "@ps/infra/postgres/colocados";
 import { poolDe } from "@ps/infra/postgres/pool";
 import {
   confirmarReversion,
@@ -170,6 +171,7 @@ async function contexto() {
     banco: new Map(banco.map((f) => [f.codigo as string, f])),
     catalogos: await catalogosImportacion(bd),
     hoy: hoyEnColombia(),
+    colocados: await colocadosVigentes(bd),
   };
 }
 

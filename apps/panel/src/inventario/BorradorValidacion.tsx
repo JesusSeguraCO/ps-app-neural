@@ -116,7 +116,7 @@ export function BorradorValidacion(p: {
         sessionStorage.setItem(
           "pp-aviso",
           accion === "confirmar"
-            ? p.perfil.estado === "publicado" || p.perfil.estado === "colocado"
+            ? p.perfil.estado === "publicado"
               ? "Reporte confirmado. La ficha del portal ya lo muestra, sin republicar."
               : "Reporte confirmado. La ficha lo mostrará cuando se publique."
             : "Borrador descartado. La ficha no recibió ningún campo suyo.",

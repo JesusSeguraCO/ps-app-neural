@@ -32,7 +32,7 @@ describe("clasificarDisponibilidad", () => {
 });
 
 describe("evaluarCoherencia · tabla de verdad", () => {
-  const estados: EstadoAlmacenado[] = [...ESTADOS_PERFIL, "colocado"];
+  const estados: EstadoAlmacenado[] = [...ESTADOS_PERFIL];
   const disps: Disp[] = ["ninguna", "ahora", "con_fecha", "vencida"];
   const antiguedades: Array<number | null> = [2, 30, 31, null];
 
@@ -50,7 +50,7 @@ describe("evaluarCoherencia · tabla de verdad", () => {
         : estado === "pausado"
           ? "pausado_con_disponibilidad"
           : "archivado_con_disponibilidad";
-    const esColocado = estado === "colocado" || colocado;
+    const esColocado = colocado;
     if (d === "ninguna") return "publicado_sin_disponibilidad";
     // Sin fecha de actualización no se distingue una fecha vencida de un «Disponible ahora»: manda la ALTA.
     if (esColocado && (d === "ahora" || (d === "vencida" && dias === null)))
@@ -108,7 +108,7 @@ describe("evaluarCoherencia · severidad y contradicción nombrada", () => {
     for (const x of [
       { estado: "pausado" as const, fecha: HOY },
       { estado: "pausado" as const, fecha: "2026-11-15" },
-      { estado: "colocado" as const, fecha: HOY },
+      { estado: "publicado" as const, colocadoVigente: true, fecha: HOY },
       { estado: "archivado" as const, fecha: HOY },
       { estado: "archivado" as const, fecha: "2026-11-15" },
       { estado: "publicado" as const, fecha: null },

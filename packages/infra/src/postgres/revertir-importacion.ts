@@ -18,7 +18,7 @@ import { RechazoInventario } from "./unidad-inventario";
 
 type Consultor = Pick<pg.PoolClient, "query">;
 
-const VISIBLES = new Set(["publicado", "colocado"]);
+const VISIBLES = new Set(["publicado"]);
 const COLUMNAS = [
   "nombre",
   "primer_apellido",

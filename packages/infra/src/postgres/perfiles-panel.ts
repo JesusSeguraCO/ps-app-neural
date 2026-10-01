@@ -84,6 +84,14 @@ export interface ConsentimientoPerfil {
   revocadoEn: string | null;
 }
 
+export interface ColocacionPerfil {
+  cuenta: string;
+  inicio: string | null;
+  liberacion: string;
+  fuente: "panel" | "operaciones" | "migracion" | "siembra";
+  registradoEn: string;
+}
+
 export interface PerfilEditor {
   id: string;
   codigo: string;
@@ -119,8 +127,8 @@ export interface PerfilEditor {
   borradorValidacion: { id: string; creadaEn: string } | null;
   // Pausado (HU-133): con qué motivo y desde cuándo.
   pausa: { motivo: string | null; desde: string | null } | null;
-  // Colocado (hasta el contract del sub-slice 9): fecha en que queda libre.
-  fechaLiberacion: string | null;
+  // Colocación vigente (HU-137): el colocado sigue publicado; su disponibilidad es la liberación.
+  colocacion: ColocacionPerfil | null;
   evaluacion: EvaluacionPublicacion;
   // Contradicción entre estado y disponibilidad (HU-134, matriz D5): ALTA bloquea publicar.
   coherencia: Incoherencia | null;
@@ -156,7 +164,13 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
             s.nombre AS seniority_nombre, ci.nombre AS ciudad_nombre, pa.nombre AS pais_nombre,
             mo.nombre AS modalidad_nombre, mo.texto_cliente AS modalidad_texto,
             mp.nombre AS prueba_nombre, mp.activo AS prueba_activa, mp.texto_cliente AS prueba_texto,
-            mp.familia_id AS prueba_familia, mz.nombre AS motivo_pausa_nombre
+            mp.familia_id AS prueba_familia, mz.nombre AS motivo_pausa_nombre,
+            (SELECT to_jsonb(x) FROM (
+               SELECT c.cuenta, c.inicio::text AS inicio, c.liberacion::text AS liberacion, c.fuente,
+                      c.registrado_en AS "registradoEn"
+                 FROM inventario.colocaciones c
+                WHERE c.perfil_id = p.id AND c.vigente
+                  AND c.liberacion > (now() AT TIME ZONE 'America/Bogota')::date) x) AS colocacion
        FROM inventario.perfiles p
        LEFT JOIN inventario.catalogo_familias f ON f.id = p.familia_id
        LEFT JOIN inventario.catalogo_seniorities s ON s.id = p.seniority_id
@@ -298,7 +312,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
       p.estado === "pausado"
         ? { motivo: p.motivo_pausa_nombre ?? null, desde: p.pausado_en?.toISOString() ?? null }
         : null,
-    fechaLiberacion: fecha(p.fecha_liberacion),
+    colocacion: p.colocacion ?? null,
   };
   return {
     ...perfil,
@@ -306,7 +320,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
     coherencia: evaluarCoherencia(
       {
         estado: perfil.estado,
-        colocadoVigente: false,
+        colocadoVigente: perfil.colocacion !== null,
         fecha: perfil.disponibilidadFecha,
         actualizadaEn: perfil.disponibilidadActualizadaEn
           ? new Date(perfil.disponibilidadActualizadaEn)
@@ -1043,7 +1057,7 @@ export async function registrarConsentimiento(
         },
       ],
       // Cambiar el alcance de un publicado cambia lo que ve el cliente (clientes nombrados).
-      visible: fila.estado === "publicado" || fila.estado === "colocado",
+      visible: fila.estado === "publicado",
     };
   });
 }
@@ -1083,10 +1097,7 @@ export async function revocarConsentimiento(
       },
     ];
     if (t.ok && t.cambia) {
-      await tx.query(
-        `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = NULL WHERE id = $1`,
-        [fila.id, t.a],
-      );
+      await tx.query(`UPDATE inventario.perfiles SET estado = $2 WHERE id = $1`, [fila.id, t.a]);
       cambios.push({
         actor: autor.correo,
         entidad: "perfiles",

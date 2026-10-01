@@ -353,16 +353,22 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
 
     it("colocado con «Disponible ahora» es ALTA y «Usar la fecha de liberación» lo corrige", async () => {
       const p = await publicado();
+      // Colocado (publicado con colocación vigente) al que alguien le puso «Disponible ahora».
       await bd.instalacion.query(
-        `UPDATE inventario.perfiles SET estado = 'colocado', fecha_liberacion = '2026-11-13', disponibilidad_fecha = current_date
-          WHERE codigo = $1`,
+        `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
+         SELECT id, 'Seguros Altamira', current_date - 30, '2099-11-13', 'siembra'
+           FROM inventario.perfiles WHERE codigo = $1`,
+        [p.codigo],
+      );
+      await bd.instalacion.query(
+        `UPDATE inventario.perfiles SET disponibilidad_fecha = current_date WHERE codigo = $1`,
         [p.codigo],
       );
       expect((await leerPerfil(panel, p.codigo))!.coherencia?.clave).toBe(
         "colocado_disponible_ahora",
       );
       const r = await usarFechaLiberacion(panel, claves, autor, p.codigo);
-      expect(r).toMatchObject({ disponibilidadFecha: "2026-11-13", coherencia: null });
+      expect(r).toMatchObject({ disponibilidadFecha: "2099-11-13", coherencia: null });
       expect((await auditoria(p.codigo)).at(-1)?.campo).toBe("disponibilidad_actualizada_en");
     });
 

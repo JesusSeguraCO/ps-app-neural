@@ -59,7 +59,7 @@ export interface BandejaVigencia {
   proxima: { codigo: string; nombre: string; entra: string } | null;
 }
 
-const visible = (e: EstadoAlmacenado) => e === "publicado" || e === "colocado";
+const visible = (e: EstadoAlmacenado) => e === "publicado";
 const masAntiguoPrimero = (a: FilaVigencia, b: FilaVigencia) =>
   a.dias === null
     ? b.dias === null

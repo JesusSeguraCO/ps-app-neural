@@ -9,7 +9,7 @@ import {
   type EstadoAlmacenado,
 } from "./estados";
 
-const ESTADOS: EstadoAlmacenado[] = ["borrador", "publicado", "pausado", "archivado", "colocado"];
+const ESTADOS: EstadoAlmacenado[] = ["borrador", "publicado", "pausado", "archivado"];
 const ACCIONES: Accion[] = [
   "publicar",
   "pausar",
@@ -52,14 +52,6 @@ const TABLA: Record<EstadoAlmacenado, Record<Accion, string>> = {
     archivar: "=",
     revocar_consentimiento: "·archivado",
     a_borrador: "×",
-  },
-  colocado: {
-    publicar: "×",
-    pausar: "pausado",
-    reactivar: "×",
-    archivar: "archivado",
-    revocar_consentimiento: "borrador",
-    a_borrador: "borrador",
   },
 };
 

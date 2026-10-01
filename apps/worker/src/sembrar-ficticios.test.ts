@@ -57,9 +57,18 @@ describe.skipIf(!HAY_BD)("sembrarFicticios en local (ps_worker)", () => {
     expect(Object.keys(porEstado).sort()).toEqual([
       "archivado",
       "borrador",
-      "colocado",
       "pausado",
       "publicado",
+    ]);
+    // El colocado sigue publicado, con su colocación vigente y su disponibilidad = liberación (HU-137).
+    const colocado = (
+      await bd.instalacion.query(
+        `SELECT p.codigo, p.estado, c.fuente, c.liberacion = p.disponibilidad_fecha AS coincide
+           FROM inventario.colocaciones c JOIN inventario.perfiles p ON p.id = c.perfil_id WHERE c.vigente`,
+      )
+    ).rows;
+    expect(colocado).toEqual([
+      { codigo: "PS-0137", estado: "publicado", fuente: "siembra", coincide: true },
     ]);
     const publicables = await bd
       .como("ps_portal")

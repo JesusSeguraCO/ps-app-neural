@@ -36,7 +36,7 @@ export interface Incoherencia {
 
 export interface EntradaCoherencia {
   estado: EstadoAlmacenado;
-  // Publicado con una colocación vigente (tras el contract del sub-slice 9 el colocado es esto).
+  // Publicado con una colocación vigente: así es un colocado (RF-8.13.2).
   colocadoVigente: boolean;
   fecha: string | null;
   actualizadaEn: Date | null;
@@ -74,7 +74,7 @@ export function evaluarCoherencia(p: EntradaCoherencia, ahora: Date): Incoherenc
         );
   }
 
-  // Publicado (o el `colocado` almacenado, que se lee como publicado).
+  // Publicado (con o sin una colocación vigente).
   if (clase === "ninguna")
     return alta(
       "publicado_sin_disponibilidad",
@@ -93,7 +93,7 @@ export function evaluarCoherencia(p: EntradaCoherencia, ahora: Date): Incoherenc
     p.actualizadaEn !== null &&
     p.fecha! > diaCivilDeColombia(p.actualizadaEn);
 
-  if ((p.estado === "colocado" || p.colocadoVigente) && clase === "ahora" && !vencida)
+  if (p.colocadoVigente && clase === "ahora" && !vencida)
     return alta(
       "colocado_disponible_ahora",
       "Colocado y con «Disponible ahora». Un colocado siempre muestra su fecha de liberación.",

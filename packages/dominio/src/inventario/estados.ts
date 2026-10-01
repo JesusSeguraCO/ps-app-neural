@@ -3,19 +3,19 @@
 // reversión, fusión, colocados y revocación. Las guardas de publicar (consentimiento, modalidad de
 // prueba, obligatorios) se evalúan con `evaluarPublicacion` y las aplica el sub-slice de HU-128.
 //
-// `colocado` sigue en el CHECK de la BD hasta el contract del sub-slice 9 (RF-8.13.2: el colocado
-// sigue publicado); aquí se lee como un publicado más para no perder perfiles en tránsito.
+// `colocado` no es un estado (RF-8.3, RF-8.13.2; contract 0021 del sub-slice 9): el colocado sigue
+// publicado y su asignación vive en `colocaciones`.
 
 export const ESTADOS_PERFIL = ["borrador", "publicado", "pausado", "archivado"] as const;
 export type EstadoPerfil = (typeof ESTADOS_PERFIL)[number];
-export type EstadoAlmacenado = EstadoPerfil | "colocado";
+// Lo que guarda la BD: desde la 0021, exactamente los cuatro estados.
+export type EstadoAlmacenado = EstadoPerfil;
 
 export const ETIQUETA_ESTADO: Record<EstadoAlmacenado, string> = {
   borrador: "Borrador",
   publicado: "Publicado",
   pausado: "Pausado",
   archivado: "Archivado",
-  colocado: "Publicado",
 };
 
 // Todo perfil nuevo nace en borrador, venga del panel o de la importación (HU-125, HU-128 edge).
@@ -28,7 +28,7 @@ export type ResultadoTransicion =
   | { ok: true; a: EstadoPerfil; cambia: boolean }
   | { ok: false; motivo: "transicion_invalida" | "ya_archivado" };
 
-const visible = (e: EstadoAlmacenado) => e === "publicado" || e === "colocado";
+const visible = (e: EstadoAlmacenado) => e === "publicado";
 
 export function transicion(de: EstadoAlmacenado, accion: Accion): ResultadoTransicion {
   switch (accion) {

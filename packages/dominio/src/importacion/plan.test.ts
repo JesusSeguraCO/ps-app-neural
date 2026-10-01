@@ -334,21 +334,43 @@ describe("estado: no publica, archiva (spec §3, HU-141)", () => {
     expect(p.filas[0]!.avisos.filter((x) => x.mensaje.startsWith("Contradicción"))).toEqual([]);
   });
 
-  it("un colocado no cambia de estado por importación: se libera desde su ficha", () => {
-    const pedro: FilaBanco = { ...laura, codigo: "PS-0145", estado: "colocado" };
+  it("un colocado no cambia de estado por importación y su disponibilidad no queda antes de la liberación", () => {
+    const pedro: FilaBanco = { ...laura, codigo: "PS-0145", estado: "publicado" };
     const banco = new Map([...BANCO, ["PS-0145", pedro]]);
-    const archivar = plan([fila(2, { codigo: "PS-0145", estado: "archivado" })], { banco })
-      .filas[0]!;
+    const colocados = new Map([
+      ["PS-0145", { cuenta: "Seguros Altamira", liberacion: "2026-11-13" }],
+    ]);
+    const archivar = plan([fila(2, { codigo: "PS-0145", estado: "archivado" })], {
+      banco,
+      colocados,
+    }).filas[0]!;
     expect(archivar.grupo).toBe("con_error");
-    expect(archivar.errores[0]!.mensaje).toMatch(/colocado/);
+    expect(archivar.errores[0]!.mensaje).toMatch(
+      /colocado \(Seguros Altamira, hasta el 2026-11-13\)/,
+    );
     // Repetir su estado no es un cambio de estado: lo demás de la fila se aplica.
     const mismo = plan(
-      [fila(2, { codigo: "PS-0145", estado: "colocado", anclaje: "Otro anclaje" })],
+      [fila(2, { codigo: "PS-0145", estado: "publicado", anclaje: "Otro anclaje" })],
       {
         banco,
+        colocados,
       },
     ).filas[0]!;
     expect(mismo.grupo).toBe("actualizado");
+    const antes = plan([fila(2, { codigo: "PS-0145", disponibilidad: "2026-10-20" })], {
+      banco,
+      colocados,
+    }).filas[0]!;
+    expect(antes.avisos.map((x) => x.mensaje)).toContain(
+      "Contradicción alta: Colocado en Seguros Altamira hasta el 2026-11-13 y con disponibilidad antes de esa fecha. Un colocado muestra su fecha de liberación.",
+    );
+    const ahora = plan([fila(2, { codigo: "PS-0145", disponibilidad: "Disponible ahora" })], {
+      banco,
+      colocados,
+    }).filas[0]!;
+    expect(ahora.avisos.map((x) => x.mensaje).join(" ")).toMatch(
+      /Colocado y con «Disponible ahora»/,
+    );
   });
 
   it("estado desconocido → error con las opciones", () => {

@@ -97,12 +97,19 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
           `INSERT INTO inventario.catalogo_motivos_pausa (nombre) VALUES ('Decisión de Talento Humano') ON CONFLICT (nombre) DO NOTHING`,
         );
       await i.query(
-        `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3,
+        `UPDATE inventario.perfiles SET estado = $2,
                 motivo_pausa_id = CASE WHEN $2 = 'pausado'
                   THEN (SELECT id FROM inventario.catalogo_motivos_pausa ORDER BY nombre LIMIT 1) END
           WHERE id = $1`,
-        [id, estado, opciones.liberaEn ?? null],
+        [id, estado],
       );
+      // Un colocado sigue publicado con su colocación vigente (HU-137, 0021).
+      if (opciones.liberaEn)
+        await i.query(
+          `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
+           VALUES ($1, 'Cuenta de prueba', current_date - 30, $2, 'siembra')`,
+          [id, opciones.liberaEn],
+        );
     }
     return id;
   };
@@ -123,7 +130,7 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
     await perfil("PS-0002", "borrador");
     await perfil("PS-0003", "pausado");
     await perfil("PS-0004", "archivado");
-    await perfil("PS-0005", "colocado", { liberaEn: "2026-12-01" });
+    await perfil("PS-0005", "publicado", { liberaEn: "2099-12-01" });
     // Publicado y luego revocado el consentimiento: deja de ser publicable aunque su estado no cambie.
     const revocado = await perfil("PS-0006", "publicado");
     await i.query(
@@ -163,11 +170,12 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
   });
 
   describe("catalogo_publicable", () => {
-    it("solo devuelve perfiles publicados con consentimiento vigente", async () => {
+    it("solo devuelve perfiles publicados con consentimiento vigente (el colocado también)", async () => {
       const r = await portal.query(
         `SELECT codigo FROM operacion.catalogo_publicable ORDER BY codigo`,
       );
-      expect(r.rows.map((f) => f.codigo)).toEqual(["PS-0001"]);
+      // PS-0005 está colocado: sigue publicado y el catálogo lo muestra (HU-137 edge, RF-8.13.2).
+      expect(r.rows.map((f) => f.codigo)).toEqual(["PS-0001", "PS-0005"]);
     });
 
     it("expone exactamente la lista blanca de columnas, sin ningún nombre de B.4", async () => {
@@ -213,7 +221,7 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
         { codigo: "PS-0002", estado: "fuera_del_banco", libera_en: null },
         { codigo: "PS-0003", estado: "pausado", libera_en: null },
         { codigo: "PS-0004", estado: "fuera_del_banco", libera_en: null },
-        { codigo: "PS-0005", estado: "colocado", libera_en: "2026-12-01" },
+        { codigo: "PS-0005", estado: "colocado", libera_en: "2099-12-01" },
         { codigo: "PS-0006", estado: "fuera_del_banco", libera_en: null },
       ]);
       const cols = await portal.query(
@@ -237,23 +245,38 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
       ).toBe(EXCEPCION);
     });
 
-    it("colocado exige fecha de liberación y solo colocado la lleva", async () => {
-      const id = await perfil("PS-0102", "borrador");
+    it("colocado no es un estado (0021) y una colocación siempre lleva su liberación, una vigente por perfil", async () => {
+      const id = await perfil("PS-0102", "publicado");
       expect(
         await codigoDeError(
           bd.instalacion.query(`UPDATE inventario.perfiles SET estado = 'colocado' WHERE id = $1`, [
             id,
           ]),
         ),
-      ).not.toBeNull();
+      ).toBe("23514");
       expect(
         await codigoDeError(
           bd.instalacion.query(
-            `UPDATE inventario.perfiles SET fecha_liberacion = '2027-01-01' WHERE id = $1`,
+            `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
+             VALUES ($1, 'Cuenta', current_date, NULL, 'siembra')`,
             [id],
           ),
         ),
-      ).not.toBeNull();
+      ).toBe("23502");
+      await bd.instalacion.query(
+        `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
+         VALUES ($1, 'Cuenta', current_date, current_date + 30, 'siembra')`,
+        [id],
+      );
+      expect(
+        await codigoDeError(
+          bd.instalacion.query(
+            `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
+             VALUES ($1, 'Otra', current_date, current_date + 60, 'siembra')`,
+            [id],
+          ),
+        ),
+      ).toBe("23505");
     });
 
     it("el código sigue el formato PS-NNNN", async () => {

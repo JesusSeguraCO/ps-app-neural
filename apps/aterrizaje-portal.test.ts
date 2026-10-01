@@ -3,6 +3,7 @@
 // perfiles ficticios de la tarea 3.2 (publicados, pausado, colocado, borrador y archivado).
 import { createHash, randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { fechaCivil } from "@ps/dominio/fecha/colombia";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 import {
   arrancarServidor,
@@ -93,7 +94,8 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("aterrizaje curado (HU-144, HU-0
   });
 
   it("HU-144 edge: un perfil colocado y otros que cambiaron quedan en su lugar con su estado real; ninguna posición vacía", async () => {
-    // PS-0151 pausado, PS-0137 colocado (libera 2026-12-15), PS-0099 archivado, PS-0160 borrador.
+    // PS-0151 pausado, PS-0137 colocado (publicado con colocación vigente), PS-0099 archivado, PS-0160
+    // borrador.
     const codigos = ["PS-0142", "PS-0151", "PS-0137", "PS-0187", "PS-0099", "PS-0160"];
     const html = await pagina(await sesionEn({ codigos }));
     const tarjetas = html.split('<article class="pp-perfil').slice(1);
@@ -103,7 +105,13 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("aterrizaje curado (HU-144, HU-0
     expect(tarjetas[1]).toContain("Pausado");
     expect(tarjetas[1]).toContain(escapar(nombre("PS-0151")));
     expect(tarjetas[2]).toContain("Colocado en otro proyecto");
-    expect(tarjetas[2]).toContain("Se libera el 15 dic 2026");
+    const libera = (
+      await bd.instalacion.query(
+        `SELECT c.liberacion::text AS f FROM inventario.colocaciones c
+           JOIN inventario.perfiles p ON p.id = c.perfil_id WHERE p.codigo = 'PS-0137' AND c.vigente`,
+      )
+    ).rows[0].f as string;
+    expect(tarjetas[2]).toContain(`Se libera el ${fechaCivil(libera)}`);
     expect(tarjetas[4]).toContain("Archivado");
     expect(tarjetas[4]).not.toContain(escapar(perfil("PS-0099").nombre));
     expect(tarjetas[5]).toContain("No publicado");
@@ -115,7 +123,9 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("aterrizaje curado (HU-144, HU-0
     const html = await pagina(await sesionEn({ codigos: ["PS-0151", "PS-0137"] }));
     expect(html.split('<article class="pp-perfil').length - 1).toBe(2);
     expect(html).toContain("Ninguno de los dos sigue publicado");
-    expect(html).toMatch(/href="\/banco\?contexto=seleccion"[^>]*>Explorar el banco con este contexto/);
+    expect(html).toMatch(
+      /href="\/banco\?contexto=seleccion"[^>]*>Explorar el banco con este contexto/,
+    );
   });
 
   it("enlace sin contexto de proyecto: saluda con la cuenta, sin proyecto inventado", async () => {

@@ -27,11 +27,11 @@ export type ResultadoDisponibilidad =
   | { codigo: string; ok: true; fecha: string | null }
   | { codigo: string; ok: false; motivo: "no_existe" | "no_aplica" | "sin_fecha"; estado?: string };
 
-const visible = (e: EstadoAlmacenado) => e === "publicado" || e === "colocado";
+const visible = (e: EstadoAlmacenado) => e === "publicado";
 // La disponibilidad aplica a lo que está o puede estar en el banco a la vista. A un pausado se le puede
 // poner una fecha desde su fila (uno a la vez): queda la contradicción ALTA señalada con su salida
 // (HU-134, D6). En bloque no aplica, para no crear contradicciones en masa sin verlas (D32).
-const ADMITE_DISPONIBILIDAD = new Set<EstadoAlmacenado>(["borrador", "publicado", "colocado"]);
+const ADMITE_DISPONIBILIDAD = new Set<EstadoAlmacenado>(["borrador", "publicado"]);
 
 const cambio = (
   autor: Autor,
@@ -55,8 +55,10 @@ async function bloquear(tx: Consultor, codigo: string) {
   const f = (
     await tx.query(
       `SELECT p.id, p.estado, p.version, p.disponibilidad_fecha::text AS disponibilidad_fecha,
-              p.disponibilidad_actualizada_en, p.fecha_liberacion::text AS fecha_liberacion,
-              m.nombre AS motivo
+              p.disponibilidad_actualizada_en, m.nombre AS motivo,
+              (SELECT c.liberacion::text FROM inventario.colocaciones c
+                WHERE c.perfil_id = p.id AND c.vigente
+                  AND c.liberacion > (now() AT TIME ZONE 'America/Bogota')::date) AS fecha_liberacion
          FROM inventario.perfiles p
          LEFT JOIN inventario.catalogo_motivos_pausa m ON m.id = p.motivo_pausa_id
         WHERE p.codigo = $1 FOR UPDATE OF p`,
@@ -199,7 +201,7 @@ export async function pausarPerfil(
     ).rows[0];
     if (!m) throw new RechazoInventario("motivo_no_disponible");
     await tx.query(
-      `UPDATE inventario.perfiles SET estado = 'pausado', motivo_pausa_id = $2, fecha_liberacion = NULL WHERE id = $1`,
+      `UPDATE inventario.perfiles SET estado = 'pausado', motivo_pausa_id = $2 WHERE id = $1`,
       [f.id, motivoId],
     );
     const vaciada = await vaciarDisponibilidad(tx, autor, codigo, f);
@@ -270,7 +272,7 @@ export async function archivarPerfil(
           visible: false,
         };
       await tx.query(
-        `UPDATE inventario.perfiles SET estado = 'archivado', archivado_en = now(), fecha_liberacion = NULL WHERE id = $1`,
+        `UPDATE inventario.perfiles SET estado = 'archivado', archivado_en = now() WHERE id = $1`,
         [f.id],
       );
       const cambios = [
@@ -278,6 +280,16 @@ export async function archivarPerfil(
         cambio(autor, f, codigo, "estado", f.estado, "archivado"),
       ];
       if (f.motivo) cambios.push(cambio(autor, f, codigo, "motivo_pausa", f.motivo, null));
+      // Fuera del banco no hay asignación vigente que mostrar (HU-137): la colocación se cierra.
+      const cerradas = await tx.query(
+        `UPDATE inventario.colocaciones SET vigente = false, cerrada_en = now()
+        WHERE perfil_id = $1 AND vigente RETURNING cuenta, liberacion::text AS liberacion`,
+        [f.id],
+      );
+      for (const c of cerradas.rows)
+        cambios.push(
+          cambio(autor, f, codigo, "colocacion", `${c.cuenta} · libera ${c.liberacion}`, null),
+        );
       return {
         resultado: { yaArchivado: false, perfil: (await leerPerfil(tx, codigo))! },
         cambios,
@@ -363,7 +375,7 @@ export async function listarVigencia(
          FROM inventario.perfiles p
          LEFT JOIN inventario.catalogo_motivos_pausa m ON m.id = p.motivo_pausa_id
          LEFT JOIN inventario.catalogo_seniorities s ON s.id = p.seniority_id
-        WHERE p.estado IN ('publicado', 'colocado', 'pausado')`,
+        WHERE p.estado IN ('publicado', 'pausado')`,
     )
   ).rows;
   const nombre = (f: (typeof filas)[number]) =>

@@ -260,7 +260,7 @@ export async function confirmarBorrador(
       cambio("resultado", null, v.resultado),
     ];
     // Si el perfil está a la vista, el cliente ve el reporte: sube la versión del inventario.
-    const visible = p.estado === "publicado" || p.estado === "colocado";
+    const visible = p.estado === "publicado";
     return { resultado: (await leerPerfil(tx, codigo))!, cambios, visible };
   });
 }

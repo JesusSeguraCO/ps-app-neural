@@ -3,6 +3,8 @@
 //   --sembrar-ficticios  siembra los perfiles ficticios, las modalidades de prueba y las consultas sin
 //                        coincidencia sintéticas y sale (local, CI y staging; EP-001 3.2, EP-006 1.8)
 //   --proponer-lexico    corre una vez la tarea semanal `proponer_lexico` y sale (EP-006 1.7)
+//   --migrar-colocados   pasa los perfiles en estado `colocado` a publicado con su colocación y sale
+//                        (EP-006 9.1; requisito de la migración 0021). También corre al arrancar.
 // Sin configuración completa sale con código 1 antes de abrir conexiones (V8-9).
 import { randomUUID } from "node:crypto";
 import pg from "pg";
@@ -11,6 +13,7 @@ import { DobleGemini, proponedorGemini, type ProponedorLexico } from "@ps/infra/
 import { DobleCorreo, enviadorMailgun, rebotesDelDoble, type EnviadorCorreo } from "@ps/infra/mailgun/index";
 import { vuelta, type ContextoDespacho } from "./despacho";
 import { registrarTareas, vueltaPlanificador, type Tarea } from "./planificador";
+import { migrarColocados } from "@ps/infra/postgres/colocados";
 import { proponerLexico } from "./proponer-lexico";
 import { sembrarAdminInicial } from "./sembrar";
 import { sembrarFicticios } from "./sembrar-ficticios";
@@ -87,6 +90,20 @@ const TAREAS: Tarea[] = [
   },
 ];
 
+const clavesAuditoria = { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! };
+
+if (process.argv.includes("--migrar-colocados")) {
+  try {
+    const r = await migrarColocados(bd, clavesAuditoria);
+    registrar({ evento: "colocados_migrados", ...r });
+    await bd.end();
+    process.exit(0);
+  } catch (e) {
+    registrar({ evento: "migrar_colocados_error", error: (e as Error).message });
+    process.exit(1);
+  }
+}
+
 if (process.argv.includes("--proponer-lexico")) {
   try {
     const r = await proponerLexico({ bd, proponedor, registrar });
@@ -157,6 +174,15 @@ async function arrancar(): Promise<void> {
     },
     config.PANEL_ADMIN_INICIAL!,
   );
+  // Antes de la 0021 (contract): sin colocados por migrar no hace nada. Si la columna ya no existe, la
+  // BD ya está en la 0021 y no queda nada que mover.
+  try {
+    const r = await migrarColocados(bd, clavesAuditoria);
+    if (r.migrados) registrar({ evento: "colocados_migrados", ...r });
+  } catch (e) {
+    if ((e as { code?: string }).code !== "42703")
+      registrar({ evento: "migrar_colocados_error", error: (e as Error).message });
+  }
   await registrarTareas(bd, TAREAS);
   registrar({ evento: "worker_arrancado", pid: process.pid, pausado, dobles: [...doblesDe(config)] });
   await bucle();

@@ -26,6 +26,7 @@ import {
   type Valor,
 } from "@ps/dominio/importacion/plan";
 import { registrarAuditoria, type CambioAuditado, type ClavesAuditoria } from "./auditoria";
+import { colocadosVigentes } from "./colocados";
 import { bancoEnFormato, catalogosImportacion, filasDelLote } from "./importacion";
 import {
   altaEnTransaccion,
@@ -38,7 +39,7 @@ import { RechazoInventario } from "./unidad-inventario";
 
 export const TOPE_APLICAR_MS = 5 * 60_000;
 export const CANDADO_IMPORTACION = "inventario.importacion";
-const VISIBLES = new Set(["publicado", "colocado"]);
+const VISIBLES = new Set(["publicado"]);
 
 export type ResultadoAplicar =
   | { tipo: "aplicado"; creados: number; actualizados: number; archivados: number }
@@ -310,6 +311,7 @@ export async function aplicarLote(
       banco: porCodigo,
       catalogos: await catalogosImportacion(tx),
       hoy: o.hoy,
+      colocados: await colocadosVigentes(tx),
       excluidas: new Set(guardadas.filter((f) => !f.incluida).map((f) => f.numero)),
     });
     const vistas = new Map(guardadas.map((f) => [f.numero, huella(f)]));

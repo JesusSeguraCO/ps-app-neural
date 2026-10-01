@@ -44,7 +44,6 @@ type Pestana = (typeof PESTANAS)[number]["clave"];
 
 const CLASE_ESTADO: Record<EstadoAlmacenado, string> = {
   publicado: "pp-estado--ok",
-  colocado: "pp-estado--ok",
   pausado: "pp-estado--warn",
   borrador: "pp-estado--borrador",
   archivado: "pp-estado--danger",
@@ -56,7 +55,7 @@ const enPestana = (f: FilaInventario, p: Pestana) =>
     : p === "incoherencia"
       ? f.coherencia !== null
       : p === "publicado"
-        ? f.estado === "publicado" || f.estado === "colocado"
+        ? f.estado === "publicado"
         : f.estado === p;
 
 const nombreDe = (f: FilaInventario) =>
@@ -239,7 +238,7 @@ export default async function Inventario({
                 const nombre = nombreDe(f);
                 const detalle = detalleEstado(f, ahora);
                 const visible =
-                  f.estado === "publicado" || f.estado === "colocado" || f.estado === "borrador";
+                  f.estado === "publicado" || f.estado === "borrador";
                 const contradice =
                   f.coherencia?.clave === "pausado_con_disponibilidad"
                     ? "Contradice el estado pausado"
@@ -334,7 +333,7 @@ export default async function Inventario({
                             nombre={nombre}
                             rol={f.rol}
                             motivos={motivos}
-                            pausar={f.estado === "publicado" || f.estado === "colocado"}
+                            pausar={f.estado === "publicado"}
                           />
                         )}
                       </td>

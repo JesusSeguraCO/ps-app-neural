@@ -241,7 +241,7 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
   if (f.motivos.includes("transicion_invalida"))
     return {
       nota:
-        f.estado === "publicado" || f.estado === "colocado"
+        f.estado === "publicado"
           ? "Ya estaba publicado."
           : f.estado === "archivado"
             ? "Está archivado: no se publica."

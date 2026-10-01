@@ -108,12 +108,12 @@ describe("bandejaDeVigencia", () => {
     ]);
   });
 
-  it("borradores y archivados no cuentan; un colocado sí, como publicado", () => {
+  it("borradores y archivados no cuentan; un publicado sí (también el colocado, que sigue publicado)", () => {
     const b = bandejaDeVigencia(
       [
         p("PS-0001", { estado: "borrador", disponibilidadActualizadaEn: hace(90) }),
         p("PS-0002", { estado: "archivado", disponibilidadActualizadaEn: hace(90) }),
-        p("PS-0003", { estado: "colocado", disponibilidadActualizadaEn: hace(90) }),
+        p("PS-0003", { estado: "publicado", disponibilidadActualizadaEn: hace(90) }),
       ],
       ahora,
     );

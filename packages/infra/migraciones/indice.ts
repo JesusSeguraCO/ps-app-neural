@@ -21,6 +21,8 @@ import * as m0016 from "./0016_aplicar_importacion";
 import * as m0017 from "./0017_publicar_y_ficha";
 import * as m0018 from "./0018_validaciones";
 import * as m0019 from "./0019_pausa_y_vigencia";
+import * as m0020 from "./0020_colocaciones";
+import * as m0021 from "./0021_retirar_colocado";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -42,4 +44,6 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0017_publicar_y_ficha": m0017,
   "0018_validaciones": m0018,
   "0019_pausa_y_vigencia": m0019,
+  "0020_colocaciones": m0020,
+  "0021_retirar_colocado": m0021,
 };
