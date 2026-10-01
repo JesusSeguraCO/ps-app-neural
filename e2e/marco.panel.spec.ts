@@ -166,6 +166,42 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
   }
 });
 
+// Vista previa de la ficha (EP-006 · sub-slice 5, HU-129): el modo del editor que dibuja la ficha del
+// portal. Sin incidencias serias de axe (la ficha va inerte) y sin scroll horizontal en móvil; la
+// necesidad presencial muestra la ciudad y la remota no.
+test.describe("vista previa de la ficha (HU-129)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  test("axe sin incidencias serias, sin scroll horizontal y la ciudad según la necesidad", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    await page.goto("/inventario/PS-0187");
+    await page.getByRole("button", { name: "Vista previa" }).click();
+    await expect(page.getByRole("heading", { name: "Vista previa de la ficha" })).toBeVisible();
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+    const modalidad = page.locator("#vp-fila-modalidad dd");
+    const remota = await modalidad.textContent();
+    await page.getByRole("button", { name: "Presencial", exact: true }).click();
+    const presencial = await modalidad.textContent();
+    expect(presencial!.length).toBeGreaterThan(remota!.length);
+    for (const ancho of [320, 390]) {
+      await page.setViewportSize({ width: ancho, height: 800 });
+      const scroll = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
+      expect(scroll, `vista previa a ${ancho}`).toBe(0);
+    }
+    await page.getByRole("button", { name: "Volver a editar" }).click();
+    await expect(page.getByRole("heading", { name: "Vista previa de la ficha" })).toHaveCount(0);
+    expect(errores).toEqual([]);
+  });
+});
+
 // Editor de perfiles en un navegador real (EP-006 · sub-slice 2): lo tecleado solo encuentra valores
 // del catálogo (HU-089 «seleccionar en vez de escribir») y un rol que no existe muestra antes los
 // parecidos y deja crear después de verlos (HU-125 edge). Guardar deja un borrador (HU-125).

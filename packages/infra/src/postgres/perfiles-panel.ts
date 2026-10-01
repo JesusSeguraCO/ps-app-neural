@@ -98,7 +98,7 @@ export interface PerfilEditor {
   seniority: { id: string; nombre: string } | null;
   aniosExperiencia: number | null;
   ciudad: { id: string; nombre: string; pais: string } | null;
-  modalidadTrabajo: { id: string; nombre: string } | null;
+  modalidadTrabajo: { id: string; nombre: string; textoCliente: string } | null;
   disponibilidadFecha: string | null;
   disponibilidadActualizadaEn: string | null;
   modalidadPrueba: { id: string; nombre: string; activa: boolean; textoCliente: string } | null;
@@ -131,7 +131,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
             (SELECT count(*)::int FROM inventario.catalogo_modalidades_prueba m
               WHERE m.familia_id = p.familia_id AND m.activo) AS familia_modalidades,
             s.nombre AS seniority_nombre, ci.nombre AS ciudad_nombre, pa.nombre AS pais_nombre,
-            mo.nombre AS modalidad_nombre,
+            mo.nombre AS modalidad_nombre, mo.texto_cliente AS modalidad_texto,
             mp.nombre AS prueba_nombre, mp.activo AS prueba_activa, mp.texto_cliente AS prueba_texto,
             mp.familia_id AS prueba_familia
        FROM inventario.perfiles p
@@ -223,7 +223,9 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
     seniority: p.seniority_id ? { id: p.seniority_id, nombre: p.seniority_nombre } : null,
     aniosExperiencia: p.anios_experiencia,
     ciudad: p.ciudad_id ? { id: p.ciudad_id, nombre: p.ciudad_nombre, pais: p.pais_nombre } : null,
-    modalidadTrabajo: p.modalidad_id ? { id: p.modalidad_id, nombre: p.modalidad_nombre } : null,
+    modalidadTrabajo: p.modalidad_id
+      ? { id: p.modalidad_id, nombre: p.modalidad_nombre, textoCliente: p.modalidad_texto }
+      : null,
     disponibilidadFecha: fecha(p.disponibilidad_fecha),
     disponibilidadActualizadaEn: p.disponibilidad_actualizada_en?.toISOString() ?? null,
     modalidadPrueba,
@@ -318,7 +320,7 @@ export interface OpcionesEditor {
   familias: Array<OpcionValor & { modalidades: number }>;
   seniorities: OpcionValor[];
   ciudades: Array<OpcionValor & { pais: string }>;
-  modalidadesTrabajo: OpcionValor[];
+  modalidadesTrabajo: Array<OpcionValor & { textoCliente: string }>;
   modalidadesPrueba: Array<OpcionValor & { familiaId: string; textoCliente: string }>;
 }
 export async function opcionesEditor(bd: Consultor): Promise<OpcionesEditor> {
@@ -343,7 +345,7 @@ export async function opcionesEditor(bd: Consultor): Promise<OpcionesEditor> {
          JOIN inventario.catalogo_paises p ON p.id = c.pais_id WHERE c.activo AND p.activo ORDER BY p.nombre, c.nombre`,
     ),
     modalidadesTrabajo: await q(
-      `SELECT id, nombre FROM inventario.catalogo_modalidades WHERE activo
+      `SELECT id, nombre, texto_cliente AS "textoCliente" FROM inventario.catalogo_modalidades WHERE activo
         ORDER BY array_position(ARRAY['remoto','hibrido','presencial'], nombre)`,
     ),
     modalidadesPrueba: await q(
@@ -659,6 +661,111 @@ export async function guardarPerfil(
     });
     return { resultado: perfil, cambios, visible: false };
   });
+}
+
+// Publicar (HU-128, HU-130; diseño §2): borrador o pausado → publicado solo si `evaluarPublicacion`
+// lo permite —consentimiento nominal vigente, modalidad de prueba activa de su familia (la familia
+// con modalidades), datos obligatorios—. Si no, nada se escribe y el rechazo lleva la evaluación para
+// decir exactamente qué falta. El Nivel 0 sale de la modalidad elegida: nadie redacta nada. El
+// disparador de la 0017 repite la guarda para cualquier otra vía.
+export async function publicarPerfil(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  codigo: string,
+  versionAbierta?: number,
+): Promise<PerfilEditor> {
+  return conUnidadInventario(bd, claves, async (tx) => {
+    const fila = (
+      await tx.query(
+        `SELECT id, version, estado FROM inventario.perfiles WHERE codigo = $1 FOR UPDATE`,
+        [codigo],
+      )
+    ).rows[0];
+    if (!fila) throw new RechazoInventario("no_existe");
+    const antes = (await leerPerfil(tx, codigo))!;
+    if (versionAbierta !== undefined && fila.version !== versionAbierta)
+      throw new RechazoInventario("version_distinta", { version: fila.version, perfil: antes });
+    const t = transicion(fila.estado, "publicar");
+    if (!t.ok) throw new RechazoInventario("transicion_invalida", { estado: fila.estado });
+    if (!antes.evaluacion.publicable)
+      throw new RechazoInventario("no_publicable", {
+        evaluacion: antes.evaluacion,
+        familia: antes.familia,
+      });
+    await tx.query(`UPDATE inventario.perfiles SET estado = $2 WHERE id = $1`, [fila.id, t.a]);
+    const despues = (await leerPerfil(tx, codigo))!;
+    return {
+      resultado: despues,
+      cambios: [
+        {
+          actor: autor.correo,
+          entidad: "perfiles",
+          entidadId: fila.id,
+          campo: "estado",
+          titular: codigo,
+          antes: fila.estado,
+          despues: t.a,
+          origen: "panel",
+        },
+      ],
+      visible: true,
+    };
+  });
+}
+
+export const TOPE_PUBLICACION_MASIVA = 200;
+
+export type ResultadoPublicacion =
+  | { codigo: string; ok: true; perfil: PerfilEditor }
+  | {
+      codigo: string;
+      ok: false;
+      // Claves de condición o de dato que faltan (`consentimiento`, `modalidad_prueba`,
+      // `tecnologias`…) o el rechazo de estado (`transicion_invalida`, `no_existe`).
+      motivos: string[];
+      evaluacion?: EvaluacionPublicacion;
+      familia?: PerfilEditor["familia"];
+      estado?: string;
+    };
+
+// Publicación masiva (HU-128 edge): cada perfil en su propia unidad de trabajo, para que uno que no
+// cumple no aborte a los demás; el resultado dice, por perfil, si quedó publicado o por qué no.
+export async function publicarVarios(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  codigos: string[],
+): Promise<ResultadoPublicacion[]> {
+  const unicos = [...new Set(codigos)];
+  if (unicos.length > TOPE_PUBLICACION_MASIVA)
+    throw new RechazoInventario("lote_demasiado_grande", { tope: TOPE_PUBLICACION_MASIVA });
+  const resultados: ResultadoPublicacion[] = [];
+  for (const codigo of unicos) {
+    try {
+      resultados.push({
+        codigo,
+        ok: true,
+        perfil: await publicarPerfil(bd, claves, autor, codigo),
+      });
+    } catch (e) {
+      if (!(e instanceof RechazoInventario)) throw e;
+      const ev = e.detalle.evaluacion as EvaluacionPublicacion | undefined;
+      resultados.push({
+        codigo,
+        ok: false,
+        motivos: ev
+          ? [
+              ...ev.condiciones.filter((c) => !c.cumple).map((c) => c.clave as string),
+              ...ev.faltanDatos.map((f) => f.campo as string),
+            ].filter((m, i, xs) => xs.indexOf(m) === i)
+          : [e.motivo],
+        ...(ev ? { evaluacion: ev, familia: e.detalle.familia as PerfilEditor["familia"] } : {}),
+        ...(typeof e.detalle.estado === "string" ? { estado: e.detalle.estado } : {}),
+      });
+    }
+  }
+  return resultados;
 }
 
 export interface AlcanceConsentimiento {

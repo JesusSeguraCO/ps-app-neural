@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
+import { MODALIDADES_FICTICIAS } from "./sembrar-lexico";
 
 type Estado = "borrador" | "publicado" | "pausado" | "archivado" | "colocado";
 
@@ -282,6 +283,20 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
         }
       }
       if (p.estado !== "borrador") {
+        // Publicar exige modalidad de prueba activa de la familia (D10, migración 0017).
+        const prueba = MODALIDADES_FICTICIAS.find((m) => m.familia === p.familia)!;
+        await tx.query(
+          `INSERT INTO inventario.catalogo_modalidades_prueba (familia_id, nombre, texto_cliente)
+           SELECT $1, $2, $3 WHERE NOT EXISTS (
+             SELECT 1 FROM inventario.catalogo_modalidades_prueba WHERE familia_id = $1 AND nombre = $2)`,
+          [familia, prueba.nombre, prueba.texto],
+        );
+        await tx.query(
+          `UPDATE inventario.perfiles SET modalidad_prueba_id = (
+             SELECT id FROM inventario.catalogo_modalidades_prueba WHERE familia_id = $2 AND nombre = $3)
+            WHERE id = $1`,
+          [id, familia, prueba.nombre],
+        );
         await tx.query(
           `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'dato ficticio de prueba: nombre, trayectoria y clientes')`,
           [id],

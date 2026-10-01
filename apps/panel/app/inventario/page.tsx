@@ -1,8 +1,9 @@
 // Inventario (HU-125; prototipo inventario-perfiles): listado base del banco con pestañas por estado,
 // búsqueda por nombre, código o rol y lo que le falta a cada borrador para publicarse. Habilita el
-// destino «Inventario» del menú. Los controles del listado que entregan los sub-slices siguientes
-// (disponibilidad en la fila, selección en bloque, pausar y archivar, incoherencias, importar) se
-// añaden con ellos. Protegida: la guarda va en la primera línea.
+// destino «Inventario» del menú. La administradora selecciona filas y las publica a la vez (HU-128,
+// prototipo inventario-perfiles--publicacion-masiva). Los controles que entregan los sub-slices
+// siguientes (disponibilidad en la fila y en bloque, pausar y archivar, incoherencias) se añaden con
+// ellos. Protegida: la guarda va en la primera línea.
 import { puede } from "@ps/dominio/acceso/permisos";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
 import { normalizar } from "@ps/dominio/catalogo/parecidos";
@@ -11,6 +12,7 @@ import { ETIQUETA_ESTADO, type EstadoAlmacenado } from "@ps/dominio/inventario/e
 import { ETIQUETA_BANDA_PANEL } from "@ps/dominio/inventario/perfil";
 import { listarInventario, type FilaInventario } from "@ps/infra/postgres/perfiles-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
+import { BarraSeleccion, ResultadoPublicacion } from "../../src/inventario/PublicacionMasiva";
 import { AtajoBuscador } from "../../src/marco/FiltroAuto";
 import { AvisoDecision } from "../../src/marco/Hoja";
 import { MarcoPanel } from "../../src/marco/MarcoPanel";
@@ -101,6 +103,8 @@ export default async function Inventario({
         )}
       </div>
 
+      {escribe && <ResultadoPublicacion />}
+
       <div className="pp-barra">
         <nav className="pp-pestanas" aria-label="Filtrar por estado">
           {PESTANAS.map((t) => (
@@ -136,18 +140,28 @@ export default async function Inventario({
         </form>
       </div>
 
+      {escribe && <BarraSeleccion />}
+
       {enPagina.length === 0 ? (
         <div className="pp-vacio">
           <p>{filas.length === 0 ? "Aún no hay perfiles en el banco." : "Ningún perfil coincide con la búsqueda."}</p>
         </div>
       ) : (
         <div className="pp-tabla-marco ip-marco" tabIndex={0} role="region" aria-label="Perfiles del inventario">
-          <table className="pp-tabla ip-tabla ip-tabla--obs">
+          <table className={`pp-tabla ip-tabla ${escribe ? "ip-tabla--admin" : "ip-tabla--obs"}`}>
             <caption className="pp-sr">
               Perfiles del banco con su estado y su disponibilidad (el portal la muestra como banda)
             </caption>
             <thead>
               <tr>
+                {escribe && (
+                  <th scope="col" className="ip-col-sel">
+                    <label className="ip-sel">
+                      <input type="checkbox" data-ip-todos="" />
+                      <span className="pp-sr">Seleccionar todos los perfiles de esta página</span>
+                    </label>
+                  </th>
+                )}
                 <th scope="col">Perfil</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Disponibilidad</th>
@@ -163,6 +177,14 @@ export default async function Inventario({
                 const visible = f.estado === "publicado" || f.estado === "colocado" || f.estado === "borrador";
                 return (
                   <tr key={f.codigo}>
+                    {escribe && (
+                      <td className="ip-col-sel">
+                        <label className="ip-sel">
+                          <input type="checkbox" name="ip-sel" value={f.codigo} data-nombre={nombre} />
+                          <span className="pp-sr">{`Seleccionar a ${nombre}`}</span>
+                        </label>
+                      </td>
+                    )}
                     <th scope="row">
                       <a className="pp-tabla__perfil pp-enlace--sutil ip-nombre" href={`/inventario/${f.codigo}`}>
                         {nombre}

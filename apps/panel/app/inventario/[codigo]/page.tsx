@@ -1,5 +1,6 @@
-// Perfil en el panel (HU-125, HU-127; prototipo perfil-editor y variantes): el editor con lo que le
-// falta para publicar y su consentimiento nominal. La observadora lo ve sin controles de escritura.
+// Perfil en el panel (HU-125, HU-127, HU-128, HU-129; prototipo perfil-editor y variantes): el editor
+// con lo que le falta para publicar, su consentimiento nominal, «Publicar» y la vista previa de la
+// ficha. La observadora lo ve sin controles de escritura.
 // Protegida: la guarda va en la primera línea.
 import { notFound } from "next/navigation";
 import { puede } from "@ps/dominio/acceso/permisos";
@@ -11,7 +12,9 @@ import { MarcoPanel } from "../../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../../src/sesion/exigirSesion";
 import { hoyEnColombia } from "../hoy";
 import "../../../src/marco/marco.css";
+import "@ps/ui/ficha.css";
 import "../editor.css";
+import "../vista-previa.css";
 
 export default async function Perfil({ params }: { params: Promise<{ codigo: string }> }) {
   const sesion = await exigirSesion();

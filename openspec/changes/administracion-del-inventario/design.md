@@ -139,6 +139,14 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - **Pantallas del sub-slice 4 (desviaciones de fidelidad, aprobadas por el sponsor 2026-10-01, D25):** el nombre de una importación es el del archivo cargado («Hoja pegada» si se pegó); autor por correo; la columna rechazada no muestra su valor (no se guarda) y «rechazado» va como etiqueta; «Hoy / Si lo incluyes» lista solo los campos que difieren; sectores con buscador y etiquetas como las tecnologías (D23). La observadora ve el historial y los resultados, sin importar ni deshacer.
 - Lo que el prototipo muestra y entrega el sub-slice 4, sin construir aquí: «Importar N perfiles», el resultado, «Historial», descargar errores y deshacer (HU-141, HU-142, HU-087).
 
+**Sub-slice 5 (HU-128, HU-129, HU-130; evidencia `.claude/state/evidencia/ep-006/ss5/fidelidad-ss5.md`; aprobadas por el modelo bajo D27, registradas en D28):**
+- Ficha compartida: `armarFicha` (`packages/contratos/ficha`) + `FichaPerfil` (`packages/ui`) es la única implementación; el portal la arma desde `operacion.ficha_publicable` (0017) con `ps_portal` y la vista previa desde el perfil en edición. El test `apps/ficha-compartida.test.ts` compara el HTML de ambas. El portal todavía no tiene pantalla para abrir la ficha: la monta EP-003 (RF-3.2, RF-13.11) con este mismo componente.
+- Vista previa como modo del editor (sin tercer nivel de migas), para reflejar los cambios sin guardar sin enviarlos.
+- «Declarado por la persona» (el modelo no guarda género) y Formación en «Declarado» (RF-3.12); los verificados del prototipo sin dato en el modelo (referencias, identidad, antecedentes, inglés) no se dibujan.
+- «Publicar» con lo que falta queda `aria-disabled` pero pulsable: dice qué falta y ofrece la salida (registrar consentimiento, elegir o registrar modalidad).
+- Selección del inventario con barra `ip-lote` «N seleccionados · Publicar los N»; el sub-slice 7 la amplía con la disponibilidad en bloque. Tope de 200 perfiles por publicación masiva.
+- El disparador de la 0017 actúa al entrar en publicado (como el de la 0005) con el código P0001 de siempre.
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.

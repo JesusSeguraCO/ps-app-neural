@@ -3,8 +3,10 @@
 // eligen del catálogo con su buscador (sin texto libre); el rol encadena la familia y las modalidades
 // de prueba que se ofrecen, y una familia sin modalidades se advierte al elegirlo. Guardar deja
 // siempre un borrador y señala lo que falta; el consentimiento nominal se registra y se revoca en su
-// sección. La publicación, la vista previa y la evidencia los entregan los sub-slices 5 y 6.
-import { useEffect, useMemo, useState } from "react";
+// sección. «Publicar» aplica las guardas del servidor y, si falta algo, dice exactamente qué y ofrece
+// ir a resolverlo (HU-128, HU-130); «Vista previa» muestra la ficha del portal con lo que hay en el
+// editor, sin guardar (HU-129). La evidencia la entrega el sub-slice 6.
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { horaCortaDeColombia, horaDeColombia, fechaCivil } from "@ps/dominio/fecha/colombia";
 import { ETIQUETA_ESTADO } from "@ps/dominio/inventario/estados";
 import {
@@ -13,6 +15,7 @@ import {
   evaluarPublicacion,
   validarConsentimiento,
   type CampoObligatorio,
+  type EvaluacionPublicacion,
   type OpcionDisponibilidad,
 } from "@ps/dominio/inventario/perfil";
 import type {
@@ -23,6 +26,8 @@ import type {
 import { enviarJson } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
 import { BuscadorCatalogo, type ValorElegible } from "./BuscadorCatalogo";
+import type { PerfilParaFicha } from "./ficha";
+import { VistaPrevia } from "./VistaPrevia";
 
 type Rol = OpcionesEditor["roles"][number];
 type Experiencia = ExperienciaEntrada & { clave: string };
@@ -64,6 +69,7 @@ const MOTIVO: Record<string, string> = {
   editar_publicado:
     "Los cambios de un perfil publicado se aplican mostrando antes qué verá el cliente.",
   no_existe: "El perfil ya no existe.",
+  transicion_invalida: "Este perfil ya no está en borrador. Recarga para ver su estado.",
 };
 
 let secuencia = 0;
@@ -148,6 +154,12 @@ export function EditorPerfil(p: {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [intento, setIntento] = useState(Boolean(inicial));
+  const [modo, setModo] = useState<"editar" | "previa">("editar");
+  const [publicando, setPublicando] = useState(false);
+  const [intentoPublicar, setIntentoPublicar] = useState(false);
+  // Lo que el servidor dijo que falta, si discrepó del cálculo local (otro cambio en paralelo).
+  const [bloqueoServidor, setBloqueoServidor] = useState<EvaluacionPublicacion | null>(null);
+  const [base, setBase] = useState<string | null>(null);
 
   const editable = p.escribe && (!perfil || perfil.estado === "borrador");
   const prueba = p.opciones.modalidadesPrueba.find((m) => m.id === pruebaId) ?? null;
@@ -249,6 +261,64 @@ export function EditorPerfil(p: {
     })),
   });
 
+  // Lo guardado, para saber si hay cambios sin guardar (vista previa y publicar).
+  const actual = JSON.stringify(cuerpo());
+  useEffect(() => {
+    setBase(JSON.stringify(cuerpo()));
+  }, [perfil]);
+  const sinGuardar = Boolean(perfil) && base !== null && actual !== base;
+
+  // El perfil tal como está en el editor, con la forma de la ficha (HU-129).
+  const enEdicion = (): PerfilParaFicha | null => {
+    if (!perfil) return null;
+    const ciudad = p.opciones.ciudades.find((c) => c.id === ciudadId) ?? null;
+    const modalidad = p.opciones.modalidadesTrabajo.find((m) => m.id === modalidadId) ?? null;
+    const seniority = p.opciones.seniorities.find((x) => x.id === seniorityId) ?? null;
+    return {
+      codigo: perfil.codigo,
+      nombre,
+      primerApellido: apellido,
+      rol: rol ? { id: rol.id, nombre: rol.nombre } : null,
+      seniority,
+      aniosExperiencia: anios === "" ? null : Number(anios),
+      sectores,
+      tecnologias,
+      modalidadTrabajo: modalidad,
+      ciudad: ciudad ? { id: ciudad.id, nombre: ciudad.nombre, pais: ciudad.pais } : null,
+      disponibilidadFecha: fechaDisponibilidad,
+      disponibilidadActualizadaEn:
+        fechaDisponibilidad && fechaDisponibilidad === perfil.disponibilidadFecha
+          ? perfil.disponibilidadActualizadaEn
+          : fechaDisponibilidad
+            ? new Date().toISOString()
+            : null,
+      resumen,
+      selloPersonal: sello.map((x) => x.trim()).filter(Boolean),
+      formacion,
+      idiomas: idiomas
+        .split(";")
+        .map((x) => x.trim())
+        .filter(Boolean),
+      experiencias: experiencias.map((e) => ({
+        id: e.id ?? e.clave,
+        cargo: e.cargo,
+        cliente: e.cliente ?? null,
+        desde: e.desde ?? null,
+        hasta: e.hasta ?? null,
+        descripcion: e.descripcion,
+      })),
+      consentimiento: perfil.consentimiento,
+      modalidadPrueba: prueba
+        ? {
+            id: prueba.id,
+            nombre: prueba.nombre,
+            activa: Boolean(rol && prueba.familiaId === rol.familiaId),
+            textoCliente: prueba.textoCliente,
+          }
+        : null,
+    };
+  };
+
   const aplicar = (nuevo: PerfilEditor) => {
     setPerfil(nuevo);
     setExperiencias(nuevo.experiencias.map((e) => ({ ...e, clave: e.id })));
@@ -289,6 +359,45 @@ export function EditorPerfil(p: {
     }
   }
 
+  // Publicar (HU-128, HU-130): con lo que falta a la vista no se envía nada; si está completo, guarda
+  // primero lo que haya sin guardar y publica con esa versión. El servidor vuelve a evaluar.
+  async function publicar() {
+    if (!perfil) return;
+    setIntento(true);
+    setIntentoPublicar(true);
+    setBloqueoServidor(null);
+    setError(null);
+    if (!evaluacion.publicable) return;
+    setPublicando(true);
+    try {
+      let version = perfil.version;
+      if (sinGuardar) {
+        const g = await enviarJson(`/api/v1/perfiles/${perfil.codigo}`, cuerpo(), "PATCH", {
+          "if-match": `"${perfil.version}"`,
+        });
+        const dg = await g.json().catch(() => ({}));
+        if (!g.ok) {
+          setError(MOTIVO[dg.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
+          return;
+        }
+        aplicar(dg.perfil);
+        version = dg.perfil.version;
+      }
+      const r = await enviarJson(`/api/v1/perfiles/${perfil.codigo}/publicar`, {}, "POST", {
+        "if-match": `"${version}"`,
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        if (d.motivo === "no_publicable") setBloqueoServidor(d.evaluacion);
+        else setError(MOTIVO[d.motivo] ?? "No se pudo publicar. Inténtalo de nuevo.");
+        return;
+      }
+      recargarConAviso("Publicado. El portal ya muestra su ficha.");
+    } finally {
+      setPublicando(false);
+    }
+  }
+
   const titulo =
     [perfil?.nombre, perfil?.primerApellido].filter(Boolean).join(" ") || "Nuevo perfil";
   const condicionesCumplidas = evaluacion.condiciones.filter((c) => c.cumple).length;
@@ -297,6 +406,50 @@ export function EditorPerfil(p: {
   );
   const sinPrueba = evaluacion.condiciones.find((c) => c.clave === "modalidad_prueba" && !c.cumple);
   const consent = perfil?.consentimiento ?? null;
+  // Tras intentar publicar: lo que falta según el servidor si discrepó, si no el cálculo en vivo.
+  const bloqueo = bloqueoServidor ?? (intentoPublicar && !evaluacion.publicable ? evaluacion : null);
+
+  if (modo === "previa" && perfil) {
+    const vista = enEdicion()!;
+    return (
+      <>
+        <VistaPrevia
+          perfil={vista}
+          evaluacion={evaluacion}
+          estado={perfil.estado}
+          publicado={perfil.estado === "publicado" || perfil.estado === "colocado"}
+          sinGuardar={sinGuardar}
+          puedePublicar={editable}
+          publicando={publicando}
+          alVolver={(campo) => {
+            setModo("editar");
+            setIntento(true);
+            if (campo)
+              setTimeout(() => {
+                const el = document.getElementById(campo);
+                el?.scrollIntoView({ block: "center" });
+                el?.focus();
+              }, 0);
+            else window.scrollTo(0, 0);
+          }}
+          alPublicar={() => void publicar()}
+          alRegistrarConsentimiento={
+            p.registraConsentimiento
+              ? () => {
+                  setModo("editar");
+                  setHojaConsent(consent?.vigente ? "alcance" : "nuevo");
+                }
+              : undefined
+          }
+        />
+        {error && (
+          <div className="pp-toast pe-toast" role="alert">
+            <p className="pp-toast__texto">{error}</p>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
@@ -324,20 +477,57 @@ export function EditorPerfil(p: {
             )}
           </p>
         </div>
-        {editable && (
+        {(editable || perfil) && (
           <div className="pp-encabezado__acciones">
-            <button
-              type="button"
-              className="pp-btn pp-btn--contorno"
-              onClick={guardar}
-              disabled={guardando}
-            >
-              {guardando ? "Guardando…" : "Guardar borrador"}
-            </button>
+            {perfil && (
+              <button
+                type="button"
+                className="pp-btn pp-btn--fantasma"
+                onClick={() => {
+                  setModo("previa");
+                  window.scrollTo(0, 0);
+                }}
+              >
+                Vista previa
+              </button>
+            )}
+            {editable && (
+              <button
+                type="button"
+                className="pp-btn pp-btn--contorno"
+                onClick={guardar}
+                disabled={guardando || publicando}
+              >
+                {guardando ? "Guardando…" : "Guardar borrador"}
+              </button>
+            )}
+            {editable && perfil && (
+              <button
+                type="button"
+                className="pp-btn pp-btn--primario"
+                aria-disabled={!evaluacion.publicable || undefined}
+                aria-describedby={evaluacion.publicable ? undefined : "pe-condiciones"}
+                disabled={publicando || guardando}
+                onClick={publicar}
+              >
+                {publicando ? "Publicando…" : "Publicar"}
+              </button>
+            )}
           </div>
         )}
       </div>
 
+      {bloqueo && perfil && (
+        <AvisoBloqueo
+          codigo={perfil.codigo}
+          evaluacion={bloqueo}
+          familia={rol?.familia ?? perfil.familia?.nombre ?? null}
+          modalidadesFamilia={modalidadesFamilia}
+          alRegistrarConsentimiento={
+            p.registraConsentimiento ? () => setHojaConsent(consent?.vigente ? "alcance" : "nuevo") : undefined
+          }
+        />
+      )}
       {error && (
         <div className="pp-aviso pp-aviso--danger pe-alerta" role="alert">
           <span className="pp-aviso__icono" aria-hidden="true">
@@ -1268,6 +1458,90 @@ export function EditorPerfil(p: {
         </div>
       )}
     </>
+  );
+}
+
+// Lo que impidió publicar (HU-128; prototipos perfil-editor--publicar-bloqueado y --sin-modalidad;
+// HU-130 familia sin modalidades): un solo motivo se nombra con su salida directa; varios se cuentan y
+// el lateral «Para publicar» los lista.
+function AvisoBloqueo(p: {
+  codigo: string;
+  evaluacion: EvaluacionPublicacion;
+  familia: string | null;
+  modalidadesFamilia: number;
+  alRegistrarConsentimiento?: () => void;
+}) {
+  const condiciones = p.evaluacion.condiciones.filter((c) => !c.cumple);
+  const cubiertos = new Set(["trayectoria", "disponibilidad"]);
+  const datos = p.evaluacion.faltanDatos.filter((f) => !cubiertos.has(f.campo));
+  const total = condiciones.length + datos.length;
+  const unica = total === 1 ? condiciones[0] : undefined;
+  const codigo = <span className="pp-mono">{p.codigo}</span>;
+  let texto: ReactNode = (
+    <>
+      No se publicó {codigo}: {total === 1 ? "falta 1 condición." : `faltan ${total} condiciones.`}
+    </>
+  );
+  let accion: ReactNode = null;
+  if (unica?.clave === "consentimiento") {
+    texto = <>No se publicó {codigo}: falta el consentimiento nominal registrado.</>;
+    if (p.alRegistrarConsentimiento)
+      accion = (
+        <button
+          type="button"
+          className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
+          onClick={p.alRegistrarConsentimiento}
+        >
+          Registrar consentimiento
+        </button>
+      );
+  } else if (unica?.clave === "modalidad_prueba" && unica.detalle === "familia_sin_modalidades") {
+    texto = (
+      <>
+        No se publicó {codigo}: la familia {p.familia ?? "del rol"} no tiene modalidades de prueba. Sin
+        una, ningún perfil de esa familia puede publicarse.
+      </>
+    );
+    accion = (
+      <a
+        className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
+        href="/catalogos?tipo=modalidad_prueba"
+      >
+        Registrar modalidad
+      </a>
+    );
+  } else if (unica?.clave === "modalidad_prueba") {
+    texto =
+      unica.detalle === "modalidad_inactiva" ? (
+        <>
+          No se publicó {codigo}: la modalidad de prueba elegida ya no está activa o no es de la familia
+          del rol. Elige otra.
+        </>
+      ) : (
+        <>
+          No se publicó {codigo}: falta elegir la modalidad de prueba.
+          {p.modalidadesFamilia > 0 &&
+            (p.modalidadesFamilia === 1
+              ? ` ${p.familia ?? "Su familia"} tiene una: elígela.`
+              : ` Elígela entre las ${p.modalidadesFamilia} de ${p.familia ?? "su familia"}.`)}
+        </>
+      );
+    accion = (
+      <a className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="#pe-prueba">
+        Elegir modalidad
+      </a>
+    );
+  }
+  return (
+    <div className="pe-alerta">
+      <div className="pp-aviso pp-aviso--danger" role="alert" id="pe-bloqueo">
+        <span className="pp-aviso__icono" aria-hidden="true">
+          !
+        </span>
+        <p>{texto}</p>
+        {accion}
+      </div>
+    </div>
   );
 }
 

@@ -1,0 +1,15 @@
+[
+ {"item_id": "HU-128-ac1-bloqueo-actua", "kind": "hu_ac", "ref": "HU-128 · El bloqueo actúa (sin consentimiento: impide, dice qué falta, ofrece registrarlo)"},
+ {"item_id": "HU-128-ac2-importacion-no-concede", "kind": "hu_ac", "ref": "HU-128 · Importación no concede consentimiento; el bloqueo se mantiene (ss4 + disparador 0017)"},
+ {"item_id": "HU-128-ac3-sin-modalidad", "kind": "hu_ac", "ref": "HU-128 · Sin modalidad de prueba elegida: impide y ofrece elegirla"},
+ {"item_id": "HU-128-ac4-masiva", "kind": "hu_ac", "ref": "HU-128 · Publicación masiva: publica los que cumplen, señala a los demás sin abortar"},
+ {"item_id": "HU-129-ac1-vista-fiel", "kind": "hu_ac", "ref": "HU-129 · Vista previa fiel (mismo HTML que el portal; banda; ciudad condicionada)"},
+ {"item_id": "HU-129-ac2-bloque-incompleto", "kind": "hu_ac", "ref": "HU-129 · Bloque obligatorio incompleto marcado, nombra el dato, impide publicar"},
+ {"item_id": "HU-129-ac3-bloque-opcional", "kind": "hu_ac", "ref": "HU-129 · Bloque opcional sin datos no se dibuja ni impide publicar"},
+ {"item_id": "HU-129-ac4-publicado-con-cambios", "kind": "hu_ac", "ref": "HU-129 · Vista previa de un publicado con cambios sin guardar (requiere editar publicado, 6.1)"},
+ {"item_id": "HU-130-ac1-nivel0", "kind": "hu_ac", "ref": "HU-130 · Publicación con Nivel 0 desde la modalidad, sin bloque vacío"},
+ {"item_id": "HU-130-ac2-familia-sin-modalidades", "kind": "hu_ac", "ref": "HU-130 · Familia sin modalidades: impide y remite a registrarla"},
+ {"item_id": "HU-130-ac3-detalle-despues", "kind": "hu_ac", "ref": "HU-130 · El detalle llega después sin republicar (requiere validaciones, 6.1/6.2)"},
+ {"item_id": "I-publicar-editor-api-bd-portal", "kind": "integration", "ref": "Editor/inventario → POST publicar → guarda + disparador 0017 → vistas del portal"},
+ {"item_id": "I-ficha-compartida", "kind": "integration", "ref": "armarFicha + FichaPerfil: vista previa del panel = ficha del portal (ps_portal)"}
+]

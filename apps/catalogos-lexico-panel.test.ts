@@ -186,10 +186,20 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
           `UPDATE inventario.perfiles SET modalidad_prueba_id = $1 WHERE codigo IN ('PS-0201')`,
           [modalidad],
         );
+        // La siembra ya da a los publicados de Calidad su modalidad (publicar la exige, D10).
+        const usan = (
+          await bd.instalacion.query(
+            `SELECT codigo, estado FROM inventario.perfiles WHERE modalidad_prueba_id = $1 ORDER BY codigo`,
+            [modalidad],
+          )
+        ).rows as Array<{ codigo: string; estado: string }>;
+        expect(usan.map((x) => x.codigo)).toContain("PS-0201");
         const dep = await (await leer(`/api/v1/catalogos/modalidad_prueba/${modalidad}`)).json();
-        expect(dep.publicados.map((p: { codigo: string }) => p.codigo)).toEqual(["PS-0201"]);
+        expect(dep.publicados.map((p: { codigo: string }) => p.codigo)).toEqual(
+          usan.filter((x) => x.estado === "publicado").map((x) => x.codigo),
+        );
         const r = await enviar(`/api/v1/catalogos/modalidad_prueba/${modalidad}/desactivar`, {});
-        expect(await r.json()).toMatchObject({ activo: false, dependientes: 1 });
+        expect(await r.json()).toMatchObject({ activo: false, dependientes: usan.length });
         const ofrecidas = await (await leer("/api/v1/catalogos/modalidad_prueba?q=suite")).json();
         expect(ofrecidas.valores).toEqual([]);
         const conserva = await bd.instalacion.query(

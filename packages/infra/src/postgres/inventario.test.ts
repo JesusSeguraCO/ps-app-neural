@@ -1,6 +1,7 @@
 // Modelo mínimo de perfil publicable (EP-001 · sub-slice 3, tarea 3.1): V8-10 y V3-2 de ADR-0003/0008
 // con roles reales por PgBouncer. `ps_portal` no lee tablas base; `catalogo_publicable` solo devuelve
 // perfiles publicados con consentimiento vigente y sin campos de la lista negra B.4.
+import { darModalidadDePrueba } from "../pruebas/modalidad-prueba";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type pg from "pg";
 import {
@@ -89,6 +90,7 @@ describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2
       );
     }
     if (estado !== "borrador") {
+      await darModalidadDePrueba(i, id);
       await i.query(
         `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3 WHERE id = $1`,
         [id, estado, opciones.liberaEn ?? null],

@@ -3,6 +3,7 @@
 // íntegra con escritores concurrentes (V3-1); fusionar reasigna tantos perfiles como anunció la vista
 // de impacto.
 import { randomBytes } from "node:crypto";
+import { darModalidadDePrueba } from "../pruebas/modalidad-prueba";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
@@ -68,6 +69,7 @@ describe.skipIf(!HAY_BD)("catálogos del panel (HU-089, HU-143)", () => {
         `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'nominal')`,
         [id],
       );
+      await darModalidadDePrueba(i, id);
       await i.query(`UPDATE inventario.perfiles SET estado = $2 WHERE id = $1`, [id, estado]);
     }
     await i.query(

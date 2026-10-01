@@ -11,7 +11,9 @@ import { MarcoPanel } from "../../../src/marco/MarcoPanel";
 import { exigirSesion } from "../../../src/sesion/exigirSesion";
 import { hoyEnColombia } from "../hoy";
 import "../../../src/marco/marco.css";
+import "@ps/ui/ficha.css";
 import "../editor.css";
+import "../vista-previa.css";
 
 export default async function NuevoPerfil() {
   const sesion = await exigirSesion();

@@ -2,6 +2,7 @@
 // lista negra B.4, borrador sin identidad completa, trayectoria con el cliente separado, consentimiento
 // nominal con su autor y la proyección de la trayectoria para el portal. V3-2 con roles reales; la
 // regla V3-7 la cubre migracion-0013.test.ts para toda migración ≥ 0013.
+import { darModalidadDePrueba } from "../pruebas/modalidad-prueba";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type pg from "pg";
 import {
@@ -84,6 +85,8 @@ describe.skipIf(!HAY_BD)("migración 0014: perfil del Anexo B y consentimiento n
       `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'prueba')`,
       [r.rows[0].id],
     );
+    // Con lo que exige el disparador de publicar (0017), solo queda el CHECK de identidad.
+    await darModalidadDePrueba(bd.instalacion, r.rows[0].id);
     expect(
       await codigoDeError(
         panel.query(`UPDATE inventario.perfiles SET estado = 'publicado' WHERE id = $1`, [
@@ -132,6 +135,7 @@ describe.skipIf(!HAY_BD)("migración 0014: perfil del Anexo B y consentimiento n
       `INSERT INTO inventario.consentimientos (perfil_id, alcance, incluye_clientes) VALUES ($1, 'parcial', false), ($2, 'completo', true)`,
       [parcial, completo],
     );
+    for (const id of [parcial, completo]) await darModalidadDePrueba(bd.instalacion, id);
     await panel.query(`UPDATE inventario.perfiles SET estado = 'publicado' WHERE id = ANY($1)`, [
       [parcial, completo],
     ]);

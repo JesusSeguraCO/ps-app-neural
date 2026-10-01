@@ -5,6 +5,7 @@
 import "server-only";
 import type pg from "pg";
 import { RespuestaCatalogo, type PerfilCatalogo } from "@ps/contratos/catalogo";
+import { FichaPerfil, armarFicha, type Necesidad } from "@ps/contratos/ficha";
 import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
 
@@ -87,4 +88,61 @@ export async function publicablesParaPanel(bd: pg.Pool, ahora: Date = new Date()
     ciudad: (f as FilaCatalogo & { ciudad: string | null }).ciudad,
     banda: bandaDeDisponibilidad({ fecha: f.disponibilidad_fecha, actualizadaEn: f.disponibilidad_actualizada_en }, ahora),
   }));
+}
+
+// Ficha de un perfil publicado (HU-129, HU-130; RF-3.2): las vistas `catalogo_publicable`,
+// `ficha_publicable` y `experiencias_publicables` con `ps_portal`, armadas con `armarFicha` —la misma
+// función que usa la vista previa del panel— y validadas con el contrato estricto. La ciudad solo
+// viaja si la necesidad es presencial o híbrida.
+export async function fichaDelPortal(
+  bd: pg.Pool,
+  _sesion: SesionPortalVerificada,
+  codigo: string,
+  o: { necesidad?: Necesidad; ahora?: Date } = {},
+): Promise<FichaPerfil | null> {
+  const r = await bd.query(
+    `SELECT c.codigo, c.nombre, c.primer_apellido, c.roles, c.seniority, c.anios_experiencia, c.tecnologias,
+            c.sectores, c.modalidad, c.pais, c.ciudad, c.disponibilidad_fecha::text AS disponibilidad_fecha,
+            c.disponibilidad_actualizada_en, f.resumen, f.sello_personal, f.formacion, f.idiomas,
+            f.enunciado_prueba, f.incluye_clientes
+       FROM operacion.catalogo_publicable c JOIN operacion.ficha_publicable f USING (codigo)
+      WHERE c.codigo = $1`,
+    [codigo],
+  );
+  const c = r.rows[0];
+  if (!c) return null;
+  const trayectoria = (
+    await bd.query(
+      `SELECT cargo, cliente, desde, hasta, descripcion FROM operacion.experiencias_publicables
+        WHERE codigo = $1 ORDER BY orden`,
+      [codigo],
+    )
+  ).rows;
+  return FichaPerfil.parse(
+    armarFicha(
+      {
+        codigo: c.codigo,
+        nombre: c.nombre,
+        primerApellido: c.primer_apellido,
+        rol: c.roles[0] ?? null,
+        seniority: c.seniority,
+        aniosExperiencia: c.anios_experiencia,
+        sectores: c.sectores,
+        tecnologias: c.tecnologias,
+        modalidad: c.modalidad,
+        pais: c.pais,
+        ciudad: c.ciudad,
+        disponibilidadFecha: c.disponibilidad_fecha,
+        disponibilidadActualizadaEn: c.disponibilidad_actualizada_en,
+        resumen: c.resumen,
+        selloPersonal: c.sello_personal,
+        formacion: c.formacion,
+        idiomas: c.idiomas,
+        trayectoria,
+        incluyeClientes: c.incluye_clientes,
+        enunciadoPrueba: c.enunciado_prueba,
+      },
+      { ahora: o.ahora ?? new Date(), necesidad: o.necesidad ?? "remota" },
+    ),
+  );
 }
