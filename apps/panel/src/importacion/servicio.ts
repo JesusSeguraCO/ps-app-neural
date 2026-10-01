@@ -29,10 +29,16 @@ import {
   filasDelLote,
   leerLote,
   leerPlantilla,
+  listarLotes,
   registrarLote,
   type LoteLeido,
 } from "@ps/infra/postgres/importacion";
 import { poolDe } from "@ps/infra/postgres/pool";
+import {
+  antesDeRevertir,
+  confirmarReversion,
+  type AntesDeRevertir,
+} from "@ps/infra/postgres/revertir-importacion";
 import { RechazoInventario } from "@ps/infra/postgres/unidad-inventario";
 
 const hoyEnColombia = () => new Date(Date.now() - 5 * 3_600_000).toISOString().slice(0, 10);
@@ -225,3 +231,23 @@ export async function estadoDeLote(id: string): Promise<LoteLeido> {
   if (!l) throw new RechazoInventario("no_existe");
   return l;
 }
+
+export const historial = () => listarLotes(poolDe("panel"));
+
+// ─── deshacer la última importación (HU-087) ─────────────────────────────────────────────────
+
+export const entradaRevertir = z.strictObject({
+  incluir: z.array(z.string().regex(/^PS-\d{4}$/)).max(200),
+});
+
+export async function previoAReversion(id: string): Promise<AntesDeRevertir> {
+  const p = await antesDeRevertir(poolDe("panel"), id);
+  if (!p) throw new RechazoInventario("no_existe");
+  return p;
+}
+
+export const revertir = (
+  id: string,
+  autor: { usuarioId: string },
+  e: z.infer<typeof entradaRevertir>,
+) => confirmarReversion(poolDe("panel"), autor, id, e.incluir);

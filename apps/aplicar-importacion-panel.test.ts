@@ -140,5 +140,40 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       expect(r.status).toBe(404);
       expect((await leerLote("00000000-0000-4000-8000-000000000000")).status).toBe(404);
     });
+    it("deshacer: lo que hay que saber, 409 si no es la última, 202 y queda revertido; historial", async () => {
+      const a = await calcular("Código\tAnclaje\nPS-0201\tPrimera para deshacer");
+      await enviar(`/api/v1/importacion/lotes/${a}/aplicar`, {});
+      await vuelta(ctx);
+      const b = await calcular("Código\tAnclaje\nPS-0215\tSegunda para deshacer");
+      await enviar(`/api/v1/importacion/lotes/${b}/aplicar`, {});
+      await vuelta(ctx);
+
+      const previo = await (
+        await panel.pedir(`/api/v1/importacion/lotes/${a}/revertir`, { headers: { cookie: observador } })
+      ).json();
+      expect(previo.posteriores).toEqual([expect.objectContaining({ id: b, perfiles: 1 })]);
+      const no = await enviar(`/api/v1/importacion/lotes/${a}/revertir`, { incluir: [] });
+      expect(no.status).toBe(409);
+      expect((await no.json()).motivo).toBe("no_es_la_ultima");
+      expect(
+        (await enviar(`/api/v1/importacion/lotes/${b}/revertir`, { incluir: [] }, observador)).status,
+      ).toBe(403);
+      expect(
+        (await enviar(`/api/v1/importacion/lotes/${b}/revertir`, { incluir: ["PS-0215"] })).status,
+      ).toBe(422);
+
+      const r = await enviar(`/api/v1/importacion/lotes/${b}/revertir`, { incluir: [] });
+      expect(r.status).toBe(202);
+      expect((await (await leerLote(b)).json()).lote).toMatchObject({ fase: "aplicado", revirtiendo: true });
+      await vuelta(ctx);
+      expect((await (await leerLote(b)).json()).lote).toMatchObject({ fase: "revertido", revirtiendo: false });
+      expect(await anclaje("PS-0215")).not.toBe("Segunda para deshacer");
+
+      const h = await (
+        await panel.pedir("/api/v1/importacion/lotes", { headers: { cookie: observador } })
+      ).json();
+      expect(h.lotes[0]).toMatchObject({ id: b, fase: "revertido", confirmadoPor: "karen@trycore.com" });
+      expect(h.lotes.find((l: { id: string }) => l.id === a)).toMatchObject({ fase: "aplicado" });
+    });
   },
 );

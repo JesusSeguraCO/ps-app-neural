@@ -19,11 +19,19 @@ export type PayloadNotificar = z.infer<typeof payloadNotificar>;
 export const payloadAplicarImportacion = z.strictObject({ lote: z.uuid() });
 export type PayloadAplicarImportacion = z.infer<typeof payloadAplicarImportacion>;
 
+// Revertir la última importación (HU-087): el lote y los perfiles cambiados después que se incluyen.
+export const payloadRevertirImportacion = z.strictObject({
+  lote: z.uuid(),
+  incluir: z.array(z.string().regex(/^PS-\d{4}$/)).max(200),
+});
+export type PayloadRevertirImportacion = z.infer<typeof payloadRevertirImportacion>;
+
 export const ESQUEMAS_PAYLOAD = {
   enviar_codigo: payloadEnviarCodigo,
   renovar_enlace: payloadRenovarEnlace,
   notificar: payloadNotificar,
   aplicar_importacion: payloadAplicarImportacion,
+  revertir_importacion: payloadRevertirImportacion,
 } as const;
 
 export type TipoConManejador = keyof typeof ESQUEMAS_PAYLOAD;

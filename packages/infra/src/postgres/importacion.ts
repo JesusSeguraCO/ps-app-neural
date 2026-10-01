@@ -204,6 +204,10 @@ export interface LoteLeido {
   confirmadoEn: string | null;
   aplicadoEn: string | null;
   motivoAborto: string | null;
+  revertidoEn: string | null;
+  // La reversión está en la cola o en curso (confirmada y el lote sigue aplicado).
+  revirtiendo: boolean;
+  motivoReversion: string | null;
   modo: Modo;
   formato: string;
   bloqueado: boolean;
@@ -226,7 +230,8 @@ export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | n
   const l = (
     await bd.query(
       `SELECT l.id, l.estado, l.modo, l.formato, l.bloqueado, l.conteos, l.creado_en, l.confirmado_en,
-              l.aplicado_en, l.motivo_aborto, u.correo AS confirmado_por
+              l.aplicado_en, l.motivo_aborto, l.revertido_en, l.trabajo_reversion_id, l.motivo_reversion,
+              u.correo AS confirmado_por
          FROM inventario.lotes_importacion l
          LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por
         WHERE l.id = $1`,
@@ -247,6 +252,9 @@ export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | n
     confirmadoEn: l.confirmado_en?.toISOString() ?? null,
     aplicadoEn: l.aplicado_en?.toISOString() ?? null,
     motivoAborto: l.motivo_aborto ?? null,
+    revertidoEn: l.revertido_en?.toISOString() ?? null,
+    revirtiendo: l.estado === "aplicado" && l.trabajo_reversion_id !== null,
+    motivoReversion: l.motivo_reversion ?? null,
     modo: l.modo,
     formato: l.formato,
     bloqueado: l.bloqueado,
@@ -456,4 +464,43 @@ export async function confirmarLote(
   } finally {
     tx.release();
   }
+}
+
+// ─── historial (spec §7): quién, cuándo, modo y conteos de cada importación confirmada ────────
+
+export interface LoteHistorial {
+  id: string;
+  fase: FaseLote;
+  modo: Modo;
+  formato: string;
+  conteos: Plan["conteos"];
+  confirmadoPor: string | null;
+  confirmadoEn: string;
+  aplicadoEn: string | null;
+  revertidoEn: string | null;
+  motivoAborto: string | null;
+}
+
+export async function listarLotes(bd: Consultor, limite = 50): Promise<LoteHistorial[]> {
+  const r = await bd.query(
+    `SELECT l.id, l.estado, l.modo, l.formato, l.conteos, l.confirmado_en, l.aplicado_en, l.revertido_en,
+            l.motivo_aborto, u.correo
+       FROM inventario.lotes_importacion l
+       LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por
+      WHERE l.confirmado_en IS NOT NULL
+      ORDER BY l.confirmado_en DESC LIMIT $1`,
+    [limite],
+  );
+  return r.rows.map((l) => ({
+    id: l.id,
+    fase: l.estado === "calculado" ? "aplicando" : l.estado,
+    modo: l.modo,
+    formato: l.formato,
+    conteos: l.conteos,
+    confirmadoPor: l.correo ?? null,
+    confirmadoEn: l.confirmado_en.toISOString(),
+    aplicadoEn: l.aplicado_en?.toISOString() ?? null,
+    revertidoEn: l.revertido_en?.toISOString() ?? null,
+    motivoAborto: l.motivo_aborto ?? null,
+  }));
 }

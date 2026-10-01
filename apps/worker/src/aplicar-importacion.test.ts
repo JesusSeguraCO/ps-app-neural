@@ -16,6 +16,7 @@ import {
   confirmarLote,
   registrarLote,
 } from "@ps/infra/postgres/importacion";
+import { confirmarReversion } from "@ps/infra/postgres/revertir-importacion";
 import { vuelta, type ContextoDespacho } from "./despacho";
 import { sembrarFicticios } from "./sembrar-ficticios";
 
@@ -185,5 +186,42 @@ describe.skipIf(!HAY_BD)("aplicar_importacion en el worker (HU-141, I-2)", () =>
       ultimo_error: "banco_cambiado",
     });
     expect(await anclaje("PS-0223")).toBe("Del lote nuevo");
+  });
+
+  it("revertir: una vuelta revierte la última; si otra se aplicó antes, falla con motivo y se puede reconfirmar", async () => {
+    const a = await confirmado("Código\tAnclaje\nPS-0230\tPara revertir");
+    await vuelta(ctx);
+    const r = await confirmarReversion(panel, autor, a.id, []);
+    // Otra importación se adelanta en la cola: la de a ya no es la última cuando el worker revierte.
+    const b = await confirmado("Código\tAnclaje\nPS-0238\tSe adelanta");
+    await bd.instalacion.query(`UPDATE operacion.trabajos SET prioridad = 10 WHERE id = $1`, [
+      b.trabajoId,
+    ]);
+    await vuelta(ctx);
+    expect(await trabajo(r.trabajoId)).toMatchObject({
+      estado: "fallando",
+      ultimo_error: "no_es_la_ultima",
+    });
+    const l = await bd.instalacion.query(
+      `SELECT estado, motivo_reversion, trabajo_reversion_id FROM inventario.lotes_importacion WHERE id = $1`,
+      [a.id],
+    );
+    expect(l.rows[0]).toEqual({
+      estado: "aplicado",
+      motivo_reversion: "no_es_la_ultima",
+      trabajo_reversion_id: null,
+    });
+    expect(await anclaje("PS-0230")).toBe("Para revertir");
+
+    // Revertida la que se adelantó, la primera vuelve a ser la última y se revierte.
+    await confirmarReversion(panel, autor, b.id, []);
+    await vuelta(ctx);
+    const otra = await confirmarReversion(panel, autor, a.id, []);
+    expect(otra.trabajoId).not.toBe(r.trabajoId);
+    await vuelta(ctx);
+    expect(await trabajo(otra.trabajoId)).toMatchObject({ estado: "hecho" });
+    expect((await lote(a.id)).estado).toBe("revertido");
+    expect(await anclaje("PS-0230")).not.toBe("Para revertir");
+    expect(eventos.at(-1)).toMatchObject({ evento: "importacion_revertida", lote: a.id });
   });
 });

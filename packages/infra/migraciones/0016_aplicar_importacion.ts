@@ -58,6 +58,8 @@ ALTER TABLE inventario.lotes_importacion
   ADD COLUMN revertido_por       uuid REFERENCES identidad_panel.usuarios_panel(id),
   ADD COLUMN revertido_en        timestamptz,
   ADD COLUMN trabajo_reversion_id bigint,
+  -- Por qué no se pudo revertir (el lote sigue aplicado y se puede volver a intentar).
+  ADD COLUMN motivo_reversion    text,
   ADD CONSTRAINT lotes_confirmado CHECK ((confirmado_por IS NULL) = (confirmado_en IS NULL)),
   ADD CONSTRAINT lotes_aplicado CHECK ((estado IN ('aplicado', 'revertido')) = (aplicado_en IS NOT NULL)),
   ADD CONSTRAINT lotes_revertido CHECK ((estado = 'revertido') = (revertido_en IS NOT NULL));
@@ -94,6 +96,7 @@ ALTER TABLE inventario.lotes_importacion
   DROP CONSTRAINT IF EXISTS lotes_revertido,
   DROP CONSTRAINT IF EXISTS lotes_aplicado,
   DROP CONSTRAINT IF EXISTS lotes_confirmado,
+  DROP COLUMN IF EXISTS motivo_reversion,
   DROP COLUMN IF EXISTS trabajo_reversion_id,
   DROP COLUMN IF EXISTS revertido_en,
   DROP COLUMN IF EXISTS revertido_por,

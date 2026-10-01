@@ -37,7 +37,7 @@ import {
 import { RechazoInventario } from "./unidad-inventario";
 
 export const TOPE_APLICAR_MS = 5 * 60_000;
-const CANDADO = "inventario.importacion";
+export const CANDADO_IMPORTACION = "inventario.importacion";
 const VISIBLES = new Set(["publicado", "colocado"]);
 
 export type ResultadoAplicar =
@@ -270,7 +270,7 @@ export async function aplicarLote(
   try {
     await tx.query("BEGIN");
     const candado = await tx.query(`SELECT pg_try_advisory_xact_lock(hashtext($1)) AS ok`, [
-      CANDADO,
+      CANDADO_IMPORTACION,
     ]);
     if (!candado.rows[0].ok) {
       await tx.query("ROLLBACK");
