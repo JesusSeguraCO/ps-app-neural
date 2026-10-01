@@ -60,6 +60,10 @@ export interface FilaPlan {
   motivoOmision?: string;
   // Ficha resultante completa de un perfil nuevo.
   ficha?: FilaBanco;
+  // Para reconocer la tarjeta: nombre y rol del banco o, si no existe, de la fila.
+  persona: { nombre: string | null; rol: string | null };
+  // Fila con error: sus celdas emparejadas tal como vinieron (nunca las de columnas no importadas).
+  cruda?: string;
 }
 
 export interface ValorNuevo {
@@ -342,7 +346,7 @@ function evaluarFila(
   actual: FilaBanco | undefined,
   catalogos: Catalogos,
   hoy: string,
-): Omit<FilaPlan, "numero" | "codigo" | "incluida"> & { nuevos: Contexto["nuevos"] } {
+): Omit<FilaPlan, "numero" | "codigo" | "incluida" | "persona"> & { nuevos: Contexto["nuevos"] } {
   const ctx: Contexto = { catalogos, hoy, errores: [], avisos: [], nuevos: [] };
   for (const r of f.rechazadas ?? [])
     ctx.avisos.push({ campo: null, mensaje: `Columna «${r.columna}» rechazada: ${r.detalle}` });
@@ -491,11 +495,21 @@ export function calcularPlan(e: EntradaPlan): Plan {
     const incluida = !excluidas.has(f.numero);
     const crudo = f.celdas.codigo?.trim() ?? "";
     const codigo = codigoDe(f);
-    const comun = { numero: f.numero, codigo, incluida, cambios: [], avisos: [] };
+    const actualDe = codigo ? e.banco.get(codigo) : undefined;
+    const texto = (v: Valor | undefined) => (typeof v === "string" && v.trim() ? v.trim() : null);
+    const nombre =
+      [actualDe?.nombre ?? f.celdas.nombre, actualDe?.primerApellido ?? f.celdas.primerApellido]
+        .map(texto)
+        .filter(Boolean)
+        .join(" ") || null;
+    const persona = { nombre, rol: texto(actualDe?.rol ?? f.celdas.rol) };
+    const cruda = Object.values(f.celdas).join(" · ");
+    const comun = { numero: f.numero, codigo, incluida, cambios: [], avisos: [], persona };
     if (!codigo)
       return {
         ...comun,
         grupo: "con_error" as const,
+        cruda,
         errores: [
           {
             campo: "codigo" as const,
@@ -510,6 +524,7 @@ export function calcularPlan(e: EntradaPlan): Plan {
       return {
         ...comun,
         grupo: "con_error" as const,
+        cruda,
         errores: [
           {
             campo: "codigo" as const,
@@ -534,7 +549,7 @@ export function calcularPlan(e: EntradaPlan): Plan {
       };
     const { nuevos, ...r } = evaluarFila(f, codigo, actual, e.catalogos, e.hoy);
     if (incluida && r.grupo !== "con_error") nuevosVistos.push(...nuevos);
-    return { ...comun, ...r };
+    return r.grupo === "con_error" ? { ...comun, ...r, cruda } : { ...comun, ...r };
   });
 
   const valoresNuevos: ValorNuevo[] = [];

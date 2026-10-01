@@ -280,6 +280,7 @@ describe.skipIf(!HAY_BD)(
               cambios: [],
               errores: [],
               avisos: [],
+              persona: { nombre: null, rol: null },
             },
           ],
         },

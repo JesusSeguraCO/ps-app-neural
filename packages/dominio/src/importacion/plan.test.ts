@@ -450,6 +450,28 @@ describe("valores nuevos en la taxonomía (HU-086 · valores que no existen)", (
   });
 });
 
+describe("tarjetas: quién es y la fila cruda del error", () => {
+  it("nombre y rol del banco si existe; de la fila si es nuevo; la fila cruda solo en errores", () => {
+    const p = plan([
+      fila(2, { codigo: "PS-0142", ciudad: "Cali" }),
+      fila(3, {
+        codigo: "PS-0900",
+        nombre: "Andrés",
+        primerApellido: "Molina",
+        rol: "Analista QA",
+      }),
+      fila(4, { codigo: "PS-0311", nombre: "Tatiana", disponibilidad: "Pronto" }),
+    ]);
+    expect(p.filas.map((f) => f.persona)).toEqual([
+      { nombre: "Laura Méndez", rol: "Desarrolladora backend Java" },
+      { nombre: "Andrés Molina", rol: "Analista QA" },
+      { nombre: "Tatiana", rol: null },
+    ]);
+    expect(p.filas[0]!.cruda).toBeUndefined();
+    expect(p.filas[2]!.cruda).toBe("PS-0311 · Tatiana · Pronto");
+  });
+});
+
 describe("exclusión y resumen (spec §6 paso 3–4)", () => {
   it("una tarjeta desmarcada no cuenta en el resumen de lo que se aplicará", () => {
     const p = plan(
