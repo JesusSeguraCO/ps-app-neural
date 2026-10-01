@@ -4,27 +4,52 @@
 // prueba que contiene el nombre de un perfil ficticio (V9-8: nunca debe viajar a Gemini).
 import type pg from "pg";
 
-export const MODALIDADES_FICTICIAS: Array<{ familia: string; nombre: string; texto: string }> = [
+// Cada modalidad trae su plantilla (B.9.1: el texto vive en el catálogo): de ahí sale el borrador del
+// reporte de validación (HU-140).
+export const MODALIDADES_FICTICIAS: Array<{
+  familia: string;
+  nombre: string;
+  texto: string;
+  enunciadoReto: string;
+  entregables: string;
+  criterios: string[];
+}> = [
   {
     familia: "Desarrollo",
     nombre: "Prueba práctica revisada por un arquitecto",
     texto:
       "Resolvió un ejercicio de código real y un arquitecto de Trycore revisó su diseño y sus pruebas.",
+    enunciadoReto:
+      "Construir en 72 horas un servicio REST de conciliación de pagos con persistencia, pruebas automatizadas y despliegue en contenedor, y sustentar las decisiones ante un arquitecto.",
+    entregables: "Repositorio con el código y las pruebas · README de despliegue",
+    criterios: ["Diseño de la capa de servicios", "Modelo de datos y persistencia", "Cobertura y calidad de las pruebas", "Claridad al sustentar decisiones técnicas"],
   },
   {
     familia: "Calidad",
     nombre: "Suite de pruebas automatizadas",
     texto: "Automatizó un flujo de extremo a extremo y explicó su estrategia de pruebas.",
+    enunciadoReto:
+      "Automatizar de extremo a extremo el flujo de compra de una tienda de prueba e integrarlo a un pipeline.",
+    entregables: "Repositorio con la suite · Reporte de ejecución",
+    criterios: ["Estrategia de pruebas", "Estabilidad de la suite", "Integración continua"],
   },
   {
     familia: "Datos",
     nombre: "Caso de negocio con sustentación",
     texto: "Analizó un conjunto de datos de negocio y sustentó sus conclusiones ante el equipo.",
+    enunciadoReto:
+      "Analizar un conjunto de datos de ventas, construir un tablero y sustentar tres hallazgos de negocio.",
+    entregables: "Cuaderno de análisis · Tablero · Presentación de hallazgos",
+    criterios: ["Calidad del análisis", "Visualización", "Comunicación de hallazgos"],
   },
   {
     familia: "Infraestructura",
     nombre: "Laboratorio de despliegue en la nube",
     texto: "Desplegó un servicio en la nube con infraestructura como código y monitoreo.",
+    enunciadoReto:
+      "Desplegar un servicio web en la nube con infraestructura como código, monitoreo y alertas.",
+    entregables: "Repositorio de infraestructura como código · Guía de operación",
+    criterios: ["Infraestructura como código", "Observabilidad", "Seguridad del despliegue"],
   },
 ];
 
@@ -96,11 +121,11 @@ export async function sembrarLexicoFicticio(ctx: {
   let modalidades = 0;
   for (const m of MODALIDADES_FICTICIAS) {
     const r = await ctx.bd.query(
-      `INSERT INTO inventario.catalogo_modalidades_prueba (familia_id, nombre, texto_cliente)
-       SELECT f.id, $2, $3 FROM inventario.catalogo_familias f
+      `INSERT INTO inventario.catalogo_modalidades_prueba (familia_id, nombre, texto_cliente, enunciado_reto, entregables, criterios)
+       SELECT f.id, $2, $3, $4, $5, $6 FROM inventario.catalogo_familias f
         WHERE f.nombre = $1 AND NOT EXISTS (
           SELECT 1 FROM inventario.catalogo_modalidades_prueba m WHERE m.familia_id = f.id AND m.nombre = $2)`,
-      [m.familia, m.nombre, m.texto],
+      [m.familia, m.nombre, m.texto, m.enunciadoReto, m.entregables, m.criterios.join("\n")],
     );
     modalidades += r.rowCount ?? 0;
   }

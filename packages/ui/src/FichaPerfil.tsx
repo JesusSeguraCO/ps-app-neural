@@ -9,6 +9,7 @@
 import type { ReactNode } from "react";
 import type { BloqueFicha, FichaEnEdicion } from "@ps/contratos/ficha";
 import { DISPONIBILIDAD_CLIENTE } from "@ps/dominio/enlaces/textos-seleccion";
+import { fechaCivil } from "@ps/dominio/fecha/colombia";
 
 export type MarcasFicha = Partial<Record<BloqueFicha, { numero: number; datos: string[] }>>;
 
@@ -126,7 +127,15 @@ export function FichaPerfil({
                 </Fila>
               )}
               <Fila titulo="Validación técnica" marca={marcas.validacion} id="vp-fila-validacion">
-                {f.validacion?.enunciado}
+                {f.validacion?.nivel === 1 ? (
+                  <>
+                    {`${f.validacion.modalidad} · ${f.validacion.resultado}`}
+                    <span className="fp-sub">{`${f.validacion.evaluador} · ${fechaCivil(f.validacion.fecha)}`}</span>
+                    <span className="fp-sub">{`Evaluó: ${f.validacion.criterios.join(" · ")}.`}</span>
+                  </>
+                ) : (
+                  f.validacion?.enunciado
+                )}
               </Fila>
             </dl>
           </div>

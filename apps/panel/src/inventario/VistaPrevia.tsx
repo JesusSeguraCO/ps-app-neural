@@ -73,6 +73,8 @@ export function VistaPrevia(p: {
 }) {
   const [necesidad, setNecesidad] = useState<Necesidad>("remota");
   const ficha = armarFicha(datosFichaDePerfil(p.perfil), { ahora: new Date(), necesidad });
+  // Con el reporte confirmado de su modalidad, la validación ya no es un opcional sin datos (HU-130).
+  const sinReporte = ficha.validacion?.nivel !== 1;
 
   // Bloques que faltan, en el orden de la ficha, con los datos que exige publicar.
   const porBloque = new Map<BloqueFicha, string[]>();
@@ -286,41 +288,46 @@ export function VistaPrevia(p: {
               </ul>
             </section>
           )}
-          <section className="pp-seccion" aria-labelledby="vp-opcionales">
-            <div className="pp-seccion__cabecera">
-              <h2 className="pp-seccion__titulo" id="vp-opcionales">
-                Opcionales sin datos
-              </h2>
-              <span className="pp-meta">
-                <span className="pp-mono">{vacios.length + 1}</span> · no impiden publicar
-              </span>
-            </div>
-            <ul className="vp-bloques">
-              <li className="vp-bloque">
-                <span className="vp-num" aria-hidden="true">
-                  –
+          {(sinReporte || vacios.length > 0) && (
+            <section className="pp-seccion" aria-labelledby="vp-opcionales">
+              <div className="pp-seccion__cabecera">
+                <h2 className="pp-seccion__titulo" id="vp-opcionales">
+                  Opcionales sin datos
+                </h2>
+                <span className="pp-meta">
+                  <span className="pp-mono">{vacios.length + (sinReporte ? 1 : 0)}</span> · no
+                  impiden publicar
                 </span>
-                <div>
-                  <p className="vp-bloque__campo">Reporte detallado de validación</p>
-                  <p>
-                    La ficha se publica con el enunciado de Nivel 0 y sin ese bloque, igual que la
-                    mostrará el portal.
-                  </p>
-                </div>
-              </li>
-              {vacios.map((v) => (
-                <li className="vp-bloque" key={v}>
-                  <span className="vp-num" aria-hidden="true">
-                    –
-                  </span>
-                  <div>
-                    <p className="vp-bloque__campo">{OPCIONAL[v]}</p>
-                    <p>Sin dato, la ficha no muestra el bloque ni su título.</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
+              </div>
+              <ul className="vp-bloques">
+                {sinReporte && (
+                  <li className="vp-bloque">
+                    <span className="vp-num" aria-hidden="true">
+                      –
+                    </span>
+                    <div>
+                      <p className="vp-bloque__campo">Reporte detallado de validación</p>
+                      <p>
+                        La ficha se publica con el enunciado de Nivel 0 y sin ese bloque, igual que
+                        la mostrará el portal.
+                      </p>
+                    </div>
+                  </li>
+                )}
+                {vacios.map((v) => (
+                  <li className="vp-bloque" key={v}>
+                    <span className="vp-num" aria-hidden="true">
+                      –
+                    </span>
+                    <div>
+                      <p className="vp-bloque__campo">{OPCIONAL[v]}</p>
+                      <p>Sin dato, la ficha no muestra el bloque ni su título.</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </aside>
       </div>
     </>

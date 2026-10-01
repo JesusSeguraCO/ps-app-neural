@@ -96,3 +96,5 @@
 .pe-parecido { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-small); color: var(--tc-text-h); }
 .pe-sello { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-2); }
 @media (max-width: 767px) { .pe-sello { grid-template-columns: minmax(0, 1fr); } }
+.pe-reporte { display: grid; gap: var(--tc-sp-1); margin-bottom: var(--tc-sp-3); }
+.pe-reporte p { margin: 0; }

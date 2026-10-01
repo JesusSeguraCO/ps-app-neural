@@ -5,7 +5,8 @@
 //  - Disponibilidad como banda, nunca fecha (RF-3.13).
 //  - El país siempre; la ciudad solo si la necesidad es presencial o híbrida (D-18 revisada).
 //  - Validación de Nivel 0 con el enunciado de la modalidad de prueba elegida (RF-8.10, D10): nadie
-//    lo redacta. El reporte detallado, cuando exista, enriquece este bloque (HU-130, sub-slice 6).
+//    lo redacta. El reporte detallado que confirmó una persona —de esa misma modalidad— lo enriquece
+//    a Nivel 1 con resultado, evaluador, fecha y criterios evaluados (HU-130 edge), sin republicar.
 //  - El cliente nombrado solo si el consentimiento lo incluye (HU-127).
 //  - Un bloque opcional sin datos no existe en la ficha (no viaja ni se dibuja).
 //  - Nada de la lista negra B.4: el esquema estricto hace fallar cualquier campo de más.
@@ -24,10 +25,18 @@ export const ExperienciaFicha = z.strictObject({
   descripcion: z.string().min(1),
 });
 
-export const ValidacionFicha = z.strictObject({
-  nivel: z.literal(0),
-  enunciado: z.string().min(1),
-});
+export const ValidacionFicha = z.discriminatedUnion("nivel", [
+  z.strictObject({ nivel: z.literal(0), enunciado: z.string().min(1) }),
+  z.strictObject({
+    nivel: z.literal(1),
+    enunciado: z.string().min(1),
+    modalidad: z.string().min(1),
+    resultado: z.string().min(1),
+    evaluador: z.string().min(1),
+    fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    criterios: z.array(z.string().min(1)).min(1),
+  }),
+]);
 
 // Contrato del portal: estricto y completo (un publicado tiene todo lo obligatorio).
 export const FichaPerfil = z.strictObject({
@@ -87,6 +96,14 @@ export interface DatosFicha {
   incluyeClientes: boolean;
   // Texto de cara al cliente de la modalidad de prueba elegida (Nivel 0).
   enunciadoPrueba: string | null;
+  // Reporte detallado confirmado de esa misma modalidad (Nivel 1), si existe.
+  reporte?: {
+    modalidad: string;
+    resultado: string;
+    evaluador: string;
+    fecha: string;
+    criterios: string[];
+  } | null;
 }
 
 const texto = (s: string | null | undefined) => {
@@ -127,7 +144,19 @@ export function armarFicha(
       hasta: e.hasta,
       descripcion: e.descripcion.trim(),
     })),
-    validacion: enunciado ? { nivel: 0, enunciado } : null,
+    validacion: !enunciado
+      ? null
+      : d.reporte && d.reporte.criterios.length > 0
+        ? {
+            nivel: 1,
+            enunciado,
+            modalidad: d.reporte.modalidad,
+            resultado: d.reporte.resultado.trim(),
+            evaluador: d.reporte.evaluador.trim(),
+            fecha: d.reporte.fecha,
+            criterios: lista(d.reporte.criterios),
+          }
+        : { nivel: 0, enunciado },
   };
 }
 
@@ -210,7 +239,16 @@ const VISTA_CLIENTE: Array<[campo: string, etiqueta: string, valor: (f: FichaEnE
         })
         .join("\n") || null,
   ],
-  ["validacion", "Validación de Nivel 0", (f) => f.validacion?.enunciado ?? null],
+  [
+    "validacion",
+    "Validación técnica",
+    (f) =>
+      !f.validacion
+        ? null
+        : f.validacion.nivel === 0
+          ? f.validacion.enunciado
+          : `${f.validacion.modalidad} · ${f.validacion.resultado} (${f.validacion.evaluador}, ${f.validacion.fecha}). Evaluó: ${f.validacion.criterios.join(" · ")}`,
+  ],
 ];
 
 export function cambiosDeCaraAlCliente(

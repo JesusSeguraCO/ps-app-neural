@@ -37,7 +37,7 @@ export async function cuerpoDe<T>(req: Request, esquema: z.ZodType<T>): Promise<
 
 // 404 si no existe; 409 si choca con el estado (duplicado, parecido, ya decidida); 422 si la entrada
 // es válida en forma pero no en el dominio (valor inexistente, familia requerida…).
-const CONFLICTO = new Set(["duplicado", "parecido", "ya_decidida", "mismo_valor", "distinto_catalogo", "distinta_familia", "modalidad_repetida", "version_distinta", "editar_publicado", "sin_consentimiento", "archivado", "nombre_repetido", "lote_no_calculado", "lote_no_aplicado", "no_es_la_ultima", "no_publicable", "transicion_invalida", "no_es_publicado"]);
+const CONFLICTO = new Set(["duplicado", "parecido", "ya_decidida", "mismo_valor", "distinto_catalogo", "distinta_familia", "modalidad_repetida", "version_distinta", "editar_publicado", "sin_consentimiento", "archivado", "nombre_repetido", "lote_no_calculado", "lote_no_aplicado", "no_es_la_ultima", "no_publicable", "transicion_invalida", "no_es_publicado", "borrador_resuelto", "modalidad_cambio"]);
 
 export async function responderRechazos(acto: () => Promise<Response>): Promise<Response> {
   try {
@@ -113,6 +113,19 @@ export const entradaPerfil = z.strictObject({
     .max(12)
     .optional(),
 });
+
+// Reporte de validación (HU-140, HU-130 edge): campos de la plantilla corregidos por la persona y lo
+// que solo escribe ella (evaluador, fecha, resultado). Confirmar exige además «Revisé cada campo».
+export const entradaReporte = z.strictObject({
+  id: z.uuid(),
+  enunciadoReto: z.string().max(2000),
+  entregables: z.string().max(1000),
+  criterios: z.array(z.string().max(200)).max(12),
+  evaluador: corto(120),
+  fecha: fechaCivil.nullish(),
+  resultado: corto(200),
+});
+export const entradaConfirmarReporte = entradaReporte.extend({ revisado: z.boolean() });
 
 // Alcance que el profesional autorizó (HU-127).
 export const entradaConsentimiento = z.strictObject({

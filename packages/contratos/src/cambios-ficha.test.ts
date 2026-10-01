@@ -117,3 +117,41 @@ describe("cambiosDeCaraAlCliente", () => {
     expect(cambiosDeCaraAlCliente(sin({}), sin({ trayectoria: otro }))).toEqual([]);
   });
 });
+
+// HU-130 edge: el reporte confirmado enriquece la validación a Nivel 1; sin él, Nivel 0.
+describe("armarFicha · validación", () => {
+  const reporte = {
+    modalidad: "Reto de código sustentado",
+    resultado: "Aprobada, nivel senior ",
+    evaluador: "Célula de arquitectura de Trycore",
+    fecha: "2026-09-28",
+    criterios: ["Diseño de la capa de servicios", " ", "Cobertura de pruebas"],
+  };
+
+  it("sin reporte: Nivel 0 con el enunciado de la modalidad", () => {
+    expect(ficha({}).validacion).toEqual({ nivel: 0, enunciado: base.enunciadoPrueba });
+  });
+
+  it("con reporte confirmado: Nivel 1 con resultado, evaluador, fecha y criterios", () => {
+    expect(ficha({ reporte }).validacion).toEqual({
+      nivel: 1,
+      enunciado: base.enunciadoPrueba,
+      modalidad: "Reto de código sustentado",
+      resultado: "Aprobada, nivel senior",
+      evaluador: "Célula de arquitectura de Trycore",
+      fecha: "2026-09-28",
+      criterios: ["Diseño de la capa de servicios", "Cobertura de pruebas"],
+    });
+  });
+
+  it("sin modalidad de prueba no hay validación, aunque quedara un reporte", () => {
+    expect(ficha({ enunciadoPrueba: null, reporte }).validacion).toBeNull();
+  });
+
+  it("el reporte que llega a un publicado se declara como cambio para el cliente", () => {
+    const [c] = cambiosDeCaraAlCliente(ficha({}), ficha({ reporte }));
+    expect(c?.campo).toBe("validacion");
+    expect(c?.despues).toContain("Aprobada, nivel senior");
+    expect(c?.despues).toContain("Evaluó: Diseño de la capa de servicios · Cobertura de pruebas");
+  });
+});

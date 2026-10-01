@@ -286,10 +286,10 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
         // Publicar exige modalidad de prueba activa de la familia (D10, migración 0017).
         const prueba = MODALIDADES_FICTICIAS.find((m) => m.familia === p.familia)!;
         await tx.query(
-          `INSERT INTO inventario.catalogo_modalidades_prueba (familia_id, nombre, texto_cliente)
-           SELECT $1, $2, $3 WHERE NOT EXISTS (
+          `INSERT INTO inventario.catalogo_modalidades_prueba (familia_id, nombre, texto_cliente, enunciado_reto, entregables, criterios)
+           SELECT $1, $2, $3, $4, $5, $6 WHERE NOT EXISTS (
              SELECT 1 FROM inventario.catalogo_modalidades_prueba WHERE familia_id = $1 AND nombre = $2)`,
-          [familia, prueba.nombre, prueba.texto],
+          [familia, prueba.nombre, prueba.texto, prueba.enunciadoReto, prueba.entregables, prueba.criterios.join("\n")],
         );
         await tx.query(
           `UPDATE inventario.perfiles SET modalidad_prueba_id = (

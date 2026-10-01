@@ -321,6 +321,8 @@ export function EditorPerfil(p: {
         descripcion: e.descripcion,
       })),
       consentimiento: perfil.consentimiento,
+      // El reporte confirmado vale para la modalidad con la que se hizo (HU-130): cambiarla vuelve a Nivel 0.
+      reporte: pruebaId && pruebaId === perfil.modalidadPrueba?.id ? perfil.reporte : null,
       modalidadPrueba: prueba
         ? {
             id: prueba.id,
@@ -331,6 +333,38 @@ export function EditorPerfil(p: {
         : null,
     };
   };
+
+  // Reporte detallado (HU-140, HU-130): vale para la modalidad con la que se hizo.
+  const reporteVigente =
+    perfil?.reporte && pruebaId && pruebaId === perfil.modalidadPrueba?.id ? perfil.reporte : null;
+  const [pidiendo, setPidiendo] = useState(false);
+  const [errorReporte, setErrorReporte] = useState<string | null>(null);
+  // El borrador sale de la modalidad guardada; sin modalidad no hay borrador y se remite al selector.
+  async function pedirReporte() {
+    if (!perfil) return;
+    setErrorReporte(null);
+    const alSelector = (texto: string) => {
+      // Sin rol el selector está cerrado: se lleva primero al rol, que abre las modalidades de su familia.
+      setErrorReporte(rol ? texto : `${texto} Elige primero el rol: la modalidad sale del catálogo de su familia.`);
+      const el = document.getElementById(rol ? "pe-prueba" : "pe-rol");
+      el?.scrollIntoView({ block: "center" });
+      el?.focus();
+    };
+    if (!pruebaId) return alSelector("El borrador sale de la modalidad de prueba: elige una para este perfil.");
+    if (sinGuardar)
+      return setErrorReporte("Guarda primero los cambios del perfil: el borrador sale de la modalidad guardada.");
+    setPidiendo(true);
+    try {
+      const r = await enviarJson(`/api/v1/perfiles/${perfil.codigo}/validacion`, {});
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) window.location.href = `/inventario/${perfil.codigo}/validacion`;
+      else if (d.motivo === "sin_modalidad_prueba")
+        alSelector("El borrador sale de la modalidad de prueba: elige una para este perfil.");
+      else setErrorReporte("No se pudo preparar el borrador. Inténtalo de nuevo.");
+    } finally {
+      setPidiendo(false);
+    }
+  }
 
   const aplicar = (nuevo: PerfilEditor) => {
     setPerfil(nuevo);
@@ -1042,7 +1076,48 @@ export function EditorPerfil(p: {
                     <div className="pp-campo">
                       <p className="pp-label">Enunciado publicado</p>
                       <p className="pe-enunciado">{`«${prueba.textoCliente}»`}</p>
-                      <p className="pp-meta">Nivel 0, mientras no haya reporte detallado.</p>
+                      <p className="pp-meta">
+                        {reporteVigente
+                          ? "Con el reporte detallado de abajo: la ficha muestra resultado, evaluador, fecha y criterios."
+                          : "Nivel 0, mientras no haya reporte detallado."}
+                      </p>
+                    </div>
+                  )}
+                  {perfil && (
+                    <div className="pp-campo" id="pe-reporte">
+                      <p className="pp-label">Reporte detallado</p>
+                      {reporteVigente && (
+                        <div className="pe-reporte">
+                          <p className="pe-enunciado">{`${reporteVigente.modalidad} · ${reporteVigente.resultado}`}</p>
+                          <p className="pp-meta">
+                            {`${reporteVigente.evaluador} · ${fechaCivil(reporteVigente.fecha)} · confirmado por ${reporteVigente.confirmadaPor ?? "—"}`}
+                          </p>
+                          <p className="pp-meta">{`Evaluó: ${reporteVigente.criterios.join(" · ")}.`}</p>
+                        </div>
+                      )}
+                      {perfil.reporte && !reporteVigente && (
+                        <p className="pp-meta">
+                          El reporte confirmado es de otra modalidad de prueba: con esta, la ficha vuelve a Nivel 0.
+                        </p>
+                      )}
+                      {p.escribe && (
+                        <div>
+                          <button
+                            type="button"
+                            className="pp-btn pp-btn--contorno pp-btn--sm"
+                            disabled={pidiendo}
+                            aria-describedby={errorReporte ? "pe-reporte-error" : undefined}
+                            onClick={pedirReporte}
+                          >
+                            {perfil.borradorValidacion
+                              ? "Continuar el borrador"
+                              : perfil.reporte
+                                ? "Registrar un reporte nuevo"
+                                : "Registrar reporte detallado"}
+                          </button>
+                        </div>
+                      )}
+                      {errorReporte && <ErrorCampo id="pe-reporte-error" texto={errorReporte} />}
                     </div>
                   )}
                 </div>

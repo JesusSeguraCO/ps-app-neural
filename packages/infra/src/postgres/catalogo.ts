@@ -104,7 +104,8 @@ export async function fichaDelPortal(
     `SELECT c.codigo, c.nombre, c.primer_apellido, c.roles, c.seniority, c.anios_experiencia, c.tecnologias,
             c.sectores, c.modalidad, c.pais, c.ciudad, c.disponibilidad_fecha::text AS disponibilidad_fecha,
             c.disponibilidad_actualizada_en, f.resumen, f.sello_personal, f.formacion, f.idiomas,
-            f.enunciado_prueba, f.incluye_clientes
+            f.enunciado_prueba, f.incluye_clientes, f.reporte_modalidad, f.reporte_resultado,
+            f.reporte_evaluador, f.reporte_fecha::text AS reporte_fecha, f.reporte_criterios
        FROM operacion.catalogo_publicable c JOIN operacion.ficha_publicable f USING (codigo)
       WHERE c.codigo = $1`,
     [codigo],
@@ -141,6 +142,15 @@ export async function fichaDelPortal(
         trayectoria,
         incluyeClientes: c.incluye_clientes,
         enunciadoPrueba: c.enunciado_prueba,
+        reporte: c.reporte_resultado
+          ? {
+              modalidad: c.reporte_modalidad,
+              resultado: c.reporte_resultado,
+              evaluador: c.reporte_evaluador,
+              fecha: c.reporte_fecha,
+              criterios: c.reporte_criterios,
+            }
+          : null,
       },
       { ahora: o.ahora ?? new Date(), necesidad: o.necesidad ?? "remota" },
     ),

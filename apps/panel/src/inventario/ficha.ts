@@ -25,7 +25,8 @@ export type PerfilParaFicha = Pick<
   | "experiencias"
   | "consentimiento"
   | "modalidadPrueba"
->;
+> &
+  Partial<Pick<PerfilEditor, "reporte">>;
 
 export function datosFichaDePerfil(p: PerfilParaFicha): DatosFicha {
   return {
@@ -57,5 +58,14 @@ export function datosFichaDePerfil(p: PerfilParaFicha): DatosFicha {
     })),
     incluyeClientes: Boolean(p.consentimiento?.vigente && p.consentimiento.incluyeClientes),
     enunciadoPrueba: p.modalidadPrueba?.activa ? p.modalidadPrueba.textoCliente : null,
+    reporte: p.reporte
+      ? {
+          modalidad: p.reporte.modalidad,
+          resultado: p.reporte.resultado,
+          evaluador: p.reporte.evaluador,
+          fecha: p.reporte.fecha,
+          criterios: p.reporte.criterios,
+        }
+      : null,
   };
 }

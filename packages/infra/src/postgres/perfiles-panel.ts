@@ -112,7 +112,23 @@ export interface PerfilEditor {
   aporte: string | null;
   experiencias: ExperienciaPerfil[];
   consentimiento: ConsentimientoPerfil | null;
+  // Reporte de validación confirmado de la modalidad elegida hoy (HU-130 edge) y el borrador
+  // pendiente, si lo hay (HU-140).
+  reporte: ReportePerfil | null;
+  borradorValidacion: { id: string; creadaEn: string } | null;
   evaluacion: EvaluacionPublicacion;
+}
+
+export interface ReportePerfil {
+  modalidad: string;
+  resultado: string;
+  evaluador: string;
+  fecha: string;
+  criterios: string[];
+  enunciadoReto: string;
+  entregables: string;
+  confirmadaPor: string | null;
+  confirmadaEn: string;
 }
 
 const texto = (s: string | null | undefined) => {
@@ -206,6 +222,21 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
         textoCliente: p.prueba_texto,
       }
     : null;
+  const v = (
+    await bd.query(
+      `SELECT x.id, x.estado, x.resultado, x.evaluador, x.fecha::text AS fecha, x.criterios, x.enunciado_reto,
+              x.entregables, x.creada_en, x.confirmada_en, u.correo AS confirmada_correo, m.nombre AS modalidad
+         FROM inventario.validaciones x
+         JOIN inventario.catalogo_modalidades_prueba m ON m.id = x.modalidad_prueba_id
+         LEFT JOIN identidad_panel.usuarios_panel u ON u.id = x.confirmada_por
+        WHERE x.perfil_id = $1
+          AND (x.estado = 'borrador' OR (x.estado = 'confirmada' AND x.modalidad_prueba_id = $2))
+        ORDER BY x.estado = 'borrador' DESC, x.confirmada_en DESC`,
+      [p.id, p.modalidad_prueba_id],
+    )
+  ).rows;
+  const confirmada = v.find((x) => x.estado === "confirmada");
+  const pendiente = v.find((x) => x.estado === "borrador");
   const perfil: Omit<PerfilEditor, "evaluacion"> = {
     id: p.id,
     codigo: p.codigo,
@@ -239,6 +270,22 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
     aporte: p.aporte,
     experiencias,
     consentimiento,
+    reporte: confirmada
+      ? {
+          modalidad: confirmada.modalidad,
+          resultado: confirmada.resultado,
+          evaluador: confirmada.evaluador,
+          fecha: confirmada.fecha,
+          criterios: confirmada.criterios,
+          enunciadoReto: confirmada.enunciado_reto,
+          entregables: confirmada.entregables,
+          confirmadaPor: confirmada.confirmada_correo ?? null,
+          confirmadaEn: confirmada.confirmada_en.toISOString(),
+        }
+      : null,
+    borradorValidacion: pendiente
+      ? { id: pendiente.id, creadaEn: pendiente.creada_en.toISOString() }
+      : null,
   };
   return { ...perfil, evaluacion: evaluar(perfil) };
 }
