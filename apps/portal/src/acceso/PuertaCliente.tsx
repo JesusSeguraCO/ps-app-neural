@@ -17,7 +17,13 @@ import {
   horaDesbloqueoDeColombia as desbloqueo,
 } from "@ps/dominio/fecha/colombia";
 import { enviarJson } from "./cliente";
-import { AbreTuEnlace, CONTACTO, EnlaceRevocado } from "./Pantallas";
+import {
+  quienAtiende,
+  textoContacto,
+  type ContactoTrycore as Contacto,
+} from "@ps/dominio/contacto/contacto";
+import { ContactoTrycore } from "@ps/ui/ContactoTrycore";
+import { AbreTuEnlace, EnlaceRevocado } from "./Pantallas";
 
 type Paso =
   | { tipo: "abriendo" }
@@ -34,9 +40,11 @@ type Paso =
 export function PuertaCliente({
   inicial,
   vencio,
+  contacto,
 }: {
   inicial?: "vencido" | "revocado";
   vencio?: string | null;
+  contacto: Contacto;
 }) {
   const [paso, setPaso] = useState<Paso>(
     inicial === "revocado"
@@ -153,7 +161,7 @@ export function PuertaCliente({
       }
       if (r.status === 429 && cuerpo.motivo === "en_espera") {
         setFallo(
-          `Ya se pidieron varios enlaces nuevos para este enlace. Si es urgente, escribe a ${CONTACTO}; si no, puedes volver a pedirlo desde las ${desbloqueo(new Date(cuerpo.hasta))}`,
+          `Ya se pidieron varios enlaces nuevos para este enlace. Si es urgente, escribe a ${textoContacto(contacto)}; si no, puedes volver a pedirlo desde las ${desbloqueo(new Date(cuerpo.hasta))}`,
         );
         return;
       }
@@ -221,10 +229,10 @@ export function PuertaCliente({
       );
 
     case "revocado":
-      return <EnlaceRevocado />;
+      return <EnlaceRevocado contacto={contacto} />;
 
     case "sin_enlace":
-      return <AbreTuEnlace sesionTerminada={false} />;
+      return <AbreTuEnlace sesionTerminada={false} contacto={contacto} />;
 
     case "correo":
       return (
@@ -357,9 +365,9 @@ export function PuertaCliente({
             <p>Pausamos el ingreso tras varios códigos que no sirven.</p>
             <div className="puerta-contacto">
               <p>
-                ¿Necesitas entrar antes? Escribe a quien te compartió el enlace o a People Service:
+                {`¿Necesitas entrar antes? Escribe a quien te compartió el enlace o a ${quienAtiende(contacto)}:`}
               </p>
-              <p className="puerta-correo">{CONTACTO}</p>
+              <p className="puerta-correo">{contacto.direccion}</p>
             </div>
           </div>
           <p className="puerta-pie-global">
@@ -491,7 +499,7 @@ export function PuertaCliente({
             <div className="av-separador">
               <p className="pp-meta">
                 {"Si en 2 días hábiles no tienes noticias, escribe a "}
-                <span className="av-correo">{CONTACTO}</span>.
+                <ContactoTrycore contacto={contacto} enlace={false} claseCorreo="av-correo" />.
               </p>
             </div>
           </div>

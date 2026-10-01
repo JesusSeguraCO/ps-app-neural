@@ -36,3 +36,10 @@
   `PuertaCliente.tsx` (en_espera 429, intentos agotados, «Recibimos tu petición») e `invitar/page.tsx`; la constante
   `CONTACTO` se retira; `/administracion/contacto` con `?rechazado=accesos`). Luego 10.5 (0025 referencias de
   auditoría + `/inventario/{código}/auditoria`), 10.6, 10.7.
+- **10.4 hecha**: 0024 (`inventario.configuracion_contacto` fila única + vista `operacion.contacto_trycore` sin DML),
+  `contacto.ts` (leer, guardar auditado por campo, historial descifrado con `leerCambios` —reutilizable en 10.5—),
+  `POST /api/v1/contacto` (`contacto.escribir`), `/administracion/contacto` (formulario / lectura de la observadora /
+  `?rechazado=accesos`), `ContactoTrycore` en `@ps/ui` usado en las cinco pantallas; constante `CONTACTO` retirada.
+  Campo `direccion` por V8-4 (D39). BD de desarrollo en 0024. Tests: dominio 5, ui 3, infra 5, HTTP 6, e2e 1.
+  Mutación `mutacion-10.4.md` (5/5).
+- **Siguiente: 10.5** (0025 referencias de auditoría + `/inventario/{código}/auditoria` con `leerCambios`).

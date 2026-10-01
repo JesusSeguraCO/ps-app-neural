@@ -273,4 +273,72 @@ test.describe("topes de renovación e invitaciones", () => {
     await expect(aviso).toContainText(/Podrás pedir otra desde las \d{1,2}:\d{2} [ap]\. m\.$/);
     await expect(aviso).not.toContainText("m..");
   });
+  // HU-147: las pantallas de la puerta que dibuja el navegador (intentos agotados, «Recibimos tu petición» y
+  // el tope de renovación) nombran el contacto de Trycore configurado en el panel. El contacto se pone en
+  // la BD de desarrollo solo durante el test y se retira al terminar (vuelve el buzón por omisión). Las
+  // respuestas de verificar y renovar se fijan en el navegador para llegar a cada estado sin esperar.
+  test("HU-147: la puerta nombra el contacto configurado en intentos agotados, «Recibimos tu petición» y el tope", async ({
+    page,
+  }) => {
+    const EIDA = "Eida Tinjacá, Coordinación de Servicio";
+    await consulta(
+      `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por)
+       SELECT true, 'eida.tinjaca@trycore.com', 'Eida Tinjacá', 'Coordinación de Servicio', id
+         FROM identidad_panel.usuarios_panel ORDER BY creado_en LIMIT 1`,
+      [],
+    );
+    try {
+      const hasta = new Date(Date.now() + 15 * 60_000).toISOString();
+      // Intentos agotados.
+      const v = await sembrar({ correo: `e2e-${randomBytes(3).toString("hex")}@cliente.com` });
+      await page.route(/\/api\/v1\/acceso\/verificar$/, (r) =>
+        r.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ hasta }) }),
+      );
+      await page.goto(`/e/#t=${v.token}`);
+      await page.getByLabel("Correo corporativo").fill("alguien@cliente.com");
+      await page.getByRole("button", { name: "Enviarme el código" }).click();
+      for (let i = 1; i <= 6; i++) await page.getByLabel(`Dígito ${i}`).fill(String(i));
+      await page.getByRole("button", { name: "Entrar" }).click();
+      await expect(
+        page.getByText(`Escribe a quien te compartió el enlace o a ${EIDA}:`),
+      ).toBeVisible();
+      await expect(page.getByText("eida.tinjaca@trycore.com", { exact: true })).toBeVisible();
+      await expect(page.getByText("people.service@trycore.com")).toHaveCount(0);
+
+      // «Recibimos tu petición» (la cuenta la renueva una persona).
+      const s = await sembrar({ vencido: true, correo: `e2e-${randomBytes(3).toString("hex")}@cliente.com` });
+      await page.route(/\/api\/v1\/acceso\/renovar$/, (r) =>
+        r.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({ solicitud: "s1" }) }),
+      );
+      await page.route(/\/api\/v1\/acceso\/renovar\/s1$/, (r) =>
+        r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ estado: "persona" }) }),
+      );
+      await page.goto(`/e/#t=${s.token}`);
+      await page.getByLabel("Tu correo corporativo").fill("alguien@cliente.com");
+      await page.getByRole("button", { name: "Pedir un enlace nuevo" }).click();
+      await expect(page.getByRole("heading", { name: "Recibimos tu petición" })).toBeVisible();
+      await expect(
+        page.getByText(`Si en 2 días hábiles no tienes noticias, escribe a ${EIDA}: eida.tinjaca@trycore.com.`),
+      ).toBeVisible();
+
+      // Tope de renovación: «si es urgente, escribe a …».
+      await page.unroute(/\/api\/v1\/acceso\/renovar$/);
+      await page.route(/\/api\/v1\/acceso\/renovar$/, (r) =>
+        r.fulfill({
+          status: 429,
+          contentType: "application/json",
+          body: JSON.stringify({ motivo: "en_espera", hasta }),
+        }),
+      );
+      await page.goto(`/e/#t=${s.token}`);
+      await page.getByLabel("Tu correo corporativo").fill("alguien@cliente.com");
+      await page.getByRole("button", { name: "Pedir un enlace nuevo" }).click();
+      await expect(
+        page.getByText(`Si es urgente, escribe a ${EIDA}: eida.tinjaca@trycore.com; si no`),
+      ).toBeVisible();
+      await sinIncidenciasGraves(page);
+    } finally {
+      await consulta(`DELETE FROM inventario.configuracion_contacto`, []);
+    }
+  });
 });

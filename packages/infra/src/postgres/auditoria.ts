@@ -8,6 +8,7 @@ import {
   TITULAR_SISTEMA,
   cifrarValor,
   compromisoDeValor,
+  descifrarValor,
   desenvolverClave,
   envolverClave,
   hashDeFila,
@@ -186,4 +187,53 @@ export async function verificarCadena(
     return { ok: false, filas: r.rowCount ?? 0, rotaEnSeq: Number(c.seq) };
   }
   return { ok: true, filas: r.rowCount ?? 0 };
+}
+
+export interface CambioLeido {
+  seq: number;
+  actor: string;
+  campo: string;
+  antes: string | null;
+  despues: string | null;
+  origen: OrigenAuditoria;
+  cuando: string;
+  // La clave del titular se destruyó (supresión, Ley 1581): el valor ya no se puede leer.
+  suprimido: boolean;
+}
+
+// Cambios de una entidad en orden de la cadena, con los valores descifrados en el servidor del panel
+// (HU-138, HU-147). Nunca sale de aquí un valor cifrado ni una clave.
+export async function leerCambios(
+  bd: Consultor,
+  kek: string,
+  entidad: string,
+  entidadId: string,
+): Promise<CambioLeido[]> {
+  const r = await bd.query(
+    `SELECT a.seq, a.actor, a.campo, a.origen, a.cuando, a.titular,
+            v.antes_cifrado, v.despues_cifrado, k.clave_envuelta
+       FROM auditoria.auditoria a
+       LEFT JOIN auditoria.auditoria_valores v ON v.seq = a.seq
+       LEFT JOIN identidad.claves_titular k ON k.titular = a.titular
+      WHERE a.entidad = $1 AND a.entidad_id = $2
+      ORDER BY a.seq`,
+    [entidad, entidadId],
+  );
+  const claves = new Map<string, Buffer | null>();
+  return r.rows.map((f) => {
+    if (!claves.has(f.titular))
+      claves.set(f.titular, f.clave_envuelta ? desenvolverClave(kek, f.clave_envuelta) : null);
+    const clave = claves.get(f.titular)!;
+    const valor = (c: Buffer | null) => (c && clave ? descifrarValor(clave, c) : null);
+    return {
+      seq: Number(f.seq),
+      actor: f.actor,
+      campo: f.campo,
+      antes: valor(f.antes_cifrado),
+      despues: valor(f.despues_cifrado),
+      origen: f.origen,
+      cuando: f.cuando.toISOString(),
+      suprimido: clave === null,
+    };
+  });
 }

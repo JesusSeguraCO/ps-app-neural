@@ -48,7 +48,7 @@ Solo cambios de esquema, hacia adelante (expand/contract); los datos de tablas a
 | `lotes_importacion`, `lote_filas` (nuevas) | contrato de ADR-0003: `archivo_hash`, `modo`, `estado` (`calculado`·`aplicando`·`aplicado`·`abortado`·`revertido`), `foto_previa` por perfil, filas con su formato original y motivo | 086, 087, 141, 142 |
 | `plantillas_emparejamiento` (nueva) | `nombre` único, `columnas → campo | no_importar` | 148 |
 | `lexico`, `propuestas_lexico`, `candidatas_lexico` (nuevas) | término normalizado → `catalogo_tipo` + `catalogo_id` (FK real por tipo); propuesta `pendiente`·`aprobada`·`rechazada`; candidatas con destino `lexico`·`agenda_reclutamiento`. `ps_portal` lee solo `lexico` aprobado por vista | 139 |
-| `configuracion_contacto` (nueva, fila única) | `correo` (CHECK `@trycore.com`), `nombre`, `cargo`; vista `operacion.contacto_trycore` legible por `ps_portal`; valor inicial `people.service@trycore.com` como excepción de siembra marcada | 147 |
+| `configuracion_contacto` (nueva, fila única) | `correo` (CHECK `@trycore.com`), `nombre`, `cargo`; vista `operacion.contacto_trycore` legible por `ps_portal`; valor inicial `people.service@trycore.com` que da la vista mientras no haya fila (sin siembra, D39) | 147 |
 | `identidad_panel.usuarios_panel` | + `dado_de_baja_en`, `actualizado_por`; baja = `activo=false` (sin borrado); `sesiones_panel` gana `rol_al_abrir` para el corte (decisión 9) | 151 |
 
 ### 2. Máquina de estados del perfil y matriz D5

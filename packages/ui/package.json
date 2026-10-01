@@ -9,7 +9,8 @@
     "./tailwind.preset": "./tailwind.preset.ts",
     "./patrones.css": "./patrones.css",
     "./ficha.css": "./ficha.css",
-    "./FichaPerfil": "./src/FichaPerfil.tsx"
+    "./FichaPerfil": "./src/FichaPerfil.tsx",
+    "./ContactoTrycore": "./src/ContactoTrycore.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p ."

@@ -2,9 +2,10 @@
 // primera línea (H5). Muestra el formulario y las peticiones de este invitado con su estado; si alguna
 // se rechazó, el motivo y el contacto de Trycore. El colega no entra hasta que se apruebe.
 import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
+import { leerContacto } from "@ps/infra/postgres/contacto";
 import { peticionesDelInvitado } from "@ps/infra/postgres/invitaciones-cliente";
 import { poolDe } from "@ps/infra/postgres/pool";
-import { CONTACTO } from "../../src/acceso/Pantallas";
+import { ContactoTrycore } from "@ps/ui/ContactoTrycore";
 import { datosDelEnlace } from "../../src/banco/datos";
 import { AvisoPedida, FormularioInvitacion } from "../../src/invitar/FormularioInvitacion";
 import { MarcoPortal } from "../../src/marco/MarcoPortal";
@@ -17,9 +18,10 @@ const corta = (d: Date) => fechaDeColombia(d).replace(/ \d{4}$/, "");
 
 export default async function Invitar() {
   const sesion = await exigirSesion();
-  const [{ aterrizaje: a, equipo }, peticiones] = await Promise.all([
+  const [{ aterrizaje: a, equipo }, peticiones, contacto] = await Promise.all([
     datosDelEnlace(sesion),
     peticionesDelInvitado(poolDe("portal"), sesion),
+    leerContacto(poolDe("portal")),
   ]);
   const rechazada = peticiones.find((p) => p.estado === "rechazada");
   return (
@@ -46,8 +48,8 @@ export default async function Invitar() {
               <span className="pp-aviso__titulo">{`Talento Humano no aprobó la invitación de ${rechazada.nombre ?? rechazada.correo}.`}</span>
               {`${rechazada.nombre?.trim().split(/\s+/)[0] ?? "Esa persona"} sigue sin acceso. Motivo: «${rechazada.motivo}»`}
               <span className="ic-aviso__linea">
-                {"Si tienes dudas, escribe a People Service: "}
-                <span className="ic-aviso__correo">{CONTACTO}</span>
+                {"Si tienes dudas, escribe a "}
+                <ContactoTrycore contacto={contacto} enlace={false} claseCorreo="ic-aviso__correo" />
               </span>
             </p>
           </div>
