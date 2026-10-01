@@ -63,4 +63,6 @@
 - **9.5 hecha**: E-11 (ADR-0009: sin `sincronizar_colocados`, `notificar` del panel) y E-12 (ADR-0003: `colocado`
   deja de ser estado; colocaciones, cargas y diferencias) en `docs/adr/_backlog-arquitectonico.md`; la fila UC-14 del
   tablero las cita y suma ADR-0009.
-- **Siguiente: 9.6** (fidelidad MCP de las 11 pantallas), luego 9.7 (journey, e2e, mutación de 9.1, wiring, cierre). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
+- **9.6 hecha**: 11 pantallas FIEL con clics reales (`fidelidad-ss9.md`, capturas `app-*.png`, archivos subidos en
+  `archivos/`). Datos de prueba PS-1464…1473 archivados al terminar.
+- **Siguiente: 9.7** (journey smoke, mutación de 9.1, wiring y checkpoint de cierre del sub-slice). Falta la mutación de 9.1 (añadirla a `mutar-ss9.py` al cerrar).
