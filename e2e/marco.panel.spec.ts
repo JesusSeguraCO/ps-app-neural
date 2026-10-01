@@ -143,6 +143,9 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/inventario/nuevo",
     "/inventario/PS-0187",
     "/importar",
+    "/importar?vista=historial",
+    // Resultado y deshacer de las importaciones del recorrido del sub-slice 4 (revertidas).
+    "/importar?lote=594f25ad-9513-4176-bb0b-0bcf0c98a682",
   ]) {
     test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
       const errores: string[] = [];

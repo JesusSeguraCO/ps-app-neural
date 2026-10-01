@@ -11,10 +11,11 @@ import {
   escribirCsv,
   escribirErrores,
   escribirJson,
+  escribirTabla,
   leer,
   type Formato,
 } from "@ps/contratos/importacion";
-import { CLAVES_CAMPO } from "@ps/dominio/importacion/campos";
+import { CLAVES_CAMPO, ETIQUETA_CAMPO_IMPORTACION } from "@ps/dominio/importacion/campos";
 import {
   aplicarPlantilla,
   proponerEmparejamiento,
@@ -37,9 +38,9 @@ import {
 } from "@ps/infra/postgres/importacion";
 import { poolDe } from "@ps/infra/postgres/pool";
 import {
-  antesDeRevertir,
   confirmarReversion,
-  type AntesDeRevertir,
+  detalleReversion,
+  type DetalleReversion,
 } from "@ps/infra/postgres/revertir-importacion";
 import { RechazoInventario } from "@ps/infra/postgres/unidad-inventario";
 
@@ -70,6 +71,8 @@ export const entradaLote = z.strictObject({
   formato,
   modo,
   columnas,
+  // Nombre del archivo cargado (sin ruta); se pegó → ausente.
+  archivo: z.string().trim().min(1).max(200).nullish(),
 });
 export const entradaRecalcular = z.strictObject({
   modo: modo.optional(),
@@ -188,6 +191,7 @@ export async function calcularLote(
   const plan = calcularPlan({ ...(await contexto()), filas, modo: e.modo });
   const loteId = await registrarLote(poolDe("panel"), autor, {
     archivoHash: createHash("sha256").update(e.texto).digest("hex"),
+    archivoNombre: e.archivo?.split(/[\\/]/).pop() ?? null,
     formato: r.formato,
     modo: e.modo,
     emparejamiento: emparejamiento.map((c) => ({
@@ -267,8 +271,8 @@ export const entradaRevertir = z.strictObject({
   incluir: z.array(z.string().regex(/^PS-\d{4}$/)).max(200),
 });
 
-export async function previoAReversion(id: string): Promise<AntesDeRevertir> {
-  const p = await antesDeRevertir(poolDe("panel"), id);
+export async function previoAReversion(id: string): Promise<DetalleReversion> {
+  const p = await detalleReversion(poolDe("panel"), id);
   if (!p) throw new RechazoInventario("no_existe");
   return p;
 }
@@ -278,3 +282,42 @@ export const revertir = (
   autor: { usuarioId: string },
   e: z.infer<typeof entradaRevertir>,
 ) => confirmarReversion(poolDe("panel"), autor, id, e.incluir);
+
+// Reporte de una importación (spec §6 paso 5): cada fila con lo que le pasó, en hoja de cálculo.
+const RESULTADO_GRUPO = {
+  nuevo: "Creado en borrador",
+  actualizado: "Actualizado",
+  archivado: "Archivado",
+  sin_cambios: "Sin cambios",
+  omitido: "Omitido",
+  con_error: "Con error",
+} as const;
+
+export async function reporteDeLote(id: string): Promise<Response> {
+  const l = await leerLote(poolDe("panel"), id);
+  if (!l) throw new RechazoInventario("no_existe");
+  const cuerpo = escribirTabla(
+    "csv",
+    ["Fila", "Código", "Profesional", "Resultado", "Detalle", "Avisos"],
+    l.filas.map((f) => [
+      String(f.numero),
+      f.codigo ?? "",
+      f.persona.nombre ?? "",
+      !f.incluida && f.grupo !== "con_error" ? "Excluida por ti" : RESULTADO_GRUPO[f.grupo],
+      f.grupo === "con_error"
+        ? f.errores.map((e) => e.mensaje).join("; ")
+        : f.grupo === "omitido"
+          ? (f.motivoOmision ?? "")
+          : f.cambios.map((c) => ETIQUETA_CAMPO_IMPORTACION[c.campo]).join(", "),
+      f.avisos.map((a) => a.mensaje).join("; "),
+    ]),
+  );
+  return new Response(cuerpo, {
+    status: 200,
+    headers: {
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": `attachment; filename="reporte-importacion-${hoyEnColombia()}.csv"`,
+      "cache-control": "no-store",
+    },
+  });
+}

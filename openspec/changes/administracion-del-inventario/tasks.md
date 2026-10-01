@@ -37,12 +37,12 @@
 
 ## 4. Sub-slice 4 — Confirmar, revertir y corregir (HU-141, HU-087, HU-142)
 
-- [ ] 4.1 Trabajo `aplicar_importacion` en el worker con el contrato I-2 (candado consultivo, `estado = 'calculado'`, versión revalidada, una subida de `inventario_version`, una toma de la cabeza de auditoría con `origen = importacion` y actor = quien confirmó, 1 intento, tope 5 min); endpoint 202 + consulta de estado; verificar V3-5 (sin 503 del panel, matar el worker → `abortado` sin filas, retoma sin reaplicar)
-- [ ] 4.2 Modos crear/actualizar/ambos, fusión ausente/vacío/`[vaciar]`, nuevos a borrador, rechazo por campo de consentimiento y `estado: publicado`; verificar los cuatro escenarios de HU-141 y el de importación de HU-128
-- [ ] 4.3 Trabajo `revertir_importacion`: solo el último lote, restaura `foto_previa`, archiva los creados, lista los perfiles con versión posterior y deja elegir, evento propio (`origen = reversion`); verificar los tres escenarios de HU-087 con diff = 0
-- [ ] 4.4 Descarga de solo las filas con error en su formato original con motivo, distinción archivo entero/filas, reimportación idempotente; verificar los tres escenarios de HU-142
-- [ ] 4.5 Fidelidad con captura MCP de `importar-perfiles--campos-rechazados`, `importar-perfiles--filas-con-error`, `importar-perfiles--revertir`, `importar-perfiles--revertir-no-ultima`
-- [ ] 4.6 Journey smoke: importar 60 filas con 3 erróneas → aplicar → descargar errores → corregir y reimportar → revertir la última; evidencia en `ss4/` (incluida la medición del límite de filas) y checkpoint
+- [x] 4.1 Trabajo `aplicar_importacion` en el worker con el contrato I-2 (candado consultivo, `estado = 'calculado'`, versión revalidada, una subida de `inventario_version`, una toma de la cabeza de auditoría con `origen = importacion` y actor = quien confirmó, 1 intento, tope 5 min); endpoint 202 + consulta de estado; verificar V3-5 (sin 503 del panel, matar el worker → `abortado` sin filas, retoma sin reaplicar)
+- [x] 4.2 Modos crear/actualizar/ambos, fusión ausente/vacío/`[vaciar]`, nuevos a borrador, rechazo por campo de consentimiento y `estado: publicado`; verificar los cuatro escenarios de HU-141 y el de importación de HU-128
+- [x] 4.3 Trabajo `revertir_importacion`: solo el último lote, restaura `foto_previa`, archiva los creados, lista los perfiles con versión posterior y deja elegir, evento propio (`origen = reversion`); verificar los tres escenarios de HU-087 con diff = 0
+- [x] 4.4 Descarga de solo las filas con error en su formato original con motivo, distinción archivo entero/filas, reimportación idempotente; verificar los tres escenarios de HU-142
+- [x] 4.5 Fidelidad con captura MCP de `importar-perfiles--campos-rechazados`, `importar-perfiles--filas-con-error`, `importar-perfiles--revertir`, `importar-perfiles--revertir-no-ultima`
+- [x] 4.6 Journey smoke: importar 60 filas con 3 erróneas → aplicar → descargar errores → corregir y reimportar → revertir la última; evidencia en `ss4/` (incluida la medición del límite de filas) y checkpoint
 
 ## 5. Sub-slice 5 — Bloqueo, vista previa y Nivel 0 (HU-128, HU-129, HU-130)
 

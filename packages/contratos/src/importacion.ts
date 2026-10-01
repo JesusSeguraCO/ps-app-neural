@@ -372,6 +372,26 @@ export function escribirJson(filas: readonly FilaFormato[]): string {
   return `${JSON.stringify(limpio, null, 2)}\n`;
 }
 
+// Una tabla cualquiera en CSV (con BOM: Excel abre los acentos bien), TSV o JSON (un objeto por fila
+// sin las celdas vacías).
+export function escribirTabla(
+  formato: Formato,
+  encabezados: readonly string[],
+  filas: ReadonlyArray<readonly string[]>,
+): string {
+  if (formato === "json")
+    return `${JSON.stringify(
+      filas.map((f) => Object.fromEntries(encabezados.flatMap((h, i) => (f[i] ? [[h, f[i]]] : [])))),
+      null,
+      2,
+    )}\n`;
+  const sep = formato === "tsv" ? "\t" : ",";
+  const celda = (c: string) =>
+    c.includes(sep) || /["\n\r]/.test(c) ? `"${c.replaceAll('"', '""')}"` : c;
+  const cuerpo = [encabezados, ...filas].map((cs) => cs.map(celda).join(sep));
+  return `${formato === "csv" ? "\uFEFF" : ""}${cuerpo.join("\r\n")}\r\n`;
+}
+
 // Filas con error (HU-142): en el formato en que llegaron, con las columnas que se importaron (sus
 // nombres originales) y el motivo al final, listas para corregir y volver a pegar. Las columnas que no
 // se importaron no viajan: nunca se guardaron (las internas B.4 no tienen dónde guardarse).
@@ -380,21 +400,11 @@ export function escribirErrores(
   encabezados: readonly string[],
   filas: ReadonlyArray<{ celdas: readonly string[]; motivo: string }>,
 ): string {
-  if (formato === "json")
-    return `${JSON.stringify(
-      filas.map((f) => ({
-        ...Object.fromEntries(encabezados.flatMap((h, i) => (f.celdas[i] ? [[h, f.celdas[i]]] : []))),
-        motivo: f.motivo,
-      })),
-      null,
-      2,
-    )}\n`;
-  const sep = formato === "tsv" ? "\t" : ",";
-  const celda = (c: string) =>
-    c.includes(sep) || /["\n\r]/.test(c) ? `"${c.replaceAll('"', '""')}"` : c;
-  const linea = (cs: readonly string[]) => cs.map(celda).join(sep);
-  const cuerpo = [linea([...encabezados, "Motivo"]), ...filas.map((f) => linea([...f.celdas, f.motivo]))];
-  return `${formato === "csv" ? "\uFEFF" : ""}${cuerpo.join("\r\n")}\r\n`;
+  return escribirTabla(
+    formato,
+    [...encabezados, formato === "json" ? "motivo" : "Motivo"],
+    filas.map((f) => [...f.celdas, f.motivo]),
+  );
 }
 
 // Plantilla de muestra con los tres casos (spec §6, paso 1): actualizar un campo de un perfil que

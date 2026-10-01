@@ -1,0 +1,15 @@
+[
+ {"item_id": "D23-editor-varios-sectores", "kind": "integration", "ref": "D23 · el editor elige varios sectores del catálogo y se conservan al guardar"},
+ {"item_id": "HU-141-ac1-codigo-manda", "kind": "hu_ac", "ref": "HU-141 · El código manda"},
+ {"item_id": "HU-141-ac2-consentimiento-publicar", "kind": "hu_ac", "ref": "HU-141 · El archivo intenta conceder consentimiento o publicar"},
+ {"item_id": "HU-141-ac3-ausente-vs-nulo", "kind": "hu_ac", "ref": "HU-141 · Campo ausente frente a nulo explícito"},
+ {"item_id": "HU-141-ac4-solo-actualizar-inexistente", "kind": "hu_ac", "ref": "HU-141 · Modo solo actualizar con un código inexistente"},
+ {"item_id": "HU-128-ac-importacion", "kind": "hu_ac", "ref": "HU-128 · Intento de saltarse el bloqueo por importación"},
+ {"item_id": "HU-087-ac1-revertir-ultima", "kind": "hu_ac", "ref": "HU-087 · Revertir la última importación"},
+ {"item_id": "HU-087-ac2-no-es-la-ultima", "kind": "hu_ac", "ref": "HU-087 · Intentar revertir una importación que ya no es la última"},
+ {"item_id": "HU-087-ac3-cambiado-a-mano", "kind": "hu_ac", "ref": "HU-087 · Un perfil cambiado a mano después de la importación"},
+ {"item_id": "HU-142-ac1-solo-lo-que-fallo", "kind": "hu_ac", "ref": "HU-142 · Descargar solo lo que falló"},
+ {"item_id": "HU-142-ac2-archivo-entero", "kind": "hu_ac", "ref": "HU-142 · El archivo completo falló"},
+ {"item_id": "HU-142-ac3-reimportar", "kind": "hu_ac", "ref": "HU-142 · Reimportar las corregidas"},
+ {"item_id": "I2-panel-cola-worker", "kind": "integration", "ref": "Panel confirma (202) → cola aplicar/revertir_importacion → worker (I-2: candado, una vez, retoma) → panel sigue la fase"}
+]

@@ -3,7 +3,8 @@
 // exportar o descargar la plantilla (con respaldo para copiar si la descarga no arranca), pegar o
 // cargar la hoja, emparejar columnas (o aplicar un emparejamiento guardado y guardarlo), elegir el
 // modo. Paso 2: la vista previa por grupos, con tarjetas que se desmarcan; el servidor recalcula.
-// Nada de aquí escribe en el banco: confirmar es del sub-slice 4 (HU-141).
+// Confirmar (HU-141) encola la aplicación en el worker y lleva al resultado (paso 3, Resultado.tsx):
+// el panel nunca escribe en `perfiles`.
 import { useEffect, useRef, useState } from "react";
 import { ETIQUETA_CAMPO_IMPORTACION, type ClaveCampo } from "@ps/dominio/importacion/campos";
 import type { ColumnaEmparejada, ColumnaPlantilla } from "@ps/dominio/importacion/emparejar";
@@ -669,6 +670,18 @@ function ValorConNuevos(p: { valor: Valor; nuevos: Plan["valoresNuevos"] }) {
   );
 }
 
+// Columnas rechazadas (consentimiento, validación) y el estado «publicado»: el plan las deja como
+// avisos; la tarjeta las muestra como campos rechazados (prototipo importar-perfiles--campos-rechazados).
+const esRechazo = (m: string) => /^Columna «.+» rechazada|^Estado «publicado» rechazado/.test(m);
+function rechazosDe(f: FilaPlan): Array<{ campo: string; valor: string | null }> {
+  return f.avisos.flatMap((a): Array<{ campo: string; valor: string | null }> => {
+    const columna = /^Columna «(.+)» rechazada/.exec(a.mensaje)?.[1];
+    if (columna) return [{ campo: columna, valor: null }];
+    if (/^Estado «publicado» rechazado/.test(a.mensaje)) return [{ campo: "Estado", valor: "publicado" }];
+    return [];
+  });
+}
+
 function Tarjeta(p: {
   f: FilaPlan;
   nuevos: Plan["valoresNuevos"];
@@ -679,6 +692,8 @@ function Tarjeta(p: {
   const { f } = p;
   const titulo = f.persona.nombre ?? "Sin nombre";
   const valorNuevo = f.avisos.some((a) => a.mensaje.includes("valor nuevo"));
+  const rechazos = rechazosDe(f);
+  const avisos = f.avisos.filter((a) => !esRechazo(a.mensaje));
   const cambios =
     f.grupo === "nuevo" && f.ficha
       ? (Object.entries(f.ficha) as Array<[ClaveCampo, Valor]>)
@@ -690,6 +705,10 @@ function Tarjeta(p: {
       : f.cambios;
   const conCuerpo =
     cambios.length > 0 || f.errores.length > 0 || f.avisos.length > 0 || f.motivoOmision;
+  const nCambian =
+    f.grupo === "actualizado"
+      ? `${f.cambios.length} ${f.cambios.length === 1 ? "campo cambia" : "campos cambian"}`
+      : null;
   const repetido = f.grupo === "con_error" && f.errores[0]?.mensaje.includes("repetido");
   const marcable = f.grupo !== "con_error";
   return (
@@ -714,7 +733,8 @@ function Tarjeta(p: {
         open={
           f.incluida &&
           (f.grupo === "con_error" ||
-            ((f.grupo === "actualizado" || f.grupo === "nuevo") && (p.primera || valorNuevo)))
+            ((f.grupo === "actualizado" || f.grupo === "nuevo") &&
+              (p.primera || valorNuevo || rechazos.length > 0)))
             ? true
             : undefined
         }
@@ -734,15 +754,19 @@ function Tarjeta(p: {
             )}
             {!f.incluida
               ? "Excluida por ti"
-              : f.grupo === "actualizado"
-                ? `${f.cambios.length} ${f.cambios.length === 1 ? "campo" : "campos"}`
-                : null}
+              : rechazos.length
+                ? [nCambian, `${rechazos.length} ${rechazos.length === 1 ? "rechazado" : "rechazados"}`]
+                    .filter(Boolean)
+                    .join(" · ")
+                : f.grupo === "actualizado"
+                  ? `${f.cambios.length} ${f.cambios.length === 1 ? "campo" : "campos"}`
+                  : null}
             <span>{`fila ${f.numero}`}</span>
           </span>
         </summary>
         {conCuerpo && (
           <div className="ip-fila__cuerpo">
-            {cambios.length > 0 && (
+            {(cambios.length > 0 || rechazos.length > 0) && (
               <dl className="ip-cambios">
                 {cambios.map((c) => (
                   <div key={c.campo} className="ip-cambio">
@@ -775,7 +799,23 @@ function Tarjeta(p: {
                     </dd>
                   </div>
                 ))}
+                {rechazos.map((r) => (
+                  <div key={r.campo} className="ip-cambio">
+                    <dt>{r.campo}</dt>
+                    <dd>
+                      {r.valor && <span>{r.valor}</span>}
+                      <span className="pp-estado pp-estado--danger">rechazado</span>
+                    </dd>
+                  </div>
+                ))}
               </dl>
+            )}
+            {rechazos.length > 0 && (
+              <p className="ip-nota">
+                {f.grupo === "nuevo"
+                  ? "Nace en borrador y sin consentimiento: se publica desde su ficha."
+                  : "El perfil no cambia de publicación por esta importación: el consentimiento se registra y se publica desde su ficha."}
+              </p>
             )}
             {f.errores.map((e, i) => (
               <p key={i} className="ip-motivo">
@@ -784,7 +824,7 @@ function Tarjeta(p: {
               </p>
             ))}
             {f.motivoOmision && <p className="ip-motivo">{f.motivoOmision}</p>}
-            {f.avisos.map((a, i) => {
+            {avisos.map((a, i) => {
               const valor = /^«(.+)» es un valor nuevo/.exec(a.mensaje)?.[1];
               const sugerencia =
                 valor &&
@@ -797,7 +837,7 @@ function Tarjeta(p: {
                 </p>
               );
             })}
-            {f.grupo === "nuevo" && (
+            {f.grupo === "nuevo" && rechazos.length === 0 && (
               <p className="ip-nota">Sin consentimiento registrado: se publica desde su ficha.</p>
             )}
             {f.grupo === "actualizado" && (
@@ -861,6 +901,7 @@ function PasoVistaPrevia(p: {
   archivo: string | null;
   alVolver: () => void;
   alRecalcular: (excluidas: number[]) => void;
+  alConfirmar: () => void;
   ocupado: boolean;
   error: string | null;
 }) {
@@ -876,6 +917,10 @@ function PasoVistaPrevia(p: {
     porCodigo.set(f.codigo!, [...(porCodigo.get(f.codigo!) ?? []), f.numero]);
   const modo = MODOS.find((m) => m.clave === p.vista.modo)!.titulo;
   const r = plan.resumen;
+  const aplicar = r.crear + r.actualizar + r.archivar;
+  const conRechazos = plan.filas.filter(
+    (f) => f.incluida && f.grupo !== "con_error" && rechazosDe(f).length > 0,
+  ).length;
   return (
     <>
       <div className="pp-encabezado">
@@ -911,6 +956,22 @@ function PasoVistaPrevia(p: {
           </button>
         </div>
       ))}
+      {conRechazos > 0 && (
+        <div className="pp-aviso pp-aviso--warn ip-bloque" role="status">
+          <span className="pp-aviso__icono" aria-hidden="true">
+            !
+          </span>
+          <p>
+            <span className="pp-aviso__titulo">
+              {conRechazos === 1
+                ? "1 fila intenta conceder consentimiento o publicar."
+                : `${conRechazos} filas intentan conceder consentimiento o publicar.`}
+            </span>{" "}
+            Rechazamos esos campos; el resto de cada fila se importa. Ningún perfil queda publicado por
+            esta importación.
+          </p>
+        </div>
+      )}
       <div className="ip-bloque">
         <ul className="ip-resumen" aria-label="Filas por grupo">
           {GRUPOS.map((g) => {
@@ -987,7 +1048,8 @@ function PasoVistaPrevia(p: {
                   , <span className="ip-cifra">{r.omitir}</span> omitidos por el modo
                 </>
               ) : null}{" "}
-              y <span className="ip-cifra">{r.excluidas}</span> que desmarcaste.
+              y <span className="ip-cifra">{r.excluidas}</span> que desmarcaste.{" "}
+              <span className="ip-cifra">0</span> perfiles quedan publicados por esta importación.
             </p>
           )}
           {p.error && (
@@ -1000,6 +1062,14 @@ function PasoVistaPrevia(p: {
         <div className="ip-pie__acciones">
           <button type="button" className="pp-btn pp-btn--fantasma" onClick={p.alVolver}>
             Volver a pegar
+          </button>
+          <button
+            type="button"
+            className="pp-btn pp-btn--primario"
+            disabled={plan.bloqueado || aplicar === 0 || p.ocupado}
+            onClick={p.alConfirmar}
+          >
+            {aplicar === 1 ? "Importar 1 perfil" : `Importar ${aplicar} perfiles`}
           </button>
         </div>
       </div>
@@ -1080,6 +1150,7 @@ export function Asistente(p: {
       formato: s.emparejado.formato,
       modo: s.modo,
       columnas,
+      ...(s.archivo ? { archivo: s.archivo } : {}),
     }).catch(() => null);
     setEnviando(false);
     if (r?.status !== 201)
@@ -1101,6 +1172,29 @@ export function Asistente(p: {
     if (r?.status !== 200)
       return setError("No pudimos actualizar la vista previa. Inténtalo de nuevo.");
     setVista((await r.json()) as VistaPrevia);
+  }
+
+  // Confirmar (HU-141): el worker aplica; el resultado se sigue en el paso 3.
+  async function confirmar() {
+    if (!vista) return;
+    setEnviando(true);
+    setError(null);
+    const r = await enviarJson(`/api/v1/importacion/lotes/${vista.loteId}/aplicar`, {}).catch(
+      () => null,
+    );
+    if (r?.status === 202) {
+      window.location.assign(`/importar?lote=${vista.loteId}`);
+      return;
+    }
+    setEnviando(false);
+    const d = await r?.json().catch(() => ({}));
+    setError(
+      d?.motivo === "codigo_repetido"
+        ? "Desmarca o corrige las filas con el mismo código para continuar."
+        : d?.motivo === "nada_que_aplicar"
+          ? "No hay nada que aplicar: todas las filas están sin cambios, omitidas, con error o desmarcadas."
+          : "No pudimos confirmar la importación. Inténtalo de nuevo.",
+    );
   }
 
   return (
@@ -1149,6 +1243,7 @@ export function Asistente(p: {
           archivo={s.archivo}
           alVolver={() => setVista(null)}
           alRecalcular={recalcular}
+          alConfirmar={confirmar}
           ocupado={enviando}
           error={error}
         />

@@ -1,6 +1,6 @@
 // EP-006 · sub-slice 4 (HU-141, HU-087, HU-142; diseño §3; ADR-0003 I-2): lo que el worker necesita
 // para aplicar y revertir un lote.
-//  - `lotes_importacion`: quién confirmó y cuándo (el actor de cada cambio auditado), el trabajo que lo
+//  - `lotes_importacion`: el nombre del archivo cargado, quién confirmó y cuándo (el actor de cada cambio auditado), el trabajo que lo
 //    aplica, cuándo quedó aplicado y, para revertir, quién, cuándo y con qué trabajo.
 //  - `lote_filas`: el perfil tocado, si la importación lo creó, su `estado_previo` (solo los campos que
 //    la importación puede cambiar, nunca B.4 ni el consentimiento: lo fija `solo_claves_de_estado_previo`) y la
@@ -51,6 +51,8 @@ LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $f$
 $f$;
 
 ALTER TABLE inventario.lotes_importacion
+  -- Nombre del archivo cargado (sin ruta), para reconocer la importación en el historial; null si se pegó.
+  ADD COLUMN archivo_nombre      text CHECK (archivo_nombre IS NULL OR length(archivo_nombre) BETWEEN 1 AND 200),
   ADD COLUMN confirmado_por      uuid REFERENCES identidad_panel.usuarios_panel(id),
   ADD COLUMN confirmado_en       timestamptz,
   ADD COLUMN trabajo_id          bigint,
@@ -103,7 +105,8 @@ ALTER TABLE inventario.lotes_importacion
   DROP COLUMN IF EXISTS aplicado_en,
   DROP COLUMN IF EXISTS trabajo_id,
   DROP COLUMN IF EXISTS confirmado_en,
-  DROP COLUMN IF EXISTS confirmado_por;
+  DROP COLUMN IF EXISTS confirmado_por,
+  DROP COLUMN IF EXISTS archivo_nombre;
 DROP FUNCTION IF EXISTS inventario.solo_claves_de_estado_previo(jsonb);
 RESET ROLE;
 `,

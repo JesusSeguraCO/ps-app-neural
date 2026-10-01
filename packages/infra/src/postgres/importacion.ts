@@ -134,6 +134,7 @@ export async function catalogosImportacion(bd: Consultor): Promise<Catalogos> {
 
 export interface NuevoLote {
   archivoHash: string;
+  archivoNombre?: string | null;
   formato: "csv" | "tsv" | "json";
   modo: Modo;
   emparejamiento: ColumnaPlantilla[];
@@ -150,8 +151,8 @@ export async function registrarLote(bd: pg.Pool, autor: Autor, l: NuevoLote): Pr
     const id = (
       await tx.query(
         `INSERT INTO inventario.lotes_importacion
-           (modo, formato, archivo_hash, total_filas, conteos, emparejamiento, bloqueado, creado_por)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+           (modo, formato, archivo_hash, total_filas, conteos, emparejamiento, bloqueado, creado_por, archivo_nombre)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
         [
           l.modo,
           l.formato,
@@ -161,6 +162,7 @@ export async function registrarLote(bd: pg.Pool, autor: Autor, l: NuevoLote): Pr
           JSON.stringify(l.emparejamiento),
           l.plan.bloqueado,
           autor.usuarioId,
+          l.archivoNombre?.trim() || null,
         ],
       )
     ).rows[0].id as string;
@@ -199,6 +201,7 @@ export type FaseLote = "calculado" | "aplicando" | "aplicado" | "abortado" | "re
 
 export interface LoteLeido {
   id: string;
+  archivo: string | null;
   estado: string;
   fase: FaseLote;
   confirmadoPor: string | null;
@@ -224,13 +227,15 @@ export interface LoteLeido {
     errores: Problema[];
     avisos: Problema[];
     motivoOmision: string | null;
+    // Para reconocer la fila: del perfil si existe, si no de lo que trae la fila.
+    persona: { nombre: string | null; rol: string | null };
   }>;
 }
 
 export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | null> {
   const l = (
     await bd.query(
-      `SELECT l.id, l.estado, l.modo, l.formato, l.bloqueado, l.conteos, l.creado_en, l.confirmado_en,
+      `SELECT l.id, l.archivo_nombre, l.estado, l.modo, l.formato, l.bloqueado, l.conteos, l.creado_en, l.confirmado_en,
               l.aplicado_en, l.motivo_aborto, l.revertido_en, l.trabajo_reversion_id, l.motivo_reversion,
               u.correo AS confirmado_por
          FROM inventario.lotes_importacion l
@@ -241,12 +246,18 @@ export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | n
   ).rows[0];
   if (!l) return null;
   const filas = await bd.query(
-    `SELECT numero, codigo, grupo, incluida, datos, cambios, errores, avisos, motivo_omision
-       FROM inventario.lote_filas WHERE lote_id = $1 ORDER BY numero`,
+    `SELECT f.numero, f.codigo, f.grupo, f.incluida, f.datos, f.cambios, f.errores, f.avisos, f.motivo_omision,
+            NULLIF(concat_ws(' ', p.nombre, p.primer_apellido), '') AS nombre,
+            (SELECT v.nombre FROM inventario.perfil_roles h JOIN inventario.catalogo_roles v ON v.id = h.valor_id
+              WHERE h.perfil_id = p.id ORDER BY h.orden LIMIT 1) AS rol
+       FROM inventario.lote_filas f
+       LEFT JOIN inventario.perfiles p ON p.codigo = f.codigo
+      WHERE f.lote_id = $1 ORDER BY f.numero`,
     [id],
   );
   return {
     id: l.id,
+    archivo: l.archivo_nombre ?? null,
     estado: l.estado,
     fase: l.estado === "calculado" && l.confirmado_en ? "aplicando" : l.estado,
     confirmadoPor: l.confirmado_por ?? null,
@@ -271,6 +282,12 @@ export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | n
       errores: f.errores,
       avisos: f.avisos,
       motivoOmision: f.motivo_omision,
+      persona: {
+        nombre:
+          f.nombre ??
+          ([f.datos.nombre, f.datos.primerApellido].filter(Boolean).join(" ") || null),
+        rol: f.rol ?? f.datos.rol ?? null,
+      },
     })),
   };
 }
@@ -471,6 +488,7 @@ export async function confirmarLote(
 
 export interface LoteHistorial {
   id: string;
+  archivo: string | null;
   fase: FaseLote;
   modo: Modo;
   formato: string;
@@ -484,7 +502,7 @@ export interface LoteHistorial {
 
 export async function listarLotes(bd: Consultor, limite = 50): Promise<LoteHistorial[]> {
   const r = await bd.query(
-    `SELECT l.id, l.estado, l.modo, l.formato, l.conteos, l.confirmado_en, l.aplicado_en, l.revertido_en,
+    `SELECT l.id, l.archivo_nombre, l.estado, l.modo, l.formato, l.conteos, l.confirmado_en, l.aplicado_en, l.revertido_en,
             l.motivo_aborto, u.correo
        FROM inventario.lotes_importacion l
        LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por
@@ -494,6 +512,7 @@ export async function listarLotes(bd: Consultor, limite = 50): Promise<LoteHisto
   );
   return r.rows.map((l) => ({
     id: l.id,
+    archivo: l.archivo_nombre ?? null,
     fase: l.estado === "calculado" ? "aplicando" : l.estado,
     modo: l.modo,
     formato: l.formato,

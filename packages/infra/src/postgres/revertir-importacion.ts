@@ -11,7 +11,9 @@ import "server-only";
 import type pg from "pg";
 import { registrarAuditoria, type CambioAuditado, type ClavesAuditoria } from "./auditoria";
 import { CANDADO_IMPORTACION } from "./aplicar-importacion";
-import { diferencias, leerPerfil } from "./perfiles-panel";
+import { ETIQUETA_ESTADO } from "@ps/dominio/inventario/estados";
+import { fechaCivil } from "@ps/dominio/fecha/colombia";
+import { diferencias, leerPerfil, type PerfilEditor } from "./perfiles-panel";
 import { RechazoInventario } from "./unidad-inventario";
 
 type Consultor = Pick<pg.PoolClient, "query">;
@@ -116,6 +118,128 @@ export async function antesDeRevertir(
       })),
     perfiles: tocados.rowCount ?? 0,
   };
+}
+
+// ─── qué va a pasar, con detalle (pantalla «Deshacer la última importación») ───────────────
+
+export interface CambiadoConDetalle extends PerfilCambiadoDespues {
+  // Última edición posterior a la importación: quién, cuándo y qué campos.
+  autor: string | null;
+  cuando: string | null;
+  campos: string[];
+  // Cómo queda el perfil hoy y cómo quedaría si se incluye, solo en lo que difiere.
+  hoy: string[];
+  siIncluyes: string[];
+}
+
+export interface DetalleReversion extends Omit<AntesDeRevertir, "cambiadosDespues"> {
+  archivo: string | null;
+  aplicadoEn: string | null;
+  confirmadoPor: string | null;
+  // Lo que les pasa a los no cambiados después.
+  vuelven: { actualizados: number; creados: number; archivados: number };
+  cambiadosDespues: CambiadoConDetalle[];
+}
+
+const CAMPOS_VISTOS: Array<[string, (p: PerfilEditor) => string | null]> = [
+  ["estado", (p) => ETIQUETA_ESTADO[p.estado]],
+  ["nombre", (p) => [p.nombre, p.primerApellido].filter(Boolean).join(" ") || null],
+  ["rol", (p) => p.rol?.nombre ?? null],
+  ["seniority", (p) => p.seniority?.nombre ?? null],
+  ["años", (p) => (p.aniosExperiencia === null ? null : `${p.aniosExperiencia} años`)],
+  ["tecnologías", (p) => p.tecnologias.map((t) => t.nombre).join(", ") || null],
+  ["sectores", (p) => p.sectores.map((t) => t.nombre).join(", ") || null],
+  ["ciudad", (p) => p.ciudad?.nombre ?? null],
+  ["modalidad", (p) => p.modalidadTrabajo?.nombre ?? null],
+  ["disponibilidad", (p) => (p.disponibilidadFecha ? `Disponible el ${fechaCivil(p.disponibilidadFecha)}` : null)],
+  ["prueba", (p) => p.modalidadPrueba?.nombre ?? null],
+  ["capacidad", (p) => p.capacidad],
+  ["anclaje", (p) => p.anclaje],
+  ["resumen", (p) => p.resumen],
+  ["formación", (p) => p.formacion],
+  ["idiomas", (p) => p.idiomas.join(", ") || null],
+  ["sello", (p) => p.selloPersonal.join(", ") || null],
+  ["trayectoria", (p) => `${p.experiencias.length} ${p.experiencias.length === 1 ? "experiencia" : "experiencias"}`],
+];
+const corto = (t: string) => (t.length > 48 ? `${t.slice(0, 47)}…` : t);
+
+function contraste(hoy: PerfilEditor, luego: PerfilEditor): { hoy: string[]; siIncluyes: string[] } {
+  const a: string[] = [];
+  const b: string[] = [];
+  for (const [campo, valor] of CAMPOS_VISTOS) {
+    const x = valor(hoy);
+    const y = valor(luego);
+    if (x === y) continue;
+    a.push(x === null ? `sin ${campo}` : corto(x));
+    b.push(y === null ? `sin ${campo}` : corto(y));
+  }
+  return { hoy: a, siIncluyes: b };
+}
+
+// Proyecta la reversión de cada perfil cambiado después dentro de una transacción que se deshace:
+// lo que se muestra es exactamente lo que haría revertirlo.
+export async function detalleReversion(bd: pg.Pool, loteId: string): Promise<DetalleReversion | null> {
+  const tx = await bd.connect();
+  try {
+    await tx.query("BEGIN");
+    const base = await antesDeRevertir(tx, loteId);
+    if (!base) return null;
+    const l = (
+      await tx.query(
+        `SELECT l.archivo_nombre, l.aplicado_en, u.correo FROM inventario.lotes_importacion l
+           LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por WHERE l.id = $1`,
+        [loteId],
+      )
+    ).rows[0];
+    const filas = (
+      await tx.query(
+        `SELECT f.perfil_id, f.creado, f.grupo, f.estado_previo, p.codigo, p.version <> f.version_aplicada AS cambiado
+           FROM inventario.lote_filas f JOIN inventario.perfiles p ON p.id = f.perfil_id
+          WHERE f.lote_id = $1 ORDER BY f.numero`,
+        [loteId],
+      )
+    ).rows;
+    const vuelven = { actualizados: 0, creados: 0, archivados: 0 };
+    for (const f of filas.filter((x) => !x.cambiado))
+      if (f.creado) vuelven.creados++;
+      else if (f.grupo === "archivado") vuelven.archivados++;
+      else vuelven.actualizados++;
+    const cambiados: CambiadoConDetalle[] = [];
+    for (const c of base.cambiadosDespues) {
+      const f = filas.find((x) => x.codigo === c.codigo)!;
+      const ultima = await tx.query(
+        `SELECT actor, max(cuando) AS cuando, array_agg(DISTINCT campo) AS campos
+           FROM auditoria.auditoria
+          WHERE titular = $1 AND cuando > $2 AND origen NOT IN ('importacion', 'reversion')
+          GROUP BY actor ORDER BY max(cuando) DESC LIMIT 1`,
+        [c.codigo, l.aplicado_en],
+      );
+      const hoy = (await leerPerfil(tx, c.codigo))!;
+      if (f.creado)
+        await tx.query(`UPDATE inventario.perfiles SET estado = 'archivado' WHERE id = $1`, [f.perfil_id]);
+      else await restaurar(tx, f.perfil_id, f.estado_previo);
+      const luego = (await leerPerfil(tx, c.codigo))!;
+      const u = ultima.rows[0];
+      cambiados.push({
+        ...c,
+        autor: u?.actor ?? null,
+        cuando: u?.cuando?.toISOString() ?? null,
+        campos: (u?.campos as string[] | undefined) ?? [],
+        ...contraste(hoy, luego),
+      });
+    }
+    return {
+      ...base,
+      archivo: l.archivo_nombre ?? null,
+      aplicadoEn: l.aplicado_en?.toISOString() ?? null,
+      confirmadoPor: l.correo ?? null,
+      vuelven,
+      cambiadosDespues: cambiados,
+    };
+  } finally {
+    await tx.query("ROLLBACK").catch(() => {});
+    tx.release();
+  }
 }
 
 // ─── confirmar la reversión (panel) ─────────────────────────────────────────────────────────

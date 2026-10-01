@@ -13,7 +13,12 @@ import { verificarCadena, type ClavesAuditoria } from "./auditoria";
 import { aplicarLote } from "./aplicar-importacion";
 import { bancoEnFormato, catalogosImportacion, confirmarLote, registrarLote } from "./importacion";
 import { guardarPerfil, leerPerfil, type PerfilEditor } from "./perfiles-panel";
-import { antesDeRevertir, confirmarReversion, revertirLote } from "./revertir-importacion";
+import {
+  antesDeRevertir,
+  confirmarReversion,
+  detalleReversion,
+  revertirLote,
+} from "./revertir-importacion";
 import { sembrarFicticios } from "../../../../apps/worker/src/sembrar-ficticios";
 
 const claves: ClavesAuditoria = {
@@ -178,6 +183,20 @@ describe.skipIf(!HAY_BD)("revertir la última importación (HU-087)", () => {
     expect(previo.cambiadosDespues).toEqual([
       { codigo: "PS-0160", nombre: "Tomás Rincón", creado: false },
     ]);
+    // El detalle dice quién lo cambió, qué, y cómo queda hoy frente a si se incluye; proyectarlo no
+    // escribe nada.
+    const editado = (await leerPerfil(panel, "PS-0160"))!;
+    const d = (await detalleReversion(panel, id))!;
+    expect(d.vuelven).toEqual({ actualizados: 1, creados: 0, archivados: 0 });
+    expect(d.cambiadosDespues[0]).toMatchObject({
+      codigo: "PS-0160",
+      autor: "karen@trycore.com",
+      campos: ["anclaje"],
+      hoy: ["Editado a mano después"],
+    });
+    expect(d.cambiadosDespues[0]!.siIncluyes).toHaveLength(1);
+    expect(d.cambiadosDespues[0]!.siIncluyes[0]).not.toBe("Editado a mano después");
+    expect(await leerPerfil(panel, "PS-0160")).toEqual(editado);
     // Un código que no está entre los cambiados no se puede «incluir».
     await expect(confirmarReversion(panel, autor, id, ["PS-0223"])).rejects.toMatchObject({
       motivo: "incluir_invalido",

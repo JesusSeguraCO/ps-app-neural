@@ -1,5 +1,6 @@
 /* Estilos propios de esta pantalla (prefijo ip-): SOLO composición. */
-.ip-ancho { max-width: 1040px; }
+.ip-ancho { max-width: 1040px; min-width: 0; }
+.ip-ancho > .pp-tabla-marco { max-width: 100%; }
 .ip-cifra { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
 .ip-codigo { padding: 0 var(--tc-sp-1); border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-h); }
 
@@ -112,6 +113,8 @@
 .ip-grupo-vacio { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
 
 /* Resultado y reversión */
+.ip-tarjeta-lista { padding: 0; }
+.ip-aviso-cuerpo { flex: 1; min-width: 0; }
 .ip-sig { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); }
 .ip-sig + .ip-sig { border-top: 1px solid var(--tc-border); }
 .ip-sig__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
@@ -128,6 +131,7 @@
 .ip-eleccion { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-6); margin: var(--tc-sp-2) 0 0; padding: 0; border: 0; }
 .ip-eleccion .pp-check { min-height: 44px; align-items: center; }
 .ip-eleccion .pp-check input { margin: 0; }
+.ip-tabla-hist { position: relative; }
 .ip-tabla-hist .pp-tabla { min-width: 880px; }
 .ip-tabla-hist .pp-tabla th, .ip-tabla-hist .pp-tabla td { white-space: nowrap; }
 .ip-aviso-sep { margin-bottom: var(--tc-sp-6); }
