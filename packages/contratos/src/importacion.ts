@@ -10,8 +10,6 @@
 // Puro: lo usan el panel (servidor y navegador) y el worker.
 import type { ClaveCampo } from "@ps/dominio/importacion/campos";
 
-export const VACIAR = "[vaciar]";
-export const SEPARADOR_LISTA = ";";
 export const LIMITE_FILAS = 200;
 
 export type TipoCampo = "texto" | "lista" | "numero" | "fecha_o_banda" | "enum";
@@ -27,6 +25,16 @@ export interface CampoImportacion {
 }
 
 export { CLAVES_CAMPO, type ClaveCampo } from "@ps/dominio/importacion/campos";
+export {
+  VACIAR,
+  SEPARADOR_LISTA,
+  partirLista,
+  unirLista,
+  formatearExperiencia,
+  leerExperiencia,
+  type ExperienciaTexto,
+} from "@ps/dominio/importacion/celdas";
+import { SEPARADOR_LISTA, VACIAR, unirLista } from "@ps/dominio/importacion/celdas";
 
 export const CAMPOS_IMPORTACION: readonly CampoImportacion[] = [
   {
@@ -324,54 +332,6 @@ export function leer(texto: string, formatoElegido?: Formato): ResultadoLectura 
   if (r.tabla.filas.length > LIMITE_FILAS)
     return { ok: false, motivo: "demasiadas_filas", detalle: String(r.tabla.filas.length) };
   return r;
-}
-
-// Lista de una celda: separada por «;» (un «;» escrito como «\;» no separa).
-export function partirLista(celda: string): string[] {
-  return celda
-    .split(/(?<!\\);/)
-    .map((x) => x.replaceAll("\\;", ";").trim())
-    .filter(Boolean);
-}
-
-export function unirLista(valores: readonly string[]): string {
-  return valores.map((x) => x.replaceAll(SEPARADOR_LISTA, "\\;")).join(`${SEPARADOR_LISTA} `);
-}
-
-// ─── experiencias en una celda: «Cargo · Cliente · 2021-2026: qué hizo» ─────────────────────
-
-export interface ExperienciaTexto {
-  cargo: string;
-  cliente: string | null;
-  desde: number | null;
-  hasta: number | null;
-  descripcion: string;
-}
-
-export function formatearExperiencia(e: ExperienciaTexto): string {
-  const periodo = e.desde || e.hasta ? `${e.desde ?? ""}-${e.hasta ?? ""}` : "";
-  const cabeza = [e.cargo, e.cliente ?? "", periodo].join(" · ");
-  return `${cabeza}: ${e.descripcion}`;
-}
-
-export function leerExperiencia(t: string): ExperienciaTexto | null {
-  const i = t.indexOf(":");
-  if (i < 0) return null;
-  const [cargo = "", cliente = "", periodo = ""] = t
-    .slice(0, i)
-    .split("·")
-    .map((x) => x.trim());
-  const descripcion = t.slice(i + 1).trim();
-  if (!cargo || !descripcion) return null;
-  const m = periodo.match(/^(\d{4})?\s*-\s*(\d{4})?$/);
-  if (periodo && !m) return null;
-  return {
-    cargo,
-    cliente: cliente || null,
-    desde: m?.[1] ? Number(m[1]) : null,
-    hasta: m?.[2] ? Number(m[2]) : null,
-    descripcion,
-  };
 }
 
 // ─── escritura (exportación y plantilla) ────────────────────────────────────────────────────
