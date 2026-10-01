@@ -23,6 +23,7 @@ import type {
   OpcionesEditor,
   PerfilEditor,
 } from "@ps/infra/postgres/perfiles-panel";
+import type { CambioDeCaraAlCliente } from "@ps/contratos/ficha";
 import { enviarJson } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
 import { BuscadorCatalogo, type ValorElegible } from "./BuscadorCatalogo";
@@ -68,6 +69,7 @@ const MOTIVO: Record<string, string> = {
     "Alguien guardó este perfil después de que lo abriste. Recarga para ver su versión antes de guardar.",
   editar_publicado:
     "Los cambios de un perfil publicado se aplican mostrando antes qué verá el cliente.",
+  no_es_publicado: "Este perfil ya no está publicado. Recarga para ver su estado.",
   no_existe: "El perfil ya no existe.",
   transicion_invalida: "Este perfil ya no está en borrador. Recarga para ver su estado.",
 };
@@ -103,6 +105,8 @@ export function EditorPerfil(p: {
   escribe: boolean;
   registraConsentimiento: boolean;
   hoy: string;
+  // Correo de quien edita: la hoja de impacto dice con qué autor queda la auditoría (D25).
+  autor?: string;
 }) {
   const inicial = p.perfil;
   const [perfil, setPerfil] = useState(inicial);
@@ -161,7 +165,10 @@ export function EditorPerfil(p: {
   const [bloqueoServidor, setBloqueoServidor] = useState<EvaluacionPublicacion | null>(null);
   const [base, setBase] = useState<string | null>(null);
 
-  const editable = p.escribe && (!perfil || perfil.estado === "borrador");
+  // Un publicado también se edita, en dos pasos y con su impacto a la vista (HU-126).
+  const enPortal = perfil?.estado === "publicado" || perfil?.estado === "colocado";
+  const editable = p.escribe && (!perfil || perfil.estado === "borrador" || enPortal);
+  const [impacto, setImpacto] = useState<Impacto | null>(null);
   const prueba = p.opciones.modalidadesPrueba.find((m) => m.id === pruebaId) ?? null;
   const pruebasFamilia = rol
     ? p.opciones.modalidadesPrueba.filter((m) => m.familiaId === rol.familiaId)
@@ -267,6 +274,12 @@ export function EditorPerfil(p: {
     setBase(JSON.stringify(cuerpo()));
   }, [perfil]);
   const sinGuardar = Boolean(perfil) && base !== null && actual !== base;
+  const cambiosSinGuardar = (() => {
+    if (!sinGuardar || base === null) return 0;
+    const a = JSON.parse(base) as Record<string, unknown>;
+    const d = JSON.parse(actual) as Record<string, unknown>;
+    return Object.keys(d).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(d[k])).length;
+  })();
 
   // El perfil tal como está en el editor, con la forma de la ficha (HU-129).
   const enEdicion = (): PerfilParaFicha | null => {
@@ -324,7 +337,31 @@ export function EditorPerfil(p: {
     setExperiencias(nuevo.experiencias.map((e) => ({ ...e, clave: e.id })));
   };
 
+  // Guardar un publicado (HU-126): primero se pide el impacto sin escribir nada; la hoja lo muestra
+  // y la persona confirma o, si el cambio lo deja incompleto, elige descartar o pasar a borrador.
+  async function previsualizarCambios() {
+    if (!perfil) return;
+    setGuardando(true);
+    setError(null);
+    setIntento(true);
+    try {
+      const r = await enviarJson(
+        `/api/v1/perfiles/${perfil.codigo}?previsualizar`,
+        cuerpo(),
+        "PATCH",
+        { "if-match": `"${perfil.version}"` },
+      );
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) setImpacto({ incompleto: false, ...d.impacto });
+      else if (d.motivo === "deja_incompleto") setImpacto({ incompleto: true, ...d.impacto });
+      else setError(MOTIVO[d.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
+    } finally {
+      setGuardando(false);
+    }
+  }
+
   async function guardar() {
+    if (enPortal) return previsualizarCambios();
     setGuardando(true);
     setError(null);
     setIntento(true);
@@ -419,7 +456,7 @@ export function EditorPerfil(p: {
           estado={perfil.estado}
           publicado={perfil.estado === "publicado" || perfil.estado === "colocado"}
           sinGuardar={sinGuardar}
-          puedePublicar={editable}
+          puedePublicar={editable && !enPortal}
           publicando={publicando}
           alVolver={(campo) => {
             setModo("editar");
@@ -458,7 +495,7 @@ export function EditorPerfil(p: {
           <h1 className="pp-encabezado__titulo">{titulo}</h1>
           <p className="pp-encabezado__meta pe-meta">
             <span
-              className={`pp-estado ${perfil?.estado === "publicado" ? "pp-estado--ok" : "pp-estado--borrador"}`}
+              className={`pp-estado ${enPortal ? "pp-estado--ok" : "pp-estado--borrador"}`}
             >
               {perfil ? ETIQUETA_ESTADO[perfil.estado] : "Borrador"}
             </span>
@@ -468,6 +505,12 @@ export function EditorPerfil(p: {
                 <span className="pp-mono">{perfil.codigo}</span>
                 <span className="pe-sep">·</span>
                 {`guardado a las ${horaCortaDeColombia(new Date(perfil.actualizadoEn))}`}
+                {enPortal && cambiosSinGuardar > 0 && (
+                  <>
+                    <span className="pe-sep">·</span>
+                    {cambiosSinGuardar === 1 ? "1 cambio sin guardar" : `${cambiosSinGuardar} cambios sin guardar`}
+                  </>
+                )}
               </>
             )}
             {!perfil && (
@@ -491,7 +534,28 @@ export function EditorPerfil(p: {
                 Vista previa
               </button>
             )}
-            {editable && (
+            {editable && enPortal && sinGuardar && (
+              <button
+                type="button"
+                className="pp-btn pp-btn--fantasma"
+                onClick={() => window.location.reload()}
+                disabled={guardando}
+              >
+                Descartar cambios
+              </button>
+            )}
+            {editable && enPortal && (
+              <button
+                type="button"
+                className="pp-btn pp-btn--primario"
+                onClick={guardar}
+                aria-disabled={!sinGuardar || undefined}
+                disabled={guardando}
+              >
+                {guardando ? "Revisando…" : "Guardar cambios"}
+              </button>
+            )}
+            {editable && !enPortal && (
               <button
                 type="button"
                 className="pp-btn pp-btn--contorno"
@@ -501,7 +565,7 @@ export function EditorPerfil(p: {
                 {guardando ? "Guardando…" : "Guardar borrador"}
               </button>
             )}
-            {editable && perfil && (
+            {editable && perfil && !enPortal && (
               <button
                 type="button"
                 className="pp-btn pp-btn--primario"
@@ -544,7 +608,9 @@ export function EditorPerfil(p: {
             i
           </span>
           <p>
-            {`Este perfil está ${ETIQUETA_ESTADO[perfil.estado].toLowerCase()}: sus datos se cambian mostrando antes qué verá el cliente. Su consentimiento se gestiona aquí abajo.`}
+            {enPortal
+              ? "Este perfil está publicado: al guardar verás qué cambia para el cliente antes de confirmar. El portal sigue con la versión actual hasta entonces."
+              : `Este perfil está ${ETIQUETA_ESTADO[perfil.estado].toLowerCase()}: sus datos no se editan en este estado. Su consentimiento se gestiona aquí abajo.`}
           </p>
         </div>
       )}
@@ -1449,6 +1515,16 @@ export function EditorPerfil(p: {
           }}
         />
       )}
+      {impacto && perfil && (
+        <HojaImpacto
+          perfil={perfil}
+          impacto={impacto}
+          autor={p.autor ?? null}
+          cuerpo={cuerpo()}
+          alCerrar={() => setImpacto(null)}
+          alIncompleto={(i) => setImpacto(i)}
+        />
+      )}
       {aviso && (
         <div className="pp-toast pe-toast" role="status">
           <span className="pp-toast__marca" aria-hidden="true">
@@ -2220,6 +2296,228 @@ function HojaRevocar(p: {
           <p>El perfil no podrá publicarse hasta registrar un consentimiento nuevo.</p>
         )}
         {error && <ErrorCampo id="rv-error" texto={error} />}
+      </div>
+    </Hoja>
+  );
+}
+
+// Impacto de guardar un publicado (HU-126; prototipos perfil-editor--cambios-declarados y
+// --incompleto-al-guardar): lo que cambia para el cliente, antes y después, y lo que no le llega.
+type Impacto = {
+  incompleto: boolean;
+  cambios: CambioDeCaraAlCliente[];
+  internos: string[];
+  evaluacion: EvaluacionPublicacion;
+};
+
+const ETIQUETA_INTERNO: Record<string, string> = {
+  aporte: "Qué le interesa aportar",
+  vinculo: "Vínculo con Trycore",
+  capacidad: "Capacidad",
+  anclaje: "Anclaje",
+};
+
+// Del campo de la ficha al dato que la publicación exige (para decir por qué queda incompleto).
+const EXIGIDO: Record<string, CampoObligatorio[]> = {
+  nombre: ["nombre", "primer_apellido"],
+  rol: ["rol"],
+  seniority: ["seniority"],
+  anios_experiencia: ["anios_experiencia"],
+  tecnologias: ["tecnologias"],
+  modalidad_trabajo: ["modalidad_trabajo"],
+  ubicacion: ["ciudad"],
+  disponibilidad: ["disponibilidad"],
+  trayectoria: ["trayectoria"],
+};
+
+function HojaImpacto(p: {
+  perfil: PerfilEditor;
+  impacto: Impacto;
+  autor: string | null;
+  cuerpo: unknown;
+  alCerrar: () => void;
+  alIncompleto: (i: Impacto) => void;
+}) {
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { cambios, internos, evaluacion, incompleto } = p.impacto;
+  const nombre = [p.perfil.nombre, p.perfil.primerApellido].filter(Boolean).join(" ");
+  const faltan = new Set<string>(evaluacion.faltanDatos.map((f) => f.campo));
+  const condicionesFalladas = evaluacion.condiciones.filter((c) => !c.cumple);
+  const exigido = (campo: string) => (EXIGIDO[campo] ?? []).some((c) => faltan.has(c));
+  // Si el incompleto viene de un dato que no se ve como cambio (p. ej. la modalidad de prueba), se nombra.
+  const faltaSinCambio = [
+    ...evaluacion.faltanDatos.filter(
+      (f) => !cambios.some((c) => (EXIGIDO[c.campo] ?? []).includes(f.campo)),
+    ),
+    ...condicionesFalladas.map((c) => ({ campo: c.clave, etiqueta: c.etiqueta })),
+  ].filter((f, i, xs) => xs.findIndex((x) => x.etiqueta === f.etiqueta) === i);
+
+  async function enviar(consulta: string) {
+    setEnviando(true);
+    setError(null);
+    try {
+      const r = await enviarJson(`/api/v1/perfiles/${p.perfil.codigo}${consulta}`, p.cuerpo, "PATCH", {
+        "if-match": `"${p.perfil.version}"`,
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) {
+        recargarConAviso(
+          consulta === "?resolucion=descartar"
+            ? "Cambio descartado. El perfil sigue publicado con los valores que tenía."
+            : consulta === "?resolucion=a_borrador"
+              ? "Cambio guardado. El perfil salió del portal y quedó en borrador."
+              : "Cambios confirmados. El portal ya los muestra.",
+        );
+        return;
+      }
+      // Otro cambio en paralelo lo dejó incompleto entre ver el impacto y confirmar: se pregunta.
+      if (d.motivo === "deja_incompleto") p.alIncompleto({ incompleto: true, ...d.impacto });
+      else setError(MOTIVO[d.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  const lista = (
+    <ul className="pe-cambios">
+      {cambios.map((c) => (
+        <li className="pe-cambio" key={c.campo}>
+          <span className="pe-cambio__campo">{c.etiqueta}</span>
+          <div className="pe-cambio__valores">
+            <p className="pe-cambio__antes">
+              <span className="pp-sr">Antes: </span>
+              {c.antes ?? "Sin dato"}
+            </p>
+            <p className="pe-cambio__despues">
+              <span className="pp-sr">Después: </span>
+              {c.despues ?? (exigido(c.campo) ? "Sin dato: la publicación lo exige" : "Sin dato")}
+            </p>
+          </div>
+        </li>
+      ))}
+      {incompleto &&
+        faltaSinCambio.map((f) => (
+          <li className="pe-cambio" key={`falta-${f.campo}`}>
+            <span className="pe-cambio__campo">{f.etiqueta}</span>
+            <div className="pe-cambio__valores">
+              <p className="pe-cambio__despues">Falta: la publicación lo exige</p>
+            </div>
+          </li>
+        ))}
+    </ul>
+  );
+  const internosTexto = internos.map((c) => ETIQUETA_INTERNO[c] ?? c).join(", ");
+
+  if (incompleto)
+    return (
+      <Hoja
+        titulo="Este cambio deja el perfil incompleto"
+        sub={`${nombre} · ${p.perfil.codigo} · publicado`}
+        cerrarEtiqueta="Seguir editando"
+        alCerrar={p.alCerrar}
+        pie={
+          <>
+            <button
+              type="button"
+              className="pp-btn pp-btn--contorno"
+              disabled={enviando}
+              onClick={() => enviar("?resolucion=descartar")}
+            >
+              Descartar el cambio
+            </button>
+            <button
+              type="button"
+              className="pp-btn pp-btn--primario"
+              data-foco
+              disabled={enviando}
+              onClick={() => enviar("?resolucion=a_borrador")}
+            >
+              Pasar a borrador
+            </button>
+          </>
+        }
+      >
+        <div className="pp-hoja__cuerpo">
+          <div className="pe-hoja-bloque">
+            <p>
+              <strong>¿Descarto el cambio o paso el perfil a borrador?</strong>
+            </p>
+            {lista}
+            <p className="pp-meta">Mientras no respondas, el perfil sigue publicado sin el cambio.</p>
+          </div>
+          <div className="pe-hoja-bloque">
+            <dl className="pp-datos">
+              <div className="pp-datos__fila">
+                <dt>Descartar el cambio</dt>
+                <dd>Conserva exactamente los valores que tenía. Sigue publicado y no queda nada en la auditoría.</dd>
+              </div>
+              <div className="pp-datos__fila">
+                <dt>Pasar a borrador</dt>
+                <dd>
+                  Guarda el cambio y lo saca del portal. La auditoría registra que salió de publicado por
+                  esta edición, contigo y la hora.
+                </dd>
+              </div>
+            </dl>
+            {error && <ErrorCampo id="im-error" texto={error} />}
+          </div>
+        </div>
+      </Hoja>
+    );
+
+  return (
+    <Hoja
+      titulo="Esto cambia para el cliente"
+      sub={`${nombre} · ${p.perfil.codigo} · publicado`}
+      cerrarEtiqueta="Seguir editando"
+      alCerrar={p.alCerrar}
+      pie={
+        <>
+          <button type="button" className="pp-btn pp-btn--fantasma" onClick={p.alCerrar}>
+            Seguir editando
+          </button>
+          <button
+            type="button"
+            className="pp-btn pp-btn--primario"
+            data-foco
+            disabled={enviando}
+            onClick={() => enviar("")}
+          >
+            Confirmar cambios
+          </button>
+        </>
+      }
+    >
+      <div className="pp-hoja__cuerpo">
+        <div className="pe-hoja-bloque">
+          {cambios.length > 0 ? (
+            <>
+              <p className="pp-meta">
+                Se ven de inmediato en la tarjeta y la ficha, también para quien la tenga abierta.
+              </p>
+              {lista}
+            </>
+          ) : (
+            <p>El cliente no verá ninguna diferencia.</p>
+          )}
+          {internos.length > 0 && (
+            <p className="pp-meta">{`Sin efecto para el cliente: ${internosTexto} (dato interno de Talento Humano).`}</p>
+          )}
+        </div>
+        <div className="pe-hoja-bloque">
+          <p>
+            <span className="pp-estado pp-estado--ok">
+              {`Sigue cumpliendo las ${evaluacion.condiciones.length} condiciones de publicación`}
+            </span>
+          </p>
+          <p className="pp-meta">
+            {`Quedará en la auditoría del perfil: cada dato que cambió con su valor anterior, ${
+              p.autor ?? "tu correo"
+            } y la hora, al confirmar.`}
+          </p>
+          {error && <ErrorCampo id="im-error" texto={error} />}
+        </div>
       </div>
     </Hoja>
   );

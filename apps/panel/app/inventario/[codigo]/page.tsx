@@ -32,6 +32,7 @@ export default async function Perfil({ params }: { params: Promise<{ codigo: str
         escribe={puede(sesion.rol, "perfil.escribir")}
         registraConsentimiento={puede(sesion.rol, "consentimiento.registrar")}
         hoy={hoyEnColombia()}
+        autor={sesion.correo}
       />
       <AvisoDecision />
     </MarcoPanel>

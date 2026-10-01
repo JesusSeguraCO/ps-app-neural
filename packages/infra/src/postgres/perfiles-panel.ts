@@ -663,6 +663,129 @@ export async function guardarPerfil(
   });
 }
 
+// Editar un publicado (HU-126, D1, D3; diseño §2): en dos pasos y con la versión que se abrió.
+//  - `previsualizar`: aplica el cambio en una transacción que siempre se deshace y devuelve el perfil
+//    vigente y el propuesto (el panel calcula con ellos qué ve el cliente): nada se escribe ni se audita.
+//  - confirmar: aplica, audita cada campo y sube la versión del inventario (lo ve el cliente).
+//  - Si el cambio deja el perfil sin algo que la publicación exige, ninguno de los dos escribe: la
+//    respuesta es `deja_incompleto` con la pregunta de D1. `resolucion = descartar` no toca nada (ni
+//    auditoría); `a_borrador` guarda el cambio y pasa a borrador en la misma transacción, auditado
+//    con el motivo. El panel pregunta; nunca decide solo.
+export type ResolucionIncompleto = "descartar" | "a_borrador";
+
+// Lo que se guarda pero el cliente no ve (motivación, vínculo, capacidad, anclaje): se declara aparte.
+const CAMPOS_INTERNOS = new Set(["capacidad", "anclaje", "vinculo", "aporte"]);
+
+export type EdicionPublicado =
+  | {
+      resultado: "impacto" | "deja_incompleto";
+      antes: PerfilEditor;
+      propuesto: PerfilEditor;
+      internos: string[];
+    }
+  | { resultado: "aplicado" | "a_borrador"; perfil: PerfilEditor }
+  | { resultado: "descartado"; perfil: PerfilEditor };
+
+async function publicadoBloqueado(tx: Consultor, codigo: string, versionAbierta: number) {
+  const fila = (
+    await tx.query(
+      `SELECT id, version, estado FROM inventario.perfiles WHERE codigo = $1 FOR UPDATE`,
+      [codigo],
+    )
+  ).rows[0];
+  if (!fila) throw new RechazoInventario("no_existe");
+  const antes = (await leerPerfil(tx, codigo))!;
+  if (fila.version !== versionAbierta)
+    throw new RechazoInventario("version_distinta", { version: fila.version, perfil: antes });
+  if (!transicion(fila.estado, "a_borrador").ok)
+    throw new RechazoInventario("no_es_publicado", { estado: fila.estado });
+  return { fila, antes };
+}
+
+export async function editarPublicado(
+  bd: pg.Pool,
+  claves: ClavesAuditoria,
+  autor: Autor,
+  codigo: string,
+  versionAbierta: number,
+  e: EntradaPerfil,
+  o: { previsualizar?: boolean; resolucion?: ResolucionIncompleto } = {},
+  ahora = new Date(),
+): Promise<EdicionPublicado> {
+  if (o.resolucion === "descartar") {
+    const { antes } = await publicadoBloqueado(bd, codigo, versionAbierta);
+    return { resultado: "descartado", perfil: antes };
+  }
+  if (o.previsualizar) {
+    const tx = await bd.connect();
+    try {
+      await tx.query("BEGIN");
+      const { antes } = await publicadoBloqueado(tx, codigo, versionAbierta);
+      const { perfil, cambios } = await edicionEnTransaccion(tx, autor, antes, e, {
+        origen: "panel",
+        ahora,
+      });
+      return {
+        resultado: perfil.evaluacion.publicable ? "impacto" : "deja_incompleto",
+        antes,
+        propuesto: perfil,
+        internos: cambios.map((c) => c.campo).filter((c) => CAMPOS_INTERNOS.has(c)),
+      };
+    } finally {
+      await tx.query("ROLLBACK").catch(() => {});
+      tx.release();
+    }
+  }
+  try {
+    return await conUnidadInventario<EdicionPublicado>(bd, claves, async (tx) => {
+      const { fila, antes } = await publicadoBloqueado(tx, codigo, versionAbierta);
+      const { perfil, cambios } = await edicionEnTransaccion(tx, autor, antes, e, {
+        origen: "panel",
+        ahora,
+      });
+      if (o.resolucion !== "a_borrador") {
+        if (!perfil.evaluacion.publicable)
+          throw new RechazoInventario("deja_incompleto", {
+            antes,
+            propuesto: perfil,
+            internos: cambios.map((c) => c.campo).filter((c) => CAMPOS_INTERNOS.has(c)),
+          });
+        return { resultado: { resultado: "aplicado", perfil } as const, cambios, visible: true };
+      }
+      const t = transicion(fila.estado, "a_borrador") as { ok: true; a: EstadoAlmacenado };
+      await tx.query(`UPDATE inventario.perfiles SET estado = $2 WHERE id = $1`, [fila.id, t.a]);
+      const borrador = (await leerPerfil(tx, codigo))!;
+      const salida = (campo: string, antes: string | null, despues: string) => ({
+        actor: autor.correo,
+        entidad: "perfiles",
+        entidadId: fila.id as string,
+        campo,
+        titular: codigo,
+        antes,
+        despues,
+        origen: "panel" as const,
+      });
+      return {
+        resultado: { resultado: "a_borrador", perfil: borrador } as const,
+        cambios: [
+          ...cambios,
+          salida("estado", fila.estado, t.a),
+          salida("motivo_estado", null, "edicion_deja_incompleto"),
+        ],
+        visible: true,
+      };
+    });
+  } catch (err) {
+    // Sin respuesta a la pregunta de D1 no se escribe nada: el rechazo deshizo la transacción.
+    if (err instanceof RechazoInventario && err.motivo === "deja_incompleto")
+      return {
+        resultado: "deja_incompleto",
+        ...(err.detalle as { antes: PerfilEditor; propuesto: PerfilEditor; internos: string[] }),
+      };
+    throw err;
+  }
+}
+
 // Publicar (HU-128, HU-130; diseño §2): borrador o pausado → publicado solo si `evaluarPublicacion`
 // lo permite —consentimiento nominal vigente, modalidad de prueba activa de su familia (la familia
 // con modalidades), datos obligatorios—. Si no, nada se escribe y el rechazo lleva la evaluación para

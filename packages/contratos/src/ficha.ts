@@ -10,7 +10,7 @@
 //  - Un bloque opcional sin datos no existe en la ficha (no viaja ni se dibuja).
 //  - Nada de la lista negra B.4: el esquema estricto hace fallar cualquier campo de más.
 import { z } from "zod";
-import { BANDAS, bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
+import { BANDAS, ROTULO_BANDA, bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
 import type { CampoObligatorio } from "@ps/dominio/inventario/perfil";
 
 export const NECESIDADES = ["remota", "hibrida", "presencial"] as const;
@@ -167,4 +167,59 @@ export function opcionalesVacios(f: FichaEnEdicion): BloqueOpcional[] {
   if (f.idiomas.length === 0) vacios.push("idiomas");
   if (f.sectores.length === 0) vacios.push("sectores");
   return vacios;
+}
+
+// Impacto de editar un publicado (HU-126, D3): qué cambia de cara al cliente, campo a campo, con el
+// valor anterior y el nuevo tal como los ve el cliente. Se compara la ficha armada —la misma del
+// portal—: lo interno (motivación, vínculo, capacidad) nunca cuenta, la disponibilidad se compara
+// como banda y el cliente nombrado solo si el consentimiento lo incluye. `null` = queda sin dato.
+export interface CambioDeCaraAlCliente {
+  campo: string;
+  etiqueta: string;
+  antes: string | null;
+  despues: string | null;
+}
+
+const unir = (xs: string[]) => (xs.length ? xs.join(" · ") : null);
+const periodo = (desde: number | null, hasta: number | null) =>
+  desde && hasta ? `${desde}–${hasta}` : desde ? `desde ${desde}` : hasta ? `hasta ${hasta}` : null;
+
+const VISTA_CLIENTE: Array<[campo: string, etiqueta: string, valor: (f: FichaEnEdicion) => string | null]> = [
+  ["nombre", "Nombre", (f) => [f.nombre, f.primerApellido].filter(Boolean).join(" ") || null],
+  ["rol", "Rol", (f) => f.rol],
+  ["seniority", "Seniority", (f) => f.seniority],
+  ["anios_experiencia", "Años de experiencia", (f) => f.aniosExperiencia?.toString() ?? null],
+  ["tecnologias", "Tecnologías ancla", (f) => unir(f.tecnologias)],
+  ["sectores", "Sectores", (f) => unir(f.sectores)],
+  ["modalidad_trabajo", "Modalidad de trabajo", (f) => f.modalidad],
+  ["ubicacion", "Ubicación", (f) => [f.ciudad, f.pais].filter(Boolean).join(", ") || null],
+  ["disponibilidad", "Disponibilidad", (f) => ROTULO_BANDA[f.disponibilidad]],
+  ["resumen", "Resumen", (f) => f.resumen],
+  ["sello_personal", "Sello personal", (f) => unir(f.selloPersonal)],
+  ["formacion", "Formación", (f) => f.formacion],
+  ["idiomas", "Idiomas", (f) => unir(f.idiomas)],
+  [
+    "trayectoria",
+    "Trayectoria",
+    (f) =>
+      f.trayectoria
+        .map((e) => {
+          const cabeza = [e.cargo, e.cliente].filter(Boolean).join(" · ");
+          const p = periodo(e.desde, e.hasta);
+          return `${cabeza}${p ? `, ${p}` : ""}: ${e.descripcion}`;
+        })
+        .join("\n") || null,
+  ],
+  ["validacion", "Validación de Nivel 0", (f) => f.validacion?.enunciado ?? null],
+];
+
+export function cambiosDeCaraAlCliente(
+  antes: FichaEnEdicion,
+  despues: FichaEnEdicion,
+): CambioDeCaraAlCliente[] {
+  return VISTA_CLIENTE.flatMap(([campo, etiqueta, valor]) => {
+    const a = valor(antes);
+    const d = valor(despues);
+    return a === d ? [] : [{ campo, etiqueta, antes: a, despues: d }];
+  });
 }
