@@ -16,6 +16,7 @@ import * as m0011 from "./0011_peticiones_invitacion";
 import * as m0012 from "./0012_renovacion_sin_hubspot";
 import * as m0013 from "./0013_catalogos_y_lexico";
 import * as m0014 from "./0014_perfil_y_consentimiento";
+import * as m0015 from "./0015_lotes_importacion";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -32,4 +33,5 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0012_renovacion_sin_hubspot": m0012,
   "0013_catalogos_y_lexico": m0013,
   "0014_perfil_y_consentimiento": m0014,
+  "0015_lotes_importacion": m0015,
 };
