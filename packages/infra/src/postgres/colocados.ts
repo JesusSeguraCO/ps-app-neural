@@ -379,7 +379,7 @@ export async function cargarOperaciones(
         WHERE id = $1`,
       [carga, aplicadas, errores.length, JSON.stringify(errores)],
     );
-    return { resultado: { cargaId: carga }, cambios, visible };
+    return { resultado: { cargaId: carga }, cambios, visible, referencia: { tipo: "carga", id: carga } };
   });
 }
 

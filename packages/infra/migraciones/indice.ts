@@ -26,6 +26,7 @@ import * as m0021 from "./0021_retirar_colocado";
 import * as m0022 from "./0022_observador";
 import * as m0023 from "./0023_accesos_panel";
 import * as m0024 from "./0024_contacto_trycore";
+import * as m0025 from "./0025_referencias_auditoria";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -52,4 +53,5 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0022_observador": m0022,
   "0023_accesos_panel": m0023,
   "0024_contacto_trycore": m0024,
+  "0025_referencias_auditoria": m0025,
 };

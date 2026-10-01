@@ -42,4 +42,9 @@
   `?rechazado=accesos`), `ContactoTrycore` en `@ps/ui` usado en las cinco pantallas; constante `CONTACTO` retirada.
   Campo `direccion` por V8-4 (D39). BD de desarrollo en 0024. Tests: dominio 5, ui 3, infra 5, HTTP 6, e2e 1.
   Mutación `mutacion-10.4.md` (5/5).
-- **Siguiente: 10.5** (0025 referencias de auditoría + `/inventario/{código}/auditoria` con `leerCambios`).
+- **10.5 hecha**: 0025 `inventario.referencias_auditoria` (tramo de la cadena → lote, reversión o carga), escrita por
+  `registrarAuditoria(…, referencia)` en importación, reversión y carga de Operaciones; `registro-perfil.ts` (filas por
+  titular, descifradas, catálogos por nombre) y `@ps/dominio/auditoria/registro` (etiquetas, grupos, valores, quién,
+  filtros, páginas); `/inventario/{código}/auditoria` para ambos roles, enlazada desde el editor y la ficha. D40.
+  Tests: dominio 5, infra 5, HTTP 6. Mutación `mutacion-10.5.md` (6/6). BD de desarrollo en 0025.
+- **Siguiente: 10.6** fidelidad con captura MCP (11 pantallas de la tarea), luego 10.7 journey + wiring.

@@ -5,13 +5,20 @@
 // (40P01/40001) se reintenta entera, hasta tres veces.
 import "server-only";
 import type pg from "pg";
-import { registrarAuditoria, type CambioAuditado, type ClavesAuditoria } from "./auditoria";
+import {
+  registrarAuditoria,
+  type CambioAuditado,
+  type ClavesAuditoria,
+  type ReferenciaAuditoria,
+} from "./auditoria";
 
 export interface ResultadoActo<T> {
   resultado: T;
   cambios: CambioAuditado[];
   // Cambia algo que el cliente puede ver (catálogo, léxico, perfil publicado): sube la versión global.
   visible: boolean;
+  // El proceso que escribe (carga de Operaciones): su tramo de la auditoría queda enlazado (HU-138).
+  referencia?: ReferenciaAuditoria;
 }
 
 const REINTENTABLES = new Set(["40P01", "40001"]);
@@ -26,12 +33,12 @@ export async function conUnidadInventario<T>(
     const tx = await bd.connect();
     try {
       await tx.query("BEGIN");
-      const { resultado, cambios, visible } = await acto(tx);
+      const { resultado, cambios, visible, referencia } = await acto(tx);
       if (visible)
         await tx.query(
           `UPDATE inventario.inventario_version SET version = version + 1, actualizado_en = now() WHERE id = 1`,
         );
-      if (cambios.length) await registrarAuditoria(tx, claves, cambios);
+      if (cambios.length) await registrarAuditoria(tx, claves, cambios, referencia);
       await tx.query("COMMIT");
       return resultado;
     } catch (e) {

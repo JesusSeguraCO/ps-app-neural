@@ -1,0 +1,159 @@
+/* Registro de auditoría del perfil (HU-138; prototipos auditoria-perfil y auditoria-perfil--archivado):
+   composición propia del prototipo, prefijo au-. Los patrones PP:* vienen de packages/ui. */
+.au-encabezado-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tc-sp-1) var(--tc-sp-2);
+}
+.au-sep {
+  color: var(--tc-border-s);
+}
+.au-pestanas {
+  margin-bottom: var(--tc-sp-6);
+}
+.au-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tc-sp-2);
+  margin: 0 0 var(--tc-sp-3);
+}
+.au-filtros .pp-select {
+  width: auto;
+}
+.au-filtros .pp-input {
+  min-height: 36px;
+  font-size: var(--tc-fs-small);
+}
+.au-orden {
+  margin-left: auto;
+}
+.au-marco {
+  max-height: none;
+}
+.au-tabla {
+  min-width: 0;
+  table-layout: fixed;
+}
+.au-tabla col.au-c-cuando {
+  width: 148px;
+}
+.au-tabla col.au-c-campo {
+  width: 18%;
+}
+.au-tabla col.au-c-antes {
+  width: 19%;
+}
+.au-tabla col.au-c-despues {
+  width: 21%;
+}
+.au-tabla td,
+.au-tabla th {
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.au-cuando {
+  color: var(--tc-text-b);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.au-antes {
+  color: var(--tc-text-m);
+  text-decoration-color: var(--tc-text-s);
+}
+.au-despues {
+  color: var(--tc-text-h);
+  font-weight: var(--tc-fw-medium);
+}
+.au-vacio {
+  color: var(--tc-text-s);
+}
+.au-quien {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tc-sp-2);
+  min-width: 0;
+}
+.au-quien .pp-avatar,
+.au-proceso {
+  width: 24px;
+  height: 24px;
+  font-size: var(--tc-fs-badge);
+}
+.au-proceso {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid var(--tc-border);
+  border-radius: var(--tc-r-pill);
+  background: var(--tc-card);
+  color: var(--tc-text-m);
+}
+.au-quien__texto {
+  min-width: 0;
+  line-height: var(--tc-lh-h3);
+  padding-top: var(--tc-sp-1);
+}
+.au-paginacion {
+  flex-wrap: wrap;
+}
+@media (max-width: 767px) {
+  .au-filtros {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .au-filtros .pp-select {
+    width: 100%;
+  }
+  .au-orden {
+    margin-left: 0;
+  }
+  .au-tabla,
+  .au-tabla tbody,
+  .au-tabla tr,
+  .au-tabla th,
+  .au-tabla td {
+    display: block;
+  }
+  .au-tabla colgroup,
+  .au-tabla thead {
+    display: none;
+  }
+  .au-tabla tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--tc-sp-1) var(--tc-sp-3);
+    padding: var(--tc-sp-4);
+  }
+  .au-tabla tbody tr + tr {
+    border-top: 1px solid var(--tc-border);
+  }
+  .au-tabla tbody tr > * {
+    padding: 0;
+    border: 0;
+  }
+  .au-tabla .au-td-campo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .au-tabla .au-td-cuando {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: var(--tc-fs-caption);
+    padding-top: var(--tc-sp-1);
+  }
+  .au-tabla .au-td-antes,
+  .au-tabla .au-td-despues {
+    grid-column: 1 / -1;
+  }
+  .au-tabla .au-td-despues::before {
+    content: "→ ";
+    color: var(--tc-text-s);
+    font-weight: var(--tc-fw-regular);
+  }
+  .au-tabla .au-td-quien {
+    grid-column: 1 / -1;
+    padding-top: var(--tc-sp-2);
+  }
+}

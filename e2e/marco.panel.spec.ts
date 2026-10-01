@@ -523,6 +523,8 @@ test.describe("coherencia y archivo (HU-134, HU-135)", () => {
     const hoja = page.getByRole("dialog", { name: `Pausar a ${nombre}` });
     await hoja.getByRole("radio").first().check();
     await hoja.getByRole("button", { name: "Pausar y ocultar del portal" }).click();
+    // Pausar recarga la página: se elige la fecha cuando ya cargó (el aviso sale tras la recarga).
+    await expect(page.getByText(`${nombre} quedó pausado y salió del portal.`)).toBeVisible();
     await expect(page.getByLabel(`Disponibilidad de ${nombre}`)).toBeVisible();
     await expect(page.getByText("Bloquea la publicación")).toHaveCount(0);
 

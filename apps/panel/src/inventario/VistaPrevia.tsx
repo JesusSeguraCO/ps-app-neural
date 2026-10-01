@@ -70,6 +70,8 @@ export function VistaPrevia(p: {
   alVolver: (campo?: string) => void;
   // La observadora no edita: el botón de volver la lleva a los datos del perfil (HU-124).
   etiquetaVolver?: string;
+  // Registro de auditoría del perfil (HU-138), para ambos roles.
+  enlaceRegistro?: string;
   alPublicar: () => void;
   alRegistrarConsentimiento?: () => void;
 }) {
@@ -124,6 +126,11 @@ export function VistaPrevia(p: {
           </p>
         </div>
         <div className="pp-encabezado__acciones">
+          {p.enlaceRegistro && (
+            <a className="pp-btn pp-btn--fantasma" href={p.enlaceRegistro}>
+              Registro de auditoría
+            </a>
+          )}
           <button type="button" className="pp-btn pp-btn--contorno" onClick={() => p.alVolver()}>
             {p.etiquetaVolver ?? "Volver a editar"}
           </button>

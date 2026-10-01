@@ -441,7 +441,7 @@ export async function aplicarLote(
       await tx.query(
         `UPDATE inventario.inventario_version SET version = version + 1, actualizado_en = now() WHERE id = 1`,
       );
-    await registrarAuditoria(tx, claves, cambios);
+    await registrarAuditoria(tx, claves, cambios, { tipo: "lote", id: loteId });
     await tx.query("COMMIT");
     return { tipo: "aplicado", ...cuenta };
   } catch (e) {

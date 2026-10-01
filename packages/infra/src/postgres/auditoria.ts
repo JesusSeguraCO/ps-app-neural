@@ -54,10 +54,18 @@ async function claveDeTitular(tx: Consultor, kek: string, titular: string): Prom
   return desenvolverClave(kek, envuelta);
 }
 
+// Proceso que escribió un tramo de la cadena: la importación (o su reversión) o la carga de Operaciones
+// (HU-138). Se guarda con el tramo para que el registro del perfil enlace cada cambio con su origen.
+export interface ReferenciaAuditoria {
+  tipo: "lote" | "reversion" | "carga";
+  id: string;
+}
+
 export async function registrarAuditoria(
   tx: Consultor,
   claves: ClavesAuditoria,
   cambios: CambioAuditado[],
+  referencia?: ReferenciaAuditoria,
 ): Promise<number> {
   if (cambios.length === 0) throw new Error("auditoría: lote vacío");
   const clavesTitular = new Map<string, Buffer>();
@@ -115,7 +123,13 @@ export async function registrarAuditoria(
   const r = await tx.query(`SELECT auditoria.registrar($1::jsonb) AS ultimo`, [
     JSON.stringify(lote),
   ]);
-  return Number(r.rows[0].ultimo);
+  const ultimo = Number(r.rows[0].ultimo);
+  if (referencia)
+    await tx.query(
+      `INSERT INTO inventario.referencias_auditoria (seq_desde, seq_hasta, tipo, ref_id) VALUES ($1, $2, $3, $4)`,
+      [ultimo - lote.length + 1, ultimo, referencia.tipo, referencia.id],
+    );
+  return ultimo;
 }
 
 // Ejecuta `acto` y su auditoría en una sola transacción: o se aplican ambos o ninguno.
@@ -219,12 +233,9 @@ export async function leerCambios(
       ORDER BY a.seq`,
     [entidad, entidadId],
   );
-  const claves = new Map<string, Buffer | null>();
+  const abrir = descifrador(kek);
   return r.rows.map((f) => {
-    if (!claves.has(f.titular))
-      claves.set(f.titular, f.clave_envuelta ? desenvolverClave(kek, f.clave_envuelta) : null);
-    const clave = claves.get(f.titular)!;
-    const valor = (c: Buffer | null) => (c && clave ? descifrarValor(clave, c) : null);
+    const { valor, suprimido } = abrir(f.titular, f.clave_envuelta);
     return {
       seq: Number(f.seq),
       actor: f.actor,
@@ -233,7 +244,21 @@ export async function leerCambios(
       despues: valor(f.despues_cifrado),
       origen: f.origen,
       cuando: f.cuando.toISOString(),
-      suprimido: clave === null,
+      suprimido,
     };
   });
+}
+
+// Descifra valores de la cadena por titular, desenvolviendo cada clave una sola vez. Sin clave (titular
+// suprimido) el valor no se puede leer y se dice.
+export function descifrador(kek: string) {
+  const claves = new Map<string, Buffer | null>();
+  return (titular: string, envuelta: Buffer | null) => {
+    if (!claves.has(titular)) claves.set(titular, envuelta ? desenvolverClave(kek, envuelta) : null);
+    const clave = claves.get(titular)!;
+    return {
+      suprimido: clave === null,
+      valor: (c: Buffer | null): string | null => (c && clave ? descifrarValor(clave, c) : null),
+    };
+  };
 }

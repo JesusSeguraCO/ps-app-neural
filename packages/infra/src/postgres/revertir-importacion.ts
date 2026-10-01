@@ -459,7 +459,7 @@ export async function revertirLote(
       await tx.query(
         `UPDATE inventario.inventario_version SET version = version + 1, actualizado_en = now() WHERE id = 1`,
       );
-    await registrarAuditoria(tx, claves, cambios);
+    await registrarAuditoria(tx, claves, cambios, { tipo: "reversion", id: loteId });
     await tx.query("COMMIT");
     return { tipo: "revertido", ...cuenta };
   } catch (e) {

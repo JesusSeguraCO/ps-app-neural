@@ -516,6 +516,7 @@ export function EditorPerfil(p: {
           sinGuardar={sinGuardar}
           puedePublicar={editable && !enPortal}
           etiquetaVolver={p.consulta ? "Ver los datos del perfil" : undefined}
+          enlaceRegistro={`/inventario/${perfil.codigo}/auditoria`}
           publicando={publicando}
           alVolver={(campo) => {
             setModo("editar");
@@ -582,6 +583,11 @@ export function EditorPerfil(p: {
         {(editable || perfil) && (
           <div className="pp-encabezado__acciones">
             {p.consulta && perfil && <AvisarTalentoHumano codigo={perfil.codigo} nombre={titulo} />}
+            {perfil && (
+              <a className="pp-btn pp-btn--fantasma" href={`/inventario/${perfil.codigo}/auditoria`}>
+                Registro de auditoría
+              </a>
+            )}
             {perfil && (
               <button
                 type="button"
