@@ -40,6 +40,13 @@ const iniciales = (correo: string) =>
     .map((p) => p[0]!.toUpperCase())
     .join("");
 
+// Iconos del prototipo: lote (descarga), carga de Operaciones (sincronizar), otro proceso (reloj).
+const ICONO: Record<string, string> = {
+  importacion: "M12 4v11M7 10l5 5 5-5M5 20h14",
+  carga: "M4 12a8 8 0 0 1 14-5l2 2M20 4v5h-5M20 12a8 8 0 0 1-14 5l-2-2M4 20v-5h5",
+  proceso: "M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z",
+};
+
 function Valor({ texto, antes }: { texto: string | null; antes?: boolean }) {
   if (texto === null) return <span className="au-vacio">Sin valor</span>;
   return antes ? <s className="au-antes">{texto}</s> : <>{texto}</>;
@@ -54,7 +61,11 @@ function Quien({ f }: { f: FilaRegistro }) {
           {iniciales(f.actor)}
         </span>
       ) : (
-        <span className="au-proceso" aria-hidden="true" />
+        <span className="au-proceso" aria-hidden="true">
+          <svg className="pp-icono pp-icono--sm" viewBox="0 0 24 24">
+            <path d={ICONO[quien.tipo]} />
+          </svg>
+        </span>
       )}
       <span className="au-quien__texto">
         <span className="pp-tabla__perfil">
@@ -276,7 +287,10 @@ export default async function RegistroAuditoria({
                     </td>
                     <th scope="row" className="au-td-campo">
                       <span className="pp-tabla__perfil">{f.etiqueta}</span>
-                      <span className="pp-tabla__sub">{ETIQUETA_GRUPO[f.grupo]}</span>
+                      {/* Como el prototipo: sin repetir el grupo cuando el campo ya lo nombra. */}
+                      {!f.etiqueta.startsWith(ETIQUETA_GRUPO[f.grupo]) && (
+                        <span className="pp-tabla__sub">{ETIQUETA_GRUPO[f.grupo]}</span>
+                      )}
                     </th>
                     <td className="au-td-antes">
                       {f.suprimido ? (

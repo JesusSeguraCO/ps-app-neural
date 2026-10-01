@@ -5,7 +5,7 @@
 import { redirect } from "next/navigation";
 import { ETIQUETA_ROL } from "@ps/dominio/acceso/accesos";
 import { puede } from "@ps/dominio/acceso/permisos";
-import { fechaCivil, momentoDeColombia } from "@ps/dominio/fecha/colombia";
+import { fechaCivil, momentoCercanoDeColombia, momentoDeColombia } from "@ps/dominio/fecha/colombia";
 import { listarAccesos, type InscritoPanel } from "@ps/infra/postgres/accesos-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { AccionesAcceso, InscribirCorreo } from "../../../src/administracion/Accesos";
@@ -18,12 +18,29 @@ import "../../../src/marco/marco.css";
 import "../administracion.css";
 
 function meta(i: InscritoPanel, ahora: Date): string {
-  const entrada = i.ultimaEntrada
-    ? `Entró ${momentoDeColombia(new Date(i.ultimaEntrada), ahora)}${i.sesionAbierta ? " · sesión abierta" : ""}`
-    : i.creadoPor
-      ? `inscrito por ${i.creadoPor} · aún no ha entrado`
-      : "sin entradas recientes";
-  return `${ETIQUETA_ROL[i.rol]} · ${entrada}`;
+  const cambio =
+    i.ultimoCambio === "rol" && i.actualizadoEn && i.actualizadoPor
+      ? new Date(i.actualizadoEn)
+      : null;
+  const entrada = i.ultimaEntrada ? new Date(i.ultimaEntrada) : null;
+  // Lo más reciente: un cambio de rol posterior a su última entrada se dice (su sesión se cortó).
+  const texto =
+    cambio && (!entrada || cambio > entrada)
+      ? `rol cambiado ${momentoCercanoDeColombia(cambio, ahora)} por ${i.actualizadoPor}`
+      : entrada
+        ? `Entró ${momentoCercanoDeColombia(entrada, ahora)}${i.sesionAbierta ? " · sesión abierta" : ""}`
+        : i.creadoPor
+          ? `inscrito por ${i.creadoPor} · aún no ha entrado`
+          : "sin entradas recientes";
+  return `${ETIQUETA_ROL[i.rol]} · ${texto}`;
+}
+
+// Como el prototipo: lo inscrito hoy arriba, luego tú, las administradoras y el resto por su última entrada.
+function orden(propio: string, hoy: (iso: string) => boolean) {
+  const peso = (i: InscritoPanel) =>
+    i.creadoPor && hoy(i.creadoEn) ? 0 : i.id === propio ? 1 : i.rol === "administrador" ? 2 : 3;
+  return (a: InscritoPanel, b: InscritoPanel) =>
+    peso(a) - peso(b) || (b.ultimaEntrada ?? "").localeCompare(a.ultimaEntrada ?? "");
 }
 
 export default async function Accesos() {
@@ -34,10 +51,10 @@ export default async function Accesos() {
   }
   const ahora = new Date();
   const lista = await listarAccesos(poolDe("panel"));
-  const activos = lista.filter((i) => i.activo);
+  const hoyDe = (iso: string) => momentoDeColombia(new Date(iso), ahora).startsWith("hoy");
+  const activos = lista.filter((i) => i.activo).sort(orden(sesion.usuarioId, hoyDe));
   const bajas = lista.filter((i) => !i.activo);
   const admins = activos.filter((i) => i.rol === "administrador").length;
-  const hoyDe = (iso: string) => momentoDeColombia(new Date(iso), ahora).startsWith("hoy");
 
   return (
     <MarcoPanel

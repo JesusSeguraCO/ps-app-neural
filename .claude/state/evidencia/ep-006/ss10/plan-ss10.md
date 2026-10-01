@@ -47,4 +47,6 @@
   titular, descifradas, catálogos por nombre) y `@ps/dominio/auditoria/registro` (etiquetas, grupos, valores, quién,
   filtros, páginas); `/inventario/{código}/auditoria` para ambos roles, enlazada desde el editor y la ficha. D40.
   Tests: dominio 5, infra 5, HTTP 6. Mutación `mutacion-10.5.md` (6/6). BD de desarrollo en 0025.
-- **Siguiente: 10.6** fidelidad con captura MCP (11 pantallas de la tarea), luego 10.7 journey + wiring.
+- **10.6 hecha**: 11 pantallas FIEL con entrada real y clics reales sobre una BD efímera (`fidelidad-ss10.md`), D41.
+- **Siguiente: 10.7** journey (observador entra con código → bajarlo de rol corta su sesión → contacto → portal → registro)
+  con evidencia en `ss10/`, mutación ya hecha (10.1–10.5) y cableado.

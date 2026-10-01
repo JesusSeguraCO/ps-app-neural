@@ -22,6 +22,9 @@ export interface InscritoPanel {
   creadoPor: string | null;
   dadoDeBajaEn: string | null;
   actualizadoPor: string | null;
+  actualizadoEn: string | null;
+  // Qué cambió la última vez (auditoría de `usuarios_panel`): `rol` o `activo` (reinscripción o baja).
+  ultimoCambio: "rol" | "activo" | null;
   // Última sesión que se conserva (las vencidas se purgan) y si hay una abierta ahora.
   ultimaEntrada: string | null;
   sesionAbierta: boolean;
@@ -30,7 +33,10 @@ export interface InscritoPanel {
 export async function listarAccesos(bd: Consultor): Promise<InscritoPanel[]> {
   const r = await bd.query(
     `SELECT u.id, u.correo, u.rol, u.activo, u.creado_en, u.dado_de_baja_en,
-            c.correo AS creado_por, a.correo AS actualizado_por,
+            c.correo AS creado_por, a.correo AS actualizado_por, u.actualizado_en,
+            (SELECT x.campo FROM auditoria.auditoria x
+              WHERE x.entidad = 'usuarios_panel' AND x.entidad_id = u.id::text AND x.campo IN ('rol', 'activo')
+              ORDER BY x.seq DESC LIMIT 1) AS ultimo_cambio,
             (SELECT max(s.creada) FROM identidad_panel.sesiones_panel s WHERE s.usuario_id = u.id) AS ultima_entrada,
             EXISTS (SELECT 1 FROM identidad_panel.sesiones_panel s
                      WHERE s.usuario_id = u.id AND s.creada > now() - make_interval(secs => $1)
@@ -50,6 +56,8 @@ export async function listarAccesos(bd: Consultor): Promise<InscritoPanel[]> {
     creadoPor: f.creado_por,
     dadoDeBajaEn: f.dado_de_baja_en?.toISOString() ?? null,
     actualizadoPor: f.actualizado_por,
+    actualizadoEn: f.actualizado_en?.toISOString() ?? null,
+    ultimoCambio: f.ultimo_cambio ?? null,
     ultimaEntrada: f.ultima_entrada?.toISOString() ?? null,
     sesionAbierta: f.activo && f.sesion_abierta,
   }));

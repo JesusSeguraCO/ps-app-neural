@@ -29,9 +29,19 @@ const PANTALLAS = [
   "«Recibimos tu petición»",
 ];
 
-function describir(c: Contacto): string {
+// «Eida Tinjacá, Coordinación de Servicio» o el correo en monoespaciado «sin nombre ni cargo» (prototipo).
+function Describir({ c }: { c: Contacto }) {
   const quien = [c.nombre, c.cargo].filter(Boolean).join(", ");
-  return quien ? `${quien} · ${c.direccion}` : `${c.direccion} sin nombre ni cargo`;
+  return quien ? (
+    <>
+      {`${quien} · `}
+      <span className="pp-mono">{c.direccion}</span>
+    </>
+  ) : (
+    <>
+      <span className="pp-mono">{c.direccion}</span> sin nombre ni cargo
+    </>
+  );
 }
 
 function VistaCliente({ contacto }: { contacto: Contacto }) {
@@ -45,6 +55,7 @@ function VistaCliente({ contacto }: { contacto: Contacto }) {
       <div className="ad-vista">
         <p className="pp-meta">¿Dudas sobre tu enlace?</p>
         <p className="ad-vista__frase" aria-label={textoContacto(contacto)}>
+          {!contacto.nombre && !contacto.cargo && "escribe a "}
           <ContactoTrycore contacto={contacto} claseCorreo="" />
         </p>
       </div>
@@ -170,8 +181,7 @@ export default async function ContactoAdministracion({
                     </span>
                     <p className="pp-actividad__texto">
                       <strong>{c.actor}</strong> cambió el contacto: antes{" "}
-                      <span className="pp-mono">{describir(c.antes)}</span>; ahora{" "}
-                      <span className="pp-mono">{describir(c.despues)}</span>.
+                      <Describir c={c.antes} />; ahora <Describir c={c.despues} />.
                     </p>
                   </li>
                 ))}

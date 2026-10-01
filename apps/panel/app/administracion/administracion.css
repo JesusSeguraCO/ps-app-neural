@@ -41,6 +41,7 @@
 .ad-lista {
   margin: 0;
   padding-left: var(--tc-sp-4);
+  list-style: disc;
   font-size: var(--tc-fs-caption);
   line-height: var(--tc-lh-body);
   color: var(--tc-text-m);

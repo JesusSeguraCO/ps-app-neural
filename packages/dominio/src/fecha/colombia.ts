@@ -63,3 +63,12 @@ export function momentoCortoDeColombia(fecha: Date, ahora: Date = new Date()): s
   const mm = String(d.getUTCMinutes()).padStart(2, "0");
   return `${diaRelativo(fecha, ahora)} ${hh}:${mm}`;
 }
+
+// «hoy, 8:02 a. m.» · «ayer, 4:15 p. m.» · «el 22 sep» (prototipo admin-accesos: cuándo entró alguien).
+export function momentoCercanoDeColombia(fecha: Date, ahora: Date = new Date()): string {
+  const d = bogota(fecha);
+  const ayer = bogota(new Date(ahora.getTime() - 86_400_000));
+  if (mismoDia(d, bogota(ahora))) return `hoy, ${horaCortaDeColombia(fecha)}`;
+  if (mismoDia(d, ayer)) return `ayer, ${horaCortaDeColombia(fecha)}`;
+  return `el ${diaRelativo(fecha, ahora)}`;
+}

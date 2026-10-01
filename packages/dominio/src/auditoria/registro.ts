@@ -27,7 +27,9 @@ type Forma =
   | "momento"
   | "estado"
   | "consentimiento"
-  | "motivo";
+  | "motivo"
+  // Texto con fechas AAAA-MM-DD dentro (colocación: «Bancolombia · desde … · libera …»).
+  | "fechas";
 
 interface Definicion {
   etiqueta: string;
@@ -68,7 +70,7 @@ const CAMPOS: Record<string, Definicion> = {
     "disponibilidad",
     "momento",
   ),
-  "perfiles.colocacion": d("Colocación", "disponibilidad"),
+  "perfiles.colocacion": d("Colocación", "disponibilidad", "fechas"),
   "perfiles.modalidad_prueba": d("Modalidad de prueba", "validacion", "catalogo"),
   "validaciones.estado": d("Reporte de validación", "validacion", "estado"),
   "validaciones.evaluador": d("Validación · evaluador", "validacion"),
@@ -179,6 +181,8 @@ export function presentarValor(
     }
     case "motivo":
       return MOTIVOS[valor] ?? valor;
+    case "fechas":
+      return valor.replace(/\b\d{4}-\d{2}-\d{2}\b/g, (f) => fechaCivil(f));
     default:
       return valor;
   }
@@ -232,11 +236,20 @@ export function quienDelCambio(f: {
         ...(f.carga ? { enlace: `/colocados?carga=${f.carga.id}` } : {}),
       };
     case "migracion":
-      return {
-        tipo: "proceso",
-        titulo: "Migración de datos",
-        detalle: "al desplegar la versión que retiró «colocado» como estado",
-      };
+      // El actor de una migración es el proceso que la corrió, no una persona.
+      if (f.actor === "worker:migrar_colocados")
+        return {
+          tipo: "proceso",
+          titulo: "Migración de datos",
+          detalle: "al desplegar la versión que retiró «colocado» como estado",
+        };
+      if (f.actor === "sistema:sembrar_ficticios")
+        return {
+          tipo: "proceso",
+          titulo: "Datos ficticios de prueba",
+          detalle: "sembrados al instalar (solo local, CI y staging)",
+        };
+      return { tipo: "proceso", titulo: "Migración de datos", detalle: f.actor };
     case "fusion":
       return {
         tipo: "proceso",

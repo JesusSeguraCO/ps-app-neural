@@ -217,7 +217,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Registro de auditoría por perfi
   it("edge: la carga de Operaciones lleva quién la hizo y la fecha de corte", async () => {
     const t = plano((await pagina(`/inventario/PS-0142/auditoria?quien=cargas`)).html);
     expect(t).toMatch(
-      /Disponibilidad Disponibilidad .* Carga de Operaciones «asignaciones\.csv» corte \d{1,2} [a-z]{3} \d{4}, \d{1,2}:\d{2} [ap]\. m\. · cargó karen\.rodriguez@trycore\.com/,
+      /Disponibilidad .* Carga de Operaciones «asignaciones\.csv» corte \d{1,2} [a-z]{3} \d{4}, \d{1,2}:\d{2} [ap]\. m\. · cargó karen\.rodriguez@trycore\.com/,
     );
     expect(t).toContain("Colocación");
   });

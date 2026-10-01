@@ -98,6 +98,9 @@ describe("registro de auditoría por perfil (HU-138)", () => {
     expect(presentarValor("perfiles", "motivo_estado", "edicion_deja_incompleto", nombre)).toBe(
       "La edición dejó datos obligatorios sin completar",
     );
+    expect(
+      presentarValor("perfiles", "colocacion", "Bancolombia · desde 2026-09-11 · libera 2026-11-15", nombre),
+    ).toBe("Bancolombia · desde 11 sep 2026 · libera 15 nov 2026");
     expect(presentarValor("validaciones", "criterios", '["Diseño","Pruebas"]', nombre)).toBe(
       "Diseño · Pruebas",
     );
@@ -144,6 +147,9 @@ describe("registro de auditoría por perfil (HU-138)", () => {
       titulo: "Migración de datos",
       detalle: "al desplegar la versión que retiró «colocado» como estado",
     });
+    expect(quienDelCambio({ origen: "migracion", actor: "sistema:sembrar_ficticios" }).titulo).toBe(
+      "Datos ficticios de prueba",
+    );
     expect(quienDelCambio({ origen: "fusion", actor: "karen@trycore.com" })).toEqual({
       tipo: "proceso",
       titulo: "Fusión de valores del catálogo",
