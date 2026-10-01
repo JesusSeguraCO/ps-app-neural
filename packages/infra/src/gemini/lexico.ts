@@ -18,7 +18,8 @@ export interface ProponedorLexico {
   proponer(lote: LoteHaciaModelo): Promise<ResultadoPropuesta>;
 }
 
-export const MODELO_GEMINI = "gemini-2.5-flash";
+// Google retiró gemini-2.5-flash para cuentas nuevas (respuesta 404 de la API, 2026-10-01).
+export const MODELO_GEMINI = "gemini-3.8-flash";
 
 function instruccion(lote: LoteHaciaModelo): string {
   return [
