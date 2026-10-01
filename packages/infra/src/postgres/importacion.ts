@@ -1,0 +1,303 @@
+// Importación masiva desde el panel (EP-006 · sub-slice 3; docs/10-specs/importacion-masiva.md; HU-088,
+// HU-086, HU-148). Lee el banco en la forma del formato (la misma que exporta y que compara el plan),
+// los catálogos con que el plan valida, registra el lote calculado sin tocar `perfiles` y guarda las
+// plantillas de emparejamiento. Aplicar y revertir son del worker (sub-slice 4).
+import "server-only";
+import type pg from "pg";
+import {
+  MODALIDAD_FORMATO,
+  VINCULO_FORMATO,
+  type ClaveCampo,
+} from "@ps/dominio/importacion/campos";
+import { formatearExperiencia } from "@ps/dominio/importacion/celdas";
+import type { ColumnaPlantilla } from "@ps/dominio/importacion/emparejar";
+import type {
+  Cambio,
+  Catalogos,
+  FilaBanco,
+  FilaMapeada,
+  Grupo,
+  Modo,
+  Plan,
+  Problema,
+} from "@ps/dominio/importacion/plan";
+import type { Autor } from "./catalogos-panel";
+import { RechazoInventario } from "./unidad-inventario";
+
+type Consultor = Pick<pg.PoolClient, "query">;
+
+// ─── el banco en la forma del formato ────────────────────────────────────────────────────────
+
+// Una sola consulta: el perfil con sus hijas agregadas en orden. Sin consentimiento ni nada B.4; el
+// rol es el principal (orden 1). Incluye archivados: su código existe y el plan debe reconocerlo.
+export async function bancoEnFormato(bd: Consultor): Promise<FilaBanco[]> {
+  const r = await bd.query(
+    `SELECT p.codigo, p.estado, p.nombre, p.primer_apellido, f.nombre AS familia,
+            (SELECT v.nombre FROM inventario.perfil_roles h JOIN inventario.catalogo_roles v ON v.id = h.valor_id
+              WHERE h.perfil_id = p.id ORDER BY h.orden LIMIT 1) AS rol,
+            s.nombre AS seniority, p.anios_experiencia,
+            ARRAY(SELECT v.nombre FROM inventario.perfil_tecnologias h JOIN inventario.catalogo_tecnologias v ON v.id = h.valor_id
+                   WHERE h.perfil_id = p.id ORDER BY h.orden) AS tecnologias,
+            ARRAY(SELECT v.nombre FROM inventario.perfil_sectores h JOIN inventario.catalogo_sectores v ON v.id = h.valor_id
+                   WHERE h.perfil_id = p.id ORDER BY h.orden) AS sectores,
+            mo.nombre AS modalidad, ci.nombre AS ciudad,
+            to_char(p.disponibilidad_fecha, 'YYYY-MM-DD') AS disponibilidad,
+            mp.nombre AS modalidad_prueba, p.capacidad, p.anclaje, p.resumen, p.formacion, p.vinculo,
+            p.idiomas, p.sello_personal, mpa.nombre AS motivo_pausa,
+            COALESCE((SELECT json_agg(json_build_object('cargo', e.cargo, 'cliente', e.cliente_nombrado,
+                                                        'desde', e.desde, 'hasta', e.hasta,
+                                                        'descripcion', e.descripcion) ORDER BY e.orden)
+                        FROM inventario.perfil_experiencias e WHERE e.perfil_id = p.id AND e.vigente), '[]') AS experiencias
+       FROM inventario.perfiles p
+       LEFT JOIN inventario.catalogo_familias f ON f.id = p.familia_id
+       LEFT JOIN inventario.catalogo_seniorities s ON s.id = p.seniority_id
+       LEFT JOIN inventario.catalogo_modalidades mo ON mo.id = p.modalidad_id
+       LEFT JOIN inventario.catalogo_ciudades ci ON ci.id = p.ciudad_id
+       LEFT JOIN inventario.catalogo_modalidades_prueba mp ON mp.id = p.modalidad_prueba_id
+       LEFT JOIN inventario.catalogo_motivos_pausa mpa ON mpa.id = p.motivo_pausa_id
+      ORDER BY p.codigo`,
+  );
+  return r.rows.map((p) => {
+    const fila: FilaBanco = {
+      codigo: p.codigo,
+      estado: p.estado,
+      nombre: p.nombre,
+      primerApellido: p.primer_apellido,
+      rol: p.rol,
+      familia: p.familia,
+      seniority: p.seniority,
+      aniosExperiencia: p.anios_experiencia,
+      tecnologias: p.tecnologias,
+      sectores: p.sectores,
+      modalidad: p.modalidad
+        ? MODALIDAD_FORMATO[p.modalidad as keyof typeof MODALIDAD_FORMATO]
+        : null,
+      ciudad: p.ciudad,
+      disponibilidad: p.disponibilidad,
+      modalidadPrueba: p.modalidad_prueba,
+      capacidad: p.capacidad,
+      anclaje: p.anclaje,
+      resumen: p.resumen,
+      formacion: p.formacion,
+      vinculo: p.vinculo ? VINCULO_FORMATO[p.vinculo as keyof typeof VINCULO_FORMATO] : null,
+      idiomas: p.idiomas,
+      selloPersonal: p.sello_personal,
+      experiencias: (p.experiencias as Array<Parameters<typeof formatearExperiencia>[0]>).map(
+        formatearExperiencia,
+      ),
+      motivoPausa: p.motivo_pausa,
+    };
+    return fila;
+  });
+}
+
+// Catálogos con que el plan reconoce los valores: activos e inactivos (un perfil puede conservar uno
+// desactivado y la ida y vuelta no debe verlo «nuevo»); los fusionados no, porque ya no existen.
+export async function catalogosImportacion(bd: Consultor): Promise<Catalogos> {
+  const nombres = async (sql: string) => (await bd.query(sql)).rows.map((f) => f.nombre as string);
+  const vivo = "fusionado_en_id IS NULL";
+  return {
+    roles: (
+      await bd.query(
+        `SELECT r.nombre, f.nombre AS familia FROM inventario.catalogo_roles r
+           JOIN inventario.catalogo_familias f ON f.id = r.familia_id WHERE r.${vivo} ORDER BY r.nombre`,
+      )
+    ).rows,
+    familias: await nombres(
+      `SELECT nombre FROM inventario.catalogo_familias WHERE ${vivo} ORDER BY nombre`,
+    ),
+    tecnologias: await nombres(
+      `SELECT nombre FROM inventario.catalogo_tecnologias WHERE ${vivo} ORDER BY nombre`,
+    ),
+    sectores: await nombres(
+      `SELECT nombre FROM inventario.catalogo_sectores WHERE ${vivo} ORDER BY nombre`,
+    ),
+    seniorities: await nombres(`SELECT nombre FROM inventario.catalogo_seniorities ORDER BY orden`),
+    ciudades: await nombres(`SELECT nombre FROM inventario.catalogo_ciudades ORDER BY nombre`),
+    modalidades: (
+      await nombres(`SELECT nombre FROM inventario.catalogo_modalidades ORDER BY nombre`)
+    ).map((n) => MODALIDAD_FORMATO[n as keyof typeof MODALIDAD_FORMATO] ?? n),
+    modalidadesPrueba: (
+      await bd.query(
+        `SELECT m.nombre, f.nombre AS familia FROM inventario.catalogo_modalidades_prueba m
+           JOIN inventario.catalogo_familias f ON f.id = m.familia_id WHERE m.${vivo} ORDER BY m.nombre`,
+      )
+    ).rows,
+    motivosPausa: await nombres(
+      `SELECT nombre FROM inventario.catalogo_motivos_pausa ORDER BY nombre`,
+    ),
+  };
+}
+
+// ─── lotes ───────────────────────────────────────────────────────────────────────────────────
+
+export interface NuevoLote {
+  archivoHash: string;
+  formato: "csv" | "tsv" | "json";
+  modo: Modo;
+  emparejamiento: ColumnaPlantilla[];
+  filas: readonly FilaMapeada[];
+  plan: Plan;
+}
+
+// El lote nace `calculado` con una fila por fila del plan y las celdas emparejadas (nunca columnas
+// B.4: `mapearFilas` no las deja pasar y la BD rechaza claves fuera del formato).
+export async function registrarLote(bd: pg.Pool, autor: Autor, l: NuevoLote): Promise<string> {
+  const tx = await bd.connect();
+  try {
+    await tx.query("BEGIN");
+    const id = (
+      await tx.query(
+        `INSERT INTO inventario.lotes_importacion
+           (modo, formato, archivo_hash, total_filas, conteos, emparejamiento, bloqueado, creado_por)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+        [
+          l.modo,
+          l.formato,
+          l.archivoHash,
+          l.filas.length,
+          JSON.stringify(l.plan.conteos),
+          JSON.stringify(l.emparejamiento),
+          l.plan.bloqueado,
+          autor.usuarioId,
+        ],
+      )
+    ).rows[0].id as string;
+    const datos = new Map(l.filas.map((f) => [f.numero, f.celdas]));
+    for (const f of l.plan.filas)
+      await tx.query(
+        `INSERT INTO inventario.lote_filas
+           (lote_id, numero, codigo, grupo, incluida, datos, cambios, errores, avisos, motivo_omision)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          id,
+          f.numero,
+          f.codigo,
+          f.grupo,
+          f.incluida,
+          JSON.stringify(datos.get(f.numero) ?? {}),
+          JSON.stringify(f.cambios),
+          JSON.stringify(f.errores),
+          JSON.stringify(f.avisos),
+          f.motivoOmision ?? null,
+        ],
+      );
+    await tx.query("COMMIT");
+    return id;
+  } catch (e) {
+    await tx.query("ROLLBACK");
+    throw e;
+  } finally {
+    tx.release();
+  }
+}
+
+export interface LoteLeido {
+  id: string;
+  estado: string;
+  modo: Modo;
+  formato: string;
+  bloqueado: boolean;
+  conteos: Plan["conteos"];
+  creadoEn: string;
+  filas: Array<{
+    numero: number;
+    codigo: string | null;
+    grupo: Grupo;
+    incluida: boolean;
+    datos: Partial<Record<ClaveCampo, string>>;
+    cambios: Cambio[];
+    errores: Problema[];
+    avisos: Problema[];
+    motivoOmision: string | null;
+  }>;
+}
+
+export async function leerLote(bd: Consultor, id: string): Promise<LoteLeido | null> {
+  const l = (
+    await bd.query(
+      `SELECT id, estado, modo, formato, bloqueado, conteos, creado_en FROM inventario.lotes_importacion WHERE id = $1`,
+      [id],
+    )
+  ).rows[0];
+  if (!l) return null;
+  const filas = await bd.query(
+    `SELECT numero, codigo, grupo, incluida, datos, cambios, errores, avisos, motivo_omision
+       FROM inventario.lote_filas WHERE lote_id = $1 ORDER BY numero`,
+    [id],
+  );
+  return {
+    id: l.id,
+    estado: l.estado,
+    modo: l.modo,
+    formato: l.formato,
+    bloqueado: l.bloqueado,
+    conteos: l.conteos,
+    creadoEn: l.creado_en.toISOString(),
+    filas: filas.rows.map((f) => ({
+      numero: f.numero,
+      codigo: f.codigo,
+      grupo: f.grupo,
+      incluida: f.incluida,
+      datos: f.datos,
+      cambios: f.cambios,
+      errores: f.errores,
+      avisos: f.avisos,
+      motivoOmision: f.motivo_omision,
+    })),
+  };
+}
+
+// ─── plantillas de emparejamiento (HU-148) ───────────────────────────────────────────────────
+
+export interface PlantillaGuardada {
+  id: string;
+  nombre: string;
+  columnas: ColumnaPlantilla[];
+  autor: string;
+  actualizadaEn: string;
+}
+
+const VIOLACION_UNICA = "23505";
+
+export async function guardarPlantilla(
+  bd: Consultor,
+  autor: Autor,
+  p: { nombre: string; columnas: ColumnaPlantilla[] },
+): Promise<PlantillaGuardada> {
+  try {
+    const r = await bd.query(
+      `INSERT INTO inventario.plantillas_emparejamiento (nombre, columnas, creada_por, actualizada_por)
+       VALUES ($1, $2, $3, $3) RETURNING id, nombre, columnas, actualizada_en`,
+      [p.nombre.trim(), JSON.stringify(p.columnas), autor.usuarioId],
+    );
+    const f = r.rows[0];
+    return {
+      id: f.id,
+      nombre: f.nombre,
+      columnas: f.columnas,
+      autor: autor.correo,
+      actualizadaEn: f.actualizada_en.toISOString(),
+    };
+  } catch (e) {
+    if ((e as { code?: string }).code === VIOLACION_UNICA)
+      throw new RechazoInventario("nombre_repetido", { nombre: p.nombre.trim() });
+    throw e;
+  }
+}
+
+export async function listarPlantillas(bd: Consultor): Promise<PlantillaGuardada[]> {
+  const r = await bd.query(
+    `SELECT p.id, p.nombre, p.columnas, u.correo AS autor, p.actualizada_en
+       FROM inventario.plantillas_emparejamiento p
+       JOIN identidad_panel.usuarios_panel u ON u.id = p.actualizada_por
+      ORDER BY p.nombre`,
+  );
+  return r.rows.map((f) => ({
+    id: f.id,
+    nombre: f.nombre,
+    columnas: f.columnas,
+    autor: f.autor,
+    actualizadaEn: f.actualizada_en.toISOString(),
+  }));
+}

@@ -7,7 +7,8 @@
 //  - Nunca publica: `estado: publicado` se rechaza con aviso; los nuevos nacen en borrador (§3).
 //  - Rol, tecnología o sector que no existen se destacan como valor nuevo, sin bloquear (§6).
 import { clasificarNombre, masCercanos, normalizar } from "../catalogo/parecidos";
-import { CLAVES_CAMPO, type ClaveCampo } from "./campos";
+import { OPCIONES_DISPONIBILIDAD, clienteEnDescripcion } from "../inventario/perfil";
+import { CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
 import { VACIAR, formatearExperiencia, leerExperiencia, partirLista } from "./celdas";
 import type { ColumnaEmparejada } from "./emparejar";
 
@@ -121,19 +122,14 @@ export function mapearFilas(
 
 const RE_CODIGO = /^PS-\d{4}$/;
 const ESTADOS_IMPORTABLES = ["borrador", "pausado", "archivado"];
-const VINCULOS = ["vinculado", "banco no vinculado", "fábrica"];
-const BANDAS: Record<string, number> = {
-  "disponible ahora": 0,
-  "en 1 semana": 7,
-  "en 2 semanas": 14,
-  "en 1 mes": 30,
-};
-const OPCIONES_DISPONIBILIDAD = [
+const VINCULOS = Object.values(VINCULO_FORMATO);
+// Las mismas opciones rápidas del editor (RF-3.13): la banda se guarda como fecha contra hoy.
+const BANDAS: ReadonlyMap<string, number> = new Map(
+  Object.values(OPCIONES_DISPONIBILIDAD).map((o) => [normalizar(o.etiqueta), o.dias]),
+);
+const OPCIONES_FECHA = [
   "AAAA-MM-DD",
-  "Disponible ahora",
-  "En 1 semana",
-  "En 2 semanas",
-  "En 1 mes",
+  ...Object.values(OPCIONES_DISPONIBILIDAD).map((o) => o.etiqueta),
 ];
 const NO_VACIABLES: ReadonlySet<ClaveCampo> = new Set([
   "codigo",
@@ -250,13 +246,13 @@ function leerCampo(ctx: Contexto, campo: ClaveCampo, celda: string): Valor | und
       return n;
     }
     case "disponibilidad": {
-      const banda = BANDAS[normalizar(celda)];
+      const banda = BANDAS.get(normalizar(celda));
       if (banda !== undefined) return sumarDias(ctx.hoy, banda);
       if (fechaValida(celda)) return celda;
       ctx.errores.push({
         campo,
         mensaje: `«${celda}» no es una fecha ni una banda de disponibilidad`,
-        opciones: OPCIONES_DISPONIBILIDAD,
+        opciones: OPCIONES_FECHA,
       });
       return undefined;
     }
@@ -310,7 +306,7 @@ function leerCampo(ctx: Contexto, campo: ClaveCampo, celda: string): Valor | und
           ctx.errores.push({ campo, mensaje: `Periodo inválido en «${t}»` });
           continue;
         }
-        if (e.cliente && normalizar(e.descripcion).includes(normalizar(e.cliente))) {
+        if (clienteEnDescripcion(e.descripcion, e.cliente)) {
           ctx.errores.push({
             campo,
             mensaje: `La descripción nombra al cliente «${e.cliente}»: va solo en su lugar, para poder ocultarlo sin consentimiento`,

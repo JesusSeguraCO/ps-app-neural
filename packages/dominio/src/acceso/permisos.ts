@@ -14,6 +14,8 @@ export const MatrizPermisos = {
   "lexico.escribir": ["administrador"],
   "perfil.escribir": ["administrador"],
   "consentimiento.registrar": ["administrador"],
+  // Importación masiva (spec §8): exportar, plantillas, emparejar y calcular el plan.
+  "importacion.ejecutar": ["administrador"],
 } as const satisfies Record<string, readonly RolPanel[]>;
 
 export type AccionPanel = keyof typeof MatrizPermisos;

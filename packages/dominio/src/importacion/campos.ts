@@ -80,3 +80,15 @@ export function normalizarEncabezado(t: string): string {
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
+
+// Cómo se escriben en el formato los valores que la BD guarda como clave.
+export const MODALIDAD_FORMATO = {
+  remoto: "Remoto",
+  hibrido: "Híbrido",
+  presencial: "Presencial",
+} as const;
+export const VINCULO_FORMATO = {
+  vinculado: "vinculado",
+  banco_no_vinculado: "banco no vinculado",
+  fabrica: "fábrica",
+} as const;

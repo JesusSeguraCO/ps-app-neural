@@ -21,6 +21,10 @@ describe("MatrizPermisos (ADR-0002 H19)", () => {
       expect(puede("observador", accion)).toBe(false);
     }
   });
+  it("EP-006: solo la administradora importa (spec §8, HU-086)", () => {
+    expect(puede("administrador", "importacion.ejecutar")).toBe(true);
+    expect(puede("observador", "importacion.ejecutar")).toBe(false);
+  });
   it("una acción desconocida no es acción", () => {
     expect(esAccion("enlaces.generar")).toBe(true);
     expect(esAccion("inventario.borrar")).toBe(false);
