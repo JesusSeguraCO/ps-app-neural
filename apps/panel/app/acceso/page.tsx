@@ -10,6 +10,14 @@ import "./acceso.css";
 
 export default async function Acceso({ searchParams }: { searchParams: Promise<{ motivo?: string }> }) {
   const { motivo } = await searchParams;
+  // HU-151: le bajaron el rol con la sesión abierta; vuelve a entrar ya con el rol nuevo.
+  if (motivo === "rol_cambiado")
+    return (
+      <PuertaPanel
+        sesionTerminada
+        explicacion="Cambió tu rol en el panel, así que tu sesión se cerró. Vuelve a entrar con tu correo y un código nuevo."
+      />
+    );
   const sesionTerminada = motivo === "sesion_expirada";
   if (!sesionTerminada) return <PuertaPanel sesionTerminada={false} />;
   const id = (await cookies()).get(COOKIE_PANEL)?.value;

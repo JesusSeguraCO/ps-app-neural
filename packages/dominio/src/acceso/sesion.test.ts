@@ -79,6 +79,18 @@ describe("validarSesionPanel (12 h absolutas, 60 min de inactividad, activo y ro
       rol: "administrador",
     });
   });
+  it("HU-151: abierta como administradora y hoy observadora → se corta (rol_cambiado)", () => {
+    expect(
+      validarSesionPanel({ ...viva, rolAlAbrir: "administrador", rol: "observador" }, AHORA),
+    ).toEqual({ ok: false, motivo: "rol_cambiado" });
+  });
+  it("HU-151: subir de observadora a administradora no corta; sin rol al abrir tampoco", () => {
+    expect(validarSesionPanel({ ...viva, rolAlAbrir: "observador" }, AHORA).ok).toBe(true);
+    expect(validarSesionPanel({ ...viva, rolAlAbrir: null, rol: "observador" }, AHORA).ok).toBe(true);
+    expect(
+      validarSesionPanel({ ...viva, rolAlAbrir: "observador", rol: "observador" }, AHORA).ok,
+    ).toBe(true);
+  });
   it("la sesión válida dice hasta cuándo dura: 12 h desde que se abrió", () => {
     const r = validarSesionPanel(viva, AHORA);
     expect(r.ok && r.hasta.getTime()).toBe(viva.creada.getTime() + 12 * 3_600_000);

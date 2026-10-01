@@ -2,7 +2,8 @@
 // barra superior con migas, correo de la sesión (identidad de auditoría) y «Cerrar sesión», y el pie
 // con rol y fin de la jornada. Sin enlace al portal del cliente (HU-123, edge case). Los destinos con
 // trabajo pendiente llevan su conteo: peticiones de invitación sin decidir y perfiles por revisar en la
-// bandeja de vigencia (HU-136).
+// bandeja de vigencia (HU-136). El pie lleva a Administración (contacto de Trycore y accesos, HU-147 y
+// HU-151; prototipo admin-contacto); en móvil es un destino más de la barra horizontal.
 import type { ReactNode } from "react";
 import { horaCortaDeColombia } from "@ps/dominio/fecha/colombia";
 import { listarVigencia } from "@ps/infra/postgres/estado-perfil";
@@ -82,7 +83,12 @@ export async function MarcoPanel({
             )}
           </div>
         ))}
-        <div className="pp-sidebar__pie">
+        <a
+          className="pp-sidebar__pie pp-sidebar__pie--enlace"
+          href="/administracion"
+          aria-current={activo === "administracion" ? "page" : undefined}
+          aria-label={`Administración · ${ROL_ETIQUETA[sesion.rol]} · sesión hasta las ${horaCortaDeColombia(sesion.hasta)}`}
+        >
           <span className="pp-avatar" aria-hidden="true">
             {iniciales(sesion.correo)}
           </span>
@@ -90,7 +96,7 @@ export async function MarcoPanel({
             <span className="pp-persona__nombre">{ROL_ETIQUETA[sesion.rol]}</span>
             <span className="pp-persona__area">{`Sesión hasta las ${horaCortaDeColombia(sesion.hasta)}`}</span>
           </span>
-        </div>
+        </a>
       </nav>
       <div className="pp-panel__cuerpo">
         <header className="pp-panel__topbar">

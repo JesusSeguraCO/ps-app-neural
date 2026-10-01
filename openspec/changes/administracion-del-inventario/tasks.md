@@ -91,9 +91,9 @@
 
 ## 10. Sub-slice 10 — Accesos, contacto y auditoría (HU-151, HU-147, HU-138)
 
-- [ ] 10.1 Migración: `usuarios_panel` con `dado_de_baja_en` y `actualizado_por`, `sesiones_panel.rol_al_abrir`; función con bloqueo de fila para la invariante «al menos un administrador activo»; verificar V3-7, V8-10 y el test concurrente de dos bajas
-- [ ] 10.2 Pantalla y endpoints de accesos (alta solo `@trycore.com`, cambio de rol, baja lógica, auditados con rol anterior y nuevo); verificar los escenarios de alta, correo externo y último administrador de HU-151
-- [ ] 10.3 Corte de sesión en la siguiente petición (`conSesionPanel` relee `activo` y `rol` con la sesión); baja con respuesta idéntica y sin código encolado; verificar los escenarios de cambio de rol y baja de HU-151 y la carrera petición en curso ↔ baja
+- [x] 10.1 Migración: `usuarios_panel` con `dado_de_baja_en` y `actualizado_por`, `sesiones_panel.rol_al_abrir`; función con bloqueo de fila para la invariante «al menos un administrador activo»; verificar V3-7, V8-10 y el test concurrente de dos bajas
+- [x] 10.2 Pantalla y endpoints de accesos (alta solo `@trycore.com`, cambio de rol, baja lógica, auditados con rol anterior y nuevo); verificar los escenarios de alta, correo externo y último administrador de HU-151
+- [x] 10.3 Corte de sesión en la siguiente petición (`conSesionPanel` relee `activo` y `rol` con la sesión); baja con respuesta idéntica y sin código encolado; verificar los escenarios de cambio de rol y baja de HU-151 y la carrera petición en curso ↔ baja
 - [ ] 10.4 `configuracion_contacto` y vista `operacion.contacto_trycore`; componente `ContactoTrycore` en las cinco pantallas de contacto del portal (retira la constante `CONTACTO` de EP-001), edición auditada, rechazo de correo externo, observador en lectura y 403 por petición directa; verificar los cinco escenarios de HU-147 en las cinco pantallas
 - [ ] 10.5 Consulta de auditoría por perfil descifrada en el panel (campo, antes, después, quién, cuándo, origen; enlace al lote o a la carga con su fecha de corte; archivado como cambio de estado); verificar los cinco escenarios de HU-138 con historia generada por todas las vías de los sub-slices 1–9, y que una sesión vencida no deja cambio sin autor
 - [ ] 10.6 Fidelidad con captura MCP de `admin-accesos`, `admin-accesos--alta`, `admin-accesos--correo-externo`, `admin-accesos--cambio-rol`, `admin-accesos--baja`, `admin-accesos--ultimo-admin`, `admin-contacto`, `admin-contacto--correo-externo`, `admin-contacto--observador`, `auditoria-perfil`, `auditoria-perfil--archivado`

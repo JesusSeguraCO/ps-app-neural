@@ -20,6 +20,9 @@ export const MatrizPermisos = {
   "colocados.escribir": ["administrador"],
   // HU-124: «Avisar a Talento Humano» de un dato desactualizado; es la salida del observador.
   "perfil.avisar": ["administrador", "observador"],
+  // Administración (HU-151, HU-147): la lista de acceso y el contacto de Trycore.
+  "accesos.administrar": ["administrador"],
+  "contacto.escribir": ["administrador"],
 } as const satisfies Record<string, readonly RolPanel[]>;
 
 export type AccionPanel = keyof typeof MatrizPermisos;

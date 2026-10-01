@@ -9,3 +9,10 @@
 .pp-hoja[tabindex="-1"]:focus { outline: none; }
 /* Menú horizontal en pantallas estrechas: la marca y el destino actual van primero (prototipo). */
 @media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }
+
+/* El pie de la barra lateral lleva a Administración (prototipo admin-contacto: pp-sidebar__pie--enlace). */
+.pp-sidebar__pie--enlace { margin-top: auto; padding: var(--tc-sp-2); border-radius: var(--tc-r-sm); color: inherit; text-decoration: none; transition: background var(--tc-dur-fast) var(--tc-ease); }
+.pp-sidebar__pie--enlace:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); }
+.pp-sidebar__pie--enlace[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); }
+.pp-sidebar__pie--enlace:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+@media (max-width: 1023px) { .pp-sidebar .pp-sidebar__pie--enlace { display: flex; margin: 0; padding: 0 var(--tc-sp-3); min-height: 44px; flex: none; } .pp-sidebar__pie--enlace .pp-avatar { display: none; } .pp-sidebar__pie--enlace .pp-persona__area { display: none; } .pp-sidebar__pie--enlace[aria-current="page"] { order: -1; } }

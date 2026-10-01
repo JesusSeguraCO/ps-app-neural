@@ -22,6 +22,7 @@ import { registrarAccesoRechazado } from "../postgres/observador";
 import {
   buscarSesionPanel,
   buscarSesionPortal,
+  cortarSesionPanel,
   refrescarActividadPanel,
 } from "../postgres/sesiones";
 
@@ -112,6 +113,9 @@ export function conSesionPanel(
     const bd = poolDe("panel");
     const fila = id ? await buscarSesionPanel(bd, id) : null;
     const r = validarSesionPanel(fila, new Date());
+    // HU-151: dada de baja o con el rol bajado, la sesión se corta en esta misma petición.
+    if (!r.ok && fila && id && (r.motivo === "rol_cambiado" || !fila.activo))
+      await cortarSesionPanel(bd, id);
     if (!r.ok) return json(401, { motivo: r.motivo === "sin_sesion" ? "sin_sesion" : r.motivo });
     if (r.refrescarActividad) await refrescarActividadPanel(bd, id!);
     return h(req, { usuarioId: r.usuarioId, correo: r.correo, rol: r.rol, idCookie: id! });

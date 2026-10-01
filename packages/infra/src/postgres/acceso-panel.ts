@@ -97,10 +97,10 @@ export async function verificarCodigoPanel(
     const par = await leer(tx, clavePar, "par");
     const porIp = claveDeIp ? await leer(tx, claveDeIp, "ip") : estadoInicial(ahora);
     const u = await tx.query(
-      `SELECT id, activo FROM identidad_panel.usuarios_panel WHERE correo_hmac = $1`,
+      `SELECT id, activo, rol FROM identidad_panel.usuarios_panel WHERE correo_hmac = $1`,
       [correoHmac],
     );
-    const usuario = u.rows[0] as { id: string; activo: boolean } | undefined;
+    const usuario = u.rows[0] as { id: string; activo: boolean; rol: string } | undefined;
     const c = await tx.query(
       `SELECT id, codigo_hmac, invalidado_por_sistema FROM identidad_panel.codigos_panel
         WHERE usuario_id = $1 AND usado_en IS NULL AND expira_en > now()
@@ -130,11 +130,12 @@ export async function verificarCodigoPanel(
       );
       const idSesion = randomBytes(32).toString("base64url");
       await tx.query(
-        `INSERT INTO identidad_panel.sesiones_panel (id_hash, usuario_id, expira) VALUES ($1, $2, $3)`,
+        `INSERT INTO identidad_panel.sesiones_panel (id_hash, usuario_id, expira, rol_al_abrir) VALUES ($1, $2, $3, $4)`,
         [
           createHash("sha256").update(idSesion).digest(),
           usuario.id,
           new Date(ahora.getTime() + DURACION_PANEL_MS),
+          usuario.rol,
         ],
       );
       await guardar(tx, clavePar, registrarAcierto(par));

@@ -40,7 +40,7 @@ export async function buscarSesionPanel(
   idCookie: string,
 ): Promise<FilaSesionPanel | null> {
   const r = await bd.query(
-    `SELECT u.id, u.correo, u.rol, u.activo, s.creada, s.ultima_actividad
+    `SELECT u.id, u.correo, u.rol, u.activo, s.creada, s.ultima_actividad, s.rol_al_abrir
        FROM identidad_panel.sesiones_panel s
        JOIN identidad_panel.usuarios_panel u ON u.id = s.usuario_id
       WHERE s.id_hash = $1`,
@@ -55,7 +55,13 @@ export async function buscarSesionPanel(
     activo: f.activo,
     creada: f.creada,
     ultimaActividad: f.ultima_actividad,
+    rolAlAbrir: f.rol_al_abrir,
   };
+}
+
+// Corta la sesión del panel (HU-151): la fila se borra por la función de cierre, como al salir.
+export async function cortarSesionPanel(bd: pg.Pool, idCookie: string): Promise<void> {
+  await bd.query(`SELECT identidad_panel.cerrar_sesion($1)`, [hashIdSesion(idCookie)]);
 }
 
 export async function refrescarActividadPanel(bd: pg.Pool, idCookie: string): Promise<void> {
