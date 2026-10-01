@@ -22,7 +22,7 @@ export const MENU_PANEL: SeccionMenu[] = [
       {
         clave: "importar",
         etiqueta: "Importar",
-        ruta: null,
+        ruta: "/importar",
         icono: "M12 4v11M7 10l5 5 5-5M5 20h14",
       },
       {

@@ -108,6 +108,8 @@ export interface Emparejado {
   formato: Formato;
   encabezados: string[];
   totalFilas: number;
+  // La primera fila de datos, para reconocer cada columna (vacía en las columnas bloqueadas).
+  ejemplo: string[];
   emparejamiento: ColumnaEmparejada[];
   // Solo al aplicar una plantilla (HU-148).
   faltantes?: ColumnaPlantilla[];
@@ -122,15 +124,27 @@ export async function emparejar(e: z.infer<typeof entradaEmparejar>): Promise<Em
     encabezados: r.tabla.encabezados,
     totalFilas: r.tabla.filas.length,
   };
+  const conEjemplo = (emparejamiento: ColumnaEmparejada[]) => ({
+    ejemplo: emparejamiento.map((c) =>
+      c.bloqueada ? "" : (r.tabla.filas[0]?.celdas[c.indice] ?? "").trim(),
+    ),
+    emparejamiento,
+  });
   if (!e.plantillaId)
     return {
       ...base,
-      emparejamiento: proponerEmparejamiento(r.tabla.encabezados, CAMPOS_IMPORTACION),
+      ...conEjemplo(proponerEmparejamiento(r.tabla.encabezados, CAMPOS_IMPORTACION)),
     };
   const p = await leerPlantilla(poolDe("panel"), e.plantillaId);
   if (!p) throw new RechazoInventario("no_existe");
   const a = aplicarPlantilla(r.tabla.encabezados, p.columnas, CAMPOS_IMPORTACION);
-  return { ...base, ...a, plantilla: { id: p.id, nombre: p.nombre } };
+  return {
+    ...base,
+    ...conEjemplo(a.emparejamiento),
+    faltantes: a.faltantes,
+    nuevas: a.nuevas,
+    plantilla: { id: p.id, nombre: p.nombre },
+  };
 }
 
 // ─── paso 3: vista previa (plan calculado, sin escritura en el banco) ────────────────────────

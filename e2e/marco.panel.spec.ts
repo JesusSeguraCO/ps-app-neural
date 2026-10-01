@@ -45,7 +45,7 @@ test.describe("marco del panel con sesión", () => {
     await abrirSesion(context, baseURL!);
   });
 
-  test("escritorio 1440: barra lateral y contenido en dos columnas, 7 destinos deshabilitados; Enlaces, Peticiones, Catálogos, Léxico e Inventario activos", async ({
+  test("escritorio 1440: barra lateral y contenido en dos columnas, 6 destinos deshabilitados; Enlaces, Peticiones, Catálogos, Léxico, Inventario e Importar activos", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,8 +71,8 @@ test.describe("marco del panel con sesión", () => {
     expect(m.display).toBe("grid");
     expect(m.lateralAncho).toBeLessThan(400);
     expect(m.cuerpoALaDerecha).toBe(true);
-    expect(m.inactivos).toBe(7);
-    expect(m.conHref).toBe(5); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1); Inventario (sub-slice 2)
+    expect(m.inactivos).toBe(6);
+    expect(m.conHref).toBe(6); // Enlaces y Peticiones (EP-001); Catálogos y Léxico (EP-006 · sub-slice 1); Inventario (2); Importar (3)
     expect(m.scroll).toBe(0);
     expect(errores).toEqual([]);
   });
@@ -142,6 +142,7 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/inventario",
     "/inventario/nuevo",
     "/inventario/PS-0187",
+    "/importar",
   ]) {
     test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
       const errores: string[] = [];

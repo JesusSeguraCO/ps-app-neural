@@ -380,3 +380,8 @@ export async function listarPlantillas(bd: Consultor): Promise<PlantillaGuardada
 export async function leerPlantilla(bd: Consultor, id: string): Promise<PlantillaGuardada | null> {
   return (await listarPlantillas(bd)).find((p) => p.id === id) ?? null;
 }
+
+// Perfiles del banco (todos los estados): lo que trae la exportación.
+export async function contarBanco(bd: Consultor): Promise<number> {
+  return (await bd.query(`SELECT count(*)::int AS n FROM inventario.perfiles`)).rows[0].n;
+}
