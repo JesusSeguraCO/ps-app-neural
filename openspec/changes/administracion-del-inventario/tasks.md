@@ -101,7 +101,7 @@
 
 ## 11. Cierre de la épica
 
-- [ ] 11.1 Recorrido integrado de punta a punta (runner `integration-check`): catálogo → perfil → consentimiento → evidencia → publicar → importar y revertir → disponibilidad y vigencia → colocado → observador → auditoría; verificar en verde con la cola real y los dobles declarados de Mailgun, Gemini y Spaces
+- [x] 11.1 Recorrido integrado de punta a punta (runner `integration-check`): catálogo → perfil → consentimiento → evidencia → publicar → importar y revertir → disponibilidad y vigencia → colocado → observador → auditoría; verificar en verde con la cola real y los dobles declarados de Mailgun, Gemini y Spaces
 - [ ] 11.2 Tests de contrato (Newman) de todos los endpoints nuevos del panel; verificar la colección en verde en la fase api
 - [ ] 11.3 Fidelidad final: las 66 pantallas de EP-006 capturadas contra el prototipo y desviaciones aprobadas registradas en `design.md`; verificar el conteo contra el manifiesto
 - [ ] 11.4 Verificación adversarial de cableado (`wiring-adversarial-verifier`, contexto virgen) y cierre de `wiring_verified`; retirar HU-149 del grafo del hub (condición del DoR) y corregir `design_source_applies` en la consola; verificar con `slice-ops.sh status`
