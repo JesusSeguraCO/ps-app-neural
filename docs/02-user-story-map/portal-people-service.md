@@ -4,12 +4,12 @@ proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
 prd_version: 4.14
 epicas_origen: docs/03-backlog/epicas.md
-epicas_version: 5.7
-version: 3.6
+epicas_version: 5.8
+version: 3.7
 fecha: 2026-10-02
-historias_escritas: 125
+historias_escritas: 135
 historias_descartadas: 2
-historias_anticipadas_sin_redactar: 5
+historias_anticipadas_sin_redactar: 2
 ---
 
 # User Story Map — Portal de Perfiles People Service
@@ -34,23 +34,26 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 |---|---|---|---|---|---|---|
 | *EP-001 · EP-008* | *EP-001* | *EP-009* | *EP-002 · EP-010* | *EP-003* | *EP-004* | *EP-005* |
 | **━━━━━━━━━━ MVP ━━━━━━━━━━** | | | | | | |
-| HU-090 Entrar desde el correo sin registrarme | HU-091 Reconocer que la selección se armó para mi proyecto | HU-065 Buscar escribiendo lo que necesito | HU-074 Refinar con filtros lo que la instrucción devolvió | HU-159 Entender el estándar Neural-Grid antes del primer perfil | HU-192 Sumar y quitar perfiles de Mi equipo *(D88)* | HU-096 Revisar mi equipo antes de pedirlo |
-| HU-092 Recuperar el acceso cuando el enlace venció | HU-144 Abrir el enlace y encontrar la selección que me armaron | HU-066 Arrancar desde una sugerencia | HU-121 Comparar muchos perfiles por el mismo criterio | HU-153 Leer en la tarjeta qué capacidad ofrece cada profesional | HU-080 Ver qué le falta al equipo que estoy armando | HU-097 Identificarme cuando no soy quien recibió el correo |
-| HU-093 Entrar sin selección previa y ser encuadrado | HU-094 Volver a la selección después de explorar | HU-068 Ver cómo el portal entendió lo que pedí | HU-075 Entender qué pedí cuando no hay nada que mostrar | HU-081 Distinguir un perfil por sus competencias verificadas |  | HU-098 Saber qué pasa después de enviar |
-| HU-095 Compartir el enlace con un colega |  | HU-069 Corregir la interpretación sin volver a escribir | HU-076 Ver alternativas solo cuando de verdad se parecen | HU-119 Saber por qué coincide cada perfil y por qué no |  | HU-100 Ser advertido si intento pedir sin haber elegido nada |
-| HU-187 Ver el aviso de privacidad antes de entrar · *EP-008, D65* |  | HU-070 Revisar y ajustar la especificación | HU-077 Pedir el perfil que no existe todavía | HU-154 Distinguir en la ficha lo verificado de lo declarado |  |  |
-|  |  | HU-072 Seguir usando el portal cuando la interpretación falla |  | HU-155 Consultar cómo se validó técnicamente a un profesional |  |  |
-|  |  | HU-082 Decir en qué país y ciudad necesito el perfil |  | HU-156 Ver con fecha y alcance la verificación de seguridad y la evaluación DISC |  |  |
-|  |  | HU-083 Decir qué tiene que estar funcionando cuando el proyecto termine |  | HU-157 Saber desde la ficha que la conversación va por Trycore |  |  |
-|  |  | HU-085 Ajustar mi especificación con las opciones que el banco tiene |  | HU-158 Cerrar la ficha con condiciones operativas, SLA y garantía de servicio |  |  |
+| HU-090 Entrar desde el correo sin registrarme | HU-091 Reconocer que la selección se armó para mi proyecto | HU-065 Buscar escribiendo lo que necesito | HU-074 Refinar con filtros lo que la instrucción devolvió | HU-159 Entender el estándar Neural-Grid antes del primer perfil | HU-192 Sumar y quitar perfiles de Mi equipo *(D88)* | HU-197 Declarar el contexto de mi proyecto *(D117)* |
+| HU-092 Recuperar el acceso cuando el enlace venció | HU-144 Abrir el enlace y encontrar la selección que me armaron | HU-066 Arrancar desde una sugerencia | HU-121 Comparar muchos perfiles por el mismo criterio | HU-153 Leer en la tarjeta qué capacidad ofrece cada profesional | HU-203 Ver mi equipo como conjunto *(D110, D111)* | HU-097 Identificarme cuando no soy quien recibió el correo |
+| HU-093 Entrar sin selección previa y ser encuadrado | HU-094 Volver a la selección después de explorar | HU-068 Ver cómo el portal entendió lo que pedí | HU-075 Entender qué pedí cuando no hay nada que mostrar | HU-081 Distinguir un perfil por sus competencias verificadas | HU-206 Saber qué pasó con un perfil de mi equipo que dejó de estar disponible *(D114)* | HU-096 Revisar mi equipo antes de pedirlo *(D111, D118)* |
+| HU-095 Compartir el enlace con un colega |  | HU-069 Corregir la interpretación sin volver a escribir | HU-076 Ver alternativas solo cuando de verdad se parecen | HU-119 Saber por qué coincide cada perfil y por qué no | HU-205 Encontrar mi equipo al volver, en otro dispositivo o al renovar el enlace *(D113)* | HU-198 Enviar exactamente el equipo que revisé *(D118, D122)* |
+| HU-187 Ver el aviso de privacidad antes de entrar · *EP-008, D65* |  | HU-070 Revisar y ajustar la especificación | HU-077 Pedir el perfil que no existe todavía | HU-154 Distinguir en la ficha lo verificado de lo declarado | HU-080 Ver qué le falta al equipo que estoy armando *(D115)* | HU-098 Saber qué pasa después de enviar *(D119, D120)* |
+|  |  | HU-072 Seguir usando el portal cuando la interpretación falla |  | HU-155 Consultar cómo se validó técnicamente a un profesional |  | HU-199 Saber que pedir el equipo no reserva a nadie |
+|  |  | HU-082 Decir en qué país y ciudad necesito el perfil |  | HU-156 Ver con fecha y alcance la verificación de seguridad y la evaluación DISC |  | HU-099 Agendar la sesión de alineación *(D116: sube de v1.1)* |
+|  |  | HU-083 Decir qué tiene que estar funcionando cuando el proyecto termine |  | HU-157 Saber desde la ficha que la conversación va por Trycore |  | HU-201 Añadir contexto a mi solicitud en curso *(D119, D120)* |
+|  |  | HU-085 Ajustar mi especificación con las opciones que el banco tiene |  | HU-158 Cerrar la ficha con condiciones operativas, SLA y garantía de servicio |  | HU-100 Ser advertido si intento pedir sin haber elegido nada *(D121)* |
 |  |  | HU-118 Distinguir lo que no puedo negociar de lo deseable |  | HU-120 Comparar perfiles sin perder la lista |  |  |
-|  |  | HU-174 Ver la evidencia calculada por el mismo motor que decide los resultados *(D87, de EP-003; ubicación por confirmar: se ve en las columnas 4 y 5)* |  | HU-175 Sumar o quitar un perfil de mi equipo desde su ficha |  |  |
+|  |  | HU-174 Ver la evidencia calculada por el mismo motor que decide los resultados *(D87, de EP-003; ubicación por confirmar: se ve en las columnas 4 y 5)* |  | HU-175 Sumar o quitar un perfil de mi equipo desde su ficha *(EP-004, D101)* |  |  |
 | **━━━━━━━━━━ v1.1 ━━━━━━━━━━** | | | | | | |
-| | | HU-067 Pegar el requerimiento que ya tengo escrito | | | HU-084 Ver la forma típica del trabajo | HU-099 Agendar la sesión de alineación |
+| | | HU-067 Pegar el requerimiento que ya tengo escrito | | | HU-204 Comparar hasta tres perfiles con los mismos criterios *(D112)* | |
 | | | HU-071 Responder una pregunta de afinamiento | | | | |
 | | | HU-073 Encontrar mi especificación como la dejé | | | | |
+| | | HU-084 Ver la forma típica del trabajo *(EP-009 desde D108; se dibuja en la vista de la columna 6)* | | | | |
 | **━━━━━━━━━━ descartadas ━━━━━━━━━━** | | | | | | |
 | | | | | HU-079 Reconocer de un vistazo qué ha logrado un perfil *(D-15: el dato no existe en el banco)* | | |
+
+**Discovery 2026-10-02 — cuarta ronda (D108–D123).** Columna 6 (EP-004): nacen HU-203 (resumen del conjunto, arranque por el perfil más tardío, D110), HU-206 (perfiles no disponibles: siguen en el contador, no cuentan en roles ni arranque, D114), HU-205 (recuperación, con copia del equipo al renovar un enlace vencido, D113) y HU-204 (comparador, desde «Mi equipo» y desde la tabla con filas fijas, D112; sigue en la línea v1.1, que es ubicación y no recorte). HU-080 pasa a S con reglas fijas validadas por Delivery (D115). **HU-084 pasa a EP-009 (D108)** y se ubica en la columna 3, junto a HU-083. Columna 7 (EP-005): nacen HU-197, HU-198, HU-199 y HU-201; **HU-099 sube de v1.1 a MVP (D116)** con enlace de reuniones de equipo con rotación de HubSpot. HU-200 (eventos de la solicitud, EP-005) se ubica en la columna H del backbone 3, y HU-207 (composiciones de Delivery, EP-008, D109) también.
 
 **Por qué HU-067, HU-071 y HU-073 salen del MVP.** Las tres dependen de que la entrada por instrucción ya esté validada: pegar un requerimiento largo (HU-067) está condicionado a la prueba previa de RF-12.2; la pregunta de afinamiento (HU-071) solo tiene sentido cuando el modelo acierta lo suficiente como para que afinar valga la pena; y persistir la especificación (HU-073) queda en v1.1 por alcance, no por bloqueo: **D-16 cerró el 2026-09-21 en persistencia por dispositivo**, que la abarata mucho —vive en el navegador, no en el servidor— y la deja disponible para adelantar al MVP si se quiere.
 
@@ -120,6 +123,8 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 |  |  | HU-189 Registrar una decisión de reclutamiento *(D83)* |
 |  |  | HU-196 Ver en el tablero los días hasta la alineación agendada *(D91, D92)* |
 |  |  | HU-195 Registrar la validación de Delivery de las composiciones de referencia *(D94, D99)* |
+|  |  | HU-207 Registrar las composiciones de referencia que entrega Delivery *(EP-008, D109)* |
+|  |  | HU-200 Ver en el recorrido cuándo una visita inició y envió su solicitud *(EP-005)* |
 | **━━━━━━━━━━ v1.1 ━━━━━━━━━━** | | |
 | HU-117 Reaccionar a una cuenta que no entra | | |
 
@@ -141,7 +146,7 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 
 **Lo que la Fase 2 cambió respecto de la v1.0 del mapa.** La entrada por instrucción (columna 3) no era MVP en la v1.0 porque no existía. Hoy es la columna más poblada del backbone del cliente —10 historias en MVP— y el resto del recorrido está subordinado a ella. Esa es la apuesta de producto, y §14.7 del PRD fija la regla asimétrica que la falsea: solo se reduce el alcance si los tres participantes completan la tarea con la lista y al menos dos lo hacen con menos fricción visible.
 
-**Lo que se sostiene de la v1.0.** La integración con HubSpot entra al MVP con su cola de reintento. El agendamiento dentro del portal sale a v1.1: en el MVP la confirmación explica el paso siguiente y el comercial agenda.
+**Lo que se sostiene de la v1.0.** La integración con HubSpot entra al MVP con su cola de reintento. *El agendamiento salía a v1.1; desde **D116** (2026-10-02) entra en EP-005 y en el MVP: la confirmación abre un enlace de reuniones de equipo con rotación de HubSpot (HU-099), sin calendario propio en el portal.*
 
 **Lo que empeoró.** El panel de Talento Humano estaba completo en el mapa v1.0 con HU-042 a HU-058. Hoy ese alcance no tiene historias escritas y D-8 sigue abierta. El MVP no se sostiene sin él: O5 es el objetivo habilitante y sin panel el inventario se degrada en semanas.
 
@@ -157,14 +162,14 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 | HU-017 – HU-018 | Búsqueda por texto y ordenamiento | EP-002 | **Superado** por HU-065 (instrucción) y HU-074 (refinamiento) |
 | HU-019 – HU-020 | Sondeo de agentes autónomos en el grid | EP-002 | **Sin historia escrita.** RF-10 y RF-11 están en `epicas.md` pero nadie los redactó |
 | HU-021 – HU-028 | Tarjeta, ficha y evidencia de validación | EP-003 | **Cubierto el 2026-10-02** por HU-153 a HU-159 y HU-175 (cara cliente), HU-176 a HU-178, HU-191 y HU-194 (sub-slice inicial de panel), más HU-081, HU-119 y HU-120 refinadas. HU-174 nace aquí y pasa a EP-009 (D87) |
-| HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | **Parcial.** HU-080, HU-084 y, desde el 2026-10-02, **HU-192** (sumar, quitar e indicador, D88; absorbe los criterios recibidos de HU-094 y HU-095). Siguen sin historia el resumen del conjunto (RF-4.3), el comparador de tres (RF-4.4) y la recuperación al volver (RF-4.5) |
-| HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | **Cubierto** por HU-096 a HU-101 |
+| HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | **Cubierto el 2026-10-02** por HU-192, HU-175, HU-203, HU-204, HU-205, HU-206 y HU-080 (HU-084 pasa a EP-009, D108; HU-207 a EP-008, D109). Los tres criterios recibidos de EP-001 quedan pagados en HU-192 y HU-206 |
+| HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | **Cubierto** por HU-096 a HU-101 y, el 2026-10-02, HU-197 a HU-201 |
 | HU-042 – HU-058 | Panel de Talento Humano completo | EP-006 | **Cubierto el 2026-09-21** por HU-123 a HU-139, más HU-086 a HU-089 |
 | HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 · EP-011 | **Cubierto** por HU-102 a HU-117 y, el 2026-10-02, HU-160 a HU-173, HU-180, HU-184 a HU-190, HU-193, HU-195 y HU-196 |
 
-**Conteo (2026-10-02).** Con el discovery de EP-003, EP-007 y EP-008, el alcance anticipado sin historia baja a **alrededor de 5**: **EP-004** (resumen, comparador y recuperación de «Mi equipo») y **EP-002** (sondeo RF-10 y espacio no-perfil RF-11).
+**Conteo (2026-10-02).** Con el discovery de EP-003, EP-007, EP-008 y, en la cuarta ronda, EP-004 y EP-005, el alcance anticipado sin historia baja a **alrededor de 2**: **EP-002** (sondeo RF-10 y espacio no-perfil RF-11).
 
-**EP-004 deja de estar invertido el 2026-10-02:** HU-192 redacta el comportamiento que hace existir la épica (sumar, quitar, indicador). Quedan sin historia el resumen, el comparador y la recuperación.
+**EP-004 deja de estar invertido el 2026-10-02:** HU-192 redacta el comportamiento que hace existir la épica (sumar, quitar, indicador). El resumen, el comparador y la recuperación quedan redactados en la cuarta ronda (HU-203, HU-204, HU-205, HU-206).
 
 ---
 
@@ -175,15 +180,15 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 | Historia | Antes bloqueada por | Estado |
 |---|---|---|
 | HU-073 Encontrar mi especificación como la dejé | ~~D-16~~ | **Libre desde el 2026-09-21.** Persistencia por dispositivo: vive en el navegador de quien especificó. D-16 quedó acotada al Perfil Objetivo el 2026-09-25 (T-1); «Mi equipo» va al servidor por invitado |
-| HU-084 Ver la forma típica del trabajo | ~~D-19~~ | **Libre desde el 2026-09-21**, con dependencia de insumo: Delivery entrega la composición real de los tres tipos más frecuentes. No es decisión pendiente, es una reunión |
+| HU-084 Ver la forma típica del trabajo | ~~D-19~~ | **Libre de D-19 desde el 2026-09-21.** Desde D108 es de EP-009 y sigue en draft hasta que HU-083 fije cómo se asigna el reto a un tipo de proyecto; las composiciones las registra HU-207 (EP-008, D109) |
 | Historias de la ficha de EP-003 (HU-153–HU-159, redactadas el 2026-10-02) | **D-5** — grado de detalle de la trayectoria. No las bloquea, define su calidad. Talento Humano condicionó el VoBo a ver primero la propuesta de ficha (2026-09-18), así que la ficha se propone antes de aprobarse | Talento Humano |
 
 ---
 
 ## Trazabilidad a épicas
 
-Backbone 1: col 1–2 → **EP-001** (HU-187 → EP-008) · col 3 → **EP-009** (incluye HU-174, D87) · col 4 → **EP-002** y **EP-010** · col 5 → **EP-003** · col 6 → **EP-004** · col 7 → **EP-005**.
+Backbone 1: col 1–2 → **EP-001** (HU-187 → EP-008) · col 3 → **EP-009** (incluye HU-174, D87, y HU-084, D108) · col 4 → **EP-002** y **EP-010** · col 5 → **EP-003** · col 6 → **EP-004** · col 7 → **EP-005**.
 Backbone 2 → **EP-006**, salvo HU-123 → **EP-001** (T-19), HU-176, HU-177, HU-178, HU-191 y HU-194 → **EP-003** (sub-slice inicial, D60) y HU-190 → **EP-008** (D74).
-Backbone 3: col F → **EP-011** y EP-001 (HU-188 → EP-008) · col G → **EP-007** y EP-005 · col H → **EP-008**, EP-011 y EP-010.
+Backbone 3: col F → **EP-011** y EP-001 (HU-188 → EP-008) · col G → **EP-007** y EP-005 · col H → **EP-008** (incluye HU-207, D109), EP-011, EP-010 y EP-005 (HU-200).
 
 **Cobertura bidireccional:** las 11 épicas aparecen en al menos una columna; ninguna columna queda sin épica. Sin huérfanos.

@@ -67,13 +67,15 @@ depende_de: [HU-120, HU-192]
 
 Cubre la parte de **RF-13.11** que permite actuar sobre el perfil sin cerrar la ficha, apoyada en **RF-4.1** (sumar y quitar perfiles a una selección guardada en el servidor por invitado) y **RF-4.2** (el indicador con el conteo de «Mi equipo»), ambos de **EP-004**.
 
-**Nace el 2026-10-02 de la partición de HU-120 por validación INVEST (fallas I y E).** **Partición, no recorte**: el alcance sigue en EP-003. HU-120 se queda con recorrer las fichas sin perder la lista (ya construido en buena parte por D47 de EP-006); esta historia lleva el «sumar desde la ficha», que quedó explícitamente en EP-003.
+**Nace el 2026-10-02 de la partición de HU-120 por validación INVEST (fallas I y E).** **Partición, no recorte**: HU-120 se queda en EP-003 con recorrer las fichas sin perder la lista (ya construido en buena parte por D47 de EP-006); esta historia lleva el «sumar desde la ficha», que nació en EP-003 y desde D101 se construye en EP-004 (ver abajo).
 
-**Dependencia con EP-004, declarada en `depende_de` (D88, sponsor, 2026-10-02).** Sumar y quitar en «Mi equipo», guardarlo en el servidor por invitado y el indicador con el conteo son capacidades de **EP-004**, ahora redactadas en **HU-192** «Sumar y quitar perfiles de Mi equipo». Esta historia no construye esa capacidad: pone las mismas dos acciones en la ficha y fija que no la cierran. Se secuencia **después de HU-192**, o se construye contra el contrato que HU-192 publique. La deuda de mapa que señalaba esta nota queda pagada por D88.
+**Dependencia dentro de EP-004, declarada en `depende_de` (D88, sponsor, 2026-10-02).** Sumar y quitar en «Mi equipo», guardarlo en el servidor por invitado y el indicador con el conteo son capacidades de **EP-004**, ahora redactadas en **HU-192** «Sumar y quitar perfiles de Mi equipo». Esta historia no construye esa capacidad: pone las mismas dos acciones en la ficha y fija que no la cierran. Se secuencia **después de HU-192**, o se construye contra el contrato que HU-192 publique. La deuda de mapa que señalaba esta nota queda pagada por D88.
 
 **D73 (sponsor, 2026-10-02, opción conservadora) cierra la pregunta abierta:** desde la ficha se puede **quitar** del equipo además de sumar, como alterna el prototipo («Sumar al equipo» / «En el equipo») y como permite RF-4.1. Cambios: se añade el escenario alterno de quitar, el de error pasa a un esquema con las dos acciones y el edge «ya estaba en mi equipo» ofrece quitar en vez de solo informar. El título y el «quiero» lo dicen. **Ampliación por decisión del sponsor, no recorte.** La complejidad sigue en S: quitar usa la misma capacidad de HU-192 y el mismo estado de la acción.
 
-**D101 (sponsor, 2026-10-02): cambio de épica.** Esta historia pasa a **EP-004**, donde nacen los datos o la capacidad de la que depende. No es recorte: se construye entera con esa épica.
+**D101 (sponsor, 2026-10-02): cambio de épica.** Esta historia pasa a **EP-004**, donde nacen los datos o la capacidad de la que depende. No es recorte: se construye entera con esa épica. **Archivos:** la acción vive en el panel lateral de la ficha (`apps/portal/src/ficha/PanelFicha.tsx`), que construye EP-003 (sub-slices SS5–SS7 de su DoR); el cambio en ese fichero se secuencia detrás del merge de EP-003 para no editar el mismo componente en dos ramas.
+
+**Corrección de coherencia (discovery de EP-004, 2026-10-02):** las notas de arriba decían que el alcance «sigue en EP-003»; quedan alineadas con D101. Sin cambio de AC ni de estado.
 
 ## Trazabilidad
 

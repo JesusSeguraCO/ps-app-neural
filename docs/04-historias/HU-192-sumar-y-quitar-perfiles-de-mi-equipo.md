@@ -70,16 +70,16 @@ prd_version: 4.18
 
 Cubre **RF-4.1** (sumar y quitar perfiles a una selección guardada en el servidor por invitado, ligada al correo verificado y al enlace), **RF-4.1.1** (cada invitado ve solo el suyo) y **RF-4.2** (indicador siempre visible con el conteo, en cualquier pantalla). Es el núcleo de EP-004, que hasta hoy solo tenía redactadas las observaciones sobre la composición (HU-080 y HU-084).
 
-**Nace el 2026-10-02 por D88** (sponsor): se redacta ya la historia de EP-004 «sumar y quitar perfiles de Mi equipo» con su indicador, porque HU-175 (sumar o quitar desde la ficha, EP-003) depende de ella. Paga la deuda de mapa que señalaban `docs/03-backlog/epicas.md` (criterios recibidos de EP-001) y `docs/06-flows/EP-004`.
+**Nace el 2026-10-02 por D88** (sponsor): se redacta ya la historia de EP-004 «sumar y quitar perfiles de Mi equipo» con su indicador, porque HU-175 (sumar o quitar desde la ficha; nació en EP-003 y pasó a EP-004 por D101) depende de ella. Paga la deuda de mapa que señalaban `docs/03-backlog/epicas.md` (criterios recibidos de EP-001) y `docs/06-flows/EP-004`.
 
-**Criterios recibidos de EP-001 que absorbe** (`docs/03-backlog/epicas.md`, 2026-09-28): sumar perfiles mientras se explora el banco completo y conservarlos al volver a la selección (antes en HU-094, happy) → edge «lo que sumo en el banco sigue»; el colega invitado suma y quita en su propio «Mi equipo» (antes en HU-095, happy) → edge «cada invitado arma su propio equipo». El tercero —ante perfiles de la selección archivados, ofrecer continuar desde lo que se lleva en «Mi equipo» (antes en HU-094, error)— **no** entra aquí: es recuperar y continuar el equipo, y va con la historia de recuperación de EP-004 (RF-4.1.2, RF-4.5), que sigue sin redactar.
+**Criterios recibidos de EP-001 que absorbe** (`docs/03-backlog/epicas.md`, 2026-09-28): sumar perfiles mientras se explora el banco completo y conservarlos al volver a la selección (antes en HU-094, happy) → edge «lo que sumo en el banco sigue»; el colega invitado suma y quita en su propio «Mi equipo» (antes en HU-095, happy) → edge «cada invitado arma su propio equipo». El tercero —ante perfiles de la selección archivados, ofrecer continuar desde lo que se lleva en «Mi equipo» (antes en HU-094, error)— **no** entra aquí: es recuperar y continuar el equipo, y va con **HU-206** (perfiles del equipo que dejaron de estar disponibles, redactada el 2026-10-02).
 
 **Qué existe ya (EP-001):** el «Mi equipo» mínimo por invitado y enlace en el servidor (`identidad.equipos` y `identidad.equipo_perfiles`, migración 0010; `packages/infra/src/postgres/equipo.ts`), vacío al primer ingreso, aislado entre invitados y sin cambios al volver a la selección. El rol `ps_portal` **no tiene INSERT** en `equipo_perfiles`: esta historia le da escritura acotada a su propio equipo. El indicador ya se dibuja en el marco del portal (`apps/portal/src/marco/MarcoPortal.tsx`) con su conteo, pero **deshabilitado**; esta historia lo hace reflejar sumar y quitar al momento.
 
 **Fronteras con otras historias, para no duplicar:**
-- **HU-175** (EP-003) pone las mismas dos acciones en la ficha, sin cerrarla; usa esta capacidad.
-- **HU-080** y **HU-084** observan la composición del equipo; no suman ni quitan.
-- La **vista de resumen** a la que lleva el indicador (RF-4.3), el **comparador** (RF-4.4) y **recuperar el equipo en otro dispositivo o al volver** (RF-4.1.2, RF-4.5) son otras historias de EP-004, aún sin redactar. Aquí el indicador muestra el conteo; adónde lleva al tocarlo es de RF-4.3.
+- **HU-175** (EP-004 desde D101) pone las mismas dos acciones en la ficha, sin cerrarla; usa esta capacidad.
+- **HU-080** (EP-004) y **HU-084** (EP-009 desde D108) observan la composición del equipo; no suman ni quitan.
+- La **vista de resumen** a la que lleva el indicador (RF-4.3, **HU-203**), el **comparador** (RF-4.4, **HU-204**), **recuperar el equipo en otro dispositivo o al volver** (RF-4.1.2, RF-4.5, **HU-205**) y los **perfiles del equipo que dejaron de estar disponibles** (RF-19.2, **HU-206**) son otras historias de EP-004, redactadas el 2026-10-02. Aquí el indicador muestra el conteo; adónde lleva al tocarlo es de HU-203.
 - Que el equipo **viaje completo a la solicitud** (RF-4.1.3, RF-5.3) es de EP-005.
 - La selección múltiple para sumar varios a la vez desde la vista de tabla es de **HU-121** (EP-002).
 
@@ -87,7 +87,7 @@ Cubre **RF-4.1** (sumar y quitar perfiles a una selección guardada en el servid
 
 ## Trazabilidad
 
-Épica madre: **EP-004** · PRD v4.18 · RF-4.1 · RF-4.1.1 · RF-4.2 · D88 (sponsor, 2026-10-02) · absorbe criterios recibidos de EP-001 (HU-094 happy, HU-095 happy) · se apoya en el «Mi equipo» mínimo de EP-001 · habilita HU-175 (EP-003) · relacionada con HU-080 y HU-084 (observaciones sobre la composición) y HU-121 (EP-002)
+Épica madre: **EP-004** · PRD v4.18 · RF-4.1 · RF-4.1.1 · RF-4.2 · D88 (sponsor, 2026-10-02) · absorbe criterios recibidos de EP-001 (HU-094 happy, HU-095 happy) · se apoya en el «Mi equipo» mínimo de EP-001 · habilita HU-175 (EP-004 desde D101), HU-203, HU-205 y HU-206 · relacionada con HU-080 y HU-084 (EP-009, D108; observaciones sobre la composición) y HU-121 (EP-002)
 
 ## INVEST
 

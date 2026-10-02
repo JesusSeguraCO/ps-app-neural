@@ -1,14 +1,14 @@
 ---
 id: flow-004-armado-de-equipo
 epica: EP-004
-historias_cubiertas: [HU-080, HU-084, HU-192]
+historias_cubiertas: [HU-080, HU-175, HU-192, HU-203, HU-204, HU-205, HU-206]
 ---
 
 # Flow 004 — Armado de equipo
 
 ## Resumen
 
-Cómo el cliente suma y quita perfiles de «Mi equipo» con su indicador, y lo que el portal aporta mientras compone. Actor principal: el **Cliente**. Condición de éxito: el cliente arma su equipo en el servidor, ve en todo momento cuántos lleva y ve qué le falta a la composición sin que el portal le imponga una forma.
+Cómo el cliente suma y quita perfiles de «Mi equipo» con su indicador, lo revisa como conjunto, compara hasta tres candidatos, lo recupera en otro dispositivo o al renovar el enlace, y ve con su estado a los perfiles que dejaron de estar disponibles. Actor principal: el **Cliente**. Condición de éxito: el cliente arma su equipo en el servidor, ve en todo momento cuántos lleva y con qué equipo cuenta de verdad, sin que el portal le imponga una forma.
 
 ## Diagrama
 
@@ -33,55 +33,86 @@ sequenceDiagram
   end
 
   %% HU-192
-  alt Suma en el banco y vuelve a la selección
-    %% HU-192
-    P-->>C: El perfil sumado sigue en el equipo aunque no esté en la selección
-  end
-
-  %% HU-192
   alt Otro invitado del mismo enlace
     %% HU-192
     P-->>C: Cada invitado arma y ve solo su propio equipo
   end
 
-  %% HU-084
-  C->>P: Declara el tipo de proyecto en su especificación
-  %% HU-084
-  P-->>C: Muestra la forma típica del trabajo, en tono informativo
+  %% HU-175
+  C->>P: Toca «Sumar al equipo» o «Quitar del equipo» en la ficha abierta
+  %% HU-175
+  P-->>C: El indicador cambia y la ficha sigue abierta en el mismo perfil
 
-  %% HU-084
-  alt Tipo de proyecto sin composición registrada
-    %% HU-084
-    P-->>C: No muestra ninguna forma de referencia
+  %% HU-203
+  C->>P: Toca el indicador «Mi equipo»
+  %% HU-203
+  P-->>C: Muestra los perfiles, «Roles cubiertos» y el arranque del equipo completo (banda del más tardío, D110)
+
+  %% HU-203
+  alt Equipo vacío
+    %% HU-203
+    P-->>C: «Todavía no has sumado perfiles» y una acción hacia la selección
+  end
+
+  %% HU-203
+  alt No se puede leer el equipo
+    %% HU-203
+    P-->>C: Dice que no pudo cargarlo y ofrece reintentar, sin mostrar un conteo en 0
+  end
+
+  %% HU-206
+  alt Un perfil del equipo se pausó o se archivó
+    %% HU-206
+    P-->>C: Sigue en la lista y en el contador con su etiqueta; no cuenta en roles ni arranque (D114)
+  end
+
+  %% HU-206
+  alt Intenta sumar un perfil que se pausó mientras lo miraba
+    %% HU-206
+    P-->>C: Rechaza el alta, dice por qué y muestra la etiqueta «Pausado»
+  end
+
+  %% HU-206
+  alt La selección del correo se archivó y el equipo tiene perfiles
+    %% HU-206
+    P-->>C: Muestra cada archivado con su etiqueta y ofrece «Continuar con mi equipo (N)»
   end
 
   %% HU-080
-  C->>P: Suma perfiles a Mi equipo
-  %% HU-080
-  P-->>C: Señala el vacío de la composición en tono informativo
+  P-->>C: Señala el vacío de composición que valida una regla de Delivery, en tono informativo (D115)
 
   %% HU-080
-  alt Composición sin patrón conocido
+  alt Ninguna regla aplica
     %% HU-080
-    P-->>C: Calla en vez de inventar un patrón
+    P-->>C: Calla en vez de inventar un vacío
   end
 
-  %% HU-080
-  alt El cliente ignora la observación
-    %% HU-080
-    P-->>C: No bloquea el envío ni repite el aviso
+  %% HU-204
+  C->>P: Marca 2 o 3 perfiles y toca «Comparar» en «Mi equipo» o en la barra de la tabla
+  %% HU-204
+  P-->>C: Abre el comparador con las mismas filas fijas para cada perfil, sin puntajes (D112)
+
+  %% HU-204
+  alt Marca 1 o 4 perfiles
+    %% HU-204
+    P-->>C: «Comparar» no está disponible y explica por qué
   end
 
-  %% HU-084
-  alt El cliente descarta la referencia
-    %% HU-084
-    P-->>C: La retira y no la vuelve a proponer en la sesión
+  %% HU-205
+  C->>P: Entra por el mismo enlace desde otro dispositivo y verifica su correo
+  %% HU-205
+  P-->>C: Encuentra el mismo equipo, en el mismo orden
+
+  %% HU-205
+  alt Entra por un enlace renovado tras vencer
+    %% HU-205
+    P-->>C: Ofrece «Copiar mi equipo anterior (N)», con los no disponibles en su estado (D113)
   end
 
-  %% HU-084
-  alt Selección ya completa frente a la referencia
-    %% HU-084
-    P-->>C: Lo confirma sin proponer perfiles adicionales
+  %% HU-205
+  alt Abre un enlace vencido
+    %% HU-205
+    P-->>C: No muestra el equipo ni su conteo y ofrece pedir un enlace nuevo
   end
 ```
 
@@ -92,18 +123,26 @@ sequenceDiagram
 | Sumar al equipo | HU-192 | AC-1 (happy) |
 | Quitar del equipo | HU-192 | AC-2 (alterno) |
 | Fallo al guardar | HU-192 | AC-3 (error) |
-| Banco y vuelta a la selección | HU-192 | AC-4 (edge) |
 | Equipos aislados entre invitados | HU-192 | AC-5 (edge) |
-| Forma de referencia | HU-084 | AC-1 (happy) |
-| Tipo sin composición registrada | HU-084 | AC-2 (error) |
+| Sumar o quitar desde la ficha | HU-175 | AC-1 y AC-3 |
+| Abrir el resumen desde el indicador | HU-203 | AC-1 (happy) |
+| Equipo vacío | HU-203 | AC-4 (edge) |
+| Fallo de lectura | HU-203 | AC-5 (error) |
+| Perfil pausado o archivado en el equipo | HU-206 | AC-1 (happy, esquema) |
+| Sumar un perfil que se pausó | HU-206 | AC-3 (error) |
+| Selección archivada, continuar con el equipo | HU-206 | AC-4 (edge) |
 | Vacío señalado | HU-080 | AC-1 (happy) |
-| Composición sin patrón | HU-080 | AC-2 (error) |
-| Observación ignorada | HU-080 | AC-3 (edge) |
-| Referencia descartada | HU-084 | AC-3 (edge) |
-| Selección completa | HU-084 | AC-4 (edge) |
+| Ninguna regla aplica | HU-080 | AC-2 (error) |
+| Comparar desde las dos entradas | HU-204 | AC-1 (happy, esquema) |
+| Menos de 2 o más de 3 marcados | HU-204 | AC-2 (edge) |
+| Mismo equipo en otro dispositivo | HU-205 | AC-1 (happy) |
+| Copiar el equipo al renovar | HU-205 | AC-4 (edge) |
+| Enlace vencido | HU-205 | AC-5 (error) |
 
 ## Notas
 
-**El núcleo de la épica ya tiene historia (D88, 2026-10-02).** Sumar y quitar perfiles de «Mi equipo» con su indicador es **HU-192**, de la que depende HU-175 (sumar o quitar desde la ficha, EP-003). Siguen sin historia redactada, dentro de RF-4: la vista de resumen (RF-4.3), el comparador de hasta 3 (RF-4.4) y recuperar el equipo al volver o en otro dispositivo (RF-4.1.2, RF-4.5), que incluye el criterio recibido de EP-001 «ante perfiles archivados, continuar desde Mi equipo». Ver §Deuda de mapa en `docs/02-user-story-map/`.
+**Discovery 2026-10-02 — cuarta ronda (D108–D115).** Con HU-203, HU-204, HU-205 y HU-206 el RF-4 queda entero en historias, y los tres criterios recibidos de EP-001 están pagados (HU-192 y HU-206). **HU-084 pasa a EP-009 (D108)**: su arco («forma típica del trabajo») se dibuja en la vista «Mi equipo» pero se diagrama en `EP-009-instruccion-y-perfil-objetivo.md`. **HU-207** (composiciones de Delivery) es de **EP-008 (D109)**.
 
-**D-19 cerró el 2026-09-21: solo los tres tipos de proyecto más frecuentes.** Delivery entrega esas tres composiciones reales; fuera de ellas el portal calla, que es exactamente el ramal de AC-2. La historia queda libre con una dependencia de insumo —una sesión de trabajo con Delivery—, no de decisión. La regla dura se mantiene: composición real o ninguna.
+**Orden de los arcos.** El diagrama sigue el recorrido típico; la observación de vacío (HU-080) y los estados de HU-206 se pintan cada vez que se abre la vista de HU-203.
+
+**AC no diagramados:** HU-192 AC-4 (lo sumado en el banco sigue al volver a la selección); HU-175 AC-2, AC-4 y AC-5; HU-203 AC-2 (quitar desde el resumen) y AC-3 (roles repetidos y «Por confirmar», esquema); HU-206 AC-2 (vuelve a estar disponible) y AC-5 (quitar un archivado); HU-080 AC-3 y AC-4; HU-204 AC-3 («No declarado») y AC-4 (perfil pausado entre marcar y abrir); HU-205 AC-2 (cambio visto en el otro dispositivo) y AC-3 (equipo por invitado y por enlace, esquema).

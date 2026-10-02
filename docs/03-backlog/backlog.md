@@ -1,11 +1,11 @@
 ---
 artefacto: backlog
 proyecto: portal-people-service
-version: 5.7
+version: 5.8
 fecha: 2026-10-02
 prd_version: 4.13
-epicas_version: 5.7
-historias_escritas: 127
+epicas_version: 5.8
+historias_escritas: 137
 historias_descartadas: 2
 ---
 
@@ -19,9 +19,9 @@ historias_descartadas: 2
 | Artefacto | Versión | Dónde |
 |---|---|---|
 | PRD | **4.13** | `docs/01-prd/portal-people-service.md` |
-| Épicas | **5.7** — 11 épicas, con requisitos por épica y notas del discovery 2026-10-02 | `docs/03-backlog/epicas.md` |
-| Mapa de historias | **3.6** — alineado a épicas 5.7 y al discovery 2026-10-02 | `docs/02-user-story-map/portal-people-service.md` |
-| Historias escritas | **125** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01). El 2026-10-02 entran 40 (HU-153–HU-178, HU-180, HU-184–HU-196; los IDs HU-179 y HU-181–HU-183 no se usaron); HU-195 y HU-196 nacen en la tercera ronda (D93, D94) | `docs/04-historias/` |
+| Épicas | **5.8** — 11 épicas, con requisitos por épica y notas del discovery 2026-10-02 (cuarta ronda: EP-004 y EP-005) | `docs/03-backlog/epicas.md` |
+| Mapa de historias | **3.7** — alineado a épicas 5.8 y al discovery 2026-10-02 | `docs/02-user-story-map/portal-people-service.md` |
+| Historias escritas | **135** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01). El 2026-10-02 entran 40 (HU-153–HU-178, HU-180, HU-184–HU-196; los IDs HU-179 y HU-181–HU-183 no se usaron); HU-195 y HU-196 nacen en la tercera ronda (D93, D94); en la cuarta ronda (D108–D123) entran 10 más: HU-197–HU-201 (EP-005) y HU-203–HU-207 (EP-004 y EP-008; el ID HU-202 no se usó) | `docs/04-historias/` |
 | Prototipo Low-Fi (v1) | entregado | `prototipo-portal-people-service.html` |
 | Prototipo Mid-Fi (v2) | entregado, con llamada real al modelo | `prototipo-midfi-portal-people-service.html` |
 | Auditoría de usabilidad (Krug) | 1.0 — 7 hallazgos corregidos | `docs/08-usabilidad/auditoria-krug.md` |
@@ -51,8 +51,12 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-077** | Pedir el perfil que no existe todavía | EP-010 | alta | M | borrador | — |
 | **HU-078** | Saber qué están pidiendo las cuentas y no tenemos | EP-010 | alta | M | borrador | — |
 | **HU-079** | Reconocer de un vistazo qué ha logrado un perfil | EP-003 | n/a | M | **descartada** | DESCARTADA el 2026-09-14 por cierre de D-15 |
-| **HU-080** | Ver qué le falta al equipo que estoy armando | EP-004 | media | M | borrador | — |
+| **HU-080** | Ver qué le falta al equipo que estoy armando | EP-004 | media | S | lista | Depende de HU-203 · *Discovery 2026-10-02*: M → S; reglas fijas en código validadas por Delivery, sin viajar a HubSpot en v1 (D115) |
 | **HU-192** | Sumar y quitar perfiles de Mi equipo | EP-004 | alta | M | lista | *Discovery 2026-10-02*: redactada ya por D88 (RF-4.1, RF-4.2, con su indicador); absorbe los criterios recibidos de EP-001 (HU-094, HU-095); habilita HU-175 |
+| **HU-203** | Ver mi equipo como conjunto | EP-004 | alta | M | lista | Depende de HU-192 · *Discovery 2026-10-02* (nueva): arranque = banda del perfil más tardío (D110); HU-096 la reutiliza (D111) |
+| **HU-206** | Saber qué pasó con un perfil de mi equipo que dejó de estar disponible | EP-004 | alta | M | lista | Depende de HU-192 y HU-203 · *Discovery 2026-10-02* (nueva): sigue en el contador, no cuenta en roles ni arranque (D114); absorbe el criterio recibido de HU-094 (error) |
+| **HU-205** | Encontrar mi equipo como lo dejé al volver, desde otro dispositivo o al renovar el enlace | EP-004 | alta | M | lista | Depende de HU-192, HU-203, HU-206 y HU-092 · *Discovery 2026-10-02* (nueva): al renovar un enlace vencido se ofrece copiar el equipo (D113, enmienda RF-4.5); S → M |
+| **HU-204** | Comparar hasta tres perfiles con los mismos criterios | EP-004 | media | M | lista | Depende de HU-203 y HU-121 · *Discovery 2026-10-02* (nueva): desde «Mi equipo» y desde la tabla, filas fijas (D112) · línea v1.1 |
 | **HU-081** | Distinguir un perfil de otro por sus competencias verificadas | EP-003 | alta | S | lista | Depende de HU-153 · *Discovery 2026-10-02*: refinada; el Sello Personal sigue opcional (D63) |
 | **HU-177** | Administrar el catálogo de alcances de la verificación SARO | EP-003 | alta | S | lista | Depende de HU-089 · *Discovery 2026-10-02*: **sub-slice inicial de EP-003** (D60); alcance SARO como catálogo cerrado administrable (D61). Toca el panel de EP-006, que sigue cerrada |
 | **HU-176** | Registrar el alcance y la fecha de la verificación SARO y la fecha de la evaluación DISC | EP-003 | alta | M | lista | Depende de HU-125, HU-126, HU-128 y HU-177 · *Discovery 2026-10-02*: sub-slice inicial (D60); SARO y DISC obligatorios para publicar (D61). Nace de la partición de HU-156; antes prevista en EP-006 |
@@ -69,7 +73,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-175** | Sumar o quitar un perfil de mi equipo desde su ficha sin cerrarla | EP-004 | alta | S | lista | Depende de HU-120 y HU-192 · *Discovery 2026-10-02*: sale de HU-120 (partición INVEST, no recorte); quitar por D73  · D101: pasa a EP-004 |
 | **HU-082** | Decir en qué país y ciudad necesito el perfil | EP-009 | alta | S | borrador | — |
 | **HU-083** | Decir qué tiene que estar funcionando cuando el proyecto termine | EP-009 | alta | M | borrador | — |
-| **HU-084** | Ver la forma típica del trabajo que estoy por emprender | EP-004 | media | M | borrador | Bloqueada por D-19 |
+| **HU-084** | Ver la forma típica del trabajo que estoy por emprender | EP-009 | media | M | borrador | Depende de HU-083, HU-203 y HU-207 · *Discovery 2026-10-02*: pasa a EP-009 (D108); draft hasta que HU-083 fije cómo el reto se asigna a un tipo de proyecto · línea v1.1 |
 | **HU-085** | Ajustar mi especificación con las opciones que el banco realmente tiene | EP-009 | alta | M | borrador | — |
 | **HU-088** | Descargar una plantilla o el banco para editarlo y devolverlo | EP-006 | media | S | lista | — |
 | **HU-086** | Pegar mi hoja de cálculo y ver qué va a pasar | EP-006 | media | M | lista | *Dividida el 22-sep en 086 + 141 + 142* |
@@ -83,11 +87,16 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-093** | Entrar sin una selección previa y ser encuadrado | EP-001 | media | S | borrador | — |
 | **HU-094** | Volver a la selección después de explorar | EP-001 | alta | S | borrador | — |
 | **HU-095** | Compartir el enlace con un colega | EP-001 | media | S | borrador | — |
-| **HU-096** | Revisar mi equipo antes de pedirlo | EP-005 | alta | M | borrador | — |
+| **HU-197** | Declarar el contexto de mi proyecto | EP-005 | alta | M | lista | Depende de HU-192 · *Discovery 2026-10-02* (nueva): las tres preguntas obligatorias, sector y nota opcionales (D117) |
 | **HU-097** | Identificarme cuando no soy quien recibió el correo | EP-005 | alta | S | lista | — · *Discovery 2026-10-02*: correo verificado de solo lectura; nombre y cargo obligatorios (D90) |
-| **HU-098** | Saber qué pasa después de enviar | EP-005 | alta | S | lista | — |
-| **HU-099** | Agendar la sesión de alineación | EP-005 | media | M | borrador | — |
-| **HU-100** | Ser advertido si intento pedir sin haber elegido nada | EP-005 | media | S | borrador | — |
+| **HU-096** | Revisar mi equipo antes de pedirlo | EP-005 | alta | M | lista | Depende de HU-203, HU-197 y HU-097 · *Discovery 2026-10-02*: resumen antes de enviar que reutiliza la vista de HU-203 (D111); el no publicado no viaja y se ve solo por código y estado, el colocado sí viaja (D118) |
+| **HU-198** | Enviar exactamente el equipo que revisé | EP-005 | alta | M | lista | Depende de HU-096 · *Discovery 2026-10-02* (nueva): perfiles del equipo guardado, solo publicados (D118); «Mi equipo» se conserva (D122); dispara EP-007 |
+| **HU-098** | Saber qué pasa después de enviar | EP-005 | alta | S | lista | — · *Discovery 2026-10-02*: misma especificación = misma cuenta + mismos perfiles (D119); sin solicitud nueva en 7 días (D120); sin acuse por correo en v1 (D123) |
+| **HU-199** | Saber que pedir el equipo no reserva a nadie | EP-005 | alta | S | lista | Depende de HU-198 · *Discovery 2026-10-02* (nueva): RF-5.5; «Mi equipo» igual tras enviar (D122) |
+| **HU-099** | Agendar la sesión de alineación | EP-005 | media | S | lista | Depende de HU-098 · *Discovery 2026-10-02*: entra en EP-005 y en el MVP con enlace de reuniones de equipo con rotación de HubSpot (D116); M → S |
+| **HU-100** | Ser advertido si intento pedir sin haber elegido nada | EP-005 | media | S | lista | Depende de HU-192 · *Discovery 2026-10-02*: sin solicitud sin perfiles; el camino es «a medida», HU-077 (D121) |
+| **HU-201** | Añadir contexto a mi solicitud en curso en lugar de duplicarla | EP-005 | media | S | lista | Depende de HU-098 · *Discovery 2026-10-02* (nueva): lado del portal de D-7 (D119, D120); HU-180 lo lleva a HubSpot |
+| **HU-200** | Ver en el recorrido cuándo una visita inició y envió su solicitud | EP-005 | media | S | lista | Depende de HU-167 y HU-198 · *Discovery 2026-10-02* (nueva): eventos de la solicitud contra el contrato de HU-167; se secuencia detrás de HU-167 si EP-005 va antes que EP-008 |
 | **HU-101** | Recibir la solicitud con contexto suficiente para preparar la sesión | EP-005 | alta | M | lista | — |
 | **HU-102** | Recibir la oportunidad en mi pipeline | EP-007 | alta | M | borrador | *Discovery 2026-10-02*: híbrido API + workflow (D76, corrige D52); pipeline existente «Comercial (People y Tecnología)» con `soluciones_ofrecidas = People Service` (D85); etapa inicial por definir con Comercial |
 | **HU-103** | Enterarme de una solicitud sin tener que vigilar el pipeline | EP-007 | alta | S | borrador | Depende de HU-102 y HU-104 · *Discovery 2026-10-02*: M → S; avisos comerciales en el workflow de HubSpot (D55, D76); cuenta sin propietario → Dirección Comercial (D73) |
@@ -122,6 +131,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-184** | Ver si las composiciones de referencia agrandan los equipos pedidos | EP-008 | media | S | lista | Depende de HU-167 · *Discovery 2026-10-02*: sale de HU-170; quien vio y descartó cuenta en el grupo que la vio (D73) |
 | **HU-185** | Saber cuándo se cumple el disparador de la ruta por reto | EP-008 | media | S | lista | Depende de HU-167, HU-190 y HU-195 · *Discovery 2026-10-02*: sale de HU-170; solo la lectura de Mercadeo de las tres condiciones de §14.5 (D73, D94, D95) |
 | **HU-195** | Registrar la validación de Delivery de las composiciones de referencia | EP-008 | media | S | lista | Depende de HU-151 y HU-190 · *Discovery 2026-10-02*: sale de HU-185 (D94, partición, no recorte); la registra Coordinación de Servicio con el permiso «Validar composiciones»; tercera condición de §14.5 (D95) |
+| **HU-207** | Registrar las composiciones de referencia que entrega Delivery | EP-008 | media | M | lista | Depende de HU-151 y HU-195 · *Discovery 2026-10-02* (nueva, cuarta ronda): EP-008 en el destino «Composiciones» (D106, D109); da el dato de HU-084 |
 | **HU-173** | Saber si la entrada por instrucción capta la demanda o la dicta | EP-008 | media | S | lista | Depende de HU-167 · *Discovery 2026-10-02*: partida con HU-186 |
 | **HU-186** | Comparar la búsqueda con y sin Perfil Objetivo | EP-008 | media | M | lista | Depende de HU-167 · *Discovery 2026-10-02*: sale de HU-173; A/B por cuenta 50/50, lectura descriptiva, lo enciende un administrador (D71) |
 | **HU-189** | Registrar una decisión de reclutamiento | EP-010 | media | S | lista | Depende de HU-078 · *Discovery 2026-10-02*: nueva por D83; la registra Talento Humano en el panel (destino Demanda)  · D103: pasa a EP-010 |
@@ -168,7 +178,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 
 Reservadas en el mapa de historias. Se redactan cuando entren en construcción.
 
-> Decisiones del discovery 2026-10-02 (D52–D89) en `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`. Todas las historias nuevas están en borrador (`draft`).
+> Decisiones del discovery 2026-10-02 (D52–D123; cuarta ronda D108–D123 para EP-004 y EP-005) en `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`. Todas las historias nuevas están en borrador (`draft`).
 
 | Rango | Alcance | Épica | Release |
 |---|---|---|---|
@@ -176,8 +186,8 @@ Reservadas en el mapa de historias. Se redactan cuando entren en construcción.
 | HU-017 – HU-018 | Búsqueda por texto y ordenamiento | EP-002 | **Superadas** por HU-065 y HU-074 |
 | HU-019 – HU-020 | Sondeo de agentes autónomos en el grid | EP-002 | MVP |
 | HU-021 – HU-028 | Tarjeta, ficha y evidencia de validación | EP-003 | **Redactadas el 2026-10-02** como HU-153 a HU-159, HU-175 a HU-178, HU-191 y HU-194 (más HU-081, HU-119 y HU-120 refinadas); HU-174 nace aquí y pasa a EP-009 (D87) · MVP |
-| HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | MVP · comparador en v1.1 · *sumar, quitar e indicador redactados el 2026-10-02 como HU-192 (D88); resumen y recuperación siguen sin historia* |
-| HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | MVP |
+| HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | MVP · comparador en v1.1 · **Redactadas el 2026-10-02** como HU-192 (D88), HU-203, HU-204, HU-205 y HU-206 (D110–D114), más HU-080 y HU-175; HU-084 pasa a EP-009 (D108) y HU-207 a EP-008 (D109) |
+| HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | MVP · redactadas como HU-096 a HU-101 y, el 2026-10-02, HU-197 a HU-201 (D116–D123); HU-099 sube de v1.1 (D116) |
 | HU-042 – HU-058 | Panel de Talento Humano: inventario, validación, publicación y mantenimiento | EP-006 | **Redactadas el 2026-09-21** como HU-123 a HU-139 |
 | HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 | **Redactadas** como HU-102 a HU-117 y, el 2026-10-02, HU-160 a HU-166 y HU-180 (EP-007) y HU-167 a HU-173, HU-184 a HU-190, HU-193, HU-195 y HU-196 (EP-008) · MVP, tablero incluido (*D66: HU-108, HU-111 y HU-171 suben de v1.1*) |
 
@@ -222,7 +232,7 @@ El backlog ya no espera a nadie. Lo que lo limita ahora es lo que no está escri
 
 Cuatro requisitos del MVP existen para no cerrarla, y ninguno cuesta trabajo adicional ahora: **RF-16.4** (el rol nace como lista), **RF-16.3** (especificación y recuperación separadas), **RF-15.1** (el registro guarda también los perfiles seleccionados) y tratar "Mi equipo" como embrión de célula y no como carrito.
 
-**Disparador:** 50 solicitudes con dos o más perfiles y reto declarado, o 3 composiciones reales validadas por Delivery.
+**Disparador:** 50 solicitudes con dos o más perfiles y reto declarado, o 3 composiciones reales validadas por Delivery. *(Enmienda v4.18, D98: las tres condiciones a la vez.)*
 
 ## Próximo paso del pipeline
 
