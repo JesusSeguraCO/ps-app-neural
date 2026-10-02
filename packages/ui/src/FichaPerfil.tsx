@@ -64,11 +64,16 @@ export function FichaPerfil({
   marcas = {},
   cerrar,
   pie,
+  barra,
+  dialogo = false,
 }: {
   ficha: FichaEnEdicion;
   marcas?: MarcasFicha;
   cerrar?: ReactNode;
   pie?: ReactNode;
+  // Portal (HU-120): la barra de recorrido va encima de la cabecera y la hoja es un diálogo modal.
+  barra?: ReactNode;
+  dialogo?: boolean;
 }) {
   const persona = [f.nombre, f.primerApellido].filter(Boolean).join(" ");
   const experiencia =
@@ -79,7 +84,12 @@ export function FichaPerfil({
         }`;
   const lugar = [f.modalidad, f.pais, f.ciudad].filter(Boolean).join(" · ");
   return (
-    <article className="pp-hoja fp-ficha" aria-labelledby="fp-titulo">
+    <article
+      className="pp-hoja fp-ficha"
+      aria-labelledby="fp-titulo"
+      {...(dialogo ? { role: "dialog", "aria-modal": true, id: "ficha" } : {})}
+    >
+      {barra}
       <header className="pp-hoja__cabecera">
         <h2 id="fp-titulo">{f.rol ?? <Falta marca={marcas.cabecera} />}</h2>
         <p className={`fp-persona${marcas.persona ? " vp-marca vp-marca--bloquea" : ""}`}>

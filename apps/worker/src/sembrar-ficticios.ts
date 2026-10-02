@@ -360,6 +360,22 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
     });
     if (creado) creados++;
   }
+  // Trayectoria (RF-8.4: publicar exige al menos una experiencia; la ficha del portal la muestra, D47).
+  // Aparte del alta para completar también lo sembrado antes: una por perfil, solo si no tiene ninguna,
+  // sin cliente nombrado (el consentimiento ficticio no los incluye).
+  for (const p of PERFILES_FICTICIOS.filter((x) => x.estado !== "borrador"))
+    await ctx.bd.query(
+      `INSERT INTO inventario.perfil_experiencias (perfil_id, orden, cargo, desde, descripcion)
+       SELECT id, 1, $2, $3, $4 FROM inventario.perfiles p
+        WHERE codigo = $1
+          AND NOT EXISTS (SELECT 1 FROM inventario.perfil_experiencias e WHERE e.perfil_id = p.id)`,
+      [
+        p.codigo,
+        p.roles[0],
+        new Date().getUTCFullYear() - p.anios,
+        `Experiencia ficticia de prueba: ${p.tecnologias.slice(0, 2).join(" y ")} en ${p.sectores[0] ?? "proyectos de software"}.`,
+      ],
+    );
   ctx.registrar({ evento: "ficticios_sembrados", creados, total: PERFILES_FICTICIOS.length });
   return { creados };
 }

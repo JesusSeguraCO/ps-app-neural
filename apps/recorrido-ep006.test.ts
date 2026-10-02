@@ -240,8 +240,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
       cookieCliente = v.headers.get("set-cookie")!.split(";")[0]!;
       const t = await pagina(portal, "/", cookieCliente);
       expect(t).toContain("Lorena Salcedo");
-      // La ficha del cliente la monta EP-003 (D28): aquí, que lo que el portal sirve con su rol trae la
-      // validación de Nivel 1 confirmada en el paso 4.
+      // Lo que el portal sirve con su rol trae la validación de Nivel 1 confirmada en el paso 4…
       const ficha = (
         await bd
           .como("ps_portal")
@@ -254,6 +253,12 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
         reporte_evaluador: "Célula de arquitectura de Trycore",
         reporte_resultado: "Aprobada, nivel senior",
       });
+      // …y que el cliente la ve en la ficha del perfil (D47, HU-130 Nivel 1).
+      const html = await pagina(portal, `/?ficha=${codigo}`, cookieCliente);
+      expect(html).toContain("1 de 1 · selección para ti");
+      expect(html).toContain("Verificado por Trycore");
+      expect(html).toContain("Aprobada, nivel senior");
+      expect(html).toContain("Célula de arquitectura de Trycore");
     });
 
     it("7 · importar y revertir: el worker aplica el lote y luego lo deshace; el perfil vuelve a como estaba", async () => {

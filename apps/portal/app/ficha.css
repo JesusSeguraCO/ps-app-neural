@@ -1,0 +1,20 @@
+/* Ficha en panel lateral del portal (prototipo ficha-perfil; HU-120, D47). La hoja, sus bloques y la
+   cabecera son de packages/ui (patrones.css + ficha.css, compartidos con la vista previa del panel);
+   aquí solo la barra de recorrido, la tarjeta abierta y la pantalla completa del teléfono. */
+.fp-ver { font-size: var(--tc-fs-small); }
+.pp-perfil.fp-abierta { border-color: var(--tc-text-s); }
+.fp-ficha { font-variant-numeric: tabular-nums; }
+.fp-barra { display: flex; align-items: center; gap: var(--tc-sp-2); padding: var(--tc-sp-3) var(--tc-sp-4) var(--tc-sp-3) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+.fp-barra__nav { display: contents; }
+.fp-barra__pos { margin: 0 0 0 var(--tc-sp-2); min-width: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fp-barra__pos b { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+.fp-barra__fin { display: flex; align-items: center; gap: var(--tc-sp-2); margin-left: auto; }
+.fp-atajos { display: inline-flex; align-items: center; gap: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-s); white-space: nowrap; }
+@media (max-width: 767px) {
+  /* Teléfono: la ficha ocupa la pantalla; barra arriba siempre visible y solo el cuerpo hace scroll. */
+  .pp-hoja-velo { display: none; }
+  .fp-ficha.pp-hoja { width: 100%; height: 100vh; height: 100dvh; border-left: 0; box-shadow: none; }
+  .fp-barra { padding: var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-2) var(--tc-sp-4); }
+  .fp-barra__pos { margin-left: var(--tc-sp-1); }
+  .fp-atajos { display: none; }
+}

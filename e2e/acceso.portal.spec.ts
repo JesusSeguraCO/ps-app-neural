@@ -14,15 +14,15 @@ const clave = execFileSync("bash", ["scripts/entorno-dev.sh", "portal"], {
   encoding: "utf8",
 }).match(/^export EMAIL_HMAC_KEY=(.*)$/m)![1]!;
 
-async function sembrar(o: { vencido?: boolean; revocado?: boolean; correo: string }) {
+async function sembrar(o: { vencido?: boolean; revocado?: boolean; correo: string; codigos?: string[] }) {
   const bd = new pg.Client({ connectionString: INSTALACION });
   await bd.connect();
   try {
     const e = await bd.query(
       `INSERT INTO identidad.enlaces (cuenta_nombre, proyecto, razon, codigos_perfil, vigente_desde, vigente_hasta, generado_por, estado, revocado_en)
-       VALUES ('Cuenta E2E', 'Proyecto E2E', 'Razón de la selección E2E.', '{PS-0142,PS-0151,PS-0137}', now() - interval '40 days',
+       VALUES ('Cuenta E2E', 'Proyecto E2E', 'Razón de la selección E2E.', $3, now() - interval '40 days',
                now() + ($1::int * interval '1 day'), gen_random_uuid(), $2::text, CASE WHEN $2::text = 'revocado' THEN now() END) RETURNING id`,
-      [o.vencido ? -2 : 20, o.revocado ? "revocado" : "activo"],
+      [o.vencido ? -2 : 20, o.revocado ? "revocado" : "activo", o.codigos ?? ["PS-0142", "PS-0151", "PS-0137"]],
     );
     const i = await bd.query(
       `INSERT INTO identidad.enlace_invitados (enlace_id, correo, correo_hmac) VALUES ($1, $2, $3) RETURNING id`,
@@ -186,6 +186,59 @@ test.describe("cara cliente", () => {
     }
     await page.getByRole("button", { name: "Cambiar a tema oscuro" }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
+    await sinIncidenciasGraves(page);
+    expect(errores).toEqual([]);
+  });
+
+  test("D47 · HU-120: la ficha se abre sobre la lista, se recorre con flechas y teclado, Esc vuelve; axe y pantalla completa en el teléfono", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const { enlaceId, invitadoId } = await sembrar({
+      correo: "ficha@cliente.com",
+      codigos: ["PS-0142", "PS-0151", "PS-0187"],
+    });
+    await abrirSesion(context, baseURL!, enlaceId, invitadoId);
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error" && !m.text().includes("favicon")) errores.push(m.text());
+    });
+    await page.goto("/");
+    // PS-0151 está pausado: su tarjeta no ofrece ficha y el recorrido cuenta solo los dos disponibles.
+    await expect(page.getByRole("link", { name: /^Ver ficha/ })).toHaveCount(2);
+    await page.getByRole("link", { name: "Ver ficha de Laura Méndez" }).click();
+    await expect(page).toHaveURL(/\/\?ficha=PS-0142$/);
+    const ficha = page.getByRole("dialog");
+    await expect(ficha).toBeVisible();
+    await expect(ficha.getByRole("heading", { level: 2 })).toBeVisible();
+    await expect(ficha.getByText("1 de 2")).toBeVisible();
+    await expect(ficha.getByText("Verificado por Trycore")).toBeVisible();
+    await expect(ficha.getByText("Validación técnica")).toBeVisible();
+    await expect(ficha.getByRole("button", { name: "Perfil anterior" })).toBeDisabled();
+    await expect(ficha.getByRole("link", { name: "Cerrar la ficha" })).toBeFocused();
+    // La lista sigue detrás, con la tarjeta abierta marcada.
+    await expect(page.locator(".pp-perfil.fp-abierta")).toContainText("Laura Méndez");
+    await sinIncidenciasGraves(page);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/\?ficha=PS-0187$/);
+    await expect(page.getByRole("dialog").getByText("2 de 2")).toBeVisible();
+    await expect(page.getByRole("dialog").getByRole("button", { name: "Perfil siguiente" })).toBeDisabled();
+    await page.keyboard.press("ArrowLeft");
+    await expect(page).toHaveURL(/\/\?ficha=PS-0142$/);
+    await page.keyboard.press("Escape");
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.locator(".pp-perfil")).toHaveCount(3);
+
+    // Teléfono: la ficha ocupa la pantalla y no hay scroll horizontal.
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto("/?ficha=PS-0187");
+    const caja = await page.getByRole("dialog").boundingBox();
+    expect(caja?.width).toBe(390);
+    expect(caja?.height).toBe(800);
+    expect(await scrollHorizontal(page)).toBe(0);
     await sinIncidenciasGraves(page);
     expect(errores).toEqual([]);
   });

@@ -4,17 +4,25 @@
 import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
 import { enLetras, avisoCambios, resumenFamilias, tituloSeleccion } from "@ps/dominio/enlaces/textos-seleccion";
 import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
-import { datosDelBanco, datosDelEnlace } from "../src/banco/datos";
+import { conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
+import { datosDelBanco, datosDelEnlace, fichaDe } from "../src/banco/datos";
 import { Encuadre } from "../src/banco/Encuadre";
+import { PanelFicha } from "../src/ficha/PanelFicha";
 import { MarcoPortal } from "../src/marco/MarcoPortal";
 import { TarjetaPerfil } from "../src/seleccion/TarjetaPerfil";
 import { exigirSesion } from "../src/sesion/exigirSesion";
 import "./aterrizaje.css";
 import "./banco.css";
+import "@ps/ui/ficha.css";
+import "./ficha.css";
 
-export default async function Inicio() {
+export default async function Inicio({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const sesion = await exigirSesion();
-  const { aterrizaje: a, equipo } = await datosDelEnlace(sesion);
+  const [{ aterrizaje: a, equipo }, consulta] = await Promise.all([datosDelEnlace(sesion), searchParams]);
   const { items, cambiaron, ningunoPublicado } = a.seleccion;
   const marco = { cuenta: a.cuenta, proyecto: a.proyecto, accesoHasta: a.vigenteHasta, enEquipo: equipo.perfiles.length };
 
@@ -30,11 +38,17 @@ export default async function Inicio() {
   const enviado = fechaDeColombia(a.generadoEn);
   const desde = enviado.replace(/ \d{4}$/, ""); // «22 sep», como el prototipo
   const aviso = avisoCambios(cambiaron, items.length, desde);
+  // La ficha abierta (HU-120): solo de un perfil disponible de esta selección, recorrida en su orden.
+  const href = (c: string | null) => conFicha("/", consulta, c);
+  const disponibles = items.flatMap((i) => (i.tipo === "disponible" ? [i.codigo] : []));
+  const pedida = typeof consulta.ficha === "string" ? consulta.ficha : undefined;
+  const paso = recorrido(disponibles, pedida);
+  const ficha = paso ? await fichaDe(sesion, pedida!) : null;
   const familias = resumenFamilias(
     items.map((i) => (i.tipo === "disponible" ? i.perfil.familia : (i.resumen?.familia ?? null))),
   );
 
-  return (
+  const pagina = (
     <MarcoPortal {...marco} conSeleccion activo="seleccion">
       <section className="pp-franja ac-franja" aria-labelledby="ac-titulo">
         <h1 className="pp-franja__titulo" id="ac-titulo">
@@ -102,11 +116,21 @@ export default async function Inicio() {
         <ol className="pp-rejilla-perfiles pp-lista" aria-label="Perfiles de la selección, en el orden del correo">
           {items.map((item) => (
             <li key={item.codigo}>
-              <TarjetaPerfil item={item} />
+              <TarjetaPerfil
+                item={item}
+                ficha={{ href: href(item.codigo), abierta: Boolean(ficha) && item.codigo === pedida }}
+              />
             </li>
           ))}
         </ol>
       </section>
     </MarcoPortal>
+  );
+  if (!paso || !ficha) return pagina;
+  return (
+    <>
+      <div inert>{pagina}</div>
+      <PanelFicha ficha={ficha} recorrido={paso} lista="selección para ti" href={href} />
+    </>
   );
 }
