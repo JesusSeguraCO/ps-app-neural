@@ -520,8 +520,9 @@ test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () =>
     await expect(page).toHaveURL(new RegExp(`/inventario/${codigo}$`));
     await expect(page.getByText("Reporte confirmado. La ficha del portal ya lo muestra, sin republicar.")).toBeVisible();
     await page.getByRole("button", { name: "Vista previa" }).click();
-    await expect(page.locator("#vp-fila-validacion")).toContainText("Aprobada, nivel senior");
-    await expect(page.locator("#vp-fila-validacion")).toContainText("Evaluó:");
+    // HU-155 (EP-003, D59): cinco campos en orden fijo; el resultado publicado es «Cumple el estándar».
+    await expect(page.locator("#vp-fila-validacion dt")).toHaveText(["Prueba aplicada", "Qué se evaluó", "Resultado", "Evaluador", "Fecha"]);
+    await expect(page.locator("#vp-fila-validacion")).toContainText("Cumple el estándar");
     for (const ancho of [320, 390]) {
       await page.setViewportSize({ width: ancho, height: 800 });
       const scroll = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
