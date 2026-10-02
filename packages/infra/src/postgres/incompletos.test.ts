@@ -74,6 +74,8 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
         "PS-0118": "Incompleto: falta la fecha de la evaluación DISC",
         "PS-0124": "Incompleto: falta la modalidad de prueba",
       });
+      // El portal cuenta los mismos cuatro antes de tocar nada (D80).
+      expect(await contarIncompletosPublicados(portal)).toBe(4);
       const filas = await listarInventario(panel);
       for (const c of ["PS-0105", "PS-0112", "PS-0118", "PS-0124"]) {
         expect(filas.find((f) => f.codigo === c)?.estado).toBe("publicado");
