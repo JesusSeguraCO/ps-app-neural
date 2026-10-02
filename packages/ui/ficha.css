@@ -28,3 +28,13 @@
 .vp-marca .vp-num { margin-right: var(--tc-sp-2); vertical-align: text-bottom; }
 a.vp-num { text-decoration: none; }
 .pp-datos__fila.vp-marca + .pp-datos__fila.vp-marca { margin-top: var(--tc-sp-2); }
+
+/* «Frente a tu búsqueda» (HU-119; prototipo ficha-perfil): una línea ✓/– por criterio activo. Sin la
+   columna de fuente del prototipo: la línea sale de la plantilla fija y nombra el dato registrado. */
+.fp-criterios { margin: 0; padding: 0; list-style: none; }
+.fp-criterio { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); align-items: baseline; padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+.fp-criterio:last-child { border-bottom: 0; }
+.fp-criterio__marca { font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+.fp-criterio--no .fp-criterio__marca { color: var(--tc-text-s); }
+.fp-criterio__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+.fp-criterio--no .fp-criterio__nombre { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }

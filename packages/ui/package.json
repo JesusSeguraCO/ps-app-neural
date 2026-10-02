@@ -10,7 +10,8 @@
     "./patrones.css": "./patrones.css",
     "./ficha.css": "./ficha.css",
     "./FichaPerfil": "./src/FichaPerfil.tsx",
-    "./ContactoTrycore": "./src/ContactoTrycore.tsx"
+    "./ContactoTrycore": "./src/ContactoTrycore.tsx",
+    "./Evidencia": "./src/Evidencia.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p ."

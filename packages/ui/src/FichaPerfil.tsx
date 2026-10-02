@@ -10,8 +10,10 @@
 // que falta. El portal nunca lo pasa (un publicado está completo).
 import type { ReactNode } from "react";
 import type { BloqueFicha, FichaEnEdicion } from "@ps/contratos/ficha";
+import type { LineaEvidencia } from "@ps/dominio/catalogo/evidencia";
 import { DISPONIBILIDAD_CLIENTE } from "@ps/dominio/enlaces/textos-seleccion";
 import { fechaCivil } from "@ps/dominio/fecha/colombia";
+import { EvidenciaFicha } from "./Evidencia";
 
 export type MarcasFicha = Partial<Record<BloqueFicha, { numero: number; datos: string[] }>>;
 
@@ -68,6 +70,7 @@ export function FichaPerfil({
   pie,
   barra,
   dialogo = false,
+  evidencia = [],
 }: {
   ficha: FichaEnEdicion;
   marcas?: MarcasFicha;
@@ -76,6 +79,9 @@ export function FichaPerfil({
   // Portal (HU-120): la barra de recorrido va encima de la cabecera y la hoja es un diálogo modal.
   barra?: ReactNode;
   dialogo?: boolean;
+  // «Frente a tu búsqueda» (HU-119): las líneas de los criterios activos, las mismas de la tarjeta. Solo
+  // el banco con un filtro las pasa; la selección del correo y la vista previa del panel, nunca.
+  evidencia?: readonly LineaEvidencia[];
 }) {
   const persona = [f.nombre, f.primerApellido].filter(Boolean).join(" ");
   const experiencia =
@@ -123,6 +129,7 @@ export function FichaPerfil({
       {/* Con contenido largo el cuerpo se desplaza: enfocable para recorrerlo con el teclado (WCAG
           2.1.1, regla axe scrollable-region-focusable). */}
       <div className="pp-hoja__cuerpo" tabIndex={0}>
+        <EvidenciaFicha lineas={evidencia} />
         {f.resumen && <p className="fp-resumen">{f.resumen}</p>}
         <section className="fp-seccion" aria-labelledby="fp-verificado">
           <div className="pp-seccion__cabecera">

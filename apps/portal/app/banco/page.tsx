@@ -7,6 +7,7 @@ import { aplicarFiltro, filtroDeConsulta } from "@ps/dominio/catalogo/encuadre";
 import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
 import { conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
 import { datosDelBanco, datosDelEnlace, fichaDe } from "../../src/banco/datos";
+import { evidenciaDelBanco } from "../../src/banco/evidencia";
 import { Encuadre } from "../../src/banco/Encuadre";
 import { PanelFicha } from "../../src/ficha/PanelFicha";
 import { MarcoPortal } from "../../src/marco/MarcoPortal";
@@ -32,6 +33,8 @@ export default async function Banco({
   const filtro = filtroDeConsulta(consulta);
   const contexto = filtro.tipo === "contexto" ? categoriasDeSeleccion(a.seleccion.items) : [];
   const perfiles = aplicarFiltro(banco.perfiles, filtro, contexto);
+  // Evidencia ✓/– de los criterios activos (HU-119): las mismas líneas en la tarjeta y en la ficha.
+  const evidencia = evidenciaDelBanco(perfiles, filtro, contexto);
   const marco = {
     cuenta: a.cuenta,
     proyecto: a.proyecto,
@@ -104,6 +107,7 @@ export default async function Banco({
                 <TarjetaPerfil
                   item={{ codigo: perfil.codigo, tipo: "disponible", perfil }}
                   ficha={{ href: href(perfil.codigo), abierta: Boolean(paso) && perfil.codigo === pedida }}
+                  evidencia={evidencia.get(perfil.codigo)}
                 />
               </li>
             ))}
@@ -134,7 +138,7 @@ export default async function Banco({
   return (
     <>
       <div inert>{pagina}</div>
-      <PanelFicha ficha={ficha} recorrido={paso} lista={lista} href={href} />
+      <PanelFicha ficha={ficha} recorrido={paso} lista={lista} href={href} evidencia={evidencia.get(pedida!)} />
     </>
   );
 }
