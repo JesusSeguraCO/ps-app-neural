@@ -8,6 +8,8 @@ import { expect, test, type BrowserContext } from "@playwright/test";
 import pg from "pg";
 
 const CORREO = "e2e-marco@trycore.com";
+// Mismo número en e2e/acceso.portal.spec.ts: serializa los e2e que escriben el contacto de Trycore.
+const CANDADO_CONTACTO = 147_147;
 const INSTALACION =
   process.env.BD_INSTALACION_URL ?? "postgres://ps_instalacion@127.0.0.1:54329/ps";
 
@@ -156,8 +158,6 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
     "/importar?vista=historial",
     "/vigencia",
     "/colocados",
-    // Resultado y deshacer de las importaciones del recorrido del sub-slice 4 (revertidas).
-    "/importar?lote=594f25ad-9513-4176-bb0b-0bcf0c98a682",
   ]) {
     test(`${ruta}: axe sin incidencias serias y sin scroll horizontal a 320/390`, async ({ page }) => {
       const errores: string[] = [];
@@ -181,6 +181,53 @@ test.describe("pantallas del panel con sesión (HU-122, HU-145, HU-146; EP-006: 
 // Vista previa de la ficha (EP-006 · sub-slice 5, HU-129): el modo del editor que dibuja la ficha del
 // portal. Sin incidencias serias de axe (la ficha va inerte) y sin scroll horizontal en móvil; la
 // necesidad presencial muestra la ciudad y la remota no.
+test.describe("resultado de una importación (HU-141, HU-142)", () => {
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!);
+  });
+
+  // El lote se registra en la prueba (sin aplicarlo): no depende de datos de una BD concreta.
+  test("/importar?lote=…: axe sin incidencias serias, sin scroll horizontal a 320/390 y consola limpia", async ({ page }) => {
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error") errores.push(m.text());
+    });
+    await page.goto("/importar");
+    const lote = await page.evaluate(async () => {
+      const par = document.cookie.split("; ").find((c) => c.startsWith("__Host-csrf="));
+      const r = await fetch("/api/v1/importacion/lotes", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-ps-csrf": par ? decodeURIComponent(par.slice("__Host-csrf=".length)) : "",
+        },
+        body: JSON.stringify({
+          texto: "Código\tAños de experiencia\nPS-0187\t9\nXX-1\t4",
+          formato: "tsv",
+          modo: "crear_y_actualizar",
+          archivo: "e2e-resultado.tsv",
+          columnas: [
+            { columna: "Código", clave: "codigo" },
+            { columna: "Años de experiencia", clave: "aniosExperiencia" },
+          ],
+        }),
+      });
+      return { status: r.status, id: (await r.json()).loteId as string };
+    });
+    expect(lote.status).toBe(201);
+    await page.goto(`/importar?lote=${lote.id}`);
+    await expect(page.getByText("Esta importación no se confirmó.")).toBeVisible();
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
+    for (const ancho of [320, 390]) {
+      await page.setViewportSize({ width: ancho, height: 800 });
+      expect(await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth)).toBe(0);
+    }
+    expect(errores).toEqual([]);
+  });
+});
+
 test.describe("vista previa de la ficha (HU-129)", () => {
   test.beforeEach(async ({ context, baseURL }, info) => {
     test.skip(info.project.name !== "panel", "solo el panel");
@@ -858,7 +905,10 @@ test.describe("administración (HU-151, HU-147, HU-138)", () => {
     const otra = `e2e-admin-${randomBytes(3).toString("hex")}@trycore.com`;
     const bd = new pg.Client({ connectionString: INSTALACION });
     await bd.connect();
-    // La BD de desarrollo es la del e2e: el contacto que hubiera se repone al terminar, no se borra.
+    // El contacto es una fila única que también escribe el e2e HU-147 del portal (otro proyecto, en
+    // paralelo): se turnan con el mismo candado (se suelta al cerrar esta conexión). La BD de desarrollo
+    // es la del e2e: el contacto que hubiera se repone al terminar, no se borra.
+    await bd.query(`SELECT pg_advisory_lock($1)`, [CANDADO_CONTACTO]);
     const contactoPrevio = (await bd.query(`SELECT * FROM inventario.configuracion_contacto`)).rows[0];
     try {
       await page.goto("/administracion/accesos");

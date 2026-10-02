@@ -8,6 +8,8 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import pg from "pg";
 
+// Mismo número en e2e/marco.panel.spec.ts: serializa los e2e que escriben el contacto de Trycore.
+const CANDADO_CONTACTO = 147_147;
 const INSTALACION =
   process.env.BD_INSTALACION_URL ?? "postgres://ps_instalacion@127.0.0.1:54329/ps";
 const clave = execFileSync("bash", ["scripts/entorno-dev.sh", "portal"], {
@@ -334,6 +336,13 @@ test.describe("topes de renovación e invitaciones", () => {
     page,
   }) => {
     const EIDA = "Eida Tinjacá, Coordinación de Servicio";
+    // El contacto es una fila única que también escribe el e2e de administración del panel (otro
+    // proyecto, en paralelo): se turnan con el mismo candado y el contacto previo se repone al terminar.
+    const candado = new pg.Client({ connectionString: INSTALACION });
+    await candado.connect();
+    await candado.query(`SELECT pg_advisory_lock($1)`, [CANDADO_CONTACTO]);
+    const previo = (await candado.query(`SELECT * FROM inventario.configuracion_contacto`)).rows[0];
+    await candado.query(`DELETE FROM inventario.configuracion_contacto`);
     await consulta(
       `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por)
        SELECT true, 'eida.tinjaca@trycore.com', 'Eida Tinjacá', 'Coordinación de Servicio', id
@@ -391,7 +400,14 @@ test.describe("topes de renovación e invitaciones", () => {
       ).toBeVisible();
       await sinIncidenciasGraves(page);
     } finally {
-      await consulta(`DELETE FROM inventario.configuracion_contacto`, []);
+      await candado.query(`DELETE FROM inventario.configuracion_contacto`);
+      if (previo)
+        await candado.query(
+          `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por, actualizado_en)
+           VALUES (true, $1, $2, $3, $4, $5)`,
+          [previo.correo, previo.nombre, previo.cargo, previo.actualizado_por, previo.actualizado_en],
+        );
+      await candado.end();
     }
   });
 });
