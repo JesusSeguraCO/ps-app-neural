@@ -260,9 +260,11 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
       const html = await pagina(portal, `/?ficha=${codigo}`, cookieCliente);
       expect(html).toContain("1 de 1 · selección para ti");
       expect(html).toContain("Verificado por Trycore");
-      expect(html).toContain("Aprobada, nivel senior");
-      expect(html).toContain("Célula de arquitectura de Trycore");
-      expect(html).toMatch(/Evaluó: .+\./);
+      // HU-155 (EP-003, D59): cinco campos; el resultado publicado es «Cumple el estándar», no el texto libre.
+      expect(html).toMatch(/Resultado\s+Cumple el estándar/);
+      expect(html).toMatch(/Evaluador\s+Célula de arquitectura de Trycore/);
+      expect(html).toMatch(/Qué se evaluó\s+\S/);
+      expect(html).not.toContain("Aprobada, nivel senior");
     });
 
     it("7 · importar y revertir: el worker aplica el lote y luego lo deshace; el perfil vuelve a como estaba", async () => {
