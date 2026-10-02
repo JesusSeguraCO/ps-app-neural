@@ -4,6 +4,7 @@
 // misma transacción. El portal se comprueba leyendo con `ps_portal`.
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { entradaValidaciones } from "../pruebas/validaciones-entrada";
 import type pg from "pg";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
 import { verificarCadena, type ClavesAuditoria } from "./auditoria";
@@ -35,6 +36,9 @@ const rechazo = async (p: Promise<unknown>) => {
   return "sin_rechazo";
 };
 
+// Alcance SARO y fechas para las entradas completas (lo siembra `sembrarFicticios`).
+let saroDisc: Awaited<ReturnType<typeof entradaValidaciones>>;
+
 describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
   let bd: BdPrueba;
   let panel: pg.Pool;
@@ -61,6 +65,8 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
     modalidadTrabajoId: ids.hibrido,
     disponibilidad: { opcion: "ahora" as const },
     modalidadPruebaId: ids.prueba,
+    // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+    ...saroDisc,
     capacidad: "Ingeniera Backend Senior",
     anclaje: "8 años en core bancario",
     selloPersonal: ["Rigurosidad", "Autodidactismo", "Cautela"],
@@ -100,6 +106,10 @@ describe.skipIf(!HAY_BD)("ServicioPerfiles (HU-125, HU-127)", () => {
     );
     ids.rolQa = await id("catalogo_roles", "Analista QA automatización");
   }, 60_000);
+
+  beforeAll(async () => {
+    saroDisc = await entradaValidaciones(bd.instalacion);
+  });
 
   afterAll(async () => {
     await bd?.cerrar();

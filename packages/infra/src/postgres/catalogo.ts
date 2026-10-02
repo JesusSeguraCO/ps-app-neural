@@ -105,7 +105,8 @@ export async function fichaDelPortal(
             c.sectores, c.modalidad, c.pais, c.ciudad, c.disponibilidad_fecha::text AS disponibilidad_fecha,
             c.disponibilidad_actualizada_en, f.resumen, f.sello_personal, f.formacion, f.idiomas,
             f.enunciado_prueba, f.incluye_clientes, f.reporte_modalidad, f.reporte_resultado,
-            f.reporte_evaluador, f.reporte_fecha::text AS reporte_fecha, f.reporte_criterios
+            f.reporte_evaluador, f.reporte_fecha::text AS reporte_fecha, f.reporte_criterios,
+            f.saro_texto, f.saro_fecha::text AS saro_fecha, f.disc_fecha::text AS disc_fecha
        FROM operacion.catalogo_publicable c JOIN operacion.ficha_publicable f USING (codigo)
       WHERE c.codigo = $1`,
     [codigo],
@@ -151,6 +152,8 @@ export async function fichaDelPortal(
               criterios: c.reporte_criterios,
             }
           : null,
+        saro: { texto: c.saro_texto, fecha: c.saro_fecha },
+        disc: { fecha: c.disc_fecha },
       },
       { ahora: o.ahora ?? new Date(), necesidad: o.necesidad ?? "remota" },
     ),

@@ -14,7 +14,7 @@ import {
   type BloqueOpcional,
   type Necesidad,
 } from "@ps/contratos/ficha";
-import type { EvaluacionPublicacion } from "@ps/dominio/inventario/perfil";
+import { faltaDe, type EvaluacionPublicacion } from "@ps/dominio/inventario/perfil";
 import { FichaPerfil, type MarcasFicha } from "@ps/ui/FichaPerfil";
 import { datosFichaDePerfil, type PerfilParaFicha } from "./ficha";
 
@@ -49,6 +49,12 @@ const OPCIONAL: Record<BloqueOpcional, string> = {
 };
 
 // Dónde se completa cada bloque en el editor.
+const CAMPO_DE_ENTRADA: Record<string, string> = {
+  saro_alcance: "pe-saro-alcance",
+  saro_fecha: "pe-saro-fecha",
+  disc_fecha: "pe-disc-fecha",
+};
+
 const CAMPO_DE_BLOQUE: Record<BloqueFicha, string> = {
   cabecera: "pe-rol",
   persona: "pe-nombre",
@@ -111,6 +117,10 @@ export function VistaPrevia(p: {
   );
   const sinConsentimiento = p.evaluacion.condiciones.some(
     (c) => c.clave === "consentimiento" && !c.cumple,
+  );
+  // Validaciones de entrada que faltan (HU-176): «Falta …» con su campo del editor.
+  const entradas = p.evaluacion.condiciones.filter(
+    (c) => !c.cumple && c.clave in CAMPO_DE_ENTRADA,
   );
   const vacios = opcionalesVacios(ficha);
   const primero = incompletos[0];
@@ -178,9 +188,20 @@ export function VistaPrevia(p: {
                     ? `, y ${incompletos.length - 1} bloque${incompletos.length > 2 ? "s" : ""} más`
                     : ""
                 }${sinConsentimiento ? "; además falta el consentimiento nominal" : ""}.`
-              : "No se puede publicar sin el consentimiento nominal registrado."}
+              : sinConsentimiento
+                ? "No se puede publicar sin el consentimiento nominal registrado."
+                : "No se puede publicar todavía."}
+            {entradas.map((c) => ` ${faltaDe(c)}.`).join("")}
           </p>
-          {primero ? (
+          {!primero && !sinConsentimiento && entradas[0] ? (
+            <button
+              type="button"
+              className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
+              onClick={() => p.alVolver(CAMPO_DE_ENTRADA[entradas[0]!.clave])}
+            >
+              Ir al campo
+            </button>
+          ) : primero ? (
             <button
               type="button"
               className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"

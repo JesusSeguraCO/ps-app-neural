@@ -6,14 +6,22 @@
 // sección. «Publicar» aplica las guardas del servidor y, si falta algo, dice exactamente qué y ofrece
 // ir a resolverlo (HU-128, HU-130); «Vista previa» muestra la ficha del portal con lo que hay en el
 // editor, sin guardar (HU-129). La evidencia la entrega el sub-slice 6.
+// Validaciones de entrada (EP-003 · SS1; HU-176, HU-177): alcance de la verificación SARO elegido del
+// catálogo cerrado (solo activos; el desactivado que el perfil conserva se muestra señalado y no se
+// ofrece a otros), fecha SARO y fecha DISC. Una fecha posterior a hoy no se guarda (422) y el perfil
+// conserva lo que tenía; publicar sin alguno dice «Falta …» y lleva al campo.
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { horaCortaDeColombia, horaDeColombia, fechaCivil } from "@ps/dominio/fecha/colombia";
 import { ETIQUETA_ESTADO } from "@ps/dominio/inventario/estados";
 import {
+  MENSAJE_FECHA_FUTURA,
   OPCIONES_DISPONIBILIDAD,
   clienteEnDescripcion,
   evaluarPublicacion,
+  faltaDe,
   validarConsentimiento,
+  validarFechaVerificacion,
+  type ClaveCondicion,
   type CampoObligatorio,
   type EvaluacionPublicacion,
   type OpcionDisponibilidad,
@@ -59,7 +67,21 @@ const ERROR_CAMPO: Record<CampoObligatorio, { id: string; texto: string }> = {
   trayectoria: { id: "pe-trayectoria", texto: "Falta al menos una experiencia." },
 };
 
+// Campo del editor de cada condición de publicar (el salto de «Falta …» y del lateral).
+const ANCLA_CONDICION: Record<ClaveCondicion, string> = {
+  consentimiento: "consentimiento",
+  trayectoria: "pe-trayectoria",
+  disponibilidad: "pe-disp",
+  modalidad_prueba: "pe-prueba",
+  saro_alcance: "pe-saro-alcance",
+  saro_fecha: "pe-saro-fecha",
+  disc_fecha: "pe-disc-fecha",
+};
+const VALIDACION_ENTRADA = new Set<ClaveCondicion>(["saro_alcance", "saro_fecha", "disc_fecha"]);
+
 const MOTIVO: Record<string, string> = {
+  fecha_verificacion_futura: MENSAJE_FECHA_FUTURA,
+  fecha_verificacion_ilegible: "La fecha de una verificación no es una fecha válida (AAAA-MM-DD).",
   valor_no_disponible:
     "Uno de los valores elegidos ya no está activo en el catálogo. Vuelve a elegirlo.",
   modalidad_de_otra_familia:
@@ -147,6 +169,11 @@ export function EditorPerfil(p: {
     [0, 1, 2].map((i) => inicial?.selloPersonal[i] ?? ""),
   );
   const [aporte, setAporte] = useState(inicial?.aporte ?? "");
+  const [saroAlcanceId, setSaroAlcanceId] = useState(inicial?.saro.alcance?.id ?? "");
+  const [saroFecha, setSaroFecha] = useState(inicial?.saro.fecha ?? "");
+  const [discFecha, setDiscFecha] = useState(inicial?.disc.fecha ?? "");
+  // Fecha rechazada por el servidor (422): qué campo y por qué.
+  const [errorFecha, setErrorFecha] = useState<{ campo: string; texto: string } | null>(null);
   const [experiencias, setExperiencias] = useState<Experiencia[]>(
     (inicial?.experiencias ?? []).map((e) => ({ ...e, clave: e.id })),
   );
@@ -184,6 +211,31 @@ export function EditorPerfil(p: {
   const editable = p.escribe && (!perfil || perfil.estado === "borrador" || enPortal);
   const [impacto, setImpacto] = useState<Impacto | null>(null);
   const prueba = p.opciones.modalidadesPrueba.find((m) => m.id === pruebaId) ?? null;
+  // Alcances que se ofrecen: los activos y, si el perfil guardado conserva uno desactivado, ese (HU-177).
+  const alcanceGuardado = perfil?.saro.alcance ?? null;
+  const alcances = [
+    ...p.opciones.alcancesSaro.map((a) => ({ ...a, activo: true })),
+    ...(alcanceGuardado && !alcanceGuardado.activo
+      ? [
+          {
+            id: alcanceGuardado.id,
+            nombre: alcanceGuardado.nombre,
+            textoCliente: alcanceGuardado.textoCliente,
+            activo: false,
+          },
+        ]
+      : []),
+  ];
+  const alcance = alcances.find((a) => a.id === saroAlcanceId) ?? null;
+  // La regla de fecha no futura en vivo, la misma del servidor.
+  const fechaInvalida = (campo: "saroFecha" | "discFecha", v: string): string | null => {
+    const r = validarFechaVerificacion(v || null, p.hoy);
+    if (!r.ok)
+      return r.motivo === "fecha_futura" ? MENSAJE_FECHA_FUTURA : MOTIVO.fecha_verificacion_ilegible!;
+    return errorFecha?.campo === campo ? errorFecha.texto : null;
+  };
+  const errSaroFecha = fechaInvalida("saroFecha", saroFecha);
+  const errDiscFecha = fechaInvalida("discFecha", discFecha);
   const pruebasFamilia = rol
     ? p.opciones.modalidadesPrueba.filter((m) => m.familiaId === rol.familiaId)
     : [];
@@ -220,8 +272,13 @@ export function EditorPerfil(p: {
         consentimiento: perfil?.consentimiento
           ? { vigente: perfil.consentimiento.vigente, nominal: perfil.consentimiento.nominal }
           : null,
+        saro: { alcance: Boolean(saroAlcanceId), fecha: Boolean(saroFecha) },
+        disc: { fecha: Boolean(discFecha) },
       }),
     [
+      saroAlcanceId,
+      saroFecha,
+      discFecha,
       nombre,
       apellido,
       rol,
@@ -272,6 +329,9 @@ export function EditorPerfil(p: {
       .filter(Boolean),
     selloPersonal: sello.map((x) => x.trim()).filter(Boolean),
     aporte,
+    saroAlcanceId: saroAlcanceId || null,
+    saroFecha: saroFecha || null,
+    discFecha: discFecha || null,
     experiencias: experiencias.map((e) => ({
       id: e.id ?? null,
       cargo: e.cargo,
@@ -345,6 +405,8 @@ export function EditorPerfil(p: {
             textoCliente: prueba.textoCliente,
           }
         : null,
+      saro: { alcance, fecha: saroFecha || null },
+      disc: { fecha: discFecha || null },
     };
   };
 
@@ -387,8 +449,20 @@ export function EditorPerfil(p: {
     }
   }
 
+  // Lleva al campo (scroll y foco) tras pintar.
+  function irA(id: string) {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ block: "center" });
+      el?.focus();
+    }, 0);
+  }
+
   const aplicar = (nuevo: PerfilEditor) => {
     setPerfil(nuevo);
+    setSaroAlcanceId(nuevo.saro.alcance?.id ?? "");
+    setSaroFecha(nuevo.saro.fecha ?? "");
+    setDiscFecha(nuevo.disc.fecha ?? "");
     setExperiencias(nuevo.experiencias.map((e) => ({ ...e, clave: e.id })));
   };
 
@@ -409,13 +483,27 @@ export function EditorPerfil(p: {
       const d = await r.json().catch(() => ({}));
       if (d.motivo === "deja_incompleto") setImpacto({ incompleto: true, ...d.impacto });
       else if (r.ok) setImpacto({ incompleto: false, ...d.impacto });
-      else setError(MOTIVO[d.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
+      else rechazoGuardado(d);
     } finally {
       setGuardando(false);
     }
   }
 
+  // Un rechazo del guardado: una fecha de verificación inválida se señala en su campo y el foco va a él;
+  // el perfil conserva lo que tenía (nada se escribió).
+  function rechazoGuardado(d: { motivo?: string; campo?: string }) {
+    setError(MOTIVO[d.motivo ?? ""] ?? "No se pudo guardar. Inténtalo de nuevo.");
+    if (
+      (d.motivo === "fecha_verificacion_futura" || d.motivo === "fecha_verificacion_ilegible") &&
+      (d.campo === "saroFecha" || d.campo === "discFecha")
+    ) {
+      setErrorFecha({ campo: d.campo, texto: MOTIVO[d.motivo]! });
+      irA(d.campo === "saroFecha" ? "pe-saro-fecha" : "pe-disc-fecha");
+    }
+  }
+
   async function guardar() {
+    setErrorFecha(null);
     if (enPortal) return previsualizarCambios();
     setGuardando(true);
     setError(null);
@@ -428,7 +516,7 @@ export function EditorPerfil(p: {
         : await enviarJson("/api/v1/perfiles", cuerpo());
       const d = await r.json().catch(() => ({}));
       if (!r.ok) {
-        setError(MOTIVO[d.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
+        rechazoGuardado(d);
         return;
       }
       if (!perfil) {
@@ -459,7 +547,12 @@ export function EditorPerfil(p: {
     setIntentoPublicar(true);
     setBloqueoServidor(null);
     setError(null);
-    if (!evaluacion.publicable) return;
+    if (!evaluacion.publicable) {
+      // Una validación de entrada que falta (HU-176): «Falta …» y el foco a su campo.
+      const primera = evaluacion.condiciones.find((c) => !c.cumple);
+      if (primera && VALIDACION_ENTRADA.has(primera.clave)) irA(ANCLA_CONDICION[primera.clave]);
+      return;
+    }
     setPublicando(true);
     try {
       let version = perfil.version;
@@ -494,6 +587,9 @@ export function EditorPerfil(p: {
 
   const titulo =
     [perfil?.nombre, perfil?.primerApellido].filter(Boolean).join(" ") || "Nuevo perfil";
+  // Falta una validación de entrada tras intentar publicar: el campo lo dice.
+  const faltaEntrada = (clave: ClaveCondicion) =>
+    intentoPublicar && evaluacion.condiciones.some((c) => c.clave === clave && !c.cumple);
   const condicionesCumplidas = evaluacion.condiciones.filter((c) => c.cumple).length;
   const sinConsentimiento = evaluacion.condiciones.find(
     (c) => c.clave === "consentimiento" && !c.cumple,
@@ -1165,6 +1261,126 @@ export function EditorPerfil(p: {
                       </p>
                     </div>
                   )}
+                  <fieldset className="pe-alcance pe-entrada" aria-labelledby="pe-l-entrada">
+                    <legend className="pp-label" id="pe-l-entrada">
+                      Validaciones de entrada
+                    </legend>
+                    <p className="pp-ayuda">
+                      Verificación de seguridad bajo SARO y evaluación DISC. Obligatorias para
+                      publicar.
+                    </p>
+                    <div className="pp-campo">
+                      <label className="pp-label" htmlFor="pe-saro-alcance">
+                        Alcance de la verificación SARO
+                      </label>
+                      <div className="pp-select">
+                        <select
+                          className="pp-input"
+                          id="pe-saro-alcance"
+                          value={saroAlcanceId}
+                          aria-invalid={faltaEntrada("saro_alcance") || undefined}
+                          aria-describedby={
+                            faltaEntrada("saro_alcance") ? "pe-saro-alcance-error" : undefined
+                          }
+                          onChange={(e) => setSaroAlcanceId(e.target.value)}
+                        >
+                          <option value="">
+                            {alcances.length ? "Elige el alcance del catálogo" : "Sin alcances en el catálogo"}
+                          </option>
+                          {alcances.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.activo ? a.nombre : `${a.nombre} (desactivado)`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {faltaEntrada("saro_alcance") && (
+                        <ErrorCampo
+                          id="pe-saro-alcance-error"
+                          texto={`${faltaDe({ motivo: "el alcance de la verificación SARO" })}.`}
+                        />
+                      )}
+                      {alcance && (
+                        <p className="pe-enunciado">{`«${alcance.textoCliente}»`}</p>
+                      )}
+                      {alcance && !alcance.activo && (
+                        <p className="pp-meta" id="pe-saro-desactivado">
+                          Desactivado en el catálogo: este perfil lo conserva y su ficha lo sigue
+                          mostrando, pero no se ofrece a otros perfiles.
+                        </p>
+                      )}
+                      {!alcances.length && (
+                        <p className="pp-meta">
+                          <a className="pp-enlace" href="/catalogos?tipo=alcance_saro">
+                            Registrar un alcance en Catálogos
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                    <div className="pe-dos">
+                      <div className="pp-campo">
+                        <label className="pp-label" htmlFor="pe-saro-fecha">
+                          Fecha de la verificación SARO
+                        </label>
+                        <input
+                          className="pp-input"
+                          id="pe-saro-fecha"
+                          type="date"
+                          max={p.hoy}
+                          value={saroFecha}
+                          aria-invalid={Boolean(errSaroFecha) || faltaEntrada("saro_fecha") || undefined}
+                          aria-describedby={
+                            errSaroFecha || faltaEntrada("saro_fecha") ? "pe-saro-fecha-error" : undefined
+                          }
+                          onChange={(e) => {
+                            setSaroFecha(e.target.value);
+                            if (errorFecha?.campo === "saroFecha") setErrorFecha(null);
+                          }}
+                        />
+                        {errSaroFecha ? (
+                          <ErrorCampo id="pe-saro-fecha-error" texto={errSaroFecha} />
+                        ) : (
+                          faltaEntrada("saro_fecha") && (
+                            <ErrorCampo
+                              id="pe-saro-fecha-error"
+                              texto={`${faltaDe({ motivo: "la fecha de la verificación SARO" })}.`}
+                            />
+                          )
+                        )}
+                      </div>
+                      <div className="pp-campo">
+                        <label className="pp-label" htmlFor="pe-disc-fecha">
+                          Fecha de la evaluación DISC
+                        </label>
+                        <input
+                          className="pp-input"
+                          id="pe-disc-fecha"
+                          type="date"
+                          max={p.hoy}
+                          value={discFecha}
+                          aria-invalid={Boolean(errDiscFecha) || faltaEntrada("disc_fecha") || undefined}
+                          aria-describedby={
+                            errDiscFecha || faltaEntrada("disc_fecha") ? "pe-disc-fecha-error" : undefined
+                          }
+                          onChange={(e) => {
+                            setDiscFecha(e.target.value);
+                            if (errorFecha?.campo === "discFecha") setErrorFecha(null);
+                          }}
+                        />
+                        {errDiscFecha ? (
+                          <ErrorCampo id="pe-disc-fecha-error" texto={errDiscFecha} />
+                        ) : (
+                          faltaEntrada("disc_fecha") && (
+                            <ErrorCampo
+                              id="pe-disc-fecha-error"
+                              texto={`${faltaDe({ motivo: "la fecha de la evaluación DISC" })}.`}
+                            />
+                          )
+                        )}
+                      </div>
+                    </div>
+                    <p className="pp-meta">La ficha muestra el mes de cada una, nunca el día.</p>
+                  </fieldset>
                   {perfil && (
                     <div className="pp-campo" id="pe-reporte">
                       <p className="pp-label">Reporte detallado</p>
@@ -1497,6 +1713,13 @@ export function EditorPerfil(p: {
                   </a>
                 </li>
               )}
+              {evaluacion.condiciones
+                .filter((c) => !c.cumple && VALIDACION_ENTRADA.has(c.clave))
+                .map((c) => (
+                  <li key={c.clave} className="pe-falta">
+                    <a href={`#${ANCLA_CONDICION[c.clave]}`}>{faltaDe(c)}</a>
+                  </li>
+                ))}
               <li className="pe-falta">
                 <a href={`#${ERROR_CAMPO[evaluacion.faltanDatos[0]!.campo].id}`}>
                   {evaluacion.faltanDatos.length === 1
@@ -1526,15 +1749,9 @@ export function EditorPerfil(p: {
                     ) : (
                       <a
                         href={
-                          c.clave === "consentimiento"
-                            ? "#consentimiento"
-                            : c.clave === "modalidad_prueba"
-                              ? c.detalle === "familia_sin_modalidades"
-                                ? "#pe-rol"
-                                : "#pe-prueba"
-                              : c.clave === "trayectoria"
-                                ? "#pe-trayectoria"
-                                : "#pe-disp"
+                          c.clave === "modalidad_prueba" && c.detalle === "familia_sin_modalidades"
+                            ? "#pe-rol"
+                            : `#${ANCLA_CONDICION[c.clave]}`
                         }
                       >
                         {c.etiqueta}
@@ -1717,7 +1934,30 @@ function AvisoBloqueo(p: {
     </>
   );
   let accion: ReactNode = null;
-  if (unica?.clave === "consentimiento") {
+  // Validaciones de entrada (HU-176): cada una dice exactamente «Falta …».
+  const entradas = condiciones.filter((c) => VALIDACION_ENTRADA.has(c.clave));
+  if (total > 1 && entradas.length)
+    texto = (
+      <>
+        No se publicó {codigo}: {`faltan ${total} condiciones. `}
+        {entradas.map((c) => `${faltaDe(c)}.`).join(" ")}
+      </>
+    );
+  if (unica && VALIDACION_ENTRADA.has(unica.clave)) {
+    texto = (
+      <>
+        No se publicó {codigo}: {`${faltaDe(unica)}.`}
+      </>
+    );
+    accion = (
+      <a
+        className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
+        href={`#${ANCLA_CONDICION[unica.clave]}`}
+      >
+        Ir al campo
+      </a>
+    );
+  } else if (unica?.clave === "consentimiento") {
     texto = <>No se publicó {codigo}: falta el consentimiento nominal registrado.</>;
     if (p.alRegistrarConsentimiento)
       accion = (

@@ -2,7 +2,9 @@
 // HU-129, HU-130). Un solo componente para el portal y la vista previa del panel: dibuja lo que
 // `armarFicha` deja y nada más. Lo verificado por Trycore va en su bloque teñido; lo declarado, sin
 // caja (RF-3.12). Un bloque opcional sin datos no se dibuja —ni título ni hueco—. La validación es
-// el enunciado de Nivel 0 de la modalidad de prueba mientras no haya reporte detallado.
+// el enunciado de Nivel 0 de la modalidad de prueba mientras no haya reporte detallado. La verificación
+// SARO (texto del alcance y mes) y la evaluación DISC (mes) van en lo verificado y se omiten sin marca
+// si faltan (EP-003 · SS1; su presentación final es de HU-156, SS6).
 //
 // `marcas` solo lo pasa la vista previa: numera cada bloque obligatorio incompleto y nombra el dato
 // que falta. El portal nunca lo pasa (un publicado está completo).
@@ -151,6 +153,16 @@ export function FichaPerfil({
                   f.validacion?.enunciado
                 )}
               </Fila>
+              {f.seguridad && (
+                <Fila titulo="Verificación de seguridad SARO" id="vp-fila-seguridad">
+                  {`${f.seguridad.alcance} · ${f.seguridad.fecha}`}
+                </Fila>
+              )}
+              {f.disc && (
+                <Fila titulo="Evaluación DISC" id="vp-fila-disc">
+                  {f.disc.fecha}
+                </Fila>
+              )}
             </dl>
           </div>
         </section>

@@ -5,7 +5,11 @@
 import "server-only";
 import type pg from "pg";
 import { clasificarNombre } from "@ps/dominio/catalogo/parecidos";
-import type { TipoCatalogo } from "@ps/dominio/catalogo/tipos";
+import {
+  MAX_TEXTO_ALCANCE,
+  tieneTextoCliente,
+  type TipoCatalogo,
+} from "@ps/dominio/catalogo/tipos";
 import type { CambioAuditado, ClavesAuditoria } from "./auditoria";
 import { RechazoInventario, conUnidadInventario } from "./unidad-inventario";
 
@@ -18,6 +22,7 @@ const TABLA: Record<TipoCatalogo, string> = {
   sector: "catalogo_sectores",
   modalidad_prueba: "catalogo_modalidades_prueba",
   motivo_pausa: "catalogo_motivos_pausa",
+  alcance_saro: "catalogo_alcances_saro",
 };
 
 // Perfiles que usan cada valor (archivados fuera: ya no están en el banco).
@@ -28,6 +33,7 @@ const USO: Record<TipoCatalogo, string> = {
   familia: `SELECT p.familia_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.familia_id IS NOT NULL`,
   modalidad_prueba: `SELECT p.modalidad_prueba_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.modalidad_prueba_id IS NOT NULL`,
   motivo_pausa: `SELECT p.motivo_pausa_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.motivo_pausa_id IS NOT NULL`,
+  alcance_saro: `SELECT p.saro_alcance_id AS id, p.id AS perfil_id, p.estado FROM inventario.perfiles p WHERE p.saro_alcance_id IS NOT NULL`,
 };
 
 export interface ValorListado {
@@ -40,7 +46,8 @@ export interface ValorListado {
   familiaId: string | null;
   perfiles: number;
   publicados: number;
-  // Familia: modalidades de prueba activas; modalidad: su texto de cara al cliente y plantilla.
+  // Familia: modalidades de prueba activas; modalidad y alcance SARO: su texto de cara al cliente (y la
+  // modalidad, su plantilla).
   modalidades?: number;
   textoCliente?: string | null;
   enunciadoReto?: string | null;
@@ -68,6 +75,7 @@ export async function listarCatalogo(bd: Consultor, tipo: TipoCatalogo): Promise
             (SELECT count(*)::int FROM uso WHERE uso.id = v.id AND uso.estado = 'publicado') AS publicados
             ${tipo === "familia" ? `, (SELECT count(*)::int FROM inventario.catalogo_modalidades_prueba m WHERE m.familia_id = v.id AND m.activo) AS modalidades` : ""}
             ${tipo === "modalidad_prueba" ? `, v.texto_cliente, v.enunciado_reto, v.entregables, v.criterios` : ""}
+            ${tipo === "alcance_saro" ? `, v.texto_cliente` : ""}
             ${tipo === "motivo_pausa" ? `, v.descripcion` : ""}
        FROM inventario.${TABLA[tipo]} v ${union}
       ORDER BY v.activo DESC, perfiles DESC, v.nombre`,
@@ -91,6 +99,7 @@ export async function listarCatalogo(bd: Consultor, tipo: TipoCatalogo): Promise
         }
       : {}),
     ...(tipo === "motivo_pausa" ? { descripcion: f.descripcion } : {}),
+    ...(tipo === "alcance_saro" ? { textoCliente: f.texto_cliente } : {}),
   }));
 }
 
@@ -101,7 +110,8 @@ export async function conteosCatalogos(bd: Consultor): Promise<Record<TipoCatalo
             (SELECT count(*) FROM inventario.catalogo_tecnologias WHERE fusionado_en_id IS NULL)::int AS tecnologia,
             (SELECT count(*) FROM inventario.catalogo_sectores WHERE fusionado_en_id IS NULL)::int AS sector,
             (SELECT count(*) FROM inventario.catalogo_modalidades_prueba WHERE fusionado_en_id IS NULL)::int AS modalidad_prueba,
-            (SELECT count(*) FROM inventario.catalogo_motivos_pausa WHERE fusionado_en_id IS NULL)::int AS motivo_pausa`,
+            (SELECT count(*) FROM inventario.catalogo_motivos_pausa WHERE fusionado_en_id IS NULL)::int AS motivo_pausa,
+            (SELECT count(*) FROM inventario.catalogo_alcances_saro WHERE fusionado_en_id IS NULL)::int AS alcance_saro`,
   );
   return r.rows[0];
 }
@@ -197,6 +207,7 @@ export type MotivoRechazoValor =
   | "familia_requerida"
   | "familia_invalida"
   | "texto_cliente_requerido"
+  | "texto_cliente_largo"
   | "no_existe";
 
 export interface Autor {
@@ -235,8 +246,12 @@ async function validar(
     if (!f.rows[0]) throw new RechazoInventario<MotivoRechazoValor>("familia_invalida");
     familia = f.rows[0];
   }
-  if (tipo === "modalidad_prueba" && !recortar(d.textoCliente))
+  if (tieneTextoCliente(tipo) && !recortar(d.textoCliente))
     throw new RechazoInventario<MotivoRechazoValor>("texto_cliente_requerido");
+  if (tipo === "alcance_saro" && recortar(d.textoCliente)!.length > MAX_TEXTO_ALCANCE)
+    throw new RechazoInventario<MotivoRechazoValor>("texto_cliente_largo", {
+      maximo: MAX_TEXTO_ALCANCE,
+    });
   const revision = await revisarNombre(tx, tipo, nombre, {
     familiaId: familia?.id ?? null,
     excepto,
@@ -285,6 +300,7 @@ export async function crearValor(
     if (familia) columnas.familia_id = familia.id;
     if (tipo === "tecnologia") columnas.grupo = recortar(d.grupo);
     if (tipo === "motivo_pausa") columnas.descripcion = recortar(d.descripcion);
+    if (tipo === "alcance_saro") columnas.texto_cliente = recortar(d.textoCliente);
     if (tipo === "modalidad_prueba") {
       columnas.texto_cliente = recortar(d.textoCliente);
       columnas.enunciado_reto = recortar(d.enunciadoReto);
@@ -338,6 +354,7 @@ export async function editarValor(
     if (familia) nuevos.familia_id = familia.id;
     if (tipo === "tecnologia") nuevos.grupo = recortar(d.grupo);
     if (tipo === "motivo_pausa") nuevos.descripcion = recortar(d.descripcion);
+    if (tipo === "alcance_saro") nuevos.texto_cliente = recortar(d.textoCliente);
     if (tipo === "modalidad_prueba") {
       nuevos.texto_cliente = recortar(d.textoCliente);
       nuevos.enunciado_reto = recortar(d.enunciadoReto);
@@ -405,6 +422,26 @@ export async function dependientes(
     borradores: r.rows.filter((f) => f.estado === "borrador").length,
     otros: r.rows.filter((f) => f.estado !== "publicado" && f.estado !== "borrador").length,
   };
+}
+
+// Corregir el texto de cara al cliente de un valor en uso (HU-177 edge; la regla de HU-126 aplicada a un
+// valor que comparten varias fichas): antes de aplicarlo, qué fichas publicadas lo mostrarán. Nada se
+// escribe. Solo los catálogos cuyo texto se ve en la ficha (modalidad de prueba, alcance SARO).
+export async function impactoTextoCliente(
+  bd: Consultor,
+  tipo: TipoCatalogo,
+  id: string,
+): Promise<{ textoCliente: string; publicados: Array<{ codigo: string; nombre: string }> }> {
+  if (!tieneTextoCliente(tipo)) throw new RechazoInventario<"no_aplica">("no_aplica");
+  const v = (
+    await bd.query(
+      `SELECT texto_cliente FROM inventario.${TABLA[tipo]} WHERE id = $1 AND fusionado_en_id IS NULL`,
+      [id],
+    )
+  ).rows[0];
+  if (!v) throw new RechazoInventario<MotivoRechazoValor>("no_existe");
+  const dep = (await dependientes(bd, tipo, id))!;
+  return { textoCliente: v.texto_cliente, publicados: dep.publicados };
 }
 
 // Desactivar: deja de poder elegirse; las fichas que lo tienen lo conservan. Reactivar lo devuelve.
@@ -481,6 +518,7 @@ const CAMPO_PERFIL: Record<TipoCatalogo, string> = {
   familia: "familia",
   modalidad_prueba: "modalidad_prueba",
   motivo_pausa: "motivo_pausa",
+  alcance_saro: "saro_alcance",
 };
 
 // Fusión confirmada: una transacción reasigna, sube la versión de cada perfil (disparador) y la global,

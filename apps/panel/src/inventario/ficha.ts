@@ -25,6 +25,8 @@ export type PerfilParaFicha = Pick<
   | "experiencias"
   | "consentimiento"
   | "modalidadPrueba"
+  | "saro"
+  | "disc"
 > &
   Partial<Pick<PerfilEditor, "reporte">>;
 
@@ -67,5 +69,8 @@ export function datosFichaDePerfil(p: PerfilParaFicha): DatosFicha {
           criterios: p.reporte.criterios,
         }
       : null,
+    // La vista previa muestra el texto del alcance tal como lo leerá el cliente (HU-176).
+    saro: { texto: p.saro.alcance?.textoCliente ?? null, fecha: p.saro.fecha },
+    disc: { fecha: p.disc.fecha },
   };
 }

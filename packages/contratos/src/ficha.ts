@@ -10,8 +10,13 @@
 //  - El cliente nombrado solo si el consentimiento lo incluye (HU-127).
 //  - Un bloque opcional sin datos no existe en la ficha (no viaja ni se dibuja).
 //  - Nada de la lista negra B.4: el esquema estricto hace fallar cualquier campo de más.
+//  - Verificación de seguridad bajo SARO (texto de cara al cliente del alcance y mes) y evaluación DISC
+//    (mes) (EP-003; HU-176, HU-156): anulables, para que un publicado heredado sin ellos siga abriendo
+//    su ficha; lo ausente se omite sin marca (D62). Ni el id del alcance ni nada del DISC detallado
+//    (B.4) viaja.
 import { z } from "zod";
 import { BANDAS, ROTULO_BANDA, bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
+import { mesDeAnio } from "@ps/dominio/fecha/colombia";
 import type { CampoObligatorio } from "@ps/dominio/inventario/perfil";
 
 export const NECESIDADES = ["remota", "hibrida", "presencial"] as const;
@@ -58,6 +63,8 @@ export const FichaPerfil = z.strictObject({
   idiomas: z.array(z.string().min(1)),
   trayectoria: z.array(ExperienciaFicha).min(1),
   validacion: ValidacionFicha,
+  seguridad: z.strictObject({ alcance: z.string().min(1), fecha: z.string().min(1) }).nullable(),
+  disc: z.strictObject({ fecha: z.string().min(1) }).nullable(),
 });
 export type FichaPerfil = z.infer<typeof FichaPerfil>;
 
@@ -104,6 +111,10 @@ export interface DatosFicha {
     fecha: string;
     criterios: string[];
   } | null;
+  // Verificación SARO: texto de cara al cliente del alcance (también desactivado) y fecha AAAA-MM-DD.
+  saro?: { texto: string | null; fecha: string | null } | null;
+  // Evaluación DISC: fecha AAAA-MM-DD.
+  disc?: { fecha: string | null } | null;
 }
 
 const texto = (s: string | null | undefined) => {
@@ -157,6 +168,11 @@ export function armarFicha(
             criterios: lista(d.reporte.criterios),
           }
         : { nivel: 0, enunciado },
+    seguridad:
+      texto(d.saro?.texto) && d.saro?.fecha
+        ? { alcance: texto(d.saro.texto)!, fecha: mesDeAnio(d.saro.fecha) }
+        : null,
+    disc: d.disc?.fecha ? { fecha: mesDeAnio(d.disc.fecha) } : null,
   };
 }
 
@@ -249,6 +265,12 @@ const VISTA_CLIENTE: Array<[campo: string, etiqueta: string, valor: (f: FichaEnE
           ? f.validacion.enunciado
           : `${f.validacion.modalidad} · ${f.validacion.resultado} (${f.validacion.evaluador}, ${f.validacion.fecha}). Evaluó: ${f.validacion.criterios.join(" · ")}`,
   ],
+  [
+    "seguridad",
+    "Verificación de seguridad SARO",
+    (f) => (f.seguridad ? `${f.seguridad.alcance} · ${f.seguridad.fecha}` : null),
+  ],
+  ["disc", "Evaluación DISC", (f) => f.disc?.fecha ?? null],
 ];
 
 export function cambiosDeCaraAlCliente(

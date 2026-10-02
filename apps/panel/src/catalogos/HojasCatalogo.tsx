@@ -4,8 +4,15 @@
 // revisión del nombre mientras se escribe (idéntico → bloqueo con el existente; parecido → «Usar X» o
 // confirmar que es distinto), aviso de familia sin modalidades de prueba, desactivar con las fichas
 // que dependen y fusionar con la vista de impacto antes de confirmar. Nada se borra.
+// Alcances SARO (HU-177): el texto de cara al cliente es obligatorio y corregirlo en un valor que citan
+// fichas publicadas avisa antes cuántas lo mostrarán; se confirma con un segundo clic (lo mismo para la
+// modalidad de prueba, cuyo texto también se lee en la ficha).
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { TipoCatalogo } from "@ps/dominio/catalogo/tipos";
+import {
+  MAX_TEXTO_ALCANCE,
+  tieneTextoCliente,
+  type TipoCatalogo,
+} from "@ps/dominio/catalogo/tipos";
 import { enviarJson, pedir } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
 import { cuantosSinPublicarLaConservan, laUsa, perfilesTexto } from "./concordancia";
@@ -90,7 +97,12 @@ function HojaValor({
   const [revision, setRevision] = useState<Revision>({ tipo: "vacio" });
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Fichas publicadas que mostrarán el texto corregido; con la lista a la vista, guardar confirma.
+  const [impactoTexto, setImpactoTexto] = useState<Array<{ codigo: string; nombre: string }> | null>(
+    null,
+  );
   const familia = ctx.familias.find((f) => f.id === familiaId);
+  useEffect(() => setImpactoTexto(null), [textoCliente]);
 
   useEffect(() => {
     const t = setTimeout(async () => {
@@ -106,15 +118,23 @@ function HojaValor({
   useEffect(() => setDistinto(false), [revision.tipo]);
 
   const faltaFamilia = conFamilia(tipo) && !familiaId;
-  const faltaTexto = tipo === "modalidad_prueba" && !textoCliente.trim();
+  const faltaTexto = tieneTextoCliente(tipo) && !textoCliente.trim();
+  const textoLargo = tipo === "alcance_saro" && textoCliente.trim().length > MAX_TEXTO_ALCANCE;
+  const textoCambia =
+    Boolean(valor) && tieneTextoCliente(tipo) && textoCliente.trim() !== (valor?.textoCliente ?? "");
   const bloqueado =
     revision.tipo === "vacio" ||
     revision.tipo === "identico" ||
     (revision.tipo === "parecido" && !distinto) ||
     faltaFamilia ||
     faltaTexto ||
+    textoLargo ||
     enviando;
-  const verbo = valor ? "Guardar" : `Crear ${singular}`;
+  const verbo = valor
+    ? impactoTexto && impactoTexto.length > 0
+      ? "Confirmar corrección"
+      : "Guardar"
+    : `Crear ${singular}`;
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -126,6 +146,7 @@ function HojaValor({
       ...(conFamilia(tipo) ? { familiaId } : {}),
       ...(tipo === "tecnologia" ? { grupo: grupo || null } : {}),
       ...(tipo === "motivo_pausa" ? { descripcion: descripcion || null } : {}),
+      ...(tipo === "alcance_saro" ? { textoCliente } : {}),
       ...(tipo === "modalidad_prueba"
         ? {
             textoCliente,
@@ -136,6 +157,34 @@ function HojaValor({
         : {}),
       ...(revision.tipo === "parecido" ? { confirmarDistinto: distinto } : {}),
     };
+    // Corregir el texto de un valor en uso (HU-177 edge): primero qué fichas publicadas lo mostrarán.
+    if (valor && textoCambia && impactoTexto === null) {
+      const pre = await enviarJson(
+        `/api/v1/catalogos/${tipo}/${valor.id}?previsualizar`,
+        cuerpo,
+        "PATCH",
+      ).catch(() => null);
+      if (pre?.status === 200) {
+        const { impacto } = (await pre.json()) as {
+          impacto: { publicados: Array<{ codigo: string; nombre: string }> };
+        };
+        if (impacto.publicados.length > 0) {
+          setImpactoTexto(impacto.publicados);
+          setEnviando(false);
+          return;
+        }
+      } else {
+        setEnviando(false);
+        setError(
+          pre?.status === 403
+            ? "Tu rol es de consulta: no puedes cambiar los catálogos."
+            : pre?.status === 401
+              ? "Tu sesión terminó. Vuelve a entrar para guardar el cambio."
+              : "No se pudo calcular qué fichas cambian. Inténtalo de nuevo.",
+        );
+        return;
+      }
+    }
     const r = await enviarJson(
       valor ? `/api/v1/catalogos/${tipo}/${valor.id}` : `/api/v1/catalogos/${tipo}`,
       cuerpo,
@@ -159,11 +208,17 @@ function HojaValor({
     setError(
       r?.status === 403
         ? "Tu rol es de consulta: no puedes cambiar los catálogos."
-        : cuerpoError.motivo === "duplicado"
-          ? "Ese nombre ya existe en el catálogo."
-          : cuerpoError.motivo === "parecido"
-            ? "Confirma que es distinto del valor parecido."
-            : "No se pudo guardar. Inténtalo de nuevo.",
+        : r?.status === 401
+          ? "Tu sesión terminó. Vuelve a entrar para guardar el cambio."
+          : cuerpoError.motivo === "duplicado"
+            ? "Ese nombre ya existe en el catálogo."
+            : cuerpoError.motivo === "parecido"
+              ? "Confirma que es distinto del valor parecido."
+              : cuerpoError.motivo === "texto_cliente_requerido"
+                ? "Falta el texto que ve el cliente."
+                : cuerpoError.motivo === "texto_cliente_largo"
+                  ? `El texto que ve el cliente admite hasta ${MAX_TEXTO_ALCANCE} caracteres.`
+                  : "No se pudo guardar. Inténtalo de nuevo.",
     );
   }
 
@@ -339,6 +394,52 @@ function HojaValor({
                 Una frase que distingue este motivo de los demás al pausar un perfil. Si la causa es una
                 fecha en que queda libre, no es una pausa: es disponibilidad.
               </p>
+            </div>
+          )}
+          {tipo === "alcance_saro" && (
+            <div className="pp-campo">
+              <label className="pp-label" htmlFor="ct-texto">
+                Lo que ve el cliente
+              </label>
+              <textarea
+                className="pp-input pp-input--area"
+                id="ct-texto"
+                value={textoCliente}
+                maxLength={MAX_TEXTO_ALCANCE}
+                onChange={(e) => setTextoCliente(e.target.value)}
+                aria-describedby="ct-texto-ayuda ct-texto-cuenta"
+                aria-invalid={
+                  (faltaTexto && textoCliente !== (valor?.textoCliente ?? "")) || textoLargo
+                    ? true
+                    : undefined
+                }
+              />
+              <p className="pp-ayuda" id="ct-texto-ayuda">
+                Qué se le verificó a la persona, con las palabras que leerá el cliente en la ficha.
+                Es el mismo texto para todos los perfiles verificados con este alcance.
+              </p>
+              <p className="pp-meta" id="ct-texto-cuenta">{`${textoCliente.length} / ${MAX_TEXTO_ALCANCE}`}</p>
+            </div>
+          )}
+          {impactoTexto && impactoTexto.length > 0 && (
+            <div className="pp-aviso pp-aviso--warn" role="status" id="ct-impacto-texto">
+              <span className="pp-aviso__icono" aria-hidden="true">
+                !
+              </span>
+              <p>
+                <span className="pp-aviso__titulo">
+                  {`El cambio se verá en ${impactoTexto.length} ${impactoTexto.length === 1 ? "ficha publicada" : "fichas publicadas"}.`}
+                </span>
+                {`Al confirmar, ${impactoTexto.length === 1 ? "su ficha muestra" : "sus fichas muestran"} el texto nuevo y el historial guarda quién lo cambió, cuándo, y el texto anterior y el nuevo.`}
+              </p>
+              <ul className="ct-perfiles">
+                {impactoTexto.map((x) => (
+                  <li key={x.codigo} className="ct-perfil ct-perfil--2">
+                    <span className="ct-perfil__codigo">{x.codigo}</span>
+                    <span className="ct-perfil__nombre">{x.nombre}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
           {tipo === "modalidad_prueba" && (

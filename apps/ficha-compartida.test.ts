@@ -7,6 +7,7 @@ import { randomBytes } from "node:crypto";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { entradaValidaciones } from "@ps/infra/pruebas/validaciones-entrada";
 import type pg from "pg";
 import { armarFicha, type Necesidad } from "@ps/contratos/ficha";
 import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
@@ -78,6 +79,8 @@ describe.skipIf(!HAY_BD)("ficha compartida panel/portal (HU-129, HU-130)", () =>
         "catalogo_modalidades_prueba",
         "Prueba práctica revisada por un arquitecto",
       ),
+      // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+      ...(await entradaValidaciones(bd.instalacion)),
       experiencias: [
         {
           cargo: "Backend senior",
