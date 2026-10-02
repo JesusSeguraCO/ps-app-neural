@@ -82,6 +82,7 @@ export async function antesDeRevertir(
     ])
   ).rows[0];
   if (!l) return null;
+  // Las posteriores, de la más reciente a la más antigua (prototipo importar-perfiles--revertir-no-ultima).
   const posteriores = l.aplicado_en
     ? (
         await bd.query(
@@ -91,7 +92,7 @@ export async function antesDeRevertir(
              LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por
             WHERE l.estado = 'aplicado' AND l.id <> $1
               AND l.aplicado_en > (SELECT aplicado_en FROM inventario.lotes_importacion WHERE id = $1)
-            ORDER BY l.aplicado_en`,
+            ORDER BY l.aplicado_en DESC`,
           [loteId],
         )
       ).rows.map((x) => ({
