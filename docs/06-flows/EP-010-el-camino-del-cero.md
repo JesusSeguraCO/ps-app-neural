@@ -144,7 +144,7 @@ sequenceDiagram
 
 ## Notas
 
-**Discovery 2026-10-02.** La épica pasa de 4 a 7 historias: nacen **HU-227** (banco selectivo) y **HU-228** (pedir a medida desde la opción vacía del encuadre, el cero por filtros de HU-223 y el equipo vacío de HU-100; D121, D128 sobre HU-223), y entra **HU-189** desde EP-008 (D103). El cero causado por filtros es de EP-002 (HU-074, HU-223); esta pantalla es la del cero que dejan los obligatorios del Perfil Objetivo (RF-13.9.4). **D130** (elegida por el modelo): se mantienen PRD y ADR-0004; la especificación estructurada solo existe en el servidor si hubo solicitud a medida, y el cero sin solicitud se registra con el texto enmascarado. La solicitud a medida usa la tabla y el identificador de EP-005 y llega a HubSpot por el worker (D76).
+**Discovery 2026-10-02.** La épica pasa de 4 a 7 historias: nacen **HU-227** (banco selectivo) y **HU-228** (pedir a medida desde la opción vacía del encuadre, el cero por filtros de HU-223 y el equipo vacío de HU-100; D121, D132 sobre HU-223), y entra **HU-189** desde EP-008 (D103). El cero causado por filtros es de EP-002 (HU-074, HU-223); esta pantalla es la del cero que dejan los obligatorios del Perfil Objetivo (RF-13.9.4). **D130** (elegida por el modelo): se mantienen PRD y ADR-0004; la especificación estructurada solo existe en el servidor si hubo solicitud a medida, y el cero sin solicitud se registra con el texto enmascarado. La solicitud a medida usa la tabla y el identificador de EP-005 y llega a HubSpot por el worker (D76).
 
 **D-14 cerró sin umbral numérico.** «Lo más cercano» son los perfiles que fallan **exactamente un obligatorio**, indicando cuál. No hay porcentaje de similitud que calibrar.
 

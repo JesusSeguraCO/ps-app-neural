@@ -19,9 +19,9 @@ historias_descartadas: 2
 | Artefacto | Versión | Dónde |
 |---|---|---|
 | PRD | **4.13** | `docs/01-prd/portal-people-service.md` |
-| Épicas | **5.9** — 11 épicas, con requisitos por épica y notas del discovery 2026-10-02 (cuarta ronda: EP-004 y EP-005; quinta ronda D128–D131: EP-002, EP-009, EP-010 y EP-011) | `docs/03-backlog/epicas.md` |
+| Épicas | **5.9** — 11 épicas, con requisitos por épica y notas del discovery 2026-10-02 (cuarta ronda: EP-004 y EP-005; quinta ronda D132–D131: EP-002, EP-009, EP-010 y EP-011) | `docs/03-backlog/epicas.md` |
 | Mapa de historias | **3.8** — alineado a épicas 5.9 y al discovery 2026-10-02 (quinta ronda) | `docs/02-user-story-map/portal-people-service.md` |
-| Historias escritas | **158** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01). El 2026-10-02 entran 40 (HU-153–HU-178, HU-180, HU-184–HU-196; los IDs HU-179 y HU-181–HU-183 no se usaron); HU-195 y HU-196 nacen en la tercera ronda (D93, D94); en la cuarta ronda (D108–D123) entran 10 más: HU-197–HU-201 (EP-005) y HU-203–HU-207 (EP-004 y EP-008; el ID HU-202 no se usó); en la quinta ronda (D128–D131) entran 23 más: HU-019, HU-020, HU-219–HU-226 y HU-250 (EP-002), HU-209–HU-213 (EP-009), HU-227 y HU-228 (EP-010) y HU-229–HU-233 (EP-011). Quedan en draft HU-067, HU-213 y HU-072 (prueba previa T-23; D131 pendiente del sponsor) | `docs/04-historias/` |
+| Historias escritas | **158** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01). El 2026-10-02 entran 40 (HU-153–HU-178, HU-180, HU-184–HU-196; los IDs HU-179 y HU-181–HU-183 no se usaron); HU-195 y HU-196 nacen en la tercera ronda (D93, D94); en la cuarta ronda (D108–D123) entran 10 más: HU-197–HU-201 (EP-005) y HU-203–HU-207 (EP-004 y EP-008; el ID HU-202 no se usó); en la quinta ronda (D132–D131) entran 23 más: HU-019, HU-020, HU-219–HU-226 y HU-250 (EP-002), HU-209–HU-213 (EP-009), HU-227 y HU-228 (EP-010) y HU-229–HU-233 (EP-011). Quedan en draft HU-067, HU-213 y HU-072 (prueba previa T-23; D131 pendiente del sponsor) | `docs/04-historias/` |
 | Prototipo Low-Fi (v1) | entregado | `prototipo-portal-people-service.html` |
 | Prototipo Mid-Fi (v2) | entregado, con llamada real al modelo | `prototipo-midfi-portal-people-service.html` |
 | Auditoría de usabilidad (Krug) | 1.0 — 7 hallazgos corregidos | `docs/08-usabilidad/auditoria-krug.md` |
@@ -48,7 +48,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-074** | Refinar con filtros lo que la instrucción me devolvió | EP-002 | alta | S | lista | Depende de HU-219, HU-220 · *Discovery 2026-10-02*: refinada; independiente de EP-009 por partición (patrón D87); el cero de filtros sigue en HU-223 |
 | **HU-219** | Filtrar el banco combinando facetas y viendo cuántos perfiles deja cada opción | EP-002 | alta | M | lista | Depende de HU-167 · *Discovery 2026-10-02*: (nueva): facetas combinables con contadores por opción (RF-2.3, RF-2.4) |
 | **HU-220** | Ver cada filtro activo como una etiqueta y quitarlo de un toque | EP-002 | alta | S | lista | Depende de HU-219 · *Discovery 2026-10-02*: (nueva): etiquetas de filtro activo, quitar uno o todos |
-| **HU-223** | Salir del cero que dejaron mis filtros sin adivinar qué deshacer | EP-002 | alta | S | lista | Depende de HU-219, HU-220, HU-147 · *Discovery 2026-10-02*: (nueva): cero por filtros con cuántos recupera cada uno; salida a medida vía HU-228 (D128, HU-223) |
+| **HU-223** | Salir del cero que dejaron mis filtros sin adivinar qué deshacer | EP-002 | alta | S | lista | Depende de HU-219, HU-220, HU-147 · *Discovery 2026-10-02*: (nueva): cero por filtros con cuántos recupera cada uno; salida a medida vía HU-228 (D132, HU-223) |
 | **HU-222** | Ordenar los resultados por relevancia, disponibilidad o seniority | EP-002 | media | S | lista | Depende de HU-219 · *Discovery 2026-10-02*: (nueva): orden por relevancia, disponibilidad o seniority (RF-2.7) |
 | **HU-221** | Compartir y retomar la búsqueda exacta con su enlace | EP-002 | alta | M | lista | Depende de HU-219, HU-222, HU-121 · *Discovery 2026-10-02*: (nueva): estado completo en la URL; amplía la lista cerrada de ADR-0004 con categoría, sector, disponibilidad y orden |
 | **HU-075** | Entender qué pedí cuando no hay nada que mostrar | EP-010 | alta | S | lista | Depende de HU-085, HU-118, HU-167 · *Discovery 2026-10-02*: refinada; el cero por filtros es de EP-002; D130: sin solicitud no hay especificación en servidor |
@@ -56,7 +56,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-077** | Pedir el perfil que no existe todavía | EP-010 | alta | M | lista | Depende de HU-075, HU-198 · *Discovery 2026-10-02*: refinada: SOL-AAAA-NNNN y tabla de EP-005, un solo trabajo en cola (D76, D121); D130 |
 | **HU-078** | Saber qué están pidiendo las cuentas y no tenemos | EP-010 | alta | M | lista | Depende de HU-077 · *Discovery 2026-10-02*: refinada: especificación solo de solicitudes a medida, texto enmascarado para el resto (D130) |
 | **HU-227** | Entender que el banco es selectivo y no pequeño | EP-010 | media | S | lista | Depende de HU-075, HU-178 · *Discovery 2026-10-02*: (nueva): el banco es selectivo, no pequeño |
-| **HU-228** | Pedir el perfil a medida desde una opción sin perfiles, un cero por filtros o un equipo vacío | EP-010 | media | S | lista | Depende de HU-075, HU-077, HU-093, HU-100, HU-223 · *Discovery 2026-10-02*: (nueva): pedir a medida desde la opción vacía, el cero por filtros o el equipo vacío (D121, D128) |
+| **HU-228** | Pedir el perfil a medida desde una opción sin perfiles, un cero por filtros o un equipo vacío | EP-010 | media | S | lista | Depende de HU-075, HU-077, HU-093, HU-100, HU-223 · *Discovery 2026-10-02*: (nueva): pedir a medida desde la opción vacía, el cero por filtros o el equipo vacío (D121, D132) |
 | **HU-079** | Reconocer de un vistazo qué ha logrado un perfil | EP-003 | n/a | M | **descartada** | DESCARTADA el 2026-09-14 por cierre de D-15 |
 | **HU-080** | Ver qué le falta al equipo que estoy armando | EP-004 | media | S | lista | Depende de HU-203 · *Discovery 2026-10-02*: M → S; reglas fijas en código validadas por Delivery, sin viajar a HubSpot en v1 (D115) |
 | **HU-192** | Sumar y quitar perfiles de Mi equipo | EP-004 | alta | M | lista | *Discovery 2026-10-02*: redactada ya por D88 (RF-4.1, RF-4.2, con su indicador); absorbe los criterios recibidos de EP-001 (HU-094, HU-095); habilita HU-175 |
@@ -201,7 +201,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 
 Reservadas en el mapa de historias. Se redactan cuando entren en construcción.
 
-> Decisiones del discovery 2026-10-02 (D52–D131; cuarta ronda D108–D123 para EP-004 y EP-005; quinta ronda D128–D131 para EP-002, EP-009, EP-010 y EP-011) en `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`. El estado de cada historia está en la tabla de arriba.
+> Decisiones del discovery 2026-10-02 (D52–D131; cuarta ronda D108–D123 para EP-004 y EP-005; quinta ronda D132–D131 para EP-002, EP-009, EP-010 y EP-011) en `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`. El estado de cada historia está en la tabla de arriba.
 
 | Rango | Alcance | Épica | Release |
 |---|---|---|---|
