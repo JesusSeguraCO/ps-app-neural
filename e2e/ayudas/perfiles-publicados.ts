@@ -209,7 +209,8 @@ export function arrancarWorker(): {
           }
           return codigo;
         },
-        { timeout: 30_000, intervals: [300] },
+        // Con otros e2e antes (renovaciones, invitaciones), el worker despacha primero esa cola.
+        { timeout: 90_000, intervals: [300] },
       )
       .toMatch(/^\d{6}$/);
     return codigo;
