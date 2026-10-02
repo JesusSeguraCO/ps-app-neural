@@ -61,7 +61,7 @@ depende_de: [HU-151, HU-195]
 
 Se apoya en **RF-14.7.0** (solo los tres tipos más frecuentes, D-19), **RF-14.7.1** (regla dura: composiciones de proyectos que Trycore entregó; si el dato no existe, no se muestra) y en el permiso por persona «Validar composiciones» de **D94 y D99** (lo concede un administrador en la lista nominal, HU-151/HU-190).
 
-**Opción conservadora aplicada:** quien registra es quien valida (Coordinación de Servicio con el permiso de D94), porque quien sabe si una composición es real es Delivery (razón de D94). Los roles salen del catálogo de roles del panel, no de texto libre, para que HU-084 y HU-080 puedan compararlos con los roles del equipo. El nombre del tipo de proyecto y el detalle de los proyectos de origen son internos y **nunca salen al portal**; al portal solo llegan el tipo, los roles y el número de proyectos.
+**Opción conservadora aplicada:** quien registra es quien valida (Coordinación de Servicio con el permiso de D94), porque quien sabe si una composición es real es Delivery (razón de D94). Los roles salen del catálogo de roles del panel, no de texto libre, para que HU-084 y HU-080 puedan compararlos con los roles del equipo. El detalle de los proyectos de origen es interno y **nunca sale al portal**; al portal llegan el **nombre del tipo de proyecto** (que se trata como **público**, alineado con HU-083 y HU-084, EP-009), los roles y el número de proyectos. *Coherencia 2026-10-02:* Delivery registra el nombre sabiendo que lo verá el cliente; si un nombre interno no puede salir, se registra con un rótulo público.
 
 **Lo que sigue abierto (de HU-195):** cada cuánto se revalida una composición. No lo fija esta historia.
 

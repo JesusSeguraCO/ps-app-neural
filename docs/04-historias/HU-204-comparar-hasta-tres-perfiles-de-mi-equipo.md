@@ -7,7 +7,7 @@ complejidad: M
 estado: lista
 fase: cierre-de-huecos
 prd_version: 4.18
-depende_de: [HU-203, HU-121]
+depende_de: [HU-203, HU-250]
 ---
 
 # HU-204 — Comparar hasta tres perfiles con los mismos criterios
@@ -32,7 +32,7 @@ depende_de: [HU-203, HU-121]
 | origen | accion |
 |---|---|
 | la vista «Mi equipo», con 4 perfiles en el equipo | «Comparar (3)» |
-| la vista de tabla de resultados (HU-121) | «Comparar» de la barra de acciones en grupo |
+| la vista de tabla de resultados (HU-121, selección múltiple de HU-250) | «Comparar» de la barra de acciones en grupo |
 
 ### Edge case — con menos de 2 o más de 3 marcados no hay comparación
 
@@ -69,25 +69,25 @@ Cubre **RF-4.4** (comparador de hasta 3 perfiles con los mismos criterios en par
 
 **D112 (sponsor, 2026-10-02) cierra P3 y P4.** El comparador se abre **desde «Mi equipo» y desde la acción en grupo de la vista de tabla** (barra «Sumar al equipo · Comparar · Quitar selección» del prototipo v2.5), y usa **filas fijas** de la ficha, **sin criterios de EP-009** (sin filas ✓/– del motor). Por eso el título deja de decir «de mi equipo»: desde la tabla se comparan perfiles marcados aunque aún no estén en el equipo.
 
-**Regla de 2 o 3 marcados (unificada para las dos entradas).** En la tabla la selección también sirve para sumar en grupo (HU-121), así que no se puede topar en 3; por coherencia, en las dos entradas «Comparar» solo está disponible con 2 o 3 marcados y explica por qué cuando no. Sustituye a «el cuarto no queda marcado» del borrador. El prototipo toma los tres primeros cuando hay más, descartando en silencio: se corrige. *Elegida por el modelo por delegación del sponsor.*
+**Regla de 2 o 3 marcados (unificada para las dos entradas).** En la tabla la selección también sirve para sumar en grupo (HU-121), así que no se puede topar en 3 (HU-250); por coherencia, en las dos entradas «Comparar» solo está disponible con 2 o 3 marcados y explica por qué cuando no. Sustituye a «el cuarto no queda marcado» del borrador. El prototipo toma los tres primeros cuando hay más, descartando en silencio: se corrige. *Elegida por el modelo por delegación del sponsor.*
 
 **Sin puntajes por diseño.** El portal compara lo declarado y lo verificado (RF-3.12) y deja la conclusión al cliente. Ninguna celda trae campos de la lista negra del Anexo B (RF-3.7): las filas salen del mismo contrato de lectura de la ficha que construye EP-003 (`packages/contratos/src/ficha.ts`), no de una consulta propia.
 
 **El estado se reevalúa al abrir** (RF-19.2): un perfil que cambió se muestra con su estado, nunca se omite. El tratamiento de esos perfiles en el equipo es de HU-206.
 
-**Secuencia.** La entrada desde la tabla usa la selección múltiple de **HU-121** (EP-002); si EP-004 se construye antes, esa entrada se cablea en cuanto exista la barra, dentro de esta misma historia. No es recorte.
+**Secuencia.** La entrada desde la tabla usa la selección múltiple de **HU-250** (EP-002; antes descrita en HU-121, de la que se partió en la discovery 2026-10-02); si EP-004 se construye antes, esa entrada se cablea en cuanto exista la barra, dentro de esta misma historia. No es recorte.
 
 **Línea de release.** `docs/03-backlog/backlog.md` ubica el comparador en **v1.1**. Es ubicación de release, no recorte.
 
 ## Trazabilidad
 
-Épica madre: **EP-004** · PRD v4.18 · RF-4.4 · RF-3.7 · RF-3.12 · RF-19.2 · D112 (sponsor, 2026-10-02) · depende de HU-203 (vista «Mi equipo») y HU-121 (EP-002, selección múltiple de la tabla) · lee el contrato de ficha de EP-003 (HU-155 para la validación técnica) · relacionada con HU-206
+Épica madre: **EP-004** · PRD v4.18 · RF-4.4 · RF-3.7 · RF-3.12 · RF-19.2 · D112 (sponsor, 2026-10-02) · depende de HU-203 (vista «Mi equipo») y HU-250 (EP-002, selección múltiple de la tabla; antes HU-121) · lee el contrato de ficha de EP-003 (HU-155 para la validación técnica) · relacionada con HU-206
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencias declaradas: se abre desde la vista de HU-203 y desde la barra de HU-121, y lee el contrato de ficha de EP-003; no depende del motor de criterios (D112) |
+| I | Independiente | ✓ con dependencias declaradas: se abre desde la vista de HU-203 y desde la barra de HU-250, y lee el contrato de ficha de EP-003; no depende del motor de criterios (D112) |
 | N | Negociable | ✓ son fijos el máximo de 3, las dos entradas, las mismas filas fijas para todos, la ausencia de puntajes y que un dato ausente o un estado cambiado se digan; el diseño del diálogo y el texto de los mensajes se negocian |
 | V | Valiosa | ✓ el cliente decide entre candidatos del mismo rol leyendo por fila, que es lo que lo lleva a pedir uno y no a abandonar |
 | E | Estimable | ✓ M: marcar en la vista existente, la acción en la barra de la tabla, un diálogo con filas fijas sobre el contrato de ficha y la reevaluación del estado al abrir |

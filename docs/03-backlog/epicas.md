@@ -3,7 +3,7 @@ artefacto: epicas
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
 prd_version: 4.13
-version: 5.8
+version: 5.9
 fecha: 2026-10-02
 total_epicas: 11
 prd_version_alineada: 4.13
@@ -78,6 +78,10 @@ prd_version_alineada: 4.13
 **Métrica de éxito:** resultados filtrados en menos de 1 segundo; al menos el 50% de las sesiones aplican un filtro propio más allá del conjunto curado.
 
 **Historias anticipadas:** filtrar por rol y categoría · filtrar por stack · filtrar por disponibilidad · combinar y limpiar filtros · buscar por texto libre · ordenar resultados · compartir el estado por URL · estado sin resultados con salida activa · ver y responder el sondeo de equipos híbridos · descartarlo de forma persistente.
+
+**Historias escritas:** *facetas y estado* HU-219 · HU-220 · HU-074 · HU-223 · HU-222 · HU-221 — *tabla* HU-121 · HU-250 — *sondeo y espacio no-perfil* HU-226 · HU-019 · HU-020 · HU-224 · HU-225 (13 historias).
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): nacen **HU-019** y **HU-020** (sondeo, con los identificadores que el mapa reservaba), **HU-219** a **HU-226** (facetas con contadores, etiquetas de filtro activo, URL con estado, orden, cero por filtros, voto a HubSpot, umbral del sondeo y un solo espacio no-perfil) y **HU-250** (selección múltiple de la tabla, partida de HU-121 por INVEST; D112). HU-074 queda independiente de EP-009 por partición (patrón D87). **D128 (HU-223):** la salida «pedir el perfil a medida» del cero por filtros se cablea a HU-077 cuando se construya EP-010, vía HU-228; secuencia, no recorte. La tabla en teléfono se desplaza dentro de su contenedor (M-6). Se enmienda ADR-0004: la URL gana Categoría, Sector, Disponibilidad y orden, y el descarte y el voto del sondeo se guardan en el servidor por invitado. La consulta sin coincidencia (RF-2.6.3) la registra EP-009, no esta épica. Estado: **13 de 13 en lista**.
 
 ### Requisitos de esta épica
 
@@ -422,6 +426,10 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Discovery 2026-10-02 — cuarta ronda (D108):** **HU-084** «Ver la forma típica del trabajo que estoy por emprender» (RF-14.7) **se mueve a esta épica**, junto a HU-083 (reto declarado), de la que depende. No es recorte: cambia de épica. Se dibuja en la vista «Mi equipo» de HU-203 (EP-004) y lee las composiciones que registra HU-207 (EP-008, D109). Queda en **draft** hasta que el refinamiento de HU-083 fije cómo se asigna el reto declarado a uno de los tres tipos de proyecto. RF-14.7 se suma a las capabilities de esta épica.
 
+**Historias escritas:** *instrucción e interpretación* HU-065 · HU-066 · HU-068 · HU-069 · HU-067 · HU-213 · HU-072 — *motor único y resultados* HU-209 · HU-118 · HU-174 · HU-210 — *Perfil Objetivo* HU-070 · HU-085 · HU-082 · HU-083 · HU-084 · HU-071 · HU-073 — *solicitud y experimento* HU-211 · HU-212 (20 historias).
+
+**Discovery 2026-10-02 — quinta ronda (D128–D131).** Nacen **HU-209** (el contador del panel es el número de resultados, motor único RF-13.8), **HU-210** (relacionados bajo las coincidencias directas, RF-2.6.1), **HU-211** (la especificación viaja con la solicitud de equipo, partida de HU-070), **HU-212** (variante del experimento por cuenta, D71) y **HU-213** (aviso, elección y saneamiento del requerimiento pegado, partida de HU-067). HU-083 fija cómo el reto se asigna a un tipo de proyecto, cuyo nombre se trata como público (alineado con HU-207, EP-008), y con ello **HU-084 pasa a lista**. La consulta sin coincidencia (RF-2.6.3, `operacion.consultas_sin_coincidencia`) es de esta épica. **D131 — pendiente del sponsor:** qué hacer con RF-12.2 si la prueba previa T-23 no se ejecuta (posible diferimiento); mientras tanto **HU-067, HU-213 y HU-072 quedan en draft** y la épica arranca con sus 17 historias en lista. Estado: **17 de 20 en lista, 3 en draft**.
+
 ### Requisitos de esta épica
 
 - **RF-12.1** La entrada principal es una **barra de instrucción en lenguaje natural**, nunca vacía: llega precargada con el proyecto activo de la cuenta y tres o cuatro instrucciones sugeridas. *(M-01 · evidencia D+E)*
@@ -518,9 +526,13 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Métrica de éxito:** proporción de pantallas de cero que terminan en solicitud dirigida en lugar de abandono.
 **Riesgo propio:** mostrar "lo más cercano" cuando no se parece daña más que no mostrar nada.
-**Bloqueada por:** D-14 (umbral de similitud) y D-13 (dueño del registro de demanda).
+**Bloqueada por:** ninguna (D-14 y D-13 cerradas).
 
 **Historias anticipadas:** ver el Perfil Objetivo cuando no hay resultados · ver lo más cercano solo si supera el umbral · solicitar un perfil a medida con el SLA a la vista · entender que el banco es selectivo y no pobre · que la especificación quede registrada como demanda.
+
+**Historias escritas:** HU-075 · HU-227 · HU-076 · HU-077 · HU-228 · HU-078 · HU-189 (7 historias).
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): nacen **HU-227** (el banco es selectivo, no pequeño) y **HU-228** (pedir a medida desde la opción vacía del encuadre, el cero por filtros de HU-223 y el equipo vacío de HU-100; paga el criterio recibido de EP-001 y **D121**: no hay solicitud de equipo sin perfiles), y entra **HU-189** desde EP-008 (**D103**). La solicitud a medida usa el identificador SOL-AAAA-NNNN y la tabla de EP-005, con un solo trabajo en cola hacia HubSpot (**D76**); «misma especificación» = misma cuenta + mismos obligatorios en 7 días (análogo a **D119/D120**). **D128 (HU-223):** la salida a medida del cero por filtros se cablea aquí. **D130** (elegida por el modelo): RF-15.1 frente a RF-13.4.2 se resuelve manteniendo PRD y ADR-0004; la especificación estructurada solo existe en el servidor si hubo solicitud a medida, y el cero sin solicitud se registra con el texto enmascarado. D-13 y D-14 están cerradas: la épica ya no tiene bloqueos. Estado: **7 de 7 en lista**.
 
 ### Requisitos de esta épica
 
@@ -555,6 +567,10 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Riesgo propio:** una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. Por eso RF-18.3 y RF-18.4 exigen construirla desde el panel, contra el inventario del momento, y marcar el bloque como desactualizado si un perfil cambia. Segundo riesgo, nuevo con la decisión: si nadie registra la salida, el portal no puede contar envíos ni vigilar la cadencia (RF-18.5).
 
 **Historias:** armar la selección de una cuenta · generar el enlace de cada destinatario · copiar el contenido curado y registrar la salida · ver quién entró por su enlace · reaccionar a una cuenta que no entra.
+
+**Historias escritas:** HU-233 · HU-229 · HU-232 · HU-113 · HU-114 · HU-115 · HU-230 · HU-231 · HU-116 · HU-117 (10 historias).
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): nacen **HU-229** (abrir la edición curada de una cuenta), **HU-230** (registrar la salida), **HU-231** (vigilar la cadencia), **HU-232** (excluir a un contacto) y **HU-233** (permiso «Envíos»); HU-113 a HU-117 se refinan sobre ellas. **D129** (elegida por el modelo por delegación del sponsor): el permiso «Envíos» es **por persona**, como «Medición» (D74) y «Validar composiciones» (D99), y **enmienda RF-8.1.2** en el PRD v4.18: el observador no escribe salvo con un permiso explícito por persona. Así Mercadeo (observador) prepara las ediciones sin el rol que escribe el inventario. El KPI del 35 % del tablero deja de estar en «aún no se mide» cuando esta épica registre los envíos (D93). Estado: **10 de 10 en lista**.
 
 ### Requisitos de esta épica
 
