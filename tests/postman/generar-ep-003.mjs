@@ -136,7 +136,7 @@ const perfiles = carpeta("2 · Perfiles: SARO, DISC y avisos", [
   }),
   req("dentro de otra palabra («itemizada») no avisa", "POST", "/perfiles", {
     cuerpo: limpio,
-    pruebas: [st(201), t("avisos vacío", `pm.expect(j.avisos).to.eql([]);`)],
+    pruebas: [st(201), t("avisos vacío", `pm.expect(j.avisos).to.eql([]);`), set("codigoBorrador", "pm.response.json().perfil.codigo")],
   }),
   req("fecha SARO futura → 422 con el campo, y el aviso aparte", "POST", "/perfiles", {
     cuerpo: { ...base, saroAlcanceId: "{{alcanceId}}", saroFecha: "{{manana}}", discFecha: "{{hoy}}" },
@@ -328,6 +328,77 @@ const importacion = carpeta("5 · Importación: plantilla y exportación", [
   req("observadora exporta → 403", "GET", "/importacion/exportar?formato=csv", { quien: "obs", pruebas: [st(403), motivo("sin_permiso")] }),
 ]);
 
+// ── 5b. importación por lotes con SARO/DISC: emparejar → vista previa → aplicar en el worker (HU-191) ──
+// Lo pegado viaja como TSV (como al copiar de una hoja). El perfil publicado de la corrida ({{codigo}})
+// ya tiene SARO/DISC completos; el borrador ({{codigoBorrador}}) no tiene ninguno.
+const ENC_IMP = ["Código", COLS[1], COLS[2], COLS[3]];
+const tsv = (...filas) => JSON.stringify(filas.map((f) => f.join("\t")).join("\n")).slice(1, -1);
+const cuerpoLote = (texto) => `{"texto":"${texto}","formato":"tsv","modo":"crear_y_actualizar","columnas":{{columnasSaro}}}`;
+const filaDe = (expr) => `const f = j.plan.filas.find((x) => x.codigo === ${expr});`;
+const CAMPOS_SARO = ["saroAlcance", "saroFecha", "discFecha"];
+const loteSaro = carpeta("5b · Importación por lotes con SARO/DISC", [
+  req("emparejar: las tres columnas SARO/DISC van a su campo", "POST", "/importacion/emparejar", {
+    cuerpo: `{"texto":"${tsv(ENC_IMP, ["{{codigoBorrador}}", "Alcance n3-{{run}}", "15/09/2026", "{{hoy}}"])}"}`,
+    pruebas: [
+      st(200), json,
+      t("formato tsv y 1 fila", `pm.expect(j.formato).to.eql("tsv"); pm.expect(j.totalFilas).to.eql(1);`),
+      t("destinos", `const d = Object.fromEntries(j.emparejamiento.map((c) => [c.columna, c.destino.tipo === "campo" ? c.destino.clave : null])); pm.expect(d).to.eql(${JSON.stringify(Object.fromEntries(ENC_IMP.map((c, i) => [c, ["codigo", ...CAMPOS_SARO][i]])))});`),
+      set("columnasSaro", `JSON.stringify(pm.response.json().emparejamiento.map((c) => ({ columna: c.columna, clave: c.destino.tipo === "campo" ? c.destino.clave : null })))`),
+    ],
+  }),
+  req("vista previa con errores: [vaciar] el SARO de un publicado, fecha futura y alcance fuera del catálogo", "POST", "/importacion/lotes", {
+    cuerpo: cuerpoLote(tsv(ENC_IMP, ["{{codigo}}", "[vaciar]", "", ""], ["{{codigoBorrador}}", "Alcance que no existe {{run}}", "{{manana}}", "{{hoy}}"])),
+    pruebas: [
+      st(201), json,
+      t("lote calculado", `pm.expect(j.loteId).to.match(/^[0-9a-f-]{36}$/); pm.expect(j.modo).to.eql("crear_y_actualizar");`),
+      t("publicado: [vaciar] el alcance → con error, nada que aplicar", `${filaDe('pm.collectionVariables.get("codigo")')} pm.expect(f.grupo).to.eql("con_error"); pm.expect(f.cambios).to.eql([]); pm.expect(f.errores).to.deep.include({ campo: "saroAlcance", mensaje: "No se puede vaciar una validación de entrada de un perfil publicado; pásalo a borrador desde el editor" });`),
+      t("borrador: fecha SARO futura y alcance desconocido → con error en su campo", `${filaDe('pm.collectionVariables.get("codigoBorrador")')} pm.expect(f.grupo).to.eql("con_error"); const c = f.errores.map((e) => e.campo); pm.expect(c).to.include("saroFecha"); pm.expect(c).to.include("saroAlcance");`),
+      t("conteos: 2 con error, nada aplicable", `pm.expect(j.plan.conteos.con_error).to.eql(2); pm.expect(j.plan.resumen.actualizar).to.eql(0);`),
+      set("loteError", "pm.response.json().loteId"),
+    ],
+  }),
+  req("aplicar un lote sin filas aplicables → 422 nada_que_aplicar", "POST", "/importacion/lotes/{{loteError}}/aplicar", {
+    cuerpo: {}, pruebas: [st(422), motivo("nada_que_aplicar")],
+  }),
+  req("observadora calcula un lote → 403", "POST", "/importacion/lotes", {
+    quien: "obs", cuerpo: cuerpoLote(tsv(ENC_IMP, ["{{codigoBorrador}}", "Alcance n3-{{run}}", "15/09/2026", "{{hoy}}"])),
+    pruebas: [st(403), motivo("sin_permiso")],
+  }),
+  req("vista previa válida: el borrador recibe alcance y fechas (DD/MM/AAAA se lee)", "POST", "/importacion/lotes", {
+    cuerpo: cuerpoLote(tsv(ENC_IMP, ["{{codigoBorrador}}", "ALCANCE N3-{{run}}", "15/09/2026", "{{hoy}}"], ["{{codigo}}", "Alcance n3-{{run}}", "2026-09-15", "2026-08-01"])),
+    pruebas: [
+      st(201),
+      t("borrador → actualizado con los tres cambios", `${filaDe('pm.collectionVariables.get("codigoBorrador")')} pm.expect(f.grupo).to.eql("actualizado"); pm.expect(f.errores).to.eql([]); const d = Object.fromEntries(f.cambios.map((c) => [c.campo, c.despues])); pm.expect(d).to.eql({ saroAlcance: "Alcance n3-" + pm.variables.get("run"), saroFecha: "2026-09-15", discFecha: pm.variables.get("hoy") });`),
+      t("publicado con lo mismo → sin cambios", `${filaDe('pm.collectionVariables.get("codigo")')} pm.expect(f.grupo).to.eql("sin_cambios");`),
+      th("la vista previa no expone el id del alcance", `pm.expect(h).to.not.include(pm.collectionVariables.get("alcanceId"));`),
+      set("loteSaro", "pm.response.json().loteId"),
+    ],
+  }),
+  req("aplicar → 202 con el trabajo del worker", "POST", "/importacion/lotes/{{loteSaro}}/aplicar", {
+    cuerpo: {}, pruebas: [st(202), t("trabajoId", `pm.expect(j.trabajoId).to.be.a("string").and.not.empty;`), set("trabajoSaro", "pm.response.json().trabajoId")],
+  }),
+  req("aplicar dos veces devuelve el mismo trabajo", "POST", "/importacion/lotes/{{loteSaro}}/aplicar", {
+    cuerpo: {}, pruebas: [st(202), t("mismo trabajo", `pm.expect(j.trabajoId).to.eql(pm.collectionVariables.get("trabajoSaro"));`)],
+  }),
+  req("seguir el lote hasta aplicado (worker real sobre la BD aislada)", "GET", "/importacion/lotes/{{loteSaro}}", {
+    pruebas: [
+      st(200),
+      `const fase = pm.response.json().lote.fase; const n = Number(pm.collectionVariables.get("sondeos") || 0);
+if (fase !== "aplicado" && n < 40) { pm.collectionVariables.set("sondeos", n + 1); setTimeout(() => {}, 500); postman.setNextRequest(pm.info.requestName); }
+else { pm.collectionVariables.set("sondeos", 0); pm.test("fase aplicado", () => pm.expect(fase).to.eql("aplicado")); pm.test("confirmado por quien aplicó", () => pm.expect(pm.response.json().lote.confirmadoPor).to.be.a("string").and.not.empty); pm.test("sin filas con error", () => pm.expect(pm.response.json().errores.filas).to.eql(0)); }`,
+    ],
+  }),
+  req("el perfil importado tiene SARO y DISC y sigue en borrador (la importación nunca publica)", "GET", "/perfiles/{{codigoBorrador}}", {
+    pruebas: [st(200), t("saro, disc y estado", `pm.expect(j.perfil.estado).to.eql("borrador"); pm.expect(j.perfil.saro.alcance.id).to.eql(pm.collectionVariables.get("alcanceId")); pm.expect(j.perfil.saro.fecha).to.eql("2026-09-15"); pm.expect(j.perfil.disc.fecha).to.eql(pm.variables.get("hoy")); ["saro_alcance", "saro_fecha", "disc_fecha"].forEach((k) => pm.expect(j.perfil.evaluacion.condiciones.find((c) => c.clave === k).cumple).to.eql(true));`)],
+  }),
+  req("el publicado de la corrida no cambió", "GET", "/perfiles/{{codigo}}", {
+    pruebas: [st(200), version, t("intacto", `pm.expect(j.perfil.estado).to.eql("publicado"); pm.expect(j.perfil.saro.fecha).to.eql("2026-09-15"); pm.expect(j.perfil.disc.fecha).to.eql("2026-08-01");`)],
+  }),
+  req("la exportación ya trae el borrador con sus validaciones", "GET", "/importacion/exportar?formato=json", {
+    pruebas: [st(200), t("item del borrador", `const p = j.find((x) => x.codigo === pm.collectionVariables.get("codigoBorrador")); pm.expect(p.saroAlcance).to.eql("Alcance n3-" + pm.variables.get("run")); pm.expect(p.saroFecha).to.eql("2026-09-15"); pm.expect(p.discFecha).to.eql(pm.variables.get("hoy"));`)],
+  }),
+]);
+
 // ── 6. publicado heredado incompleto (HU-178, D62) ────────────────────────────────────────────
 const heredado = carpeta("6 · Publicado heredado sin SARO (HU-178)", [
   req("preparar: quitar el SARO por debajo de la app (ayudante)", "POST", "{{ayudante}}/heredado?codigo={{codigo}}", {
@@ -375,8 +446,8 @@ const coleccion = {
     description: "Generada por tests/postman/generar-ep-003.mjs. Correr con tests/postman/correr-ep-003.sh (BD aislada ps_ep003, portal :3210, panel :3211).",
     schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
   },
-  variable: [{ key: "codigo", value: "" }, { key: "version", value: "" }, { key: "alcanceId", value: "" }],
-  item: [alcances, perfiles, portal, alcanceEnUso, importacion, heredado],
+  variable: [{ key: "codigo", value: "" }, { key: "version", value: "" }, { key: "alcanceId", value: "" }, { key: "codigoBorrador", value: "" }, { key: "sondeos", value: 0 }],
+  item: [alcances, perfiles, portal, alcanceEnUso, importacion, loteSaro, heredado],
 };
 writeFileSync(new URL("./ep-003.postman_collection.json", import.meta.url), JSON.stringify(coleccion, null, 1) + "\n");
 console.log(`ep-003: ${coleccion.item.reduce((n, c) => n + c.item.length, 0)} peticiones`);

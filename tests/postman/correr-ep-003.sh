@@ -2,7 +2,7 @@
 # Corre el contrato de EP-003 (fase api) de punta a punta sobre la BD AISLADA del worktree (ps_ep003, nunca ps):
 #   1) genera la colección y siembra (sufijo de corrida) usuarios del panel con sesión y un enlace con sesión
 #      de portal, 2) levanta portal :3210 y panel :3211 standalone (con cabecera de borde) y el ayudante
-#      :3219, 3) corre Newman y exporta el resultado, 4) para sus procesos por PID y limpia lo sembrado y lo
+#      :3219, y un worker sobre la misma BD aislada (aplica los lotes de importación), 3) corre Newman y exporta el resultado, 4) para sus procesos por PID y limpia lo sembrado y lo
 #      que la colección creó (limpiar-ep-003.sh). Requiere `npm run build` y la BD local arrancada.
 # Uso: correr-ep-003.sh [export.json]
 set -euo pipefail
@@ -22,7 +22,7 @@ RUN="$(date +%s)$RANDOM"
 node tests/postman/generar-ep-003.mjs >&2
 tests/postman/sembrar-ep-003.sh "$RUN" > "$DIR/vars.txt"
 limpiar() {
-  for pid in ${PORTAL:-} ${PANEL:-} ${AYUDANTE:-}; do kill "$pid" 2>/dev/null || true; done
+  for pid in ${PORTAL:-} ${PANEL:-} ${AYUDANTE:-} ${WORKER:-}; do kill "$pid" 2>/dev/null || true; done
   wait 2>/dev/null || true
   tests/postman/limpiar-ep-003.sh "$RUN" || true
 }
@@ -41,6 +41,14 @@ PORTAL=$!
 PANEL=$!
 AYUDANTE_BD="$PS_BD_SIEMBRA" AYUDANTE_RUN="$RUN" AYUDANTE_PORT=$AYUDANTE_P node tests/postman/ayudante-ep-003.mjs > "$DIR/ayudante.log" 2>&1 &
 AYUDANTE=$!
+# El worker consume TODA la cola de la BD: nadie más (p. ej. el runner de e2e) debe usar $BDN mientras corre.
+(
+  eval "$(scripts/entorno-dev.sh worker)"
+  DATABASE_URL="postgres://ps_worker:dev@127.0.0.1:64329/$BDN" DATABASE_DIRECT_URL="postgres://ps_worker:dev@127.0.0.1:54329/$BDN" \
+    EXPORT_DATABASE_URL="postgres://ps_exportador:dev@127.0.0.1:54329/$BDN" PORTAL_ORIGEN="http://127.0.0.1:$PORTAL_P" \
+    exec node apps/worker/dist/worker.js
+) > "$DIR/worker.log" 2>&1 &
+WORKER=$!
 BORDE="$(bash scripts/entorno-dev.sh portal | sed -n 's/^export EDGE_SECRET=//p')"
 for p in $PORTAL_P $PANEL_P; do
   ok=""; for _ in $(seq 1 60); do curl -sf -H "x-ps-edge: $BORDE" "http://127.0.0.1:$p/api/v1/salud/vivo" >/dev/null && { ok=1; break; }; sleep 0.5; done

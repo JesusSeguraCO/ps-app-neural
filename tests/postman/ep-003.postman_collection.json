@@ -16,6 +16,14 @@
   {
    "key": "alcanceId",
    "value": ""
+  },
+  {
+   "key": "codigoBorrador",
+   "value": ""
+  },
+  {
+   "key": "sondeos",
+   "value": 0
   }
  ],
  "item": [
@@ -556,7 +564,8 @@
        "script": {
         "exec": [
          "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
-         "pm.test(\"avisos vacío\", () => { const j = pm.response.json(); pm.expect(j.avisos).to.eql([]); });"
+         "pm.test(\"avisos vacío\", () => { const j = pm.response.json(); pm.expect(j.avisos).to.eql([]); });",
+         "pm.collectionVariables.set(\"codigoBorrador\", pm.response.json().perfil.codigo);"
         ]
        }
       }
@@ -2589,6 +2598,476 @@
        }
       ],
       "url": "{{panel}}/api/v1/importacion/exportar?formato=csv"
+     }
+    }
+   ]
+  },
+  {
+   "name": "5b · Importación por lotes con SARO/DISC",
+   "item": [
+    {
+     "name": "emparejar: las tres columnas SARO/DISC van a su campo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"formato tsv y 1 fila\", () => { const j = pm.response.json(); pm.expect(j.formato).to.eql(\"tsv\"); pm.expect(j.totalFilas).to.eql(1); });",
+         "pm.test(\"destinos\", () => { const j = pm.response.json(); const d = Object.fromEntries(j.emparejamiento.map((c) => [c.columna, c.destino.tipo === \"campo\" ? c.destino.clave : null])); pm.expect(d).to.eql({\"Código\":\"codigo\",\"Alcance de la verificación SARO (del catálogo)\":\"saroAlcance\",\"Fecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\":\"saroFecha\",\"Fecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\":\"discFecha\"}); });",
+         "pm.collectionVariables.set(\"columnasSaro\", JSON.stringify(pm.response.json().emparejamiento.map((c) => ({ columna: c.columna, clave: c.destino.tipo === \"campo\" ? c.destino.clave : null }))));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/emparejar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigoBorrador}}\\tAlcance n3-{{run}}\\t15/09/2026\\t{{hoy}}\"}"
+      }
+     }
+    },
+    {
+     "name": "vista previa con errores: [vaciar] el SARO de un publicado, fecha futura y alcance fuera del catálogo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"lote calculado\", () => { const j = pm.response.json(); pm.expect(j.loteId).to.match(/^[0-9a-f-]{36}$/); pm.expect(j.modo).to.eql(\"crear_y_actualizar\"); });",
+         "pm.test(\"publicado: [vaciar] el alcance → con error, nada que aplicar\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(f.grupo).to.eql(\"con_error\"); pm.expect(f.cambios).to.eql([]); pm.expect(f.errores).to.deep.include({ campo: \"saroAlcance\", mensaje: \"No se puede vaciar una validación de entrada de un perfil publicado; pásalo a borrador desde el editor\" }); });",
+         "pm.test(\"borrador: fecha SARO futura y alcance desconocido → con error en su campo\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigoBorrador\")); pm.expect(f.grupo).to.eql(\"con_error\"); const c = f.errores.map((e) => e.campo); pm.expect(c).to.include(\"saroFecha\"); pm.expect(c).to.include(\"saroAlcance\"); });",
+         "pm.test(\"conteos: 2 con error, nada aplicable\", () => { const j = pm.response.json(); pm.expect(j.plan.conteos.con_error).to.eql(2); pm.expect(j.plan.resumen.actualizar).to.eql(0); });",
+         "pm.collectionVariables.set(\"loteError\", pm.response.json().loteId);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigo}}\\t[vaciar]\\t\\t\\n{{codigoBorrador}}\\tAlcance que no existe {{run}}\\t{{manana}}\\t{{hoy}}\",\"formato\":\"tsv\",\"modo\":\"crear_y_actualizar\",\"columnas\":{{columnasSaro}}}"
+      }
+     }
+    },
+    {
+     "name": "aplicar un lote sin filas aplicables → 422 nada_que_aplicar",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo nada_que_aplicar\", () => pm.expect(pm.response.json().motivo).to.eql(\"nada_que_aplicar\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteError}}/aplicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "observadora calcula un lote → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigoBorrador}}\\tAlcance n3-{{run}}\\t15/09/2026\\t{{hoy}}\",\"formato\":\"tsv\",\"modo\":\"crear_y_actualizar\",\"columnas\":{{columnasSaro}}}"
+      }
+     }
+    },
+    {
+     "name": "vista previa válida: el borrador recibe alcance y fechas (DD/MM/AAAA se lee)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"borrador → actualizado con los tres cambios\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigoBorrador\")); pm.expect(f.grupo).to.eql(\"actualizado\"); pm.expect(f.errores).to.eql([]); const d = Object.fromEntries(f.cambios.map((c) => [c.campo, c.despues])); pm.expect(d).to.eql({ saroAlcance: \"Alcance n3-\" + pm.variables.get(\"run\"), saroFecha: \"2026-09-15\", discFecha: pm.variables.get(\"hoy\") }); });",
+         "pm.test(\"publicado con lo mismo → sin cambios\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(f.grupo).to.eql(\"sin_cambios\"); });",
+         "pm.test(\"la vista previa no expone el id del alcance\", () => { const h = pm.response.text(); pm.expect(h).to.not.include(pm.collectionVariables.get(\"alcanceId\")); });",
+         "pm.collectionVariables.set(\"loteSaro\", pm.response.json().loteId);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigoBorrador}}\\tALCANCE N3-{{run}}\\t15/09/2026\\t{{hoy}}\\n{{codigo}}\\tAlcance n3-{{run}}\\t2026-09-15\\t2026-08-01\",\"formato\":\"tsv\",\"modo\":\"crear_y_actualizar\",\"columnas\":{{columnasSaro}}}"
+      }
+     }
+    },
+    {
+     "name": "aplicar → 202 con el trabajo del worker",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 202\", () => pm.response.to.have.status(202));",
+         "pm.test(\"trabajoId\", () => { const j = pm.response.json(); pm.expect(j.trabajoId).to.be.a(\"string\").and.not.empty; });",
+         "pm.collectionVariables.set(\"trabajoSaro\", pm.response.json().trabajoId);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteSaro}}/aplicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "aplicar dos veces devuelve el mismo trabajo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 202\", () => pm.response.to.have.status(202));",
+         "pm.test(\"mismo trabajo\", () => { const j = pm.response.json(); pm.expect(j.trabajoId).to.eql(pm.collectionVariables.get(\"trabajoSaro\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteSaro}}/aplicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "seguir el lote hasta aplicado (worker real sobre la BD aislada)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "const fase = pm.response.json().lote.fase; const n = Number(pm.collectionVariables.get(\"sondeos\") || 0);\nif (fase !== \"aplicado\" && n < 40) { pm.collectionVariables.set(\"sondeos\", n + 1); setTimeout(() => {}, 500); postman.setNextRequest(pm.info.requestName); }\nelse { pm.collectionVariables.set(\"sondeos\", 0); pm.test(\"fase aplicado\", () => pm.expect(fase).to.eql(\"aplicado\")); pm.test(\"confirmado por quien aplicó\", () => pm.expect(pm.response.json().lote.confirmadoPor).to.be.a(\"string\").and.not.empty); pm.test(\"sin filas con error\", () => pm.expect(pm.response.json().errores.filas).to.eql(0)); }"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteSaro}}"
+     }
+    },
+    {
+     "name": "el perfil importado tiene SARO y DISC y sigue en borrador (la importación nunca publica)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"saro, disc y estado\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"borrador\"); pm.expect(j.perfil.saro.alcance.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); pm.expect(j.perfil.saro.fecha).to.eql(\"2026-09-15\"); pm.expect(j.perfil.disc.fecha).to.eql(pm.variables.get(\"hoy\")); [\"saro_alcance\", \"saro_fecha\", \"disc_fecha\"].forEach((k) => pm.expect(j.perfil.evaluacion.condiciones.find((c) => c.clave === k).cumple).to.eql(true)); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigoBorrador}}"
+     }
+    },
+    {
+     "name": "el publicado de la corrida no cambió",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"intacto\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"publicado\"); pm.expect(j.perfil.saro.fecha).to.eql(\"2026-09-15\"); pm.expect(j.perfil.disc.fecha).to.eql(\"2026-08-01\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}"
+     }
+    },
+    {
+     "name": "la exportación ya trae el borrador con sus validaciones",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"item del borrador\", () => { const j = pm.response.json(); const p = j.find((x) => x.codigo === pm.collectionVariables.get(\"codigoBorrador\")); pm.expect(p.saroAlcance).to.eql(\"Alcance n3-\" + pm.variables.get(\"run\")); pm.expect(p.saroFecha).to.eql(\"2026-09-15\"); pm.expect(p.discFecha).to.eql(pm.variables.get(\"hoy\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/exportar?formato=json"
      }
     }
    ]
