@@ -5,6 +5,7 @@
 // Anterior, siguiente y cerrar son enlaces: la lista de detrás no se pierde ni se recarga distinta.
 import type { FichaPerfil as Ficha } from "@ps/contratos/ficha";
 import type { LineaEvidencia } from "@ps/dominio/catalogo/evidencia";
+import type { ContactoTrycore } from "@ps/dominio/contacto/contacto";
 import type { Recorrido } from "@ps/dominio/catalogo/recorrido";
 import { FichaPerfil } from "@ps/ui/FichaPerfil";
 import { AtajosFicha } from "./AtajosFicha";
@@ -40,6 +41,7 @@ export function PanelFicha(p: {
   lista: string;
   href: (codigo: string | null) => string;
   evidencia?: readonly LineaEvidencia[];
+  contacto?: ContactoTrycore;
 }) {
   const { posicion, total, anterior, siguiente } = p.recorrido;
   const cerrar = p.href(null);
@@ -78,7 +80,7 @@ export function PanelFicha(p: {
     <>
       <a className="pp-hoja-velo" href={cerrar} aria-hidden="true" tabIndex={-1} />
       {p.ficha ? (
-        <FichaPerfil ficha={p.ficha} barra={barra} dialogo evidencia={p.evidencia} />
+        <FichaPerfil ficha={p.ficha} barra={barra} dialogo evidencia={p.evidencia} contacto={p.contacto} />
       ) : (
         <article className="pp-hoja fp-ficha" aria-labelledby="fp-titulo" role="dialog" aria-modal id="ficha">
           {barra}

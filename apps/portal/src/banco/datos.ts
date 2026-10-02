@@ -5,6 +5,7 @@ import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
 import { taxonomiaConConteos } from "@ps/dominio/catalogo/encuadre";
 import { taxonomiaDelBanco } from "@ps/infra/postgres/banco";
 import { fichaDelPortal, proyeccionCatalogo } from "@ps/infra/postgres/catalogo";
+import { leerContacto } from "@ps/infra/postgres/contacto";
 import { asegurarEquipo } from "@ps/infra/postgres/equipo";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { aterrizajeDelEnlace } from "@ps/infra/postgres/seleccion";
@@ -33,4 +34,10 @@ export async function fichaDe(sesion: SesionPortalVerificada, codigo: string) {
     console.error(JSON.stringify({ evento: "ficha_fuera_de_contrato", codigo, campos }));
     return null;
   }
+}
+
+// Contacto vigente de Trycore para el bloque de conversación de la ficha (HU-157): se lee en cada
+// apertura, así un cambio en el panel se ve en la siguiente carga.
+export function contactoDeFicha() {
+  return leerContacto(poolDe("portal"));
 }

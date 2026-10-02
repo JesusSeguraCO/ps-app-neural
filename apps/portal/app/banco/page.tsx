@@ -6,7 +6,7 @@
 import { aplicarFiltro, filtroDeConsulta } from "@ps/dominio/catalogo/encuadre";
 import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
 import { conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
-import { datosDelBanco, datosDelEnlace, fichaDe } from "../../src/banco/datos";
+import { contactoDeFicha, datosDelBanco, datosDelEnlace, fichaDe } from "../../src/banco/datos";
 import { evidenciaDelBanco } from "../../src/banco/evidencia";
 import { Encuadre } from "../../src/banco/Encuadre";
 import { PanelFicha } from "../../src/ficha/PanelFicha";
@@ -61,7 +61,7 @@ export default async function Banco({
     perfiles.map((x) => x.codigo),
     pedida,
   );
-  const ficha = paso ? await fichaDe(sesion, pedida!) : null;
+  const [ficha, contacto] = paso ? await Promise.all([fichaDe(sesion, pedida!), contactoDeFicha()]) : [null, null];
   const pagina = (
     <MarcoPortal {...marco}>
       <header className="as-cabecera">
@@ -138,7 +138,7 @@ export default async function Banco({
   return (
     <>
       <div inert>{pagina}</div>
-      <PanelFicha ficha={ficha} recorrido={paso} lista={lista} href={href} evidencia={evidencia.get(pedida!)} />
+      <PanelFicha ficha={ficha} contacto={contacto ?? undefined} recorrido={paso} lista={lista} href={href} evidencia={evidencia.get(pedida!)} />
     </>
   );
 }

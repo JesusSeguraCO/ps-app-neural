@@ -38,3 +38,23 @@ a.vp-num { text-decoration: none; }
 .fp-criterio--no .fp-criterio__marca { color: var(--tc-text-s); }
 .fp-criterio__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
 .fp-criterio--no .fp-criterio__nombre { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+
+/* Validación técnica desplegable (HU-155; prototipo validacion-tecnica): dentro del bloque verificado, se
+   abre y cierra con clic o toque (details/summary nativo, foco visible), nunca con hover. */
+.fp-validacion { margin-top: var(--tc-sp-3); padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-primary-surface-border); }
+.fp-validacion__titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 44px; cursor: pointer; list-style: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+.fp-validacion__titulo::-webkit-details-marker { display: none; }
+.fp-validacion__titulo::after { content: ""; width: 8px; height: 8px; flex: none; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform var(--tc-dur-fast) var(--tc-ease); }
+.fp-validacion[open] > .fp-validacion__titulo::after { transform: rotate(-135deg); }
+.fp-validacion__titulo:focus-visible { outline: 2px solid var(--tc-primary); outline-offset: 2px; border-radius: var(--tc-r-sm); }
+.fp-validacion__campos { display: grid; gap: var(--tc-sp-2); margin: var(--tc-sp-1) 0 0; }
+.fp-validacion__campo { display: grid; grid-template-columns: minmax(120px, 30%) minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-4); }
+.fp-validacion__campo dt { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+.fp-validacion__campo dd { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-validacion__nota { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-primary-surface-ink); }
+.fp-validacion__falta { margin: 0; }
+@media (max-width: 767px) { .fp-validacion__campo { grid-template-columns: minmax(0, 1fr); } }
+
+/* Conversación con Trycore (HU-157): el contacto vigente con el texto de representación comercial. */
+.fp-contacto__texto { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-contacto__quien { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }

@@ -6,6 +6,7 @@
 // Protegida: la guarda va en la primera línea.
 import { notFound } from "next/navigation";
 import { puede } from "@ps/dominio/acceso/permisos";
+import { leerContacto } from "@ps/infra/postgres/contacto";
 import { leerPerfil, opcionesEditor } from "@ps/infra/postgres/perfiles-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
 import { EditorPerfil } from "../../../src/inventario/EditorPerfil";
@@ -31,7 +32,7 @@ export default async function Perfil({
   const { vista } = await searchParams;
   if (!/^PS-\d{4}$/.test(codigo)) notFound();
   const bd = poolDe("panel");
-  const [perfil, opciones] = await Promise.all([leerPerfil(bd, codigo), opcionesEditor(bd)]);
+  const [perfil, opciones, contacto] = await Promise.all([leerPerfil(bd, codigo), opcionesEditor(bd), leerContacto(bd)]);
   if (!perfil) notFound();
   const nombre = [perfil.nombre, perfil.primerApellido].filter(Boolean).join(" ") || perfil.codigo;
   const escribe = puede(sesion.rol, "perfil.escribir");
@@ -53,6 +54,7 @@ export default async function Perfil({
         registraConsentimiento={puede(sesion.rol, "consentimiento.registrar")}
         hoy={hoyEnColombia()}
         autor={sesion.correo}
+        contacto={contacto}
       />
       <AvisoDecision />
     </MarcoPanel>

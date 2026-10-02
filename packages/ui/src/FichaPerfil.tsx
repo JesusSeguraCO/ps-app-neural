@@ -12,7 +12,10 @@ import type { ReactNode } from "react";
 import type { BloqueFicha, FichaEnEdicion } from "@ps/contratos/ficha";
 import type { LineaEvidencia } from "@ps/dominio/catalogo/evidencia";
 import { DISPONIBILIDAD_CLIENTE } from "@ps/dominio/enlaces/textos-seleccion";
-import { fechaCivil } from "@ps/dominio/fecha/colombia";
+import type { ContactoTrycore as Contacto } from "@ps/dominio/contacto/contacto";
+import { mesDeAnio } from "@ps/dominio/fecha/colombia";
+import { ContactoTrycore } from "./ContactoTrycore";
+import { COPY_FICHA } from "./copy";
 import { EvidenciaFicha } from "./Evidencia";
 
 export type MarcasFicha = Partial<Record<BloqueFicha, { numero: number; datos: string[] }>>;
@@ -63,6 +66,49 @@ function Fila({
   );
 }
 
+// Validación técnica (HU-155; prototipo validacion-tecnica, D59): bloque desplegable dentro de lo
+// verificado, por clic o toque (nativo, sin hover), abierto por omisión como el prototipo. Nivel 1: los
+// cinco campos en orden fijo —prueba aplicada, qué se evaluó, resultado («Cumple el estándar», nunca un
+// puntaje: B.8.2), evaluador y fecha (mes de año)— y la línea de la sesión de alineación; ningún enlace al
+// artefacto (B.8.4, D29). Nivel 0: solo la prueba con el texto de cara al cliente, sin fecha (D73) ni
+// promesa de un detalle que no existe. La trayectoria nunca se cita aquí (RF-3.9).
+function Validacion({ f, marca }: { f: FichaEnEdicion; marca?: { numero: number; datos: string[] } }) {
+  const v = f.validacion;
+  const campos: Array<[string, string]> = !v
+    ? []
+    : v.nivel === 1
+      ? [
+          ["Prueba aplicada", v.modalidad],
+          ["Qué se evaluó", v.criterios.join(" · ")],
+          ["Resultado", COPY_FICHA.validacionResultado],
+          ["Evaluador", v.evaluador],
+          ["Fecha", mesDeAnio(v.fecha)],
+        ]
+      : [["Prueba aplicada", v.enunciado]];
+  return (
+    <details className={`fp-validacion${marca ? " vp-marca vp-marca--bloquea" : ""}`} open id="vp-fila-validacion">
+      <summary className="fp-validacion__titulo">Validación técnica</summary>
+      {marca ? (
+        <p className="fp-validacion__falta">
+          <Falta marca={marca} />
+        </p>
+      ) : (
+        <>
+          <dl className="fp-validacion__campos">
+            {campos.map(([dt, dd]) => (
+              <div className="fp-validacion__campo" key={dt}>
+                <dt>{dt}</dt>
+                <dd>{dd}</dd>
+              </div>
+            ))}
+          </dl>
+          {v?.nivel === 1 && <p className="fp-validacion__nota">{COPY_FICHA.validacionAlineacion}</p>}
+        </>
+      )}
+    </details>
+  );
+}
+
 export function FichaPerfil({
   ficha: f,
   marcas = {},
@@ -71,6 +117,7 @@ export function FichaPerfil({
   barra,
   dialogo = false,
   evidencia = [],
+  contacto,
 }: {
   ficha: FichaEnEdicion;
   marcas?: MarcasFicha;
@@ -82,6 +129,8 @@ export function FichaPerfil({
   // «Frente a tu búsqueda» (HU-119): las líneas de los criterios activos, las mismas de la tarjeta. Solo
   // el banco con un filtro las pasa; la selección del correo y la vista previa del panel, nunca.
   evidencia?: readonly LineaEvidencia[];
+  // Contacto vigente de Trycore (HU-157): la conversación va por Trycore, nunca hacia la persona.
+  contacto?: Contacto;
 }) {
   const persona = [f.nombre, f.primerApellido].filter(Boolean).join(" ");
   const experiencia =
@@ -151,17 +200,7 @@ export function FichaPerfil({
                   <span className="fp-sello">{f.selloPersonal.join(" · ")}</span>
                 </Fila>
               )}
-              <Fila titulo="Validación técnica" marca={marcas.validacion} id="vp-fila-validacion">
-                {f.validacion?.nivel === 1 ? (
-                  <>
-                    {`${f.validacion.modalidad} · ${f.validacion.resultado}`}
-                    <span className="fp-sub">{`${f.validacion.evaluador} · ${fechaCivil(f.validacion.fecha)}`}</span>
-                    <span className="fp-sub">{`Evaluó: ${f.validacion.criterios.join(" · ")}.`}</span>
-                  </>
-                ) : (
-                  f.validacion?.enunciado
-                )}
-              </Fila>
+
               {f.seguridad && (
                 <Fila titulo="Verificación de seguridad SARO" id="vp-fila-seguridad">
                   {`${f.seguridad.alcance} · ${f.seguridad.fecha}`}
@@ -173,6 +212,7 @@ export function FichaPerfil({
                 </Fila>
               )}
             </dl>
+            <Validacion f={f} marca={marcas.validacion} />
           </div>
         </section>
         <section className="fp-seccion" aria-labelledby="fp-declarado">
@@ -207,6 +247,21 @@ export function FichaPerfil({
             </Fila>
           </dl>
         </section>
+        {contacto && (
+          <section className="fp-seccion fp-contacto" aria-labelledby="fp-contacto">
+            <div className="pp-seccion__cabecera">
+              <h3 className="pp-seccion__titulo" id="fp-contacto">
+                {COPY_FICHA.contactoTitulo}
+              </h3>
+            </div>
+            <p className="fp-contacto__texto">
+              {`${COPY_FICHA.contactoConversacion} ${COPY_FICHA.contactoRespaldo} ${COPY_FICHA.contactoSinViaDirecta}`}
+            </p>
+            <p className="fp-contacto__quien">
+              <ContactoTrycore contacto={contacto} />
+            </p>
+          </section>
+        )}
       </div>
       {pie && <footer className="pp-hoja__pie">{pie}</footer>}
     </article>

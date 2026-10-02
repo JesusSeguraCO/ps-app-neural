@@ -6,6 +6,7 @@
 // el dato (es la misma regla que impide publicar); un opcional sin datos no se dibuja y no impide
 // publicar. «Ver como necesidad» muestra la ciudad solo si la necesidad es presencial o híbrida.
 import { useState } from "react";
+import type { ContactoTrycore } from "@ps/dominio/contacto/contacto";
 import {
   BLOQUE_DE_DATO,
   armarFicha,
@@ -78,6 +79,7 @@ export function VistaPrevia(p: {
   etiquetaVolver?: string;
   // Registro de auditoría del perfil (HU-138), para ambos roles.
   enlaceRegistro?: string;
+  contacto?: ContactoTrycore;
   alPublicar: () => void;
   alRegistrarConsentimiento?: () => void;
   // Publicado con cambios sin guardar (prototipo vista-previa-ficha): la primaria es «Guardar cambios»,
@@ -246,6 +248,7 @@ export function VistaPrevia(p: {
             <FichaPerfil
               ficha={ficha}
               marcas={marcas}
+              contacto={p.contacto}
               pie={
                 <button
                   type="button"

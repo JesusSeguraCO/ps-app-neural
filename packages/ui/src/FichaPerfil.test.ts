@@ -40,7 +40,7 @@ describe("FichaPerfil · validación técnica", () => {
     expect(html(datos)).toContain("Validada por Trycore con un reto de código.");
   });
 
-  it("Nivel 1: modalidad · resultado, evaluador · fecha y los criterios evaluados", () => {
+  it("Nivel 1 (HU-155, D59): prueba aplicada, qué se evaluó, «Cumple el estándar», evaluador y mes de año", () => {
     const h = html({
       ...datos,
       reporte: {
@@ -51,9 +51,11 @@ describe("FichaPerfil · validación técnica", () => {
         criterios: ["Diseño de servicios", "Cobertura de pruebas"],
       },
     });
-    expect(h).toContain("Reto de código sustentado · Aprobada, nivel senior");
-    expect(h).toContain("Célula de arquitectura de Trycore · 29 sep 2026");
-    expect(h).toContain("Evaluó: Diseño de servicios · Cobertura de pruebas.");
+    expect(h).toContain("<dt>Prueba aplicada</dt><dd>Reto de código sustentado</dd>");
+    expect(h).toContain("<dt>Qué se evaluó</dt><dd>Diseño de servicios · Cobertura de pruebas</dd>");
+    expect(h).toContain("<dt>Resultado</dt><dd>Cumple el estándar</dd>");
+    expect(h).toContain("<dt>Evaluador</dt><dd>Célula de arquitectura de Trycore</dd>");
+    expect(h).toContain("<dt>Fecha</dt><dd>septiembre de 2026</dd>");
   });
 });
 

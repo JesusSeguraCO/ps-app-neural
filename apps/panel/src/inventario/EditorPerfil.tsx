@@ -10,6 +10,7 @@
 // catálogo cerrado (solo activos; el desactivado que el perfil conserva se muestra señalado y no se
 // ofrece a otros), fecha SARO y fecha DISC. Una fecha posterior a hoy no se guarda (422) y el perfil
 // conserva lo que tenía; publicar sin alguno dice «Falta …» y lleva al campo.
+import type { ContactoTrycore } from "@ps/dominio/contacto/contacto";
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { horaCortaDeColombia, horaDeColombia, fechaCivil } from "@ps/dominio/fecha/colombia";
 import { estadoDeEntrada } from "@ps/dominio/inventario/entrada";
@@ -136,6 +137,8 @@ export function EditorPerfil(p: {
   // Rol de consulta (HU-124): el formulario inerte dice por qué y ofrece avisar a Talento Humano;
   // `porDireccionDeEdicion` cuando llegó por la dirección de edición (el intento quedó registrado).
   consulta?: { porDireccionDeEdicion: boolean };
+  // Contacto vigente de Trycore: la vista previa dibuja el mismo bloque de conversación que el portal.
+  contacto?: ContactoTrycore;
 }) {
   const inicial = p.perfil;
   const [perfil, setPerfil] = useState(inicial);
@@ -640,6 +643,7 @@ export function EditorPerfil(p: {
           puedePublicar={editable && !enPortal}
           etiquetaVolver={p.consulta ? "Ver los datos del perfil" : undefined}
           enlaceRegistro={`/inventario/${perfil.codigo}/auditoria`}
+          contacto={p.contacto}
           publicando={publicando}
           alVolver={(campo) => {
             setModo("editar");
