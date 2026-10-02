@@ -17,14 +17,14 @@
 
 ## 2. Sub-slice 2 — «Incompleto» y aviso de lenguaje de inventario (HU-178, HU-194)
 
-- [ ] 2.1 Dominio `estadoDeEntrada` sobre `evaluarPublicacion` («Incompleto: falta …» con las etiquetas de la guarda); tests de tabla primero con publicados sin SARO, sin DISC, sin modalidad y sin Sello Personal
-- [ ] 2.2 Listado del panel: marca «Incompleto: falta …» y filtro «incompleto», sin tocar el estado ni el portal; verificar los tres ejemplos de HU-178 y «el Sello Personal no marca un perfil como incompleto»
-- [ ] 2.3 Edición de un publicado incompleto: la pregunta D1 con el motivo cuando el cambio no completa lo que falta (portal con la versión vigente) y publicación del cambio que lo completa; verificar «editar sin completarlo» y «completar lo que falta» de HU-178
-- [ ] 2.4 Migración `0029_indicadores_publicacion` (solo booleanos y enteros por publicado, sin código ni datos personales, legible por `ps_portal`) y conteo en el dominio con la misma `evaluarPublicacion`; test que compara el conteo del portal con las marcas del panel sobre el mismo banco sembrado
-- [ ] 2.5 Dominio `avisosDeLenguaje` (lista de RF-3.6, `normalizar`, límite de palabra Unicode); tests primero con «disponible para asignación», «stock», «ITEM», «Stockholm» y una frase sin «unidad»
-- [ ] 2.6 Guardado del editor con `avisos[]` separado de `errores[]` (también cuando falla por la fecha futura) y aviso no bloqueante en la UI; verificar los cinco escenarios de HU-194
-- [ ] 2.7 Fidelidad con captura MCP del listado con marca y filtro «Incompleto», la pregunta D1 por incompleto y el aviso de lenguaje (con y sin error a la vez)
-- [ ] 2.8 Journey smoke: listado con un publicado sembrado sin SARO marcado → editar sin completarlo (pregunta) → completarlo y confirmar (deja de marcarse) → guardar una trayectoria con «stock» (aviso, guardado); evidencia en `ss2/` y checkpoint
+- [x] 2.1 Dominio `estadoDeEntrada` sobre `evaluarPublicacion` («Incompleto: falta …» con las etiquetas de la guarda); tests de tabla primero con publicados sin SARO, sin DISC, sin modalidad y sin Sello Personal
+- [x] 2.2 Listado del panel: marca «Incompleto: falta …» y filtro «incompleto», sin tocar el estado ni el portal; verificar los tres ejemplos de HU-178 y «el Sello Personal no marca un perfil como incompleto»
+- [x] 2.3 Edición de un publicado incompleto: la pregunta D1 con el motivo cuando el cambio no completa lo que falta (portal con la versión vigente) y publicación del cambio que lo completa; verificar «editar sin completarlo» y «completar lo que falta» de HU-178
+- [x] 2.4 Migración `0029_indicadores_publicacion` (solo booleanos y enteros por publicado, sin código ni datos personales, legible por `ps_portal`) y conteo en el dominio con la misma `evaluarPublicacion`; test que compara el conteo del portal con las marcas del panel sobre el mismo banco sembrado
+- [x] 2.5 Dominio `avisosDeLenguaje` (lista de RF-3.6, `normalizar`, límite de palabra Unicode); tests primero con «disponible para asignación», «stock», «ITEM», «Stockholm» y una frase sin «unidad»
+- [x] 2.6 Guardado del editor con `avisos[]` separado de `errores[]` (también cuando falla por la fecha futura) y aviso no bloqueante en la UI; verificar los cinco escenarios de HU-194
+- [ ] 2.7 (capturas hechas en `ss2/fidelidad.md`; pendiente de aprobación del sponsor, D124: sin prototipo de la marca ni del aviso) Fidelidad con captura MCP del listado con marca y filtro «Incompleto», la pregunta D1 por incompleto y el aviso de lenguaje (con y sin error a la vez)
+- [x] 2.8 Journey smoke: listado con un publicado sembrado sin SARO marcado → editar sin completarlo (pregunta) → completarlo y confirmar (deja de marcarse) → guardar una trayectoria con «stock» (aviso, guardado); evidencia en `ss2/` y checkpoint
 
 ## 3. Sub-slice 3 — Columnas SARO/DISC en importación, plantilla y exportación (HU-191)
 
