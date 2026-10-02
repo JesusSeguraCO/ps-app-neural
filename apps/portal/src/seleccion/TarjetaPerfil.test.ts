@@ -200,7 +200,9 @@ describe("HU-119 · evidencia ✓/– en la tarjeta", () => {
   });
 
   it("edge: sin criterios activos no hay bloque de evidencia, ni vacío ni con título", () => {
-    for (const h of [tarjeta(), tarjeta({}, [])]) {
+    // También con Sello Personal: el bloque verificado no arrastra un título de evidencia vacío.
+    const conSello = { selloPersonal: ["Liderazgo técnico"] };
+    for (const h of [tarjeta(), tarjeta({}, []), tarjeta(conSello), tarjeta(conSello, [])]) {
       expect(h).not.toMatch(
         /pp-criterio|pp-evidencia__conteo|criterios activos|Frente a tu búsqueda/,
       );
