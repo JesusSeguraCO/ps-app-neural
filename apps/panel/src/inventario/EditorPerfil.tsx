@@ -10,8 +10,9 @@
 // catálogo cerrado (solo activos; el desactivado que el perfil conserva se muestra señalado y no se
 // ofrece a otros), fecha SARO y fecha DISC. Una fecha posterior a hoy no se guarda (422) y el perfil
 // conserva lo que tenía; publicar sin alguno dice «Falta …» y lleva al campo.
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { horaCortaDeColombia, horaDeColombia, fechaCivil } from "@ps/dominio/fecha/colombia";
+import { estadoDeEntrada } from "@ps/dominio/inventario/entrada";
 import { ETIQUETA_ESTADO } from "@ps/dominio/inventario/estados";
 import {
   MENSAJE_FECHA_FUTURA,
@@ -197,6 +198,21 @@ export function EditorPerfil(p: {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  // Expresiones de inventario de la última respuesta del guardado (HU-194): aviso, no error.
+  const [lenguaje, setLenguaje] = useState<string[]>([]);
+  const tomarAvisos = (d: { avisos?: Array<{ expresion: string }> }) => {
+    if (Array.isArray(d.avisos)) setLenguaje(d.avisos.map((a) => a.expresion));
+  };
+  // Tras recargar o saltar al perfil recién creado, el aviso sigue a la vista.
+  useEffect(() => {
+    try {
+      const guardadas = sessionStorage.getItem(CLAVE_LENGUAJE);
+      sessionStorage.removeItem(CLAVE_LENGUAJE);
+      if (guardadas) setLenguaje(JSON.parse(guardadas));
+    } catch {
+      // Sin almacenamiento solo se pierde el aviso.
+    }
+  }, []);
   const [intento, setIntento] = useState(Boolean(inicial));
   const [modo, setModo] = useState<"editar" | "previa">(
     p.modoInicial === "previa" && p.perfil ? "previa" : "editar",
@@ -209,6 +225,10 @@ export function EditorPerfil(p: {
 
   // Un publicado también se edita, en dos pasos y con su impacto a la vista (HU-126).
   const enPortal = perfil?.estado === "publicado";
+  // Publicado al que la guarda rechazaría hoy (HU-178, D62): se dice antes de editar.
+  const incompleto = perfil
+    ? estadoDeEntrada(perfil.estado, perfil.evaluacion)
+    : { incompleto: false, faltan: [], texto: null };
   const editable = p.escribe && (!perfil || perfil.estado === "borrador" || enPortal);
   const [impacto, setImpacto] = useState<Impacto | null>(null);
   const prueba = p.opciones.modalidadesPrueba.find((m) => m.id === pruebaId) ?? null;
@@ -482,7 +502,9 @@ export function EditorPerfil(p: {
         { "if-match": `"${perfil.version}"` },
       );
       const d = await r.json().catch(() => ({}));
-      if (d.motivo === "deja_incompleto") setImpacto({ incompleto: true, ...d.impacto });
+      tomarAvisos(d);
+      if (d.motivo === "deja_incompleto")
+        setImpacto({ incompleto: true, faltaPara: d.faltaPara, yaIncompleto: d.yaIncompleto, ...d.impacto });
       else if (r.ok) setImpacto({ incompleto: false, ...d.impacto });
       else rechazoGuardado(d);
     } finally {
@@ -516,6 +538,7 @@ export function EditorPerfil(p: {
           })
         : await enviarJson("/api/v1/perfiles", cuerpo());
       const d = await r.json().catch(() => ({}));
+      tomarAvisos(d);
       if (!r.ok) {
         rechazoGuardado(d);
         return;
@@ -529,6 +552,7 @@ export function EditorPerfil(p: {
         } catch {
           // Sin almacenamiento solo se pierde el aviso.
         }
+        recordarLenguaje(d.avisos);
         window.location.href = `/inventario/${d.perfil.codigo}`;
         return;
       }
@@ -562,12 +586,14 @@ export function EditorPerfil(p: {
           "if-match": `"${perfil.version}"`,
         });
         const dg = await g.json().catch(() => ({}));
+        tomarAvisos(dg);
         if (!g.ok) {
           setError(MOTIVO[dg.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
           return;
         }
         aplicar(dg.perfil);
         version = dg.perfil.version;
+        recordarLenguaje(dg.avisos);
       }
       const r = await enviarJson(`/api/v1/perfiles/${perfil.codigo}/publicar`, {}, "POST", {
         "if-match": `"${version}"`,
@@ -806,6 +832,18 @@ export function EditorPerfil(p: {
           </span>
           <p>
             <span className="pp-aviso__titulo">No se guardó.</span> {error}
+          </p>
+        </div>
+      )}
+      <AvisoLenguaje expresiones={lenguaje} />
+      {incompleto.incompleto && (
+        <div className="pp-aviso pp-aviso--warn pe-alerta" role="note">
+          <span className="pp-aviso__icono" aria-hidden="true">
+            !
+          </span>
+          <p>
+            <span className="pp-aviso__titulo">{`${incompleto.texto}.`}</span> Sigue publicado y el
+            portal lo muestra, pero un cambio no se publica mientras falte: complétalo al editar.
           </p>
         </div>
       )}
@@ -1897,6 +1935,7 @@ export function EditorPerfil(p: {
           impacto={impacto}
           autor={p.autor ?? null}
           cuerpo={cuerpo()}
+          lenguaje={lenguaje}
           alCerrar={() => setImpacto(null)}
           alIncompleto={(i) => setImpacto(i)}
         />
@@ -2715,10 +2754,46 @@ function HojaRevocar(p: {
   );
 }
 
+// Aviso de lenguaje de inventario (HU-194; RF-3.6; D73): advierte y no bloquea; va aparte del error de
+// guardado y nombra cada expresión tal como se escribió. Copy marcado para revisión (D73).
+const CLAVE_LENGUAJE = "pp-lenguaje";
+function recordarLenguaje(avisos: Array<{ expresion: string }> | undefined) {
+  try {
+    if (avisos?.length)
+      sessionStorage.setItem(CLAVE_LENGUAJE, JSON.stringify(avisos.map((a) => a.expresion)));
+  } catch {
+    // Sin almacenamiento solo se pierde el aviso.
+  }
+}
+
+function AvisoLenguaje(p: { expresiones: string[] }) {
+  if (p.expresiones.length === 0) return null;
+  return (
+    <div className="pp-aviso pp-aviso--warn pe-alerta" role="status" data-aviso="lenguaje">
+      <span className="pp-aviso__icono" aria-hidden="true">
+        !
+      </span>
+      <p>
+        <span className="pp-aviso__titulo">La trayectoria usa lenguaje de inventario:</span>{" "}
+        {p.expresiones.map((e, i) => (
+          <Fragment key={e}>
+            {i > 0 && ", "}«<mark className="pe-expresion">{e}</mark>»
+          </Fragment>
+        ))}
+        . Es un aviso: no impide guardar ni publicar. Describe la experiencia de la persona, no
+        existencias.
+      </p>
+    </div>
+  );
+}
+
 // Impacto de guardar un publicado (HU-126; prototipos perfil-editor--cambios-declarados y
 // --incompleto-al-guardar): lo que cambia para el cliente, antes y después, y lo que no le llega.
 type Impacto = {
   incompleto: boolean;
+  // Un publicado que ya estaba incompleto (HU-178): lo que sigue faltando tras el cambio.
+  faltaPara?: string;
+  yaIncompleto?: boolean;
   cambios: CambioDeCaraAlCliente[];
   internos: string[];
   evaluacion: EvaluacionPublicacion;
@@ -2749,6 +2824,7 @@ function HojaImpacto(p: {
   impacto: Impacto;
   autor: string | null;
   cuerpo: unknown;
+  lenguaje: string[];
   alCerrar: () => void;
   alIncompleto: (i: Impacto) => void;
 }) {
@@ -2781,6 +2857,7 @@ function HojaImpacto(p: {
       );
       const d = await r.json().catch(() => ({}));
       if (r.ok) {
+        if (consulta !== "?resolucion=descartar") recordarLenguaje(d.avisos);
         recargarConAviso(
           consulta === "?resolucion=descartar"
             ? "Cambio descartado. El perfil sigue publicado con los valores que tenía."
@@ -2791,7 +2868,13 @@ function HojaImpacto(p: {
         return;
       }
       // Otro cambio en paralelo lo dejó incompleto entre ver el impacto y confirmar: se pregunta.
-      if (d.motivo === "deja_incompleto") p.alIncompleto({ incompleto: true, ...d.impacto });
+      if (d.motivo === "deja_incompleto")
+        p.alIncompleto({
+          incompleto: true,
+          faltaPara: d.faltaPara,
+          yaIncompleto: d.yaIncompleto,
+          ...d.impacto,
+        });
       else setError(MOTIVO[d.motivo] ?? "No se pudo guardar. Inténtalo de nuevo.");
     } finally {
       setEnviando(false);
@@ -2831,7 +2914,11 @@ function HojaImpacto(p: {
   if (incompleto)
     return (
       <Hoja
-        titulo="Este cambio deja el perfil incompleto"
+        titulo={
+          p.impacto.yaIncompleto
+            ? "Este cambio no se puede publicar"
+            : "Este cambio deja el perfil incompleto"
+        }
         sub={`${nombre} · ${p.perfil.codigo} · publicado`}
         cerrarEtiqueta="Seguir editando"
         alCerrar={p.alCerrar}
@@ -2859,10 +2946,14 @@ function HojaImpacto(p: {
       >
         <div className="pp-hoja__cuerpo">
           <div className="pe-hoja-bloque">
+            {p.impacto.yaIncompleto && p.impacto.faltaPara && (
+              <p>{`No se puede publicar mientras falte ${p.impacto.faltaPara}.`}</p>
+            )}
             <p>
               <strong>¿Descarto el cambio o paso el perfil a borrador?</strong>
             </p>
             {lista}
+            <AvisoLenguaje expresiones={p.lenguaje} />
             <p className="pp-meta">
               Mientras no respondas, el perfil sigue publicado sin el cambio.
             </p>
@@ -2925,6 +3016,7 @@ function HojaImpacto(p: {
           ) : (
             <p>El cliente no verá ninguna diferencia.</p>
           )}
+          <AvisoLenguaje expresiones={p.lenguaje} />
           {internos.length > 0 && (
             <p className="pp-meta">{`Sin efecto para el cliente: ${internosTexto} (dato interno de Talento Humano).`}</p>
           )}

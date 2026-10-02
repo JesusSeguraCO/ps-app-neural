@@ -19,6 +19,9 @@
 .ip-trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ip-col-estado .pp-tabla__sub { margin-top: var(--tc-sp-1); }
 .ip-col-disp .pp-tabla__sub { margin-top: var(--tc-sp-1); }
+/* Marca «Incompleto: falta …» (HU-178): mismo acento ámbar que la pestaña con alerta; no se trunca. */
+.ip-incompleto { display: flex; gap: var(--tc-sp-1); margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-warn-ink); }
+.ip-incompleto::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 0.45em; border-radius: 50%; background: var(--tc-amber); }
 .ip-select { width: min(208px, 100%); margin-left: calc(-1 * var(--tc-sp-2)); }
 .ip-select .pp-input { min-height: 28px; padding: var(--tc-sp-1) var(--tc-sp-8) var(--tc-sp-1) var(--tc-sp-2); border-color: transparent; border-radius: var(--tc-r-sm); background: transparent; box-shadow: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
 .ip-select::after { right: var(--tc-sp-3); }

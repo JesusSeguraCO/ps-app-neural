@@ -4,9 +4,14 @@
 // sin escribir, y el PATCH sin él confirma. Si el cambio deja el perfil incompleto, `motivo:
 // deja_incompleto` con la pregunta y nada escrito (200 al previsualizar, 409 al confirmar); se responde reenviando con
 // `?resolucion=descartar` (nada se escribe ni se audita) o `?resolucion=a_borrador` (se guarda y sale
-// del portal, auditado). 409 `version_distinta` con el perfil vigente · 428 sin `If-Match` · 422 valor
-// fuera del catálogo · 403 observador.
+// del portal, auditado). Un publicado que ya estaba incompleto (HU-178, D62) recibe la misma pregunta
+// con lo que falta (`faltaPara`): el cambio no se publica mientras falte. Toda respuesta del guardado
+// lleva `avisos[]` de lenguaje de inventario en la trayectoria (HU-194), aparte del rechazo y sin
+// bloquear. 409 `version_distinta` con el perfil vigente · 428 sin `If-Match` · 422 valor fuera del
+// catálogo o fecha de verificación futura · 403 observador.
 import { armarFicha, cambiosDeCaraAlCliente } from "@ps/contratos/ficha";
+import { estadoDeEntrada, faltaParaPublicar } from "@ps/dominio/inventario/entrada";
+import { avisosDeTrayectoria } from "@ps/dominio/inventario/lenguaje";
 import { conAutorizacion, conBorde, conCsrf, conSesionPanel, respuestaJson } from "@ps/infra/http/envoltorios";
 import {
   editarPublicado,
@@ -31,6 +36,17 @@ export const dynamic = "force-dynamic";
 
 const PREGUNTA_INCOMPLETO =
   "Este cambio deja el perfil incompleto: ¿descarto el cambio o paso el perfil a borrador?";
+// Un publicado que ya estaba incompleto (HU-178): el motivo es lo que sigue faltando tras el cambio.
+const preguntaIncompleto = (antes: PerfilEditor, propuesto: PerfilEditor) => {
+  const falta = faltaParaPublicar(estadoDeEntrada("publicado", propuesto.evaluacion));
+  return {
+    pregunta: antes.evaluacion.publicable
+      ? PREGUNTA_INCOMPLETO
+      : `Este cambio no se puede publicar mientras falte ${falta}: ¿descarto el cambio o paso el perfil a borrador?`,
+    faltaPara: falta,
+    yaIncompleto: !antes.evaluacion.publicable,
+  };
+};
 
 // Lo que verá el cliente, comparado sobre la ficha del portal; la ciudad cuenta (una necesidad
 // presencial o híbrida la muestra).
@@ -66,6 +82,7 @@ export const PATCH = conBorde(
           return respuestaJson(400, { motivo: "entrada_invalida" });
         const d = await cuerpoDe(req, entradaPerfil);
         if (!d) return respuestaJson(400, { motivo: "entrada_invalida" });
+        const avisos = avisosDeTrayectoria(d);
         const bd = poolDe("panel");
         const claves = clavesAuditoria();
         const autor = autorDe(sesion);
@@ -76,34 +93,43 @@ export const PATCH = conBorde(
           });
           switch (r.resultado) {
             case "impacto":
-              return respuestaJson(200, { perfil: r.antes, impacto: impacto(r.antes, r.propuesto, r.internos) });
+              return respuestaJson(200, {
+                perfil: r.antes,
+                impacto: impacto(r.antes, r.propuesto, r.internos),
+                avisos,
+              });
             case "deja_incompleto":
               // Previsualizar es una pregunta, no un conflicto: 200 con la pregunta. Confirmar sin
               // haberla respondido sí lo es: 409.
               return respuestaJson(q.has("previsualizar") ? 200 : 409, {
                 motivo: "deja_incompleto",
-                pregunta: PREGUNTA_INCOMPLETO,
+                ...preguntaIncompleto(r.antes, r.propuesto),
                 perfil: r.antes,
                 impacto: impacto(r.antes, r.propuesto, r.internos),
+                avisos,
               });
             case "descartado":
-              return respuestaJson(200, { perfil: r.perfil, descartado: true });
+              return respuestaJson(200, { perfil: r.perfil, descartado: true, avisos });
             default:
-              return respuestaJson(200, { perfil: r.perfil });
+              return respuestaJson(200, { perfil: r.perfil, avisos });
           }
         };
-        return responderRechazos(async () => {
-          if (q.has("previsualizar") || resolucion) return enDosPasos();
-          try {
-            return respuestaJson(200, {
-              perfil: await guardarPerfil(bd, claves, autor, codigo, version, d),
-            });
-          } catch (e) {
-            // Un publicado: el PATCH sin `previsualizar` es la confirmación del segundo paso.
-            if (e instanceof RechazoInventario && e.motivo === "editar_publicado") return enDosPasos();
-            throw e;
-          }
-        });
+        return responderRechazos(
+          async () => {
+            if (q.has("previsualizar") || resolucion) return enDosPasos();
+            try {
+              return respuestaJson(200, {
+                perfil: await guardarPerfil(bd, claves, autor, codigo, version, d),
+                avisos,
+              });
+            } catch (e) {
+              // Un publicado: el PATCH sin `previsualizar` es la confirmación del segundo paso.
+              if (e instanceof RechazoInventario && e.motivo === "editar_publicado") return enDosPasos();
+              throw e;
+            }
+          },
+          { avisos },
+        );
       }),
     ),
   ),

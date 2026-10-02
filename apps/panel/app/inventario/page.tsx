@@ -5,7 +5,9 @@
 // con motivo (HU-132, HU-133; prototipos inventario-perfiles--lote y --pausar-motivo); la observadora
 // solo lee. Las contradicciones entre estado y disponibilidad se señalan en la propia fila con la acción
 // que las corrige, con su pestaña (HU-134; prototipo --incoherencia); «Archivar» en «Más acciones»
-// (HU-135; prototipo --archivar). Protegida: la guarda va en la primera línea.
+// (HU-135; prototipo --archivar). Un publicado al que la guarda de publicar rechazaría hoy (HU-178,
+// D62) lleva su marca «Incompleto: falta …» y tiene su pestaña: sigue publicado y en el portal, que
+// nunca ve la marca. Protegida: la guarda va en la primera línea.
 import { Fragment } from "react";
 import { puede } from "@ps/dominio/acceso/permisos";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
@@ -40,6 +42,7 @@ const PESTANAS = [
   { clave: "borrador", etiqueta: "Borradores" },
   { clave: "pausado", etiqueta: "Pausados" },
   { clave: "archivado", etiqueta: "Archivados" },
+  { clave: "incompleto", etiqueta: "Incompletos" },
   { clave: "incoherencia", etiqueta: "Con incoherencia" },
 ] as const;
 type Pestana = (typeof PESTANAS)[number]["clave"];
@@ -56,6 +59,8 @@ const enPestana = (f: FilaInventario, p: Pestana) =>
     ? true
     : p === "incoherencia"
       ? f.coherencia !== null
+      : p === "incompleto"
+        ? f.incompleto !== null
       : p === "publicado"
         ? f.estado === "publicado"
         : f.estado === p;
@@ -182,7 +187,7 @@ export default async function Inventario({
           {PESTANAS.map((t) => (
             <a
               key={t.clave}
-              className={`pp-pestana${t.clave === "incoherencia" ? " ip-pestana--alerta" : ""}`}
+              className={`pp-pestana${t.clave === "incoherencia" || t.clave === "incompleto" ? " ip-pestana--alerta" : ""}`}
               href={t.clave === "todos" ? "/inventario" : `/inventario?estado=${t.clave}`}
               aria-current={t.clave === pestana ? "page" : undefined}
             >
@@ -305,6 +310,11 @@ export default async function Inventario({
                           {ETIQUETA_ESTADO[f.estado]}
                         </span>
                         {detalle && <span className="pp-tabla__sub ip-trunc">{detalle}</span>}
+                        {f.incompleto && (
+                          <span className="ip-incompleto" title={f.incompleto}>
+                            {f.incompleto}
+                          </span>
+                        )}
                       </td>
                       <td className="ip-col-disp">
                         {(visible || f.estado === "pausado") && escribe ? (

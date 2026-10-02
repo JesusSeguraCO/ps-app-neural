@@ -10,6 +10,7 @@ import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
 import { diaCivilDeColombia } from "@ps/dominio/fecha/colombia";
 import { evaluarCoherencia, type Incoherencia } from "@ps/dominio/inventario/coherencia";
+import { estadoDeEntrada } from "@ps/dominio/inventario/entrada";
 import { ESTADO_INICIAL, transicion, type EstadoAlmacenado } from "@ps/dominio/inventario/estados";
 import {
   clienteEnDescripcion,
@@ -399,6 +400,9 @@ export interface FilaInventario {
   actualizadoEn: string;
   consentimiento: boolean;
   faltan: number;
+  // «Incompleto: falta …» de un publicado que la guarda rechazaría hoy (HU-178, D62); null si no.
+  // Dato interno del panel: nunca cruza al portal.
+  incompleto: string | null;
   pausa: PerfilEditor["pausa"];
   coherencia: Incoherencia | null;
 }
@@ -426,6 +430,7 @@ export async function listarInventario(bd: Consultor): Promise<FilaInventario[]>
       consentimiento: Boolean(p.consentimiento?.vigente),
       faltan:
         p.evaluacion.faltanDatos.length + p.evaluacion.condiciones.filter((c) => !c.cumple).length,
+      incompleto: estadoDeEntrada(p.estado, p.evaluacion).texto,
       pausa: p.pausa,
       coherencia: p.coherencia,
     });
