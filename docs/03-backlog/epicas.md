@@ -75,6 +75,7 @@ prd_version_alineada: 4.13
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/motor/src/**`, `packages/contratos/src/{estado-busqueda,sondeo}*`, `packages/dominio/src/sondeo/**`, `packages/infra/src/postgres/{estados-largos,sondeo}*`, `packages/infra/src/hubspot/sondeo*`, `apps/portal/src/{resultados,facetas,tabla,sondeo}/**`, `apps/portal/app/api/v1/{estado,sondeo}/**`, `apps/worker/src/registrar-voto*`, `apps/panel/app/medicion/sondeo/**`, `packages/infra/migraciones/indice.ts`, `e2e/{facetas,sondeo,tabla}*.spec.ts`
 **Métrica de éxito:** resultados filtrados en menos de 1 segundo; al menos el 50% de las sesiones aplican un filtro propio más allá del conjunto curado.
 
 **Historias anticipadas:** filtrar por rol y categoría · filtrar por stack · filtrar por disponibilidad · combinar y limpiar filtros · buscar por texto libre · ordenar resultados · compartir el estado por URL · estado sin resultados con salida activa · ver y responder el sondeo de equipos híbridos · descartarlo de forma persistente.
@@ -118,6 +119,7 @@ prd_version_alineada: 4.13
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/dominio/src/{inventario,importacion,catalogo}/**`, `packages/contratos/src/{ficha,catalogo,importacion}*`, `packages/ui/src/{FichaPerfil,ContactoTrycore,copy}*`, `packages/infra/src/postgres/{validaciones,catalogos-panel,perfiles-panel,estado-perfil,banco,catalogo,importacion,aplicar-importacion}*`, `apps/panel/{src,app}/{inventario,catalogos,importacion,importar}/**`, `apps/portal/src/{ficha,banco,seleccion}/**`, `apps/portal/app/banco/**`, `apps/portal/app/api/v1/catalogo/**`, `apps/worker/src/{aplicar-importacion,sembrar-ficticios}*`, `packages/infra/migraciones/indice.ts`, `e2e/{validaciones-entrada,incompleto-lenguaje,importacion-saro,ficha-saro-cierre,estandar-recorrido,journey-ep003}*.spec.ts`
 **Métrica de éxito:** al menos el 60% de las sesiones abren como mínimo una ficha; ninguna revisión de marca detecta lenguaje de inventario aplicado a personas.
 **Decisión abierta que la condiciona:** D-5, grado de detalle de la trayectoria — crítica desde el cierre de D-1.
 
@@ -172,6 +174,7 @@ prd_version_alineada: 4.13
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/dominio/src/equipo/**`, `packages/contratos/src/equipo*`, `packages/infra/src/postgres/equipo*`, `apps/portal/{app,src}/equipo/**`, `apps/portal/app/api/v1/equipo/**`, `apps/portal/src/seleccion/TarjetaPerfil.tsx`, `apps/portal/src/ficha/PanelFicha.tsx`, `apps/portal/rutas-permitidas.json`, `packages/infra/migraciones/indice.ts`, `e2e/equipo*.spec.ts`
 
 **Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Para que EP-001 no construya «Mi equipo», estas afirmaciones salieron de sus historias y **son alcance de esta épica**; se redactan con las historias pendientes de sumar, quitar y recuperar «Mi equipo» (deuda de mapa):
 - Sumar perfiles a «Mi equipo» mientras se explora el banco completo y conservarlos al volver a la selección (antes en HU-094, happy path).
@@ -218,6 +221,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/dominio/src/solicitud/**`, `packages/contratos/src/{solicitud,trabajos}*`, `packages/infra/src/postgres/solicitudes*`, `apps/portal/{app,src}/solicitud/**`, `apps/portal/app/api/v1/solicitudes/**`, `apps/portal/rutas-permitidas.json`, `packages/infra/migraciones/indice.ts`, `e2e/solicitud*.spec.ts`
 **Métrica de éxito:** al menos el 85% de las solicitudes llegan con sector, fecha de inicio y duración diligenciados; ninguna pieza del flujo comunica reserva o contratación.
 
 **Historias anticipadas:** declarar el contexto del proyecto · identificarse cuando no se es el contacto del correo · revisar el resumen antes de enviar · enviar la solicitud · recibir la confirmación con el paso siguiente · agendar la alineación · intentar enviar con el equipo vacío.
@@ -333,6 +337,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/infra/src/hubspot/**`, `packages/infra/src/config.ts`, `packages/dominio/src/negocios/**`, `apps/worker/src/{crear-negocio,leer-agendados}*`, `apps/panel/{app,src}/fallos/**`, `packages/infra/migraciones/indice.ts`, `e2e/fallos*.spec.ts`
 **Métrica de éxito:** el 100% de las solicitudes enviadas tienen su oportunidad correspondiente en el CRM; cero registros duplicados de empresa; tiempo de solicitud a alineación agendada de 3 días hábiles o menos.
 **Desbloqueada el 2026-09-15.** D-6 cerrada: negocio en el pipeline propio de la línea, con propiedad de origen. D-7 cerrada: negocio nuevo asociado como relacionado al existente.
 
@@ -378,6 +383,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/dominio/src/telemetria/**`, `packages/contratos/src/{telemetria,medicion}*`, `packages/infra/src/postgres/{telemetria,medicion}*`, `packages/infra/bootstrap/roles.sql`, `apps/worker/src/retencion-eventos*`, `apps/portal/app/api/v1/eventos/**`, `apps/portal/app/privacidad/**`, `apps/panel/{app,src}/{medicion,composiciones}/**`, `apps/panel/src/administracion/**`, `packages/infra/migraciones/indice.ts`, `e2e/medicion*.spec.ts`
 **Métrica de éxito:** el tablero mensual reporta conversión, acierto de la curaduría y el top 10 de búsquedas sin resultados sin intervención manual.
 
 **Historias anticipadas:** registrar la entrada atribuida al correo · registrar filtros aplicados · distinguir curaduría de descubrimiento · registrar el embudo hasta el envío · reportar búsquedas sin resultados · reportar filtros más usados.
@@ -413,6 +419,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/motor/src/**`, `packages/contratos/src/{perfil-objetivo,criterios,interpretacion}*`, `packages/dominio/src/{lexico,interpretacion,experimentos}/**`, `packages/infra/src/gemini/**`, `packages/infra/src/postgres/{consultas-sin-coincidencia,llamadas-llm,experimentos}*`, `apps/portal/src/{busqueda,perfil-objetivo}/**`, `apps/portal/app/api/v1/{interpretar-requerimiento,consultas-sin-coincidencia}/**`, `packages/infra/migraciones/indice.ts`, `e2e/{instruccion,perfil-objetivo}*.spec.ts`
 
 **Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Con una selección curada de familias distintas, el panel de especificación (Perfil Objetivo) aparece vacío, sin un rol deducido (antes en HU-144, happy path). Se incorpora a la historia de EP-009 que muestre el panel al aterrizar desde un enlace curado. EP-001 garantiza lo previo: no se deduce ni se aplica ningún rol o criterio de la selección.
 
@@ -521,6 +528,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006 · EP-009 (el camino del cero existe porque hay un Perfil Objetivo que mostrar)
+**files_scope:** `packages/dominio/src/demanda/**`, `packages/contratos/src/demanda*`, `packages/infra/src/postgres/demanda*`, `apps/portal/src/cero/**`, `apps/panel/{src,app}/demanda/**`, `packages/infra/migraciones/indice.ts`, `e2e/cero*.spec.ts`
 
 **Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Cuando una opción de la pregunta de encuadre no tiene perfiles publicados, la pantalla ofrece además **pedir el perfil a medida (RF-14.3)** (antes en HU-093, error). Se incorpora a HU-077 o a la historia de EP-010 que construya esa salida. EP-001 garantiza que la opción vacía siempre ofrece ampliar la búsqueda.
 
@@ -563,6 +571,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Fase:** MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
+**files_scope:** `packages/dominio/src/ediciones/**`, `packages/contratos/src/ediciones*`, `packages/infra/src/postgres/ediciones*`, `apps/panel/{src,app}/envios/**`, `apps/panel/app/api/v1/ediciones/**`, `apps/worker/src/evaluar-correo-curado*`, `packages/infra/migraciones/indice.ts`, `e2e/envios*.spec.ts`
 **Métrica de éxito:** 40% o más de las cuentas contactadas entran al portal, y ninguna cuenta acumula tres envíos con salida registrada sin entrar sin que alguien lo sepa.
 **Riesgo propio:** una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. Por eso RF-18.3 y RF-18.4 exigen construirla desde el panel, contra el inventario del momento, y marcar el bloque como desactualizado si un perfil cambia. Segundo riesgo, nuevo con la decisión: si nadie registra la salida, el portal no puede contar envíos ni vigilar la cadencia (RF-18.5).
 
