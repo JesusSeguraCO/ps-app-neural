@@ -5,10 +5,12 @@
 // el enlace trae selección. El buscador de texto es de EP-002.
 import { aplicarFiltro, filtroDeConsulta } from "@ps/dominio/catalogo/encuadre";
 import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
-import { conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
+import { cerrarFicha, conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
+import { EncabezadoEstandar } from "@ps/ui/EncabezadoEstandar";
 import { contactoDeFicha, datosDelBanco, datosDelEnlace, fichaDe } from "../../src/banco/datos";
 import { evidenciaDelBanco } from "../../src/banco/evidencia";
 import { Encuadre } from "../../src/banco/Encuadre";
+import { fraseDelPortal } from "../../src/banco/estandar";
 import { PanelFicha } from "../../src/ficha/PanelFicha";
 import { MarcoPortal } from "../../src/marco/MarcoPortal";
 import { TarjetaPerfil } from "../../src/seleccion/TarjetaPerfil";
@@ -16,6 +18,7 @@ import { exigirSesion } from "../../src/sesion/exigirSesion";
 import "../aterrizaje.css";
 import "../banco.css";
 import "@ps/ui/ficha.css";
+import "@ps/ui/estandar.css";
 import "../ficha.css";
 
 export default async function Banco({
@@ -24,10 +27,11 @@ export default async function Banco({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sesion = await exigirSesion();
-  const [{ aterrizaje: a, equipo }, banco, consulta] = await Promise.all([
+  const [{ aterrizaje: a, equipo }, banco, consulta, frase] = await Promise.all([
     datosDelEnlace(sesion),
     datosDelBanco(sesion),
     searchParams,
+    fraseDelPortal(),
   ]);
   const conSeleccion = a.seleccion.items.length > 0;
   const filtro = filtroDeConsulta(consulta);
@@ -48,7 +52,7 @@ export default async function Banco({
     const nombre = filtro.tipo === "contexto" ? "las categorías de tu selección" : filtro.valor;
     return (
       <MarcoPortal {...marco}>
-        <Encuadre taxonomia={banco.taxonomia} total={banco.perfiles.length} sinPerfiles={nombre} />
+        <Encuadre taxonomia={banco.taxonomia} total={banco.perfiles.length} sinPerfiles={nombre} frase={frase} />
       </MarcoPortal>
     );
   }
@@ -94,6 +98,7 @@ export default async function Banco({
           </div>
         )}
       </header>
+      <EncabezadoEstandar frase={frase} />
       <div className="as-contexto pp-con-lateral">
         <section className="as-lista" aria-labelledby="as-lista-t">
           <div className="pp-seccion__cabecera">
@@ -138,7 +143,7 @@ export default async function Banco({
   return (
     <>
       <div inert>{pagina}</div>
-      <PanelFicha ficha={ficha} contacto={contacto ?? undefined} recorrido={paso} lista={lista} href={href} evidencia={evidencia.get(pedida!)} />
+      <PanelFicha ficha={ficha} contacto={contacto ?? undefined} recorrido={paso} lista={lista} href={href} cerrar={cerrarFicha("/banco", consulta, paso.abierto)} evidencia={evidencia.get(pedida!)} />
     </>
   );
 }

@@ -3,6 +3,7 @@
 // opción y «Ver los N perfiles» abre el banco completo, sin bloqueo. Una opción sin perfiles lo dice y
 // ofrece ampliar la búsqueda (pedir el perfil a medida llega con EP-010).
 import type { OpcionCategoria } from "@ps/dominio/catalogo/encuadre";
+import { EncabezadoEstandar } from "@ps/ui/EncabezadoEstandar";
 
 const enlace = (tipo: "categoria" | "rol", valor: string) =>
   `/banco?${tipo}=${encodeURIComponent(valor)}`;
@@ -33,9 +34,12 @@ export function Encuadre(props: {
   taxonomia: OpcionCategoria[];
   total: number;
   sinPerfiles?: string;
+  // HU-159 (D73): el encabezado del estándar también aquí, antes de la pregunta de encuadre.
+  frase: string;
 }) {
   return (
     <div className="enc-cuerpo">
+      <EncabezadoEstandar frase={props.frase} />
       <div className="pp-encabezado">
         <div className="pp-encabezado__texto">
           <h1 className="enc-titulo" id="enc-titulo">

@@ -101,7 +101,9 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
     expect(ficha).toMatch(/<b>2 de 3<\/b> · selección para ti/);
     expect(ficha).toContain(`href="/?ficha=${a}"`);
     expect(ficha).toContain(`href="/?ficha=${c}"`);
-    expect(ficha).toMatch(/href="\/"[^>]*aria-label="Cerrar la ficha"/);
+    // Cerrar vuelve a la misma lista en la posición del perfil abierto (HU-120, EP-003 · SS7).
+    expect(ficha).toContain(`href="/#p-${b.slice(3)}" aria-label="Cerrar la ficha"`);
+    expect(html).toContain(`id="p-${b.slice(3)}"`);
     // La lista sigue: inerte detrás, con la tarjeta abierta marcada.
     expect(html).toMatch(/<div inert="">/);
     expect(html).toContain("Ficha abierta");
@@ -157,7 +159,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
     const panel = dialogo(html)!;
     expect(panel).toContain("Esta ficha se está actualizando");
     expect(panel).toMatch(/<b>3 de 3<\/b> · selección para ti/);
-    expect(panel).toMatch(/href="\/"[^>]*aria-label="Cerrar la ficha"/);
+    expect(panel).toContain(`href="/#p-${c.slice(3)}" aria-label="Cerrar la ficha"`);
     expect(panel).not.toContain("Verificado por Trycore");
     expect(panel).not.toContain(nombreDe(c));
   });
@@ -167,7 +169,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
     expect(lista).toContain(`href="/banco?ficha=${a}"`);
     const ficha = dialogo(await pagina(`/banco?ficha=${a}`))!;
     expect(ficha).toMatch(/de \d+<\/b> · banco de perfiles/);
-    expect(ficha).toMatch(/href="\/banco"[^>]*aria-label="Cerrar la ficha"/);
+    expect(ficha).toContain(`href="/banco#p-${a.slice(3)}" aria-label="Cerrar la ficha"`);
   });
 
   it("con un filtro aplicado, la ficha recorre solo la lista filtrada y al cerrar conserva el filtro", async () => {
@@ -176,7 +178,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
     const q = `categoria=${encodeURIComponent(familia)}`;
     const ficha = dialogo(await pagina(`/banco?${q}&ficha=${a}`))!;
     expect(ficha).toMatch(new RegExp(`de ${enFamilia.length}</b> · banco · ${familia}`));
-    expect(ficha).toContain(`href="/banco?${q.replace(/%20/g, "+")}"`);
+    expect(ficha).toContain(`href="/banco?${q.replace(/%20/g, "+")}#p-${a.slice(3)}"`);
     // Un perfil de otra familia no se abre sobre esta lista filtrada.
     const otro = PERFILES_FICTICIOS.find((p) => p.estado === "publicado" && p.familia !== familia)!.codigo;
     expect(dialogo(await pagina(`/banco?${q}&ficha=${otro}`))).toBeNull();

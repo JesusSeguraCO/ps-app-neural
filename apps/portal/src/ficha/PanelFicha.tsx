@@ -40,11 +40,13 @@ export function PanelFicha(p: {
   recorrido: Recorrido;
   lista: string;
   href: (codigo: string | null) => string;
+  // Cerrar vuelve a la misma lista, con su filtro, en la posición del perfil abierto (HU-120).
+  cerrar: string;
   evidencia?: readonly LineaEvidencia[];
   contacto?: ContactoTrycore;
 }) {
   const { posicion, total, anterior, siguiente } = p.recorrido;
-  const cerrar = p.href(null);
+  const cerrar = p.cerrar;
   const enlaceDe = (c: string | null) => (c ? p.href(c) : null);
   const barra = (
     <div className="fp-barra">

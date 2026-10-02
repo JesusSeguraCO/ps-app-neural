@@ -20,3 +20,5 @@
   .fp-barra__pos { margin-left: var(--tc-sp-1); }
   .fp-atajos { display: none; }
 }
+/* Cerrar la ficha vuelve al ancla de la tarjeta (HU-120): que la barra superior no la tape. */
+.pp-perfil__rol { scroll-margin-top: 96px; }

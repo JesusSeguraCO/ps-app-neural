@@ -15,7 +15,7 @@
 .fp-seccion__titulo--verificado { color: var(--tc-primary-ink); }
 .fp-ficha .pp-bloque--verificado { padding: var(--tc-sp-4); }
 .fp-sello { font-weight: var(--tc-fw-medium); }
-.fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-small); color: var(--tc-text-m); }
 .pp-bloque--verificado .fp-sub { color: var(--tc-primary-surface-ink); }
 .fp-ausente { color: var(--tc-text-m); }
 .fp-trayectoria { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
@@ -60,7 +60,7 @@ a.vp-num { text-decoration: none; }
 .fp-contacto__quien { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
 
 /* Cierre de la ficha (HU-158): el SLA y la garantía en el tamaño del texto de la ficha (RF-6.2, no en
-   letra pequeña); la referencia con el código, al pie y en letra pequeña (RF-3.5). */
+   letra pequeña); la referencia con el código, al pie y en letra pequeña (RF-3.5) sin bajar de 13 px (M-8). */
 .fp-servicio__sla { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
 .fp-servicio__garantia { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-.fp-referencia { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+.fp-referencia { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m); }

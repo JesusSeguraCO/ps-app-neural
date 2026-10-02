@@ -24,3 +24,29 @@ export const COPY_FICHA = {
   referencia: (codigo: string) =>
     `Referencia interna ${codigo}. Todos los perfiles que publicamos pasan por nuestro estándar Neural-Grid™.`,
 } as const;
+
+// Encabezado del estándar y bloque de respaldo del servicio (HU-159; RF-6.1–6.4, B.6, D64, D73). Las frases
+// «ninguno»/descriptiva y las cuatro dimensiones viven en el dominio (`@ps/dominio/catalogo/estandar`) junto a
+// la regla que las elige. MARCADO PARA REVISIÓN DE COPY con Mercadeo y validación de Comercial (RF-14.4).
+export const COPY_ESTANDAR = {
+  antetitulo: "Antes de ver los perfiles",
+  titulo: "El estándar Neural-Grid",
+  introduccion:
+    "Lo que Trycore verificó de todos los perfiles, para que evalúes a cada persona por lo que la diferencia. Son cuatro dimensiones: tres condiciones de entrada y Neural Speed, la garantía del servicio.",
+  respaldoTitulo: "Lo que respalda el servicio",
+  respaldo: [
+    {
+      nombre: "Trycore University",
+      texto: "Formación continua del talento en las prácticas y herramientas con las que trabaja Trycore.",
+    },
+    {
+      nombre: "Hive Mind",
+      texto: "La comunidad técnica de Trycore: lo que aprende un proyecto queda disponible para el siguiente.",
+    },
+    {
+      nombre: "Coordinación de Servicio dedicada",
+      texto: "Una persona de Trycore acompaña tu solicitud de principio a fin.",
+    },
+  ],
+  sla: "Trycore responde a tu solicitud en 10 días hábiles.",
+} as const;

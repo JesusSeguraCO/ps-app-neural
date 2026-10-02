@@ -36,3 +36,22 @@ export async function leerIndicadores(bd: Consultor): Promise<IndicadoresPublica
 export async function contarIncompletosPublicados(bd: Consultor): Promise<number> {
   return contarIncompletos(await leerIndicadores(bd));
 }
+
+// El conteo con tiempo acotado para el portal (HU-159 · error, D97): `statement_timeout` local de una
+// transacción de solo lectura; si vence o la consulta falla, rechaza y el portal degrada a la frase
+// descriptiva (nunca cuelga ni rompe la página).
+export async function contarIncompletosConTiempo(pool: pg.Pool, ms: number): Promise<number> {
+  const c = await pool.connect();
+  try {
+    await c.query("BEGIN READ ONLY");
+    await c.query(`SET LOCAL statement_timeout = ${Math.max(1, Math.trunc(ms))}`);
+    const n = await contarIncompletosPublicados(c);
+    await c.query("COMMIT");
+    return n;
+  } catch (e) {
+    await c.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    c.release();
+  }
+}

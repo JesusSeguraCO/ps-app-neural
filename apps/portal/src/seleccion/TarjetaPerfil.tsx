@@ -6,6 +6,7 @@
 // criterios activos; el código al pie en letra pequeña. Sin ciudad ni fecha (contrato del catálogo).
 // Cambio: en su lugar, con la etiqueta de su estado real y una nota; sin datos si ya no hay
 // consentimiento vigente.
+import { anclaDePerfil } from "@ps/dominio/catalogo/recorrido";
 import type { PerfilCatalogo } from "@ps/contratos/catalogo";
 import type { LineaEvidencia } from "@ps/dominio/catalogo/evidencia";
 import { capacidadDeTarjeta, tecnologiasDeTarjeta } from "@ps/dominio/catalogo/tarjeta";
@@ -13,7 +14,7 @@ import type { ItemSeleccion } from "@ps/dominio/enlaces/seleccion";
 import { DISPONIBILIDAD_CLIENTE, ETIQUETA_ESTADO, notaEstado } from "@ps/dominio/enlaces/textos-seleccion";
 import { EvidenciaTarjeta } from "@ps/ui/Evidencia";
 
-const idDe = (codigo: string) => `p-${codigo.slice(3)}`;
+const idDe = anclaDePerfil;
 const lista = (xs: string[]) => xs.join(", ").toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
 // La ficha se abre en panel lateral sobre esta misma lista (HU-120, D47).
