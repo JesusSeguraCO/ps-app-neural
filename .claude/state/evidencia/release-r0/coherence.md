@@ -24,3 +24,10 @@ EP-001: 49/49 con test (acceso-cliente, acceso-panel, aterrizaje-portal, banco-p
 
 ## Veredicto
 **FAIL** por 1 y 2. Opciones: A) dos tests con mutación (~2 h, recomendada); B) aceptar MCP como evidencia (contradice «verificación ejecutada»); C) A + los 4 parciales (~4 h).
+
+## Re-verificación incremental (PR #11) — PASS
+- HU-133 AC2 → `e2e/marco.panel.spec.ts:545-562` (desvío, hoja cerrada, foco en la fecha, BD sigue `publicado` sin motivo; textos de `EstadoEnLista.tsx:445-457`); título de `apps/vigencia-panel.test.ts:165` corregido.
+- HU-129 AC2 → `e2e/marco.panel.spec.ts:263-276` («Bloques incompletos», «Impide publicar», `.fp-persona.vp-marca` «Falta: … primer apellido»).
+- Ambos corrieron en verde en el runner (61 e2e ✓) y se validaron por mutación (`d96e5f4`).
+- Arreglos del PR con test: CSV `packages/contratos/src/importacion.test.ts:170,178,185`; ficha «se está actualizando» `apps/ficha-portal.test.ts:158`; 0026 `migracion-0026.test.ts`; siembra `proceso.test.ts` y `sembrar-ficticios.test.ts`.
+- Huecos menores (no bloquean): ningún test recorre el plan con una celda neutralizada (ida y vuelta); la salida de producción de `migrar.ts --sembrar-ficticios` la cubre `proceso.test.ts`; comentario de `sembrar-ficticios.ts:1` corregido.

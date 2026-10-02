@@ -20,3 +20,8 @@ Servicios de acceso del portal y del panel casi idénticos; `EditorPerfil.tsx` (
 
 ## Veredicto
 **FAIL** por B1 y B2. Con ambos corregidos y la suite en verde, `smell` puede pasar; R1–R7 como deuda registrada.
+
+## Re-verificación incremental (PR #11, `main..fix/release-r0-hallazgos`) — PASS
+- B1 resuelto: una sola constante `DIAS_SIN_TOCAR` (`packages/dominio/src/catalogo/banda.ts:21`) usada por banda (`:37`), vigencia (`vigencia.ts:99`) y coherencia (`coherencia.ts:107`); `UMBRAL_DIAS` ya no existe.
+- B2 resuelto: una sola `diasCivilesDesde` (`packages/dominio/src/fecha/colombia.ts:12-18`) usada por banda, vigencia, coherencia, `EstadoEnLista.tsx:191` e `inventario/page.tsx:69`; test del caso límite `banda.test.ts:46-62`. `npx vitest run packages/dominio`: 431 ✓.
+- Sin bloqueantes nuevos. Nits: `coherencia.ts:16` importa por la re-exportación de `vigencia`; dos `import` del mismo módulo en `inventario/page.tsx:13-14`; citado CSV duplicado (`importacion.ts:348`, `:391`).

@@ -29,3 +29,8 @@ Diff `acce296..c3ff45b`. Lectura de código + una consulta de permisos en la BD 
 
 ## Veredicto
 **FAIL** por 1 y 2. Para PASS: arreglar o registrar 1 y decidir 2; 3–7 arreglar o registrar en `docs/adr/_backlog-arquitectonico.md`.
+
+## Re-verificación incremental (PR #11) — PASS
+- (1) Cerrado: en la BD local (migrada hasta 0026, consulta READ ONLY) `ps_worker` no escribe consentimientos, colocaciones, cargas/diferencias de Operaciones ni los catálogos de ciudades, familias, modalidades, modalidades de prueba, motivos de pausa, países y seniorities; INSERT/UPDATE en `perfiles` y sus cuatro hijas; UPDATE en `lotes_importacion`, `lote_filas`, `inventario_version`; INSERT en `candidatas_lexico` (0013) y alta de roles, tecnologías y sectores (HU-086); DELETE en ninguna. Coincide con ADR-0009:98. La siembra sale del worker (`migrar.js --sembrar-ficticios` con `SEMBRAR_PANEL_URL`/`SEMBRAR_WORKER_URL`, se niega en producción).
+- (2) Cerrado: diferimiento registrado en `docs/adr/_backlog-arquitectonico.md` E-14 (decisión del sponsor, «ningún entorno con datos reales hasta construirlo»); E-15 registra las divergencias 3–7.
+- Sin divergencias nuevas (el proceso `sembrar` es un modo del job; sin cambios en dependencias, Dockerfiles ni `.do/`). Menor: incorporar al texto de ADR-0009, al promover E-13, el alta de catálogos, `INSERT` en `propuestas_lexico` (0013) y en `referencias_auditoria` (0025).

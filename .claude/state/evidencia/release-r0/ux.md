@@ -82,3 +82,9 @@ R8. **La vista previa de la ficha en el panel muestra un botón «Sumar al equip
 - No se publicó, pausó ni editó ningún perfil, así que el clic en «Publicar» desactivado no se probó. Catálogos, Léxico, Colocados y Administración se vieron en modo lectura, sin crear, fusionar ni aprobar.
 - Panel en móvil: solo se revisaron Inventario e Importar a 390.
 - Los datos de dev están alterados por los e2e: PS-0142 figura «Publicado» pero su última auditoría dice Publicado→Borrador. No es un hallazgo de UX; puede confundir a otros revisores.
+
+## Re-verificación incremental (PR #11, commit 7c9b885) — PASS
+- B1 resuelto: `apps/portal/src/ficha/PanelFicha.tsx` acepta `ficha: Ficha | null` y abre un diálogo «Esta ficha se está actualizando» con la misma barra (← →, «n de N», «Cerrar la ficha», atajos), sin datos del perfil; `apps/portal/app/page.tsx` y `banco/page.tsx` abren el panel siempre que el perfil está en la lista. Test con servidor real en `apps/ficha-portal.test.ts` (texto, «3 de 3 · selección para ti», cerrar; sin «Verificado por Trycore» ni el nombre).
+- R2 corregido: el pie de Colocados (página y hoja) dice «En el banco el cliente ve la banda, nunca la fecha ni la cuenta; en la selección de su correo, la fecha en que se libera» (HU-144, D50).
+- `ficha-portal.test.ts` + `colocados-panel.test.ts`: 21/21 ✓ sobre el build posterior al arreglo.
+- Sin bloqueantes nuevos. NIT: el caso «fuera de contrato» solo se prueba en `/`; falta uno en `/banco?ficha=…`. R1 y R3–R8 quedan como mejoras. Evidencia por código y HTML del servidor real, sin captura nueva.
