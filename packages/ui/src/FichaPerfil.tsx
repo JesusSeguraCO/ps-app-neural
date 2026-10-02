@@ -3,8 +3,11 @@
 // `armarFicha` deja y nada más. Lo verificado por Trycore va en su bloque teñido; lo declarado, sin
 // caja (RF-3.12). Un bloque opcional sin datos no se dibuja —ni título ni hueco—. La validación es
 // el enunciado de Nivel 0 de la modalidad de prueba mientras no haya reporte detallado. La verificación
-// SARO (texto del alcance y mes) y la evaluación DISC (mes) van en lo verificado y se omiten sin marca
-// si faltan (EP-003 · SS1; su presentación final es de HU-156, SS6).
+// SARO (texto del alcance y mes) y la evaluación DISC (mes, con las competencias del Sello Personal que
+// salen de ella) van en lo verificado como contenido y se omiten sin marca si faltan (HU-156, D62, D63).
+// Cierra con las condiciones de trabajo, el servicio de Trycore (SLA en el tamaño del texto y garantía
+// Neural Speed, iguales para todos) y la referencia al pie: el código solo ahí, nunca en la cabecera
+// (HU-158, RF-3.5).
 //
 // `marcas` solo lo pasa la vista previa: numera cada bloque obligatorio incompleto y nombra el dato
 // que falta. El portal nunca lo pasa (un publicado está completo).
@@ -170,7 +173,6 @@ export function FichaPerfil({
             {f.seniority && <li>{f.seniority}</li>}
             {f.modalidad && <li>{f.modalidad}</li>}
             {f.pais && <li>{f.pais}</li>}
-            <li className="pp-mono">{f.codigo}</li>
           </ul>
         </div>
         {cerrar}
@@ -195,12 +197,12 @@ export function FichaPerfil({
           </div>
           <div className="pp-bloque pp-bloque--verificado">
             <dl className="pp-datos">
-              {f.selloPersonal.length > 0 && (
+              {/* Sin fecha DISC (heredado, D62) el Sello Personal registrado sigue a la vista por sí solo. */}
+              {!f.disc && f.selloPersonal.length > 0 && (
                 <Fila titulo="Sello Personal">
                   <span className="fp-sello">{f.selloPersonal.join(" · ")}</span>
                 </Fila>
               )}
-
               {f.seguridad && (
                 <Fila titulo="Verificación de seguridad SARO" id="vp-fila-seguridad">
                   {`${f.seguridad.alcance} · ${f.seguridad.fecha}`}
@@ -209,6 +211,12 @@ export function FichaPerfil({
               {f.disc && (
                 <Fila titulo="Evaluación DISC" id="vp-fila-disc">
                   {f.disc.fecha}
+                  {f.selloPersonal.length > 0 && (
+                    <span className="fp-sub">
+                      {`${COPY_FICHA.discCompetencias}: `}
+                      <span className="fp-sello">{f.selloPersonal.join(" · ")}</span>
+                    </span>
+                  )}
                 </Fila>
               )}
             </dl>
@@ -240,11 +248,7 @@ export function FichaPerfil({
               {f.tecnologias.join(" · ")}
             </Fila>
             {f.formacion && <Fila titulo="Formación">{f.formacion}</Fila>}
-            {f.idiomas.length > 0 && <Fila titulo="Idiomas">{f.idiomas.join(" · ")}</Fila>}
             {f.sectores.length > 0 && <Fila titulo="Sectores">{f.sectores.join(" · ")}</Fila>}
-            <Fila titulo="Modalidad" marca={marcas.modalidad} id="vp-fila-modalidad">
-              {lugar}
-            </Fila>
           </dl>
         </section>
         {contacto && (
@@ -262,6 +266,32 @@ export function FichaPerfil({
             </p>
           </section>
         )}
+        <section className="fp-seccion fp-condiciones" aria-labelledby="fp-condiciones">
+          <div className="pp-seccion__cabecera">
+            <h3 className="pp-seccion__titulo" id="fp-condiciones">
+              {COPY_FICHA.condicionesTitulo}
+            </h3>
+          </div>
+          <dl className="pp-datos">
+            <Fila titulo="Modalidad" marca={marcas.modalidad} id="vp-fila-modalidad">
+              {lugar}
+            </Fila>
+            {!marcas.disponibilidad && (
+              <Fila titulo="Disponibilidad">{DISPONIBILIDAD_CLIENTE[f.disponibilidad]}</Fila>
+            )}
+            {f.idiomas.length > 0 && <Fila titulo="Idiomas">{f.idiomas.join(" · ")}</Fila>}
+          </dl>
+        </section>
+        <section className="fp-seccion fp-servicio" aria-labelledby="fp-servicio">
+          <div className="pp-seccion__cabecera">
+            <h3 className="pp-seccion__titulo" id="fp-servicio">
+              {COPY_FICHA.servicioTitulo}
+            </h3>
+          </div>
+          <p className="fp-servicio__sla">{COPY_FICHA.servicioSla}</p>
+          <p className="fp-servicio__garantia">{COPY_FICHA.servicioGarantia}</p>
+        </section>
+        <p className="fp-referencia">{COPY_FICHA.referencia(f.codigo)}</p>
       </div>
       {pie && <footer className="pp-hoja__pie">{pie}</footer>}
     </article>

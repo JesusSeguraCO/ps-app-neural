@@ -11,4 +11,16 @@ export const COPY_FICHA = {
   contactoConversacion: "La conversación sobre este profesional va por Trycore.",
   contactoRespaldo: "Trycore responde por este perfil y lo pone a tu disposición.",
   contactoSinViaDirecta: "Este portal no tiene una vía de contacto directo con el profesional.",
+  // HU-156 (B.1): las competencias del Sello Personal salen de la evaluación DISC; nunca su resultado.
+  discCompetencias: "Sello Personal",
+  // HU-158: cierre de la ficha. Condiciones operativas (RF-14.5), SLA visible en el tamaño del texto
+  // (RF-6.2) y garantía Neural Speed como forma de operar del servicio, igual para todo perfil (RF-6.5).
+  condicionesTitulo: "Condiciones de trabajo",
+  servicioTitulo: "El servicio de Trycore",
+  servicioSla: "Trycore responde a tu solicitud en 10 días hábiles.",
+  servicioGarantia:
+    "Garantía Neural Speed: en Trycore, el talento que entra a tu proyecto trabaja con agentes de IA desde el día 1 y con línea directa al CoE. Es nuestra forma de operar, la misma para todos los perfiles.",
+  // HU-158 (RF-3.5, D73): el código para citar, al pie, con el recordatorio del estándar.
+  referencia: (codigo: string) =>
+    `Referencia interna ${codigo}. Todos los perfiles que publicamos pasan por nuestro estándar Neural-Grid™.`,
 } as const;

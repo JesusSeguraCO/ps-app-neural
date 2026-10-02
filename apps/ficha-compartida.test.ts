@@ -14,6 +14,7 @@ import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 import type { ClavesAuditoria } from "@ps/infra/postgres/auditoria";
 import { fichaDelPortal } from "@ps/infra/postgres/catalogo";
+import { leerContacto } from "@ps/infra/postgres/contacto";
 import {
   crearPerfil,
   leerPerfil,
@@ -33,8 +34,9 @@ const claves: ClavesAuditoria = {
 const sesion = { enlaceId: "x", invitadoId: "y" } as unknown as SesionPortalVerificada;
 const AHORA = new Date();
 
-const html = (ficha: Parameters<typeof FichaPerfil>[0]["ficha"]) =>
-  renderToStaticMarkup(createElement(FichaPerfil, { ficha }));
+type Props = Parameters<typeof FichaPerfil>[0];
+const html = (ficha: Props["ficha"], contacto?: Props["contacto"]) =>
+  renderToStaticMarkup(createElement(FichaPerfil, { ficha, contacto }));
 
 describe.skipIf(!HAY_BD)("ficha compartida panel/portal (HU-129, HU-130)", () => {
   let bd: BdPrueba;
@@ -130,11 +132,18 @@ describe.skipIf(!HAY_BD)("ficha compartida panel/portal (HU-129, HU-130)", () =>
   });
 
   it("HU-129 · el HTML de la vista previa es el del portal para el mismo perfil, en cada necesidad", async () => {
+    // EP-003 (HU-157, HU-158): con el contacto vigente leído por cada lado —portal con `ps_portal`, vista
+    // previa con `ps_panel`— y los bloques nuevos (SARO/DISC, cierre, servicio y referencia al pie).
+    const contactoPortal = await leerContacto(portal);
+    const contactoPanel = await leerContacto(panel);
     for (const necesidad of ["remota", "hibrida", "presencial"] as const) {
       for (const codigo of [completo, minimo]) {
         const delPortal = await fichaDelPortal(portal, sesion, codigo, { necesidad, ahora: AHORA });
         expect(delPortal).not.toBeNull();
-        expect(html(await delPanel(codigo, necesidad))).toBe(html(delPortal!));
+        const h = html(delPortal!, contactoPortal);
+        expect(html(await delPanel(codigo, necesidad), contactoPanel)).toBe(h);
+        for (const x of ["fp-contacto", "vp-fila-seguridad", "vp-fila-disc", "fp-condiciones", "fp-servicio", "fp-referencia"])
+          expect(h, `${codigo} ${necesidad}: ${x}`).toContain(x);
       }
     }
   });

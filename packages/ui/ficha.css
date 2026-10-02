@@ -58,3 +58,9 @@ a.vp-num { text-decoration: none; }
 /* Conversación con Trycore (HU-157): el contacto vigente con el texto de representación comercial. */
 .fp-contacto__texto { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
 .fp-contacto__quien { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+
+/* Cierre de la ficha (HU-158): el SLA y la garantía en el tamaño del texto de la ficha (RF-6.2, no en
+   letra pequeña); la referencia con el código, al pie y en letra pequeña (RF-3.5). */
+.fp-servicio__sla { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+.fp-servicio__garantia { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-referencia { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
