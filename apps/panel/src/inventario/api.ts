@@ -100,6 +100,11 @@ export const entradaPerfil = z.strictObject({
   idiomas: z.array(z.string().max(60)).max(8).optional(),
   selloPersonal: z.array(z.string().max(80)).max(3).optional(),
   aporte: corto(280),
+  // Validaciones de entrada (HU-176): el alcance es un id del catálogo cerrado, nunca texto; las fechas,
+  // AAAA-MM-DD (la regla de no futura la aplica el dominio con su mensaje).
+  saroAlcanceId: z.uuid().nullish(),
+  saroFecha: fechaCivil.nullish(),
+  discFecha: fechaCivil.nullish(),
   experiencias: z
     .array(
       z.strictObject({

@@ -72,6 +72,12 @@ const CAMPOS: Record<string, Definicion> = {
   ),
   "perfiles.colocacion": d("Colocación", "disponibilidad", "fechas"),
   "perfiles.modalidad_prueba": d("Modalidad de prueba", "validacion", "catalogo"),
+  // Validaciones de entrada (EP-003; HU-176).
+  "perfiles.saro_alcance": d("Alcance de la verificación SARO", "validacion", "catalogo"),
+  "perfiles.saro_fecha": d("Fecha de la verificación SARO", "validacion", "fecha"),
+  "perfiles.disc_fecha": d("Fecha de la evaluación DISC", "validacion", "fecha"),
+  // Catálogo de alcances SARO (HU-177): el texto que leen los clientes.
+  "catalogo_alcances_saro.texto_cliente": d("Lo que ve el cliente", "contenido"),
   "validaciones.estado": d("Reporte de validación", "validacion", "estado"),
   "validaciones.evaluador": d("Validación · evaluador", "validacion"),
   "validaciones.fecha": d("Validación · fecha", "validacion", "fecha"),

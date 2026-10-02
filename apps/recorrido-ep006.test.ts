@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DobleCorreo } from "@ps/infra/mailgun/index";
 import { verificarCadena } from "@ps/infra/postgres/auditoria";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
+import { entradaValidaciones } from "@ps/infra/pruebas/validaciones-entrada";
 import {
   arrancarServidor,
   entornoDev,
@@ -170,6 +171,8 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
           "catalogo_modalidades_prueba",
           "Prueba práctica revisada por un arquitecto",
         ),
+        // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+        ...(await entradaValidaciones(bd.instalacion)),
         experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
       });
       expect(r.status).toBe(201);

@@ -14,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type pg from "pg";
 import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
+import { entradaValidaciones } from "@ps/infra/pruebas/validaciones-entrada";
 import { fichaDelPortal } from "@ps/infra/postgres/catalogo";
 import {
   arrancarServidor,
@@ -84,6 +85,8 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Reporte de validación en el pan
             "catalogo_modalidades_prueba",
             "Prueba práctica revisada por un arquitecto",
           ),
+          // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+          ...(await entradaValidaciones(bd.instalacion)),
           aporte: "Integraciones estables.",
           experiencias: [
             { cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." },
