@@ -498,6 +498,24 @@
 
 
   </style>
+  <style>
+    /* PP:marca-ep008 — pasada de branding D105 (2026-10-02). Solo tokens del DS Trycore:
+       · series de gráfica en teal de marca (--tc-primary; colors.css: «acento, trazos, series de
+         gráfica»; 3,2:1 sobre blanco ≥ 3:1 de WCAG 1.4.11 para gráficos, nunca como texto);
+       · cifras clave en navy de autoridad (--pp-navy-ink: 14,8:1 en claro, #B4C3FF en oscuro) y
+         peso 700 de «cifras destacadas» (DESIGN.md › Tipografía);
+       · posición del top 10 en teal de texto (--pp-teal-ink, 5,3:1);
+       · opción elegida del conmutador con el tinte de selección de pp-btn--contorno[aria-pressed]. */
+    .mp-kpi__cifra, .md-kpi { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
+    .mp-kpi__cifra.mp-kpi__cifra--nula { font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .md-paso__cifra { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
+    .md-paso__cifra.md-tenue { font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .md-barra { background: var(--tc-primary); }
+    .mp-top__pos { color: var(--pp-teal-ink); }
+    .mp-top__num strong, .md-uso__num { color: var(--pp-navy-ink); }
+    .md-segmento button[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    /* /PP:marca-ep008 */
+  </style>
 </head>
 <body>
   <div class="pp-panel">
@@ -540,7 +558,7 @@
             <h1 class="pp-encabezado__titulo">Demanda</h1>
             <p class="pp-encabezado__meta">1–31 oct 2026 · 15 consultas sin coincidencia de 6 cuentas</p>
           </div>
-          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option selected>Octubre de 2026</option><option>Noviembre de 2026 (en curso)</option><option>Octubre de 2026</option><option>Septiembre de 2026</option><option>Agosto de 2026</option></select></label></form>
+          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option>Noviembre de 2026 (en curso)</option><option selected>Octubre de 2026</option><option>Septiembre de 2026</option><option>Agosto de 2026</option></select></label></form>
         </div>
         <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Secciones de Demanda"><a class="pp-pestana" role="tab" aria-selected="false" href="demanda-no-cubierta.html">Registro de demanda</a><a class="pp-pestana" role="tab" aria-selected="true" href="demanda-top10.html">Top 10 del mes</a></div>
         <section class="md-seccion" aria-labelledby="mp-top-t">

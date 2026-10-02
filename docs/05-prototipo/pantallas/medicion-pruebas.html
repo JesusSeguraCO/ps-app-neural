@@ -498,6 +498,24 @@
 
 
   </style>
+  <style>
+    /* PP:marca-ep008 — pasada de branding D105 (2026-10-02). Solo tokens del DS Trycore:
+       · series de gráfica en teal de marca (--tc-primary; colors.css: «acento, trazos, series de
+         gráfica»; 3,2:1 sobre blanco ≥ 3:1 de WCAG 1.4.11 para gráficos, nunca como texto);
+       · cifras clave en navy de autoridad (--pp-navy-ink: 14,8:1 en claro, #B4C3FF en oscuro) y
+         peso 700 de «cifras destacadas» (DESIGN.md › Tipografía);
+       · posición del top 10 en teal de texto (--pp-teal-ink, 5,3:1);
+       · opción elegida del conmutador con el tinte de selección de pp-btn--contorno[aria-pressed]. */
+    .mp-kpi__cifra, .md-kpi { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
+    .mp-kpi__cifra.mp-kpi__cifra--nula { font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .md-paso__cifra { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
+    .md-paso__cifra.md-tenue { font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .md-barra { background: var(--tc-primary); }
+    .mp-top__pos { color: var(--pp-teal-ink); }
+    .mp-top__num strong, .md-uso__num { color: var(--pp-navy-ink); }
+    .md-segmento button[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    /* /PP:marca-ep008 */
+  </style>
 </head>
 <body>
   <div class="pp-panel">
@@ -553,7 +571,7 @@
           <p class="md-nota"><strong>3 descartadas:</strong> 1 con un solo perfil, 1 sin reto declarado y 1 de una sesión no real. El conteo sale de las solicitudes registradas, no del evento del navegador. Abrir la ruta por reto lo decide el equipo con §14.5.</p>
         </section>
         <section class="md-seccion" id="cero" aria-labelledby="cero-t">
-          <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="cero-t">¿En qué terminan las pantallas sin coincidencia?</h2></div><div class="md-seccion__lado"><span class="pp-estado pp-estado--neutro">Lectura descriptiva, para la revisión trimestral</span></div></div>
+          <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="cero-t">¿En qué terminan las pantallas sin coincidencia?</h2></div><div class="md-seccion__lado"><span class="pp-estado pp-estado--neutro">Lectura descriptiva para la revisión trimestral</span></div></div>
           <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="En qué terminan los ceros">
             <table class="pp-tabla md-tabla md-tabla--compacta">
               <caption class="pp-sr">Visitas que llegaron a una pantalla sin coincidencia y en qué terminaron</caption>
@@ -579,7 +597,7 @@
           <p class="mp-lectura"><strong>Señal de RF-12.1:</strong> más del 60 % de las instrucciones son sugerencias enviadas sin editar; el portal estaría dictando la demanda en vez de captarla. Con 60 % exacto la señal no aparece.</p>
         </section>
         <section class="md-seccion" id="composiciones" aria-labelledby="composiciones-t">
-          <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="composiciones-t">¿Las composiciones agrandan los equipos?</h2></div><div class="md-seccion__lado"><span class="pp-estado pp-estado--neutro">Lectura descriptiva, para la revisión trimestral</span></div></div>
+          <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="composiciones-t">¿Las composiciones agrandan los equipos?</h2></div><div class="md-seccion__lado"><span class="pp-estado pp-estado--neutro">Lectura descriptiva para la revisión trimestral</span></div></div>
           <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="Efecto de las composiciones de referencia">
             <table class="pp-tabla md-tabla md-tabla--compacta">
               <caption class="pp-sr">Visitas que vieron una composición de referencia frente a las que no</caption>

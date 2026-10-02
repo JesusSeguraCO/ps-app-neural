@@ -3421,7 +3421,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-193 happy: administradora con el permiso «Medición» registra la supresión de compras@cliente-ficticio.co; aparece «pendiente» con fecha y quién la registró, identificada por su identificador interno, sin correo; el alta queda en la auditoría. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-193 happy: administradora con el permiso «Medición» registra la supresión de compras@cliente-ficticio.co; aparece «pendiente» con fecha y quién la registró, identificada por su identificador interno, sin correo; el alta queda en la auditoría. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "admin-supresiones--detalle-aplicada",
@@ -3438,7 +3438,7 @@
         "mobile"
       ],
       "variante_de": "admin-supresiones",
-      "notas": "variante — HU-193 happy «se aplica en la siguiente corrida» + edge «lo que la supresión no alcanza»: detalle de una supresión aplicada con eventos anonimizados (también los ya seudonimizados), conteos conservados y lo que no cubre (HubSpot, lista nominal). Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-193 happy «se aplica en la siguiente corrida» + edge «lo que la supresión no alcanza»: detalle de una supresión aplicada con eventos anonimizados (también los ya seudonimizados), conteos conservados y lo que no cubre (HubSpot, lista nominal). Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "admin-supresiones--sin-permiso",
@@ -3472,7 +3472,7 @@
         "mobile"
       ],
       "variante_de": "admin-supresiones",
-      "notas": "variante — HU-193 edge: el correo no corresponde a ningún contacto con eventos; el panel lo dice y no queda supresión pendiente. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-193 edge: el correo no corresponde a ningún contacto con eventos; el panel lo dice y no queda supresión pendiente. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "aviso-privacidad",
@@ -3523,7 +3523,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-172 happy: administradora de inventario sin el permiso «Medición» abre el top 10 de octubre en Demanda (D82): diez consultas por cuentas distintas, con su texto, cuentas y veces; variantes unificadas; un nombre del banco enmascarado. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-172 happy: administradora de inventario sin el permiso «Medición» abre el top 10 de octubre en Demanda (D82): diez consultas por cuentas distintas, con su texto, cuentas y veces; variantes unificadas; un nombre del banco enmascarado. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "demanda-top10--empate",
@@ -3540,7 +3540,7 @@
         "mobile"
       ],
       "variante_de": "demanda-top10",
-      "notas": "variante — HU-172 edge: empate en el décimo lugar; se muestran las tres empatadas (doce en total) y el encabezado lo dice. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-172 edge: empate en el décimo lugar; se muestran las tres empatadas (doce en total) y el encabezado lo dice. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "demanda-top10--menos-de-diez",
@@ -3557,7 +3557,7 @@
         "mobile"
       ],
       "variante_de": "demanda-top10",
-      "notas": "variante — HU-172 edge: solo 4 consultas distintas sin coincidencia; se ven las cuatro, sin relleno, y el encabezado dice cuatro. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-172 edge: solo 4 consultas distintas sin coincidencia; se ven las cuatro, sin relleno, y el encabezado dice cuatro. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "demanda-top10--sin-busquedas",
@@ -3574,7 +3574,7 @@
         "mobile"
       ],
       "variante_de": "demanda-top10",
-      "notas": "variante — HU-172 error: mes sin consultas sin coincidencia; mensaje en lugar de lista vacía. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-172 error: mes sin consultas sin coincidencia; mensaje en lugar de lista vacía. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "enlace-revocado--aviso-privacidad",
@@ -3661,7 +3661,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — tablero de octubre de 2026 cerrado: conversión, perfiles por solicitud y O4 (bajo la meta) completos; O3 (HU-196) y acierto (HU-109) con su cifra; KPI del 35 % en «aún no se mide» (espera a EP-011); top 10 (HU-172); internas y demo fuera, contadas. Sustituye el borrador greenfield de 2026-09-28 (medicion, --sin-actividad, --ruta-sin-datos), anterior a D66–D100. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — tablero de octubre de 2026 cerrado: conversión, perfiles por solicitud y O4 (bajo la meta) completos; O3 (HU-196) y acierto (HU-109) con su cifra; KPI del 35 % en «aún no se mide» (espera a EP-011); top 10 (HU-172); internas y demo fuera, contadas. Sustituye el borrador greenfield de 2026-09-28 (medicion, --sin-actividad, --ruta-sin-datos), anterior a D66–D100. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion--aun-no-se-mide",
@@ -3681,7 +3681,7 @@
         "mobile"
       ],
       "variante_de": "medicion",
-      "notas": "variante — HU-171 edge «un panel depende de algo que aún no está»: acierto (HU-109), top 10 (HU-172), O3 (HU-196) y el KPI del 35 % (EP-011) con su meta, «aún no se mide» y lo que falta; conversión, perfiles y O4 completos. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-171 edge «un panel depende de algo que aún no está»: acierto (HU-109), top 10 (HU-172), O3 (HU-196) y el KPI del 35 % (EP-011) con su meta, «aún no se mide» y lo que falta; conversión, perfiles y O4 completos. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion--mes-en-curso",
@@ -3701,7 +3701,7 @@
         "mobile"
       ],
       "variante_de": "medicion",
-      "notas": "variante — HU-171 edge: mes en curso; cada indicador rotulado «parcial» con la fecha y la hora hasta las que cuenta. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-171 edge: mes en curso; cada indicador rotulado «parcial» con la fecha y la hora hasta las que cuenta. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion--o3-atrasado",
@@ -3719,7 +3719,7 @@
         "mobile"
       ],
       "variante_de": "medicion",
-      "notas": "variante — HU-196 error: la lectura diaria de HubSpot se atrasó; O3 muestra el último dato con su fecha y el aviso «dato de HubSpot de hace 2 días»; los demás indicadores completos. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-196 error: la lectura diaria de HubSpot se atrasó; O3 muestra el último dato con su fecha y el aviso «dato de HubSpot de hace 2 días»; los demás indicadores completos. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion--sin-actividad",
@@ -3739,7 +3739,7 @@
         "mobile"
       ],
       "variante_de": "medicion",
-      "notas": "variante — HU-171 edge: mes cerrado sin ninguna cuenta con sesión real; cada indicador dice «sin dato en este período» y ninguno muestra 0 %. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-171 edge: mes cerrado sin ninguna cuenta con sesión real; cada indicador dice «sin dato en este período» y ninguno muestra 0 %. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion--sin-permiso",
@@ -3773,7 +3773,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-112 edge «el reparto está a la vista»: visitas directas, heredadas (ventana de 90 días) y directas sin edición; parte del crédito que viene de la herencia; por edición con otros invitados del mismo enlace. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-112 edge «el reparto está a la vista»: visitas directas, heredadas (ventana de 90 días) y directas sin edición; parte del crédito que viene de la herencia; por edición con otros invitados del mismo enlace. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-curaduria",
@@ -3789,7 +3789,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-109: acierto 4 de 5 junto a la meta del 70 %, en total y por cuenta; solicitudes sin conjunto curado fuera y contadas; no acierto con sus filtros y búsqueda; «perfil curado no disponible al abrir»; fichas curadas vs descubrimiento; solicitud mixta = acierto. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-109: acierto 4 de 5 junto a la meta del 70 %, en total y por cuenta; solicitudes sin conjunto curado fuera y contadas; no acierto con sus filtros y búsqueda; «perfil curado no disponible al abrir»; fichas curadas vs descubrimiento; solicitud mixta = acierto. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-embudo",
@@ -3806,7 +3806,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-108 happy: embudo de octubre por paso, con proporción sobre el paso anterior, en visitas y por cuenta; visitas vs contactos distintos; metas de ficha abierta (EP-003) y rebote (EP-001); la puerta sin contacto. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-108 happy: embudo de octubre por paso, con proporción sobre el paso anterior, en visitas y por cuenta; visitas vs contactos distintos; metas de ficha abierta (EP-003) y rebote (EP-001); la puerta sin contacto. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-embudo--paso-sin-medir",
@@ -3824,7 +3824,7 @@
         "mobile"
       ],
       "variante_de": "medicion-embudo",
-      "notas": "variante — HU-108 edge: los pasos cuyas pantallas aún no emiten aparecen «aún no se mide», no como cero. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-108 edge: los pasos cuyas pantallas aún no emiten aparecen «aún no se mide», no como cero. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-embudo--sin-actividad",
@@ -3842,7 +3842,7 @@
         "mobile"
       ],
       "variante_de": "medicion-embudo",
-      "notas": "variante — HU-108 error: período sin entradas de clientes; mensaje sin fila de ceros. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-108 error: período sin entradas de clientes; mensaje sin fila de ceros. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-experimento",
@@ -3858,7 +3858,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-186 happy: experimento activo (administradora con permiso «Medición»); por variante tiempo hasta el primer perfil, tasa de solicitud, cuentas y visitas; visitas sin perfil fuera del tiempo y contadas; «lectura descriptiva», sin ganadora; control para apagar. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-186 happy: experimento activo (administradora con permiso «Medición»); por variante tiempo hasta el primer perfil, tasa de solicitud, cuentas y visitas; visitas sin perfil fuera del tiempo y contadas; «lectura descriptiva», sin ganadora; control para apagar. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-experimento--inactivo-observador",
@@ -3875,7 +3875,7 @@
         "mobile"
       ],
       "variante_de": "medicion-experimento",
-      "notas": "variante — HU-186 error: sin experimento activo y quien mira es observador con el permiso «Medición»; dice desde cuándo y quién lo apagó, sin cifras, y el control aparece inactivo con «solo un administrador puede encender o apagar el experimento». Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-186 error: sin experimento activo y quien mira es observador con el permiso «Medición»; dice desde cuándo y quién lo apagó, sin cifras, y el control aparece inactivo con «solo un administrador puede encender o apagar el experimento». Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-experimento--senal",
@@ -3892,7 +3892,7 @@
         "mobile"
       ],
       "variante_de": "medicion-experimento",
-      "notas": "variante — HU-186 edge: con Perfil Objetivo el tiempo sube y la tasa no; la lectura señala la condición de RF-13.1 junto al rótulo descriptivo. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-186 edge: con Perfil Objetivo el tiempo sube y la tasa no; la lectura señala la condición de RF-13.1 junto al rótulo descriptivo. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-filtros",
@@ -3909,7 +3909,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-110: uso por faceta y valor, facetas sin uso, uso tras instrucción separado, 58 % que refina vs meta 50 % (EP-002). HU-111: comparación por ruta rotulada «lectura descriptiva» con sesiones reales por ruta; regla RF-14.2 (42 %, no se cumple) y segunda condición de §14.7 leída de HU-189 (1 decisión, no se cumple). Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-110: uso por faceta y valor, facetas sin uso, uso tras instrucción separado, 58 % que refina vs meta 50 % (EP-002). HU-111: comparación por ruta rotulada «lectura descriptiva» con sesiones reales por ruta; regla RF-14.2 (42 %, no se cumple) y segunda condición de §14.7 leída de HU-189 (1 decisión, no se cumple). Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-filtros--sin-filtros",
@@ -3927,7 +3927,7 @@
         "mobile"
       ],
       "variante_de": "medicion-filtros",
-      "notas": "variante — HU-110 error: período sin uso de filtros; mensaje en lugar de ceros presentados como hallazgo. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-110 error: período sin uso de filtros; mensaje en lugar de ceros presentados como hallazgo. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-pruebas",
@@ -3946,7 +3946,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-185: 49 de 50 con la validación de Delivery cumplida y el disparador no cumplido, tres condiciones por separado y 3 descartadas con motivo; HU-170: en qué terminan los ceros, 32 % dirigida rotulada descriptiva; HU-173: 61 % sin editar con la señal de RF-12.1; HU-184: composiciones vistas vs no vistas, descartes aparte, descriptiva. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-185: 49 de 50 con la validación de Delivery cumplida y el disparador no cumplido, tres condiciones por separado y 3 descartadas con motivo; HU-170: en qué terminan los ceros, 32 % dirigida rotulada descriptiva; HU-173: 61 % sin editar con la señal de RF-12.1; HU-184: composiciones vistas vs no vistas, descartes aparte, descriptiva. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-pruebas--aun-no-se-mide",
@@ -3966,7 +3966,7 @@
         "mobile"
       ],
       "variante_de": "medicion-pruebas",
-      "notas": "variante — HU-185, HU-170, HU-173 y HU-184 error: los eventos aún no se emiten; cada lectura dice «aún no se mide» y nombra la épica que debe emitirlos, sin 0 % ni conteos. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-185, HU-170, HU-173 y HU-184 error: los eventos aún no se emiten; cada lectura dice «aún no se mide» y nombra la épica que debe emitirlos, sin 0 % ni conteos. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-pruebas--disparador-cumplido",
@@ -3986,7 +3986,7 @@
         "mobile"
       ],
       "variante_de": "medicion-pruebas",
-      "notas": "variante — HU-185 happy (fila 50): «disparador cumplido el 12 nov 2026», fecha de la última condición en cumplirse. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-185 happy (fila 50): «disparador cumplido el 12 nov 2026», fecha de la última condición en cumplirse. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-pruebas--falta-delivery",
@@ -4006,7 +4006,7 @@
         "mobile"
       ],
       "variante_de": "medicion-pruebas",
-      "notas": "variante — HU-185 edge: 50 de 50 sin la validación de Delivery; la condición aparece «pendiente de validación de Delivery» y el disparador no se cumple. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-185 edge: 50 de 50 sin la validación de Delivery; la condición aparece «pendiente de validación de Delivery» y el disparador no se cumple. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-recorridos",
@@ -4024,7 +4024,7 @@
         "tablet",
         "mobile"
       ],
-      "notas": "base — HU-167 happy: recorrido de una visita con sus eventos en orden, cada uno con cuenta, enlace, contacto (identificador interno, sin correo) y edición; fichas marcadas curado / descubrimiento; perfil solo con identificador opaco; estado de la captura; visitas interna y demo marcadas. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "base — HU-167 happy: recorrido de una visita con sus eventos en orden, cada uno con cuenta, enlace, contacto (identificador interno, sin correo) y edición; fichas marcadas curado / descubrimiento; perfil solo con identificador opaco; estado de la captura; visitas interna y demo marcadas. Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "medicion-recorridos--eventos-perdidos",
@@ -4043,7 +4043,7 @@
         "mobile"
       ],
       "variante_de": "medicion-recorridos",
-      "notas": "variante — HU-167 error: el registro de eventos falló; el estado de la captura muestra los eventos perdidos y la hora del último evento recibido (el invitado no se enteró). Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102)."
+      "notas": "variante — HU-167 error: el registro de eventos falló; el estado de la captura muestra los eventos perdidos y la hora del último evento recibido (el invitado no se enteró). Modo feature 2026-10-02 · borrador pendiente de aprobación humana. · Aprobada por el sponsor el 2026-10-02 (D102). · Pasada de branding y textos D105 (2026-10-02)."
     },
     {
       "slug": "puerta-acceso--aviso-privacidad",

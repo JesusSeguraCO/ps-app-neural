@@ -84,6 +84,13 @@ teal #2DD4C4, textos claros). Ningún componente cambia de clase para cambiar de
 - **Botones**: primario teal (`--pp-teal-fill`), CTA de cierre navy (`--pp-press`), secundario
   contorno, fantasma para terciarias, destructivo rojo; 10 px de radio; 40 px (32 la variante
   `--sm`) en escritorio y ≥ 44 px en móvil (M-2).
+- **Tablero de Medición** (EP-008, D105 2026-10-02): cifras clave (`mp-kpi__cifra`, `md-kpi`,
+  `md-paso__cifra`) en `--pp-navy-ink` y peso 700; barras del embudo y series de gráfica en
+  `--tc-primary` (uso no textual, 3,2:1 ≥ 3:1 de WCAG 1.4.11; origen: `_ds/…/tokens/colors.css`,
+  «series de gráfica»); posición del top 10 en `--pp-teal-ink`; opción elegida de un conmutador con
+  el tinte `--tc-primary-surface` + `--tc-primary-ink` (como `pp-btn--contorno[aria-pressed]`).
+  Los estados siguen siendo punto + palabra con su color semántico; sin degradado detrás del
+  tablero (los tres usos de abajo no se amplían). Sin tokens nuevos: todo sale de `tokens.css`.
 
 Los componentes nuevos de v2 (lista densa, estado, toast, actividad, formulario alineado, barra con
 buscador, paginación) se documentan en **Oficio › Patrones** más abajo.
