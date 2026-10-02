@@ -30,7 +30,7 @@ depende_de: [HU-154]
 
 **Dado** que un perfil está publicado solo con el Nivel 0 de su modalidad de prueba, sin reporte detallado,
 **cuando** toco «Validación técnica» en su ficha,
-**Entonces** veo la prueba aplicada con el texto de cara al cliente de esa modalidad
+**Entonces** veo la prueba aplicada con el texto de cara al cliente de esa modalidad, sin fecha
 **Y** no veo ningún campo vacío, ni «no aplica», ni «pendiente», ni la promesa de un detalle que no existe
 
 ### Edge case — el artefacto crudo nunca se enlaza
@@ -46,26 +46,29 @@ Cubre **RF-3.10** (estructura fija de cinco campos, nunca vacía, nunca «no apl
 
 **Qué existe ya (EP-006):** la ficha muestra la validación como una fila del bloque verificado. Si hay reporte confirmado (HU-130, HU-140), esa fila es el Nivel 1: modalidad · resultado, evaluador · fecha, «Evaluó: criterios». Si no hay reporte, muestra el enunciado de Nivel 0 de la modalidad. **Hoy no es un bloque desplegable** y no declara la revisión en la alineación: eso es lo que añade esta historia. El dato y su confirmación no cambian.
 
-**Los cinco campos que se toman.** Son los del bloque `validacion-tecnica` del prototipo y lo que el modelo ya guarda tras **D30** de EP-006: prueba aplicada, evaluador, fecha, resultado y alcance evaluado (los criterios). **Difieren de B.8.3 del PRD**, cuyos cinco campos son «Se le pidió · Entregó · Se evaluó · Resultado · Fecha». D30 (decisión de diseño aprobada por el modelo bajo D27) dejó **internos** el enunciado del reto y los entregables. Bajo la regla de no inventar decisiones, la historia toma la opción que ya está construida y expone menos. Se lleva al sponsor como pregunta.
+**Los cinco campos (D59, sponsor 2026-10-02).** Son los **ya construidos** tras **D30** de EP-006 y los del bloque `validacion-tecnica` del prototipo: **prueba aplicada · qué se evaluó · resultado · evaluador · fecha**. El enunciado del reto y los entregables quedan **internos**. D59 cierra la bifurcación con B.8.3 del PRD («Se le pidió · Entregó · Se evaluó · Resultado · Fecha»): no se captura el Nivel 2 por perfil para esta historia y no hay datos nuevos. El happy path ya estaba redactado con estos cinco campos y no cambia.
+
+**Nivel 0 sin fecha (D73, opción conservadora):** en el modelo la fecha solo existe con el reporte confirmado. Un perfil publicado solo con el Nivel 0 muestra la modalidad sin fecha; no se captura un dato nuevo en el panel para esto. B.9.2 menciona la fecha en el Nivel 0; la discrepancia con el PRD queda resuelta por D73 a favor de lo construido.
+
+**La técnica es obligatoria para publicar (D63):** la modalidad de prueba ya lo era (D10, HU-128). El trato de un publicado sin modalidad, si existiera, es de **HU-178**; esta historia no cambia por eso.
 
 **Sin artefacto adjunto en esta versión (D29):** el artefacto no se sube al panel. La evidencia la tiene Talento Humano en su formato, y la línea del edge case no promete un archivo del portal: promete la revisión en la sesión de alineación (B.8.4, regla de cierre alineada con D-1).
 
-**Preguntas abiertas para el sponsor:**
-1. **Decisión pendiente que bloquea la estimación (INVEST E ✗, validación del 2026-10-02):** ¿Los cinco campos de la ficha son los de B.8.3 («Se le pidió» y «Entregó» a la vista del cliente) o los de D30 y el prototipo (con evaluador, sin enunciado ni entregables)? Si se queda B.8.3, el enunciado del reto sale del catálogo, pero «Entregó» exige el Nivel 2 por perfil (B.9.2), que hoy no se captura. Mientras no se decida, la historia no se puede estimar: con D30 es M sin datos nuevos; con B.8.3 exige capturar el Nivel 2 por perfil en EP-006 y la estimación cambia. El happy path está redactado con los campos de D30 y se reescribe si gana B.8.3.
-2. B.9.2 dice que el Nivel 0 incluye la **fecha** de validación, pero en el modelo la fecha solo existe con el reporte. ¿El Nivel 0 debe mostrar fecha (otro dato a capturar en EP-006) o basta con la modalidad?
-3. ¿El bloque abre plegado o desplegado por omisión? (El prototipo lo deja desplegado.)
+**Copy para revisión de copy (D73):** la línea «la evidencia de la validación puede revisarse en la sesión de alineación con Trycore» y el texto de cara al cliente de cada modalidad son copy visible; se redactan con la opción del prototipo/PRD y quedan **marcados para revisión de copy**.
+
+**Pregunta abierta para el sponsor (no bloquea la estimación):** ¿el bloque abre plegado o desplegado por omisión? El prototipo lo deja desplegado. Es una decisión de presentación, negociable, que no cambia los escenarios.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.10 · RF-3.11 · B.8.2 · B.8.3 · B.8.4 · D29 y D30 de EP-006 · se apoya en HU-130 y HU-140 (EP-006, origen de los Niveles 0 y 1) · depende de HU-154 (bloque verificado donde vive)
+Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.10 · RF-3.11 · B.8.2 · B.8.3 · B.8.4 · B.9.2 · D29 y D30 de EP-006 · D59 · D63 · D73 · se apoya en HU-130 y HU-140 (EP-006, origen de los Niveles 0 y 1) · depende de HU-154 (bloque verificado donde vive)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: vive en el bloque verificado de HU-154 y usa datos que EP-006 ya produce; no espera a la búsqueda ni al equipo |
-| N | Negociable | ✓ son fijos los cinco campos estables, sin puntaje, nunca vacío y sin artefacto; queda abierto qué cinco campos son (pregunta 1) y el estado inicial del desplegable |
+| N | Negociable | ✓ son fijos los cinco campos de D59, sin puntaje, nunca vacío, Nivel 0 sin fecha y sin artefacto; el estado inicial del desplegable y el copy se pueden negociar |
 | V | Valiosa | ✓ es la respuesta concreta, con fecha y alcance, a «¿cómo lo validaron?», que es el diferencial que vende Trycore |
-| E | Estimable | ✗ pendiente de la decisión del sponsor sobre los cinco campos (pregunta 1): con los de D30 sería M (convertir una fila en un bloque desplegable con estructura fija y dos estados, sin datos nuevos); con los de B.8.3 exige capturar «Entregó» (Nivel 2, B.9.2) en EP-006 y no se puede estimar hasta saberlo |
-| S | Pequeña | ✓ M con los campos de D30: un bloque de la ficha con tres escenarios; se revisa si gana B.8.3 |
+| E | Estimable | ✓ M: D59 fijó los cinco campos ya construidos; el trabajo es convertir una fila en un bloque desplegable con estructura fija y dos estados (con reporte y Nivel 0), sin datos nuevos ni migración |
+| S | Pequeña | ✓ M: un bloque de la ficha con tres escenarios |
 | T | Testeable | ✓ perfiles sembrados con y sin reporte dan campos exactos; la ausencia de enlaces y puntajes se comprueba en la pantalla y en la respuesta; el despliegue se prueba con toque en un teléfono emulado |

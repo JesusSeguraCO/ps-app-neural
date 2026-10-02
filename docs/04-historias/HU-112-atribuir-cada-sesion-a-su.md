@@ -29,8 +29,19 @@ depende_de: [HU-167, HU-168]
 
 **Dado** que un contacto está en la pantalla de su código, a la que llegó con un enlace que no pertenece a ninguna edición,
 **cuando** verifica su código,
-**Entonces** su visita hereda la última edición por la que ese contacto entró antes, marcada como heredada, si esa entrada está dentro de la ventana configurada
+**Entonces** su visita hereda la última edición por la que ese contacto entró antes, marcada como heredada, si esa entrada fue hace 90 días o menos
 **Y** si nunca entró por una edición, la visita queda como directa sin edición, sin inventarle una de origen
+
+### Edge case — el límite de los 90 días de herencia
+
+**Dado** que un contacto entró por última vez por una edición hace los días de la tabla y está en la pantalla de su código, a la que llegó con un enlace que no pertenece a ninguna edición,
+**cuando** verifica su código,
+**Entonces** su visita queda atribuida como indica la tabla
+
+| Días desde su última entrada por una edición | Atribución de la visita |
+|---|---|
+| 90 | heredada de esa edición |
+| 91 | directa sin edición |
 
 ### Edge case — entra otro invitado del mismo enlace
 
@@ -60,19 +71,21 @@ Cubre **RF-7.3** (*atribución de cada sesión a la cuenta, al contacto y al env
 
 **Complejidad:** sube de S (backlog) a M por la regla de herencia con ventana y el reparto visible. Ajustar el backlog si el sponsor lo aprueba.
 
-**Abierto para el sponsor:** la **ventana de herencia** (ADR-0006 propone 90 días, *a validar por negocio*) y si la herencia se aplica o toda visita sin edición debe quedar como directa. Con herencia amplia, la meta de ≥ 99 % de visitas atribuidas (QA-21) se cumple «por construcción» y deja de medir algo real.
+**Resuelto por el sponsor (D69, 2026-10-02):** la visita sin edición **hereda la del último correo curado por el que entró el contacto, con ventana de 90 días** (ADR-0006). El límite se prueba a los dos lados (90 → heredada; 91 → directa) en el edge nuevo. **Riesgo que sigue a la vista:** con herencia, la meta de ≥ 99 % de visitas atribuidas (QA-21) se cumple en parte «por construcción»; por eso el reparto directa / heredada / sin edición (último edge) es criterio de aceptación y no un detalle.
+
+**Sesiones reales (D68).** La atribución se resuelve para toda visita, también las internas y las demo (HU-167, HU-188), pero el reparto y los indicadores de Medición cuentan solo las sesiones reales.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.3 · RF-18.2 · RF-18.6 · §8 Trazabilidad · ADR-0006 (`ResolverAtribucion`, QA-21) · ADR-0002 · base de HU-109 y HU-116 · depende de HU-167 y HU-168
+Épica madre: **EP-008** · PRD v4.17 · RF-7.3 · RF-18.2 · RF-18.6 · §8 Trazabilidad · ADR-0006 (`ResolverAtribucion`, QA-21) · ADR-0002 · D68 y D69 (sponsor, 2026-10-02) · base de HU-109 y HU-116 · depende de HU-167 y HU-168
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: usa la sesión de EP-001 y la captura de HU-167 y HU-168; el token con edición ya tiene columna, así que se prueba sin esperar a EP-011 |
-| N | Negociable | ✓ fija las tres atribuciones y su reparto visible; la ventana de herencia queda abierta |
+| N | Negociable | ✓ fija las tres atribuciones, la ventana de 90 días (D69) y su reparto visible; la presentación del reparto es negociable |
 | V | Valiosa | ✓ es lo que permite decir qué edición produjo qué resultado; sin esto el correo curado no se puede evaluar |
 | E | Estimable | ✓ M: resolución al abrir la sesión, búsqueda del último envío del contacto con ventana, guardado en la sesión y un conteo de reparto |
-| S | Pequeña | ✓ M: una regla en cuatro escenarios, cada uno con una sola acción (verificar el código o abrir Medición) |
-| T | Testeable | ✓ cada When es una acción única y cada Given un estado reproducible; tokens fijados de edición, de cuenta con entrada previa, de cuenta sin entrada previa y de un segundo invitado dan atribuciones y reparto observables |
+| S | Pequeña | ✓ M: una regla en cinco escenarios, cada uno con una sola acción (verificar el código o abrir Medición) |
+| T | Testeable | ✓ cada When es una acción única y cada Given un estado reproducible; tokens fijados de edición, de cuenta con entrada previa a 90 y a 91 días, de cuenta sin entrada previa y de un segundo invitado dan atribuciones y reparto observables |

@@ -59,20 +59,22 @@ Cubre el cierre de **RF-3.2** («cierra con condiciones operativas, SLA y la gar
 
 **Evidencia previa en IA (B.8.5):** cuando existe, entra como experiencia en la trayectoria que escribe Talento Humano. El edge case de Neural Speed se prueba con un esquema de una ficha por fila (refinado el 2026-10-02: antes un solo «Cuando» abría dos fichas). Esta historia no crea un campo nuevo (RF-14.0). El campo interno `vinculo` (B.7) no cambia lo que ve el cliente (HU-157).
 
-**Preguntas abiertas para el sponsor:**
-1. El texto exacto de la garantía de servicio y su nombre de cara al cliente («Neural Speed» o una descripción sin la marca): RF-6.5 da el contenido, no la redacción aprobada por Mercadeo.
-2. El prototipo cierra la ficha con «Referencia interna PS-XXXX. Todos los perfiles que publicamos pasan por nuestro estándar Neural-Grid™». ¿Ese es el texto aprobado del pie?
+**D73 (sponsor, 2026-10-02) cierra las dos preguntas abiertas** con la opción del prototipo/PRD, **marcada para revisión de copy**:
+1. **Garantía de servicio:** se redacta con el contenido de RF-6.5 («el talento que entra al proyecto trabaja con agentes de IA desde el día 1 y con línea directa al CoE») y el nombre «Neural Speed» del prototipo. Texto **para revisión de copy** con Mercadeo; el escenario no cambia si cambia la redacción, porque fija el contenido y que sea igual para todos.
+2. **Pie de la ficha:** «Referencia interna PS-XXXX. Todos los perfiles que publicamos pasan por nuestro estándar Neural-Grid™», tal como el prototipo. Texto **para revisión de copy**.
+
+**D64:** el estándar que recuerda el pie tiene **cuatro dimensiones**. El pie no las enumera, así que no cambia; la corrección del copy del prototipo vive en HU-159.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.5 · RF-3.8 · RF-6.2 · RF-6.5 · RF-14.5 · B.6 · B.8.5 · D-18 · depende de HU-154 (estructura de la ficha) · relacionada con HU-157 (contacto de Trycore), HU-159 (el estándar declarado arriba), HU-129 (vista previa con el mismo componente) y HU-082 (necesidad presencial, EP-009)
+Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.5 · RF-3.8 · RF-6.2 · RF-6.5 · RF-14.5 · B.6 · B.8.5 · D-18 · D64 · D73 · depende de HU-154 (estructura de la ficha) · relacionada con HU-157 (contacto de Trycore), HU-159 (el estándar declarado arriba), HU-129 (vista previa con el mismo componente) y HU-082 (necesidad presencial, EP-009)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: se apoya en la ficha existente; la ciudad condicionada funciona sola con la necesidad por omisión |
-| N | Negociable | ✓ son fijos los contenidos (condiciones, SLA visible, garantía del servicio y no de la persona, código al pie); la redacción y la disposición se pueden negociar |
+| N | Negociable | ✓ son fijos los contenidos (condiciones, SLA visible, garantía del servicio y no de la persona, código al pie); la redacción, marcada para revisión de copy (D73), y la disposición se pueden negociar |
 | V | Valiosa | ✓ cierra la decisión con lo que el cliente necesita para sumar a alguien y citarlo, sin prometer nada que la persona no trae |
 | E | Estimable | ✓ M: reordenar el componente compartido (mover el código, agrupar condiciones) y añadir un bloque de texto fijo; sin datos nuevos |
 | S | Pequeña | ✓ M: tres escenarios (uno de ellos un esquema con dos ejemplos) sobre un componente ya construido |

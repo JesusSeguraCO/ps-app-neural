@@ -46,6 +46,14 @@ depende_de: [HU-167]
 **Entonces** la respuesta es la misma que daría sin telemetría —mismo código, mismo cuerpo y tiempo dentro de la misma tolerancia—
 **Y** no se registra ninguna entrada atribuida a una cuenta
 
+### Edge case — alguien abre un enlace revocado o vencido
+
+**Dado** que un enlace de una cuenta fue revocado o venció,
+**cuando** alguien lo abre,
+**Entonces** queda registrado un «intento de entrada» atribuido a ese enlace y a su cuenta, sin contacto
+**Y** no cuenta como «entrada» en el embudo
+**Y** la respuesta de la puerta es la misma que daría sin telemetría
+
 ## Notas
 
 Cubre el evento **«entrada» de RF-7.1** y el primer escalón del embudo, que es lo que **RF-1.2.4** y **RF-18.6** necesitan (entrada por el enlace de cada destinatario y verificación del correo). Base de HU-108 (embudo), HU-112 (atribución) y HU-116 de EP-011 (quién entró por su enlace).
@@ -56,19 +64,21 @@ Cubre el evento **«entrada» de RF-7.1** y el primer escalón del embudo, que e
 
 **Revisión G/W/T 2026-10-02 (validador independiente).** El When del happy path encadenaba tres acciones («pide su código, lo verifica y entra»); la apertura y la petición del código pasan al Given como estado y el When queda en una sola acción, verificar el código. Los tres eventos (entrada, código pedido, acceso concedido) siguen en el Then; el alcance no cambia.
 
-**Abierto para el sponsor:** si la apertura de un enlace **revocado o vencido** debe contar como entrada (es una señal de que alguien quiso volver, útil para HU-146) o quedarse solo en el registro de seguridad. ADR-0006 no lo fija; por eso el escenario de error se limita al enlace inexistente.
+**Resuelto por el sponsor (D73, 2026-10-02), opción conservadora:** abrir un enlace **revocado o vencido** cuenta como **intento de entrada, no como entrada** (edge nuevo). Queda la señal de que alguien quiso volver (útil para HU-146) sin inflar el primer paso del embudo de HU-108. El enlace inexistente sigue sin registrar nada atribuido (error).
+
+**Sesiones reales (D68).** La entrada por un enlace generado con la casilla «demo» (HU-188) se registra marcada como demo y no cuenta en el embudo; la marca la toma el servidor del enlace, no del navegador.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.1 (entrada) · RF-1.2.4 · RF-18.6 · ADR-0006 (H9, V6-5) · ADR-0002 · depende de HU-167
+Épica madre: **EP-008** · PRD v4.17 · RF-7.1 (entrada) · RF-1.2.4 · RF-18.6 · ADR-0006 (H9, V6-5) · ADR-0002 · D68 y D73 (sponsor, 2026-10-02) · relacionada con HU-146 y HU-188 · depende de HU-167
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: usa el contrato y la tabla de HU-167; el acceso de EP-001 ya existe, así que no espera a ninguna épica futura |
-| N | Negociable | ✓ fija qué pasos se cuentan, cuándo se liga el contacto y que la respuesta no cambie; el mecanismo para unir los dos tramos de la visita es del equipo |
+| N | Negociable | ✓ fija qué pasos se cuentan, que el enlace revocado o vencido es intento y no entrada (D73), cuándo se liga el contacto y que la respuesta no cambie; el mecanismo para unir los dos tramos de la visita es del equipo |
 | V | Valiosa | ✓ sin este escalón el embudo empieza en quien ya entró y oculta justo la pérdida que más le importa al correo curado |
-| E | Estimable | ✓ S: escritura en tres puntos del acceso ya construido, identificador de visita y unión por 24 horas; diseño cerrado en ADR-0006 |
-| S | Pequeña | ✓ S: una capacidad en cuatro escenarios, cada When con una sola acción |
-| T | Testeable | ✓ cada Given es un estado reproducible (enlace abierto, código pedido); visitas con token válido, reenviado sin invitación, con códigos fallidos e inexistente producen eventos y respuestas comparables |
+| E | Estimable | ✓ S: escritura en tres puntos del acceso ya construido más el intento sobre enlace revocado o vencido, identificador de visita y unión por 24 horas; diseño cerrado en ADR-0006 |
+| S | Pequeña | ✓ S: una capacidad en cinco escenarios, cada When con una sola acción |
+| T | Testeable | ✓ cada Given es un estado reproducible (enlace abierto, código pedido); visitas con token válido, reenviado sin invitación, con códigos fallidos, revocado, vencido e inexistente producen eventos y respuestas comparables |

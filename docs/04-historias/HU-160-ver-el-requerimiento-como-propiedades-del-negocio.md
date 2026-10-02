@@ -1,69 +1,84 @@
 ---
 id: HU-160
-titulo: "Ver el requerimiento como propiedades del negocio"
+titulo: "Ver el requerimiento completo en «Solicitudes People Service»"
 epica: EP-007
 prioridad: alta
-complejidad: M
+complejidad: S
 estado: draft
 fase: integracion-hubspot
-prd_version: 4.17
+prd_version: 4.18
 depende_de: [HU-102]
 ---
 
-# HU-160 — Ver el requerimiento como propiedades del negocio
+# HU-160 — Ver el requerimiento completo en «Solicitudes People Service»
 
 **Como** ejecutivo comercial dueño de una cuenta,
-**quiero** que el negocio traiga en propiedades propias los perfiles, roles, sector, fecha de inicio, duración, modalidad, campaña y correo de origen de la solicitud,
-**para** filtrar, priorizar e informar mis negocios sin abrir cada uno ni copiar datos de un texto libre.
+**quiero** que cada negocio del portal llegue a HubSpot con su requerimiento escrito en un párrafo legible y con el mensaje del cliente aparte,
+**para** entender qué pidió el cliente sin abrir el portal ni copiar datos de un correo.
 
 ## Criterios de aceptación
 
-### Happy path — solicitud completa
+### Happy path [portal] — solicitud completa
 
-**Dado** que un cliente envió una solicitud con perfiles seleccionados, sector, momento de incorporación, duración y modalidad, desde un enlace de una edición curada,
-**cuando** el portal crea el negocio,
-**Entonces** el negocio muestra en propiedades separadas los códigos de los perfiles solicitados, los roles, el sector, la fecha de inicio deseada, la duración, la modalidad, la campaña y el correo de origen
+**Dado** que un cliente envió una solicitud con dos perfiles seleccionados, sector, momento de incorporación, duración, modalidad, contexto y un mensaje libre,
+**cuando** el worker crea el negocio en HubSpot,
+**Entonces** la propiedad «Solicitudes People Service» del negocio lleva un párrafo con el identificador de la solicitud, cada perfil con su código y su nombre, la modalidad, el momento de incorporación como banda, el sector, la duración y el contexto
+**Y** el mensaje libre va en `message` del contacto, sin mezclarse con el párrafo
 **Y** cada valor es el que el cliente envió, sin reescribirlo
 
-### Error — HubSpot rechaza el valor de una propiedad
+### Edge case [portal] — datos opcionales que el cliente no diligenció
 
-**Dado** que una propiedad de opciones en HubSpot no admite el valor que trae la solicitud, por ejemplo una modalidad que no existe entre sus opciones,
-**cuando** el portal intenta crear el negocio,
-**Entonces** no se crea un negocio con esa propiedad vacía o cambiada
-**Y** la solicitud queda en la bandeja de fallos con el nombre de la propiedad y el valor rechazado
-**Y** el responsable técnico recibe el aviso inmediato
+**Dado** que un cliente envió una solicitud sin sector, sin contexto y sin mensaje libre,
+**cuando** el worker crea el negocio,
+**Entonces** el párrafo no incluye las partes de sector ni de contexto, en lugar de mostrar «N/A» o valores inventados
+**Y** el worker no escribe `message`, así que el contacto conserva el que tenía
+**Y** el negocio se crea igual
 
-### Edge case — datos opcionales que el cliente no diligenció
+### Error [portal] — HubSpot rechaza la propiedad del requerimiento
 
-**Dado** que un cliente envió una solicitud sin sector y desde un enlace que no viene de una edición curada,
-**cuando** el portal crea el negocio,
-**Entonces** el negocio se crea igual
-**Y** las propiedades de sector y campaña quedan vacías, sin valores inventados como «N/A»
-**Y** el resto de propiedades lleva su valor
+**Dado** que en HubSpot no existe la propiedad «Solicitudes People Service» del negocio o no admite el párrafo,
+**cuando** el worker crea el negocio y HubSpot responde 400 por esa propiedad,
+**Entonces** el negocio no se crea sin el párrafo ni con el párrafo recortado
+**Y** la solicitud queda en la bandeja de fallos con el nombre de la propiedad que HubSpot rechazó (HU-166)
+
+### Happy path [HubSpot] — el requerimiento se ve desde el negocio
+
+**Dado** que el worker creó el negocio de una solicitud,
+**cuando** el comercial abre el negocio,
+**Entonces** ve el párrafo de «Solicitudes People Service» en la ficha del negocio, sin buscarlo entre todas las propiedades
+**Y** ve el mensaje libre en el contacto asociado
 
 ## Notas
 
-Cubre **RF-9.3**. Es también la base de **O4** (≥ 85 % de solicitudes con sector, fecha de inicio y duración): con propiedades vacías de verdad, el porcentaje se cuenta en HubSpot sin interpretar texto.
+Cubre **RF-9.3** con el mecanismo de la **enmienda v4.18 del PRD** corregida por **D76**.
 
-**Momento de incorporación → fecha de inicio deseada.** El formulario (RF-5.1) pregunta por bandas cerradas (inmediata, corto plazo, mediano plazo), no por una fecha. Pregunta abierta: ¿la propiedad guarda la banda tal cual o una fecha calculada? Supuesto conservador: la banda tal cual, sin inventar una fecha.
+**Revisión 2026-10-02 (D54; segunda ronda D76).** **D54 sigue**: nada de una propiedad por dato; propiedades por defecto donde existen (`email`, `firstname`, `lastname`, `jobtitle`, `message`, comprobadas en el HubSpot real en solo lectura) y **todo el requerimiento concatenado en un párrafo** en la propiedad nueva **«Solicitudes People Service»**. **D76** cambia dónde se escribe: como el worker crea el negocio por la API, el párrafo va **directamente en el negocio** (ya no en el contacto por un formulario ni copiado por el workflow a la descripción). Es una de las **2 propiedades nuevas** de D76 junto a «Id solicitud People Service». Mercadeo las crea y coloca el párrafo en la ficha del negocio (último escenario, configuración de la vista).
 
-**Campaña y correo de origen.** Vienen de la atribución de la sesión (RF-7.3): la edición curada y el envío que originó la entrada (EP-011, HU-114). Un enlace generado a mano desde el panel (HU-122, EP-001) no tiene edición, así que la campaña queda vacía. Pregunta abierta: ¿«correo de origen» es el correo del destinatario del envío o el identificador de la edición? **Opción conservadora que usan los escenarios:** se escribe el valor que trae la atribución de la sesión tal cual, sin reescribirlo; ningún escenario depende de cuál de los dos sea.
+**`message` vive en el contacto** (propiedad por defecto): guarda el último mensaje del cliente. El mensaje de cada solicitud queda además en la nota de la solicitud (HU-161), así que una solicitud nueva no borra el rastro de la anterior.
 
-**Nombres internos y tipos de las propiedades** (texto, opciones, fecha): no los fija el PRD; los crea Mercadeo como administrador de HubSpot con Dirección Comercial (§10.1). Pregunta abierta al sponsor (esquema de propiedades). **Opción conservadora que usan los escenarios:** el portal no crea ni cambia propiedades en HubSpot; usa los nombres que le den por configuración y, si una no existe o no admite el valor, la solicitud va a la bandeja (escenario de error). La lista de opciones de modalidad, sector y duración debe coincidir con los catálogos del panel; si no coincide, aparece el error del segundo escenario.
+**Forma del párrafo (propuesta, negociable):** «Solicitud SOL-2026-0042. Perfiles: PS-0142 Ana Gómez; PS-0187 Luis Pérez. Modalidad: remota. Incorporación: corto plazo. Sector: banca. Duración: 6 meses. Contexto: …». Solo nombre y primer apellido y código de los perfiles; **sin tarifas** (D-9) ni datos de la lista negra B.4. La especificación del Perfil Objetivo va en el mismo párrafo (HU-161).
 
-**Sin tarifas** (D-9) y sin datos de la lista negra B.4: las propiedades llevan códigos y nombre y primer apellido de los perfiles, nada más.
+**Momento de incorporación:** viaja como **banda** (inmediata, corto plazo, mediano plazo), sin inventar una fecha.
+
+**Campaña y origen:** HU-106.
+
+**Consecuencia para O4** (≥ 85 % de solicitudes con sector, fecha de inicio y duración): con un párrafo, HubSpot no lo cuenta sin leer el texto; O4 se calcula desde las solicitudes del portal. Trade-off aceptado por D54; queda en ADR-0009.
+
+**Límite de tamaño:** una propiedad de texto multilínea admite 65 536 caracteres, de sobra para el párrafo; se comprueba con la solicitud más larga que permite el portal.
+
+**D86 (sponsor, 2026-10-02).** Se **crea** la propiedad «Solicitudes People Service» (texto multilínea). No se reutiliza `formato_people_service`, que ya existe en los negocios con uso desconocido, ni `description`, que Comercial escribe a mano.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.17 · RF-9.3 · O4 · RF-5.1, RF-7.3 · D-9 · ADR-0009 (subpaso `negocio`) · depende de HU-102 · relacionada con HU-114 (EP-011) y HU-166
+Épica madre: **EP-007** · PRD v4.18 · RF-9.3 · O4 · RF-5.1 · D-9 · B.4 · D54, D76 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76) · depende de HU-102 · relacionada con HU-106, HU-161 y HU-166
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: escribe propiedades en el negocio de HU-102; sin EP-011 se prueba con atribución sembrada |
-| N | Negociable | ✓ fija la lista de RF-9.3, que nada se inventa y que un rechazo no se disimula; nombres, tipos y si la fecha es banda o fecha se negocian |
-| V | Valiosa | ✓ el comercial trabaja el negocio con datos filtrables y O4 se mide sin leer textos |
-| E | Estimable | ✗ hasta que se cierre el esquema de propiedades (nombres internos, tipos, banda o fecha, forma del correo de origen): con las opciones conservadoras es M, un mapeo de ocho propiedades con dos casos de valor ausente y un error ya tipificado |
-| S | Pequeña | ✓ M: una capacidad (escribir el requerimiento en el negocio) en tres escenarios |
-| T | Testeable | ✓ solicitudes completa, sin sector ni edición, y con una modalidad fuera de las opciones dan propiedades y rechazos observables en un doble de HubSpot |
+| I | Independiente | ✓ con dependencia declarada: arma el contenido del negocio de HU-102; no depende del aviso ni de la bandeja |
+| N | Negociable | ✓ fija qué entra en el párrafo, que nada se inventa y que un rechazo no se disimula; orden y redacción se negocian con Comercial |
+| V | Valiosa | ✓ el comercial lee el requerimiento entero en el negocio |
+| E | Estimable | ✓ S: una plantilla determinista de párrafo y el mapeo a propiedades por defecto; el rechazo ya está tipificado en HU-166 |
+| S | Pequeña | ✓ S: una capacidad (escribir el requerimiento) en cuatro escenarios |
+| T | Testeable | ✓ el doble de la API muestra el párrafo de una solicitud completa y de una sin opcionales, y el rechazo 400; en HubSpot, un negocio ficticio muestra el párrafo en su ficha |

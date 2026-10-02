@@ -43,9 +43,11 @@ prd_version: 4.0
 
 Cubre RF-5.2, RF-5.6 y RF-9.2. Con acceso nominal (D-4 revisada el 2026-09-25) el correo de quien solicita siempre es uno invitado y verificado; el último escenario sigue vigente porque un invitado puede no existir aún en el CRM.
 
+**Revisión 2026-10-02 (D76, D79).** El contacto lo crea o actualiza el worker por la API con upsert por el correo verificado, con el nombre, el apellido y el cargo de esta historia; la empresa la asocia HubSpot por el dominio, y la crea si no existe (D79). Detalle en HU-104 (EP-007).
+
 ## Trazabilidad
 
-Épica madre: **EP-005** · PRD v4.0
+Épica madre: **EP-005** · PRD v4.0 · D76, D79 (sponsor, 2026-10-02) · relacionada con HU-102 y HU-104 (EP-007)
 
 ## INVEST
 

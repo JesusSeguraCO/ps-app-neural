@@ -34,12 +34,17 @@ depende_de: []
 **Y** el lote que no se pudo guardar queda contado como eventos perdidos, sin datos del invitado
 **Y** en Medición el estado de la captura muestra esos eventos perdidos y la hora del último evento recibido
 
-### Edge case — el invitado cierra la pestaña a mitad del recorrido
+### Edge case — cómo termina una visita
 
-**Dado** que un invitado abrió fichas y tiene eventos que el navegador aún no envió,
-**cuando** cierra la pestaña,
-**Entonces** esos eventos llegan al servidor de todos modos
-**Y** la visita queda cerrada con un evento «abandono» que dice el último paso que alcanzó
+**Dado** que un invitado abrió fichas y el navegador tiene eventos de su visita que aún no envió,
+**cuando** la visita sigue el camino de la tabla,
+**Entonces** queda registrada como dice la tabla, sin perder ningún evento pendiente
+
+| Camino de la visita | Cómo queda registrada |
+|---|---|
+| el invitado cierra la pestaña | los eventos pendientes llegan al servidor y la visita se cierra con un evento «abandono» que dice el último paso que alcanzó |
+| pasan 30 minutos sin actividad | la visita se cierra con un evento «abandono» que dice el último paso que alcanzó |
+| el invitado vuelve a actuar a los 29 minutos | la visita sigue abierta, sin «abandono» |
 
 ### Edge case — el reloj del navegador está desajustado
 
@@ -48,12 +53,18 @@ depende_de: []
 **Entonces** quedan ordenados por la secuencia en que ocurrieron dentro de la visita y fechados con la hora del servidor
 **Y** ningún evento queda en un mes distinto del de su recepción
 
-### Edge case — la visita es de alguien de Trycore
+### Edge case — la visita no es una sesión real
 
-**Dado** que el invitado que entra tiene un correo `@trycore.com` (una vista previa de Mercadeo o del comercial),
+**Dado** que entra al portal, con su código verificado, una visita del tipo de la tabla,
 **cuando** se registran los eventos de su visita,
-**Entonces** su recorrido aparece en Medición marcado como sesión interna y los indicadores de Medición no la cuentan como sesión de cliente
-**Y** si el navegador manda en el lote una marca interna, una cuenta o una variante, el servidor ignora esos campos y conserva los que sacó de la sesión
+**Entonces** su recorrido aparece en Medición con la marca de la tabla y los indicadores de Medición la cuentan como dice la tabla
+**Y** si el navegador manda en el lote una marca interna o demo, una cuenta o una variante, el servidor ignora esos campos y conserva los que sacó de la sesión y del enlace
+
+| Visita | Marca en Medición | ¿Cuenta como sesión real? |
+|---|---|---|
+| correo `@trycore.com` (vista previa de Mercadeo o del comercial) | sesión interna | no |
+| correo de cliente, por un enlace generado con la casilla «demo» (HU-188) | sesión demo | no |
+| correo de cliente, por un enlace sin la casilla «demo» | ninguna | sí |
 
 ## Notas
 
@@ -63,7 +74,11 @@ Cubre **RF-7.1** (el mecanismo y el catálogo de eventos), **RF-7.4** (cada inte
 
 **Quién emite qué.** Esta historia conecta el emisor en las pantallas que ya existen cuando se construya (las de EP-001: aterrizaje, banco, ficha y selección). Las pantallas de épicas aún no construidas (búsqueda y filtros de EP-002, «Mi equipo» y comparador de EP-004, solicitud de EP-005) emiten sus eventos en su propio slice contra este contrato. **No es diferir**: el mecanismo queda completo aquí; cada pantalla emite cuando existe.
 
-**Sesiones internas.** La marca `interna` para invitados `@trycore.com` es técnica y se captura siempre (ADR-0006). Que los indicadores las **excluyan** es la propuesta por defecto de ADR-0006, todavía pendiente de **T-26** (definición de «sesión real»). Este AC adopta la opción conservadora —fuera de los indicadores y contadas aparte (HU-171)— y la deja como pregunta al sponsor.
+**Sesión real (D68, sponsor 2026-10-02; cierra T-26 en su definición).** Es la sesión con **código verificado de un correo que no es `@trycore.com`**. Las demos se marcan con una casilla «demo» al generar el enlace en el panel (HU-188) y tampoco cuentan. Las marcas `interna` y `demo` las pone el servidor (la primera por el dominio del correo, la segunda por el enlace) y se capturan siempre: el recorrido se ve, pero los indicadores las dejan fuera y las cuentan aparte (HU-171). D68 no fija un mínimo de sesiones para que una lectura sea concluyente; eso sigue abierto en cada lectura.
+
+**Fin de la visita (D73, opción conservadora).** La visita se cierra al cerrar la pestaña o tras **30 minutos sin actividad**; los dos lados del límite (29 y 30 minutos) están en la tabla del edge. Es la ventana que usan el embudo y el rebote de HU-108.
+
+**Vista de recorrido confirmada (D72).** El sponsor confirmó que esta historia incluye la vista de recorrido: Mercadeo abre el recorrido de una visita y el estado de la captura, sin correo y con el contacto en seudónimo pasados 12 meses (HU-169).
 
 **Revisión 2026-10-02 (validador independiente: fallaba la V, habilitadora sin valor visible).** Entre las dos opciones —reformularla con un resultado observable propio o fusionar su cierre con el primer contador visible (HU-168)— se elige **reformular**: conserva todo el alcance de la captura y le da a Mercadeo dos resultados que puede comprobar sin esperar a ningún informe: **el recorrido de una visita** (sus eventos en orden, con atribución y ámbito, sin datos personales) y **el estado de la captura** (último evento recibido y eventos perdidos). Fusionarla con HU-168 habría juntado dos capacidades (captura en el portal y medición del acceso antes de la sesión) en una historia que dejaría de ser pequeña. El recorrido se lee desde una vista `v_*` del panel (ADR-0006: `ps_panel` solo lee vistas) y no expone el correo. El happy path deja la apertura de las dos fichas en el Given y su When pasa a ser una sola acción: abrir el recorrido. **Ampliación de alcance, no recorte.**
 
@@ -71,15 +86,15 @@ Cubre **RF-7.1** (el mecanismo y el catálogo de eventos), **RF-7.4** (cada inte
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.1, RF-7.4, RF-7.3 (enriquecimiento) · §8 Trazabilidad · ADR-0006 (UC-17, QA-21, QA-6, QA-2) · base de HU-108 a HU-112, HU-168 a HU-173 y HU-184 a HU-186
+Épica madre: **EP-008** · PRD v4.17 · RF-7.1, RF-7.4, RF-7.3 (enriquecimiento) · §8 Trazabilidad · ADR-0006 (UC-17, QA-21, QA-6, QA-2) · D68, D72 y D73 (sponsor, 2026-10-02) · relacionada con HU-188 (casilla «demo») · base de HU-108 a HU-112, HU-168 a HU-173 y HU-184 a HU-186
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ solo necesita la sesión verificada de EP-001, ya construida; no espera a ninguna pantalla futura porque el contrato acepta todo el catálogo y cada épica emite al construirse |
-| N | Negociable | ✓ fija qué se registra, quién lo atribuye (el servidor), que no viaje el correo y que la telemetría no frene al invitado; el tamaño del lote, la cadencia de envío y la forma de la cola son del equipo |
+| N | Negociable | ✓ fija qué se registra, quién lo atribuye (el servidor), que no viaje el correo, que la telemetría no frene al invitado, la ventana de 30 minutos (D73) y qué es sesión real (D68); el tamaño del lote, la cadencia de envío y la forma de la cola son del equipo |
 | V | Valiosa | ✓ Mercadeo ve, sin pedírselo a nadie, el recorrido de una visita y si la captura está viva (último evento, perdidos), sin esperar a otro informe; además es la base de todos los de Medición (§2.2) |
-| E | Estimable | ✓ M (en el límite alto): esquema de evento versionado, emisor ligero en el portal, ruta de recepción con enriquecimiento desde la sesión, tabla particionada de solo inserción, marca interna y una vista de recorrido y estado de captura en Medición; ADR-0006 resuelve el diseño |
-| S | Pequeña | ✓ M: una capacidad (capturar con atribución y poder verlo) en cinco escenarios, cada When con una sola acción; la atribución a la edición, el paso de acceso y la retención salen a HU-112, HU-168 y HU-169 |
-| T | Testeable | ✓ abrir en Medición el recorrido de una visita fijada con fichas curadas y de descubrimiento, la tabla de eventos bloqueada, un cierre de pestaña simulado, un reloj adelantado y un invitado `@trycore.com` dan filas y comportamientos observables |
+| E | Estimable | ✓ M (en el límite alto): esquema de evento versionado, emisor ligero en el portal, ruta de recepción con enriquecimiento desde la sesión, tabla particionada de solo inserción, marcas interna y demo, cierre por 30 minutos sin actividad y una vista de recorrido y estado de captura en Medición; ADR-0006 resuelve el diseño. Sigue en el límite alto de M: si al estimar se pasa, partir el cierre por inactividad y las marcas, no recortarlas |
+| S | Pequeña | ✓ M, justa: una capacidad (capturar con atribución y poder verlo) en cinco escenarios, dos de ellos con tabla de ejemplos; la atribución a la edición, el paso de acceso, la retención y la casilla «demo» salen a HU-112, HU-168, HU-169 y HU-188 |
+| T | Testeable | ✓ abrir en Medición el recorrido de una visita fijada con fichas curadas y de descubrimiento, la tabla de eventos bloqueada, un cierre de pestaña simulado, un reloj de servidor movido 29 y 30 minutos, un reloj de navegador adelantado y visitas `@trycore.com`, demo y de cliente dan filas y comportamientos observables |

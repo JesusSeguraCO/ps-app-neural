@@ -3,75 +3,85 @@ id: HU-107
 titulo: "Registrar cuándo se agendó la alineación"
 epica: EP-007
 prioridad: alta
-complejidad: M
+complejidad: S
 estado: draft
 fase: integracion-hubspot
-prd_version: 4.17
+prd_version: 4.18
 depende_de: [HU-102]
 ---
 
 # HU-107 — Registrar cuándo se agendó la alineación
 
+> **Historia mixta.** La marca «Agendada el» la escribe el **workflow de HubSpot** (configuración de Mercadeo/RevOps con Coordinación de Servicio; se verifica con una prueba en HubSpot con datos ficticios). La **lectura diaria** de esa marca para O3 la hace el **worker del portal** (D75, excepción de lectura) y se prueba con su suite.
+
 **Como** directora de Mercadeo que mide el arranque comercial,
-**quiero** que cada solicitud guarde cuándo quedó agendada su sesión de alineación, tomado del negocio en HubSpot,
-**para** saber cuántos días pasan entre la solicitud y la sesión y cuántas solicitudes se quedan sin sesión.
+**quiero** que cada negocio del portal guarde cuándo se agendó su sesión de alineación y que el portal lo lea para O3,
+**para** saber cuántos días hábiles pasan entre la solicitud y el agendamiento y cuántas solicitudes se quedan sin sesión.
 
 ## Criterios de aceptación
 
-### Happy path — se agenda la sesión
+### Happy path [HubSpot] — se agenda la sesión
 
-**Dado** que una solicitud tiene su negocio en HubSpot sin fecha de alineación,
-**cuando** Coordinación de Servicio escribe en el negocio la fecha de la sesión de alineación,
-**Entonces** en la siguiente sincronización diaria la solicitud del portal guarda esa fecha como la primera fecha de alineación y el día en que apareció
-**Y** el negocio en HubSpot muestra la misma primera fecha en su propiedad de primera alineación
-**Y** el indicador de O3 cuenta para esa solicitud los días hábiles entre el envío y ese día
+**Dado** que un negocio del portal no tiene fecha de la sesión de alineación,
+**cuando** Coordinación de Servicio escribe en el negocio la fecha de la sesión,
+**Entonces** el workflow guarda en «Agendada el» la fecha y hora de ese cambio
 
-### Error — HubSpot no responde en la sincronización
+### Edge case [HubSpot] — se reagenda o se borra la sesión
 
-**Dado** que la sincronización diaria no puede leer los negocios porque HubSpot no responde,
-**cuando** corre la sincronización,
-**Entonces** ninguna fecha ya guardada en el portal cambia ni se borra
-**Y** la sincronización se reintenta y queda registrada como fallida
+**Dado** que un negocio ya tiene guardado «Agendada el»,
+**cuando** alguien modifica la fecha de la sesión, cambiándola o borrándola,
+**Entonces** el negocio muestra la fecha de la sesión como quedó
+**Y** «Agendada el» no cambia: O3 sigue midiendo hasta el primer agendamiento
 
-### Edge case — se reagenda la sesión
+### Happy path [portal] — la lectura diaria alimenta O3
 
-**Dado** que una solicitud ya tiene primera fecha de alineación,
-**cuando** alguien cambia en HubSpot la fecha de la sesión,
-**Entonces** el portal guarda la nueva como fecha actual
-**Y** la primera fecha no cambia, ni en el portal ni en su propiedad de HubSpot
-**Y** el indicador de O3 sigue midiendo hasta el primer agendamiento
+**Dado** que el negocio de la solicitud SOL-2026-0042, registrada en HubSpot el lunes 5 oct 2026 a las 9:00, tiene «Agendada el» = miércoles 7 oct 2026 a las 11:00,
+**cuando** corre la lectura diaria del worker,
+**Entonces** la solicitud guarda en el portal «agendada el 7 oct 2026, 11:00»
+**Y** O3 cuenta para ella 2 días hábiles con el calendario T-4
 
-### Edge case — la sesión nunca se agenda
+### Edge case [portal] — la sesión nunca se agenda
 
-**Dado** que una solicitud enviada no tiene fecha de alineación en su negocio,
-**cuando** se consulta el indicador de O3,
-**Entonces** la solicitud aparece como «sin alineación agendada» con los días hábiles que lleva desde el envío
+**Dado** que el negocio de una solicitud no tiene «Agendada el»,
+**cuando** corre la lectura diaria y Mercadeo consulta O3 en el tablero,
+**Entonces** la solicitud aparece como «sin alineación agendada» con los días hábiles que lleva desde que se registró en HubSpot
 **Y** no se descarta del cálculo como si no existiera
+
+### Error [portal] — HubSpot no responde a la lectura diaria
+
+**Dado** que la API de CRM no responde o responde con error durante la lectura diaria,
+**cuando** el worker intenta leer los negocios People Service,
+**Entonces** el portal conserva las marcas que ya tenía, sin borrar ni inventar ninguna
+**Y** el tablero muestra la hora de la última lectura completa
+**Y** la lectura se reintenta con la espera de los trabajos de HubSpot (HU-105) y, si no se completa en el día, el responsable técnico recibe un aviso
 
 ## Notas
 
-Cubre **RF-9.1.3** y **RF-17.4**. **Sin esta historia O3 no se puede medir**: con las etapas del pipeline comercial (D-21) la alineación no tiene etapa propia y la propiedad de fecha es el único registro del tramo.
+Cubre **RF-9.1.3** y **RF-17.4**. **Sin esta historia O3 no se puede medir**: con las etapas del pipeline comercial (D-21) la alineación no tiene etapa propia.
 
-**Mecanismo (ADR-0009):** dos propiedades en el negocio, la fecha actual (la escribe quien agenda, en HubSpot) y la primera (la escribe el portal una sola vez). La tarea diaria `sincronizar_negocios` lee la actual y fija la primera si falta; **nunca la sobrescribe**. El indicador se calcula desde las solicitudes del portal. El tablero que lo muestra es de EP-008; esta historia deja el dato.
+**Revisión 2026-10-02 (D57; segunda ronda D75, D76).** **D57**: O3 mide **cuándo se agendó** (el compromiso), no la fecha de la sesión; la marca vive en el negocio. **D75** (excepción de lectura, corrige la parte de D55 que lo impedía): el **worker lee una vez al día** «Agendada el» de los negocios People Service con el token privado (`crm.objects.deals.read`, el mismo de D76) y lo guarda en la solicitud. Vuelve la tarea diaria (`sincronizar_alineacion`, propuesta de nombre) y una columna `agendada_el` en la solicitud del portal; **la escritura de la marca sigue siendo del workflow**. Con eso los **días hábiles los cuenta el portal** con el calendario T-4 (lunes a viernes 8:00–18:00 `America/Bogota`, festivos de Colombia), y desaparece la E ✗ por «cómo cuenta HubSpot los días hábiles» en el informe. El ejemplo: del lunes 5 oct 9:00 al miércoles 7 oct 11:00 hay dos fronteras de día hábil, sin festivo.
 
-**Agendar por teléfono o fuera del portal** ya no es un caso aparte: la fecha siempre se escribe en el negocio, se agende como se agende. En la v1 el agendamiento en el portal (HU-099) es v1.1 y no existe.
+**Mecanismo propuesto:** dos propiedades de fecha en el negocio, «Fecha de la sesión de alineación» (la escribe Coordinación de Servicio, también desde el enlace del aviso de HU-101) y «Agendada el» (la escribe el workflow una sola vez, al primer cambio de la otra, sin reinscripción). Son propiedades del negocio para D57, no de la solicitud: no cuentan entre las 2 nuevas de D76. Las crea Mercadeo.
 
-**Preguntas abiertas al sponsor:**
-- **Qué fecha mide O3.** «Días entre solicitud enviada y sesión de alineación agendada» puede ser hasta el **momento en que se agendó** (el compromiso, lo que decía esta historia) o hasta la **fecha de la sesión**. Los escenarios guardan las dos y miden hasta el momento en que se agendó; con sincronización diaria, la precisión es de un día. Si se quiere precisión horaria, hay que leer el historial de la propiedad en HubSpot.
-- **El botón «Registrar fecha de alineación»** del correo a Coordinación de Servicio (prototipo `correo-aviso-interno--solicitud-delivery`, HU-101) sugiere registrar la fecha desde el portal o el panel y escribirla en HubSpot. ADR-0009 supone que se escribe en HubSpot directamente. Hay que decidir si ese botón lleva a HubSpot o a una pantalla del panel (más alcance, EP-005). **Opción conservadora que usan los escenarios:** la fecha se escribe en HubSpot, como supone ADR-0009; el botón abriría el negocio.
-- **Plazo de agendamiento de RF-17.3** (T-28 sigue pendiente en ese punto): sin él, «sin alineación agendada» no sabe desde cuándo es un retraso. **Opción conservadora que usan los escenarios:** se muestran los días hábiles que lleva la solicitud, sin calificarla de retrasada ni avisar a nadie.
+**Qué negocios lee:** los del pipeline «Comercial (People y Tecnología)» con «Id solicitud People Service», para casar cada uno con su solicitud. Una solicitud registrada a mano (HU-164) se lee igual si su negocio quedó enlazado.
+
+**Por verificar en el HubSpot real (D84):** el límite de tasa de la búsqueda de negocios con el volumen esperado; con pocas decenas de solicitudes al mes no se espera problema.
+
+**El tablero mensual** (EP-008, D66, HU-171) muestra O3 desde esta lectura; ya no hace falta enlazar un informe de HubSpot.
+
+**Plazo de agendamiento de RF-17.3** (T-28): sigue pendiente; sin él, «sin alineación agendada» muestra los días, sin calificarla de retrasada.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.17 · RF-9.1.3, RF-17.4 · O3 · D-21 · ADR-0009 (`sincronizar_negocios`, `ps_fecha_alineacion_actual`, `ps_fecha_alineacion_primera`) · depende de HU-102 · relacionada con HU-101 y HU-099 (EP-005) y EP-008
+Épica madre: **EP-007** · PRD v4.18 · RF-9.1.3, RF-17.3, RF-17.4 · O3 · D-21 · T-4 · D55 (sustituida en parte), D57, D75, D76 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76: vuelve una lectura diaria) · depende de HU-102 · relacionada con HU-101 y HU-099 (EP-005), HU-164 y HU-171 (EP-008)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: lee el negocio de HU-102; no necesita el aviso ni el escalamiento |
-| N | Negociable | ✓ fija que la primera fecha nunca se sobrescribe y que la solicitud sin sesión cuenta; qué fecha mide O3 y desde dónde se registra se negocian |
+| I | Independiente | ✓ con dependencia declarada: marca y lee el negocio que crea HU-102; no necesita el aviso ni el escalamiento; el tablero (HU-171) consume el dato pero no es necesario para probarlo |
+| N | Negociable | ✓ fija que la primera marca nunca se sobrescribe, que el negocio sin sesión cuenta y que una lectura fallida no inventa; nombres de propiedades y hora de la lectura se configuran |
 | V | Valiosa | ✓ sin este dato O3 no existe y nadie sabe cuántas solicitudes mueren antes de la sesión |
-| E | Estimable | ✗ hasta que el sponsor cierre qué fecha mide O3, el plazo de RF-17.3 y adónde lleva el botón: con las opciones conservadoras es M, una tarea diaria, dos propiedades y un cálculo de días hábiles con el calendario de HU-162; registrar la fecha desde el panel o leer el historial de HubSpot suma alcance |
-| S | Pequeña | ✓ M: una capacidad (registrar el tramo hasta la alineación) en cuatro escenarios |
-| T | Testeable | ✓ con reloj simulado y un doble de HubSpot con negocios sin fecha, con fecha, reagendados y caído, se observan las fechas del portal y la propiedad de HubSpot |
+| E | Estimable | ✓ S: en HubSpot, dos propiedades y un workflow sin reinscripción; en el portal, una tarea diaria de lectura y el conteo con el calendario T-4 |
+| S | Pequeña | ✓ S: una capacidad (marcar y leer el agendamiento) en cinco escenarios |
+| T | Testeable | ✓ negocios ficticios sin fecha, con fecha y reagendados dan marcas observables en HubSpot; con un doble de la API y reloj simulado se ven la marca guardada, los días hábiles, el «sin alineación» y la lectura fallida |

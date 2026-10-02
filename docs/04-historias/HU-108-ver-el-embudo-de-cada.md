@@ -55,29 +55,29 @@ depende_de: [HU-167, HU-168]
 
 ## Notas
 
-Cubre **RF-7.1** como lectura de conjunto y **O2**. Además mide dos métricas de éxito de otras épicas que dependen de la telemetría: la **tasa de rebote en el aterrizaje** de EP-001 (por debajo del 30 %) y la **proporción de sesiones que abren al menos una ficha** de EP-003 (al menos 60 %). Vista `v_embudo_cuenta` de ADR-0006. Las visitas internas no cuentan (HU-167).
+Cubre **RF-7.1** como lectura de conjunto y **O2**. Además mide dos métricas de éxito de otras épicas que dependen de la telemetría: la **tasa de rebote en el aterrizaje** de EP-001 (por debajo del 30 %) y la **proporción de sesiones que abren al menos una ficha** de EP-003 (al menos 60 %). Vista `v_embudo_cuenta` de ADR-0006. Solo cuentan las **sesiones reales** (D68): código verificado de un correo que no es `@trycore.com`, por un enlace que no se generó con la casilla «demo» (HU-188); las visitas internas y las demo se registran, marcadas, pero quedan fuera de los indicadores (HU-167). Los pasos de «entrada» previos a la sesión siguen la misma regla: una entrada por un enlace demo no cuenta.
 
-**Cada visita cuenta en el último paso que alcanzó.** El evento «abandono» (HU-167) marca dónde terminó; «solicitud enviada» se toma de las solicitudes registradas, no del navegador (ADR-0006). La entrada y el acceso salen de HU-168.
+**Cada visita cuenta en el último paso que alcanzó.** El evento «abandono» (HU-167) marca dónde terminó; «solicitud enviada» se toma de las solicitudes registradas, no del navegador (ADR-0006). La entrada y el acceso salen de HU-168. La visita se da por terminada al cerrar la pestaña o tras **30 minutos sin actividad** (D73, HU-167). Abrir un enlace revocado o vencido es un **intento de entrada**, no una entrada (D73, HU-168): no suma al primer paso del embudo.
 
 **El último edge es lo que permite construir EP-008 antes que las épicas que emiten.** Hoy existen el aterrizaje y la ficha (EP-001); la búsqueda (EP-002), «Mi equipo» (EP-004) y la solicitud (EP-005) aún no. El embudo nace completo y cada paso empieza a medirse cuando su épica emite, sin mostrar ceros falsos entre tanto.
 
-**Línea de release:** el mapa de historias pone esta historia en **v1.1** (columna H del backbone 3). No es recorte: está entera en EP-008.
+**Línea de release: MVP** (D66, sponsor 2026-10-02). El tablero mensual y sus lecturas entran con EP-008 en el MVP, no en v1.1. El mapa de historias (columna H del backbone 3) y el backlog todavía la ponen en v1.1: hay que actualizarlos.
 
-**Abierto para el sponsor:**
-- **Definición de rebote** para la métrica de EP-001. El AC usa la más conservadora: visita con acceso concedido que no registra ninguna otra interacción. ¿Es esa la que se quiere, o debe haber un tiempo mínimo?
-- **Definición de abandono** (ADR-0006, R-31): cierre de la página o inactividad. ¿Hay ventana de inactividad que dé la visita por terminada?
+**Resuelto por el sponsor (D73, 2026-10-02), opción conservadora:**
+- **Abandono** (ADR-0006, R-31): la visita termina al cerrar la página o tras **30 minutos sin actividad**.
+- **Rebote** (métrica de EP-001): visita con acceso concedido que no registra ninguna otra interacción antes de terminar, sin tiempo mínimo. Es la definición que ya usaba el AC.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.1 · O2 · métricas de éxito de EP-001 y EP-003 · ADR-0006 (`v_embudo_cuenta`, R-31) · depende de HU-167 y HU-168
+Épica madre: **EP-008** · PRD v4.17 · RF-7.1 · O2 · métricas de éxito de EP-001 y EP-003 · ADR-0006 (`v_embudo_cuenta`, R-31) · D66, D68 y D73 (sponsor, 2026-10-02) · relacionada con HU-188 · depende de HU-167 y HU-168
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: lee la captura de HU-167 y la entrada de HU-168; los pasos de épicas no construidas se declaran «aún no se mide», así que no espera a ninguna |
-| N | Negociable | ✓ fija los pasos, el conteo por visita y por contacto y los estados sin dato; la visualización del embudo es negociable, y las definiciones de rebote y abandono quedan abiertas |
+| N | Negociable | ✓ fija los pasos, el conteo por visita y por contacto y los estados sin dato; la visualización del embudo es negociable; rebote, abandono (30 min) y sesión real quedan fijados por D68 y D73 |
 | V | Valiosa | ✓ dice dónde se pierde la conversión y mide dos métricas de éxito que sin esto no tienen fuente |
 | E | Estimable | ✓ M: una consulta por paso sobre la secuencia de la visita, con desglose por cuenta y conteo de contactos distintos |
 | S | Pequeña | ✓ M: una lectura en cinco escenarios |
-| T | Testeable | ✓ visitas fijadas que llegan a cada paso, un contacto con veinte visitas, una visita sin código y un paso sin eventos dan conteos observables |
+| T | Testeable | ✓ visitas fijadas que llegan a cada paso, un contacto con veinte visitas, una visita sin código, una visita demo, un enlace revocado abierto y un paso sin eventos dan conteos observables |

@@ -65,11 +65,11 @@ Tomado de Juicebox (evidencia A). Reemplaza la navegación a pantalla completa, 
 
 **Refinada el 2026-10-02 (discovery de EP-003).** El rol se precisa. La regla del teléfono se funde con el happy path en un esquema con ejemplos. La vuelta a la lista «en la misma posición» viene del diagrama de `docs/06-flows/EP-003`.
 
-**Partida el 2026-10-02 por validación INVEST (fallas I y E).** Sumar al equipo desde la ficha dependía de la capacidad de sumar de **EP-004** (RF-4.1, RF-4.2), que no tiene historia redactada, y mezclaba algo ya construido con algo nuevo de estimación incierta. Se parte, **sin recortar alcance**: esta historia queda en recorrer las fichas sin perder la lista (complejidad M → S) y **sumar desde la ficha pasa a HU-175**, que lleva la dependencia con EP-004 y la pregunta de si también se puede quitar desde la ficha. El escenario de extremo, que mezclaba botón y teclado en un mismo «Cuando», se parte en dos: último perfil con el botón y primer perfil con la flecha del teclado.
+**Partida el 2026-10-02 por validación INVEST (fallas I y E).** Sumar al equipo desde la ficha dependía de la capacidad de sumar de **EP-004** (RF-4.1, RF-4.2), que no tiene historia redactada, y mezclaba algo ya construido con algo nuevo de estimación incierta. Se parte, **sin recortar alcance**: esta historia queda en recorrer las fichas sin perder la lista (complejidad M → S) y **sumar desde la ficha pasa a HU-175**, que lleva la dependencia con EP-004. La pregunta de si también se puede quitar desde la ficha la cerró **D73** (sponsor, 2026-10-02): sí, y vive en HU-175. Esta historia no cambia por eso. El escenario de extremo, que mezclaba botón y teclado en un mismo «Cuando», se parte en dos: último perfil con el botón y primer perfil con la flecha del teclado.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-13.11 · parte de recorrer construida en EP-006 por D47 · sumar desde la ficha pasó a HU-175 (2026-10-02) · relacionada con HU-119 (bloque «Frente a tu búsqueda» de la ficha) y HU-121 (abrir la ficha desde la tabla, EP-002)
+Épica madre: **EP-003** · PRD v4.17 · RF-13.11 · parte de recorrer construida en EP-006 por D47 · sumar y quitar desde la ficha pasó a HU-175 (2026-10-02; quitar por D73) · relacionada con HU-119 (bloque «Frente a tu búsqueda» de la ficha) y HU-121 (abrir la ficha desde la tabla, EP-002)
 
 ## INVEST
 

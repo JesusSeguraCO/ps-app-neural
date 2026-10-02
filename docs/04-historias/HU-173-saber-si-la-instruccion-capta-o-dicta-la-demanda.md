@@ -60,11 +60,13 @@ Cubre la prueba de falsación de **RF-12.1** (*si más del 60 % de las consultas
 
 **Se distingue de HU-111**, que compara la ruta de instrucción con la de filtros y aplica la regla de RF-14.2; esta mira dentro de la ruta de instrucción.
 
-**Abierto para el sponsor:** si las sugerencias sin editar deben contarse por instrucción (propuesta del AC) o por visita; y si la señal debe esperar a un mínimo de instrucciones (parte de **T-26**) antes de aparecer.
+**Sesiones reales (D68, sponsor 2026-10-02).** Solo cuentan las instrucciones de sesiones reales: código verificado de un correo que no es `@trycore.com`, por un enlace sin la casilla «demo» (HU-188). D68 cierra qué es una sesión real, pero no fija un mínimo de instrucciones.
+
+**Abierto para el sponsor:** si las sugerencias sin editar deben contarse por instrucción (propuesta del AC) o por visita; y si la señal debe esperar a un mínimo de instrucciones antes de aparecer (lo que queda de **T-26** tras D68).
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-12.1 · ADR-0006 (eventos de falsación, `v_falsacion_sugerencias`) · T-26 · partida con HU-186 · relacionada con HU-111 · depende de HU-167
+Épica madre: **EP-008** · PRD v4.17 · RF-12.1 · ADR-0006 (eventos de falsación, `v_falsacion_sugerencias`) · T-26 · D68 (sponsor, 2026-10-02) · partida con HU-186 · relacionada con HU-111 · depende de HU-167
 
 ## INVEST
 

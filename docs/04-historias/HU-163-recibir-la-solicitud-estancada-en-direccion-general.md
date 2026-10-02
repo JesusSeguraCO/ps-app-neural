@@ -6,11 +6,13 @@ prioridad: alta
 complejidad: S
 estado: draft
 fase: integracion-hubspot
-prd_version: 4.17
+prd_version: 4.18
 depende_de: [HU-162]
 ---
 
 # HU-163 — Recibir en Dirección General la solicitud que no avanza en 24 horas hábiles
+
+> **Historia de configuración en HubSpot.** Responsable: **Mercadeo/RevOps**. Verificación: **prueba en el sandbox o el portal real de HubSpot con datos ficticios** sobre una semana con festivo. Por **D55** lo hace el **workflow de HubSpot**; el portal no lo implementa.
 
 **Como** director general de Trycore,
 **quiero** recibir la solicitud cuyo negocio sigue en la etapa de entrada 24 horas hábiles después del aviso,
@@ -18,54 +20,62 @@ depende_de: [HU-162]
 
 ## Criterios de aceptación
 
-### Happy path — 24 horas hábiles sin cambio de etapa
+### Happy path [HubSpot] — 24 horas hábiles sin cambio de etapa
 
 **Dado** que el negocio de una solicitud sigue en la etapa de entrada desde el aviso al propietario,
 **cuando** se cumplen 24 horas hábiles desde ese aviso, según la tabla,
-**Entonces** Dirección General recibe, con copia al propietario y a la dirección comercial, un correo con la solicitud, la historia de avisos y el enlace al negocio
-**Y** la solicitud queda marcada en el portal como escalada a Dirección General
+**Entonces** Dirección General recibe, con copia al propietario y a la dirección comercial, la notificación del workflow con la solicitud, los avisos anteriores y el enlace al negocio
+**Y** el negocio queda marcado como escalado a Dirección General
 
 | Aviso al propietario | Vence a las 24 h hábiles |
 |---|---|
 | lunes 28 sep 2026, 10:42 | miércoles 30 sep, 14:42 |
 | viernes 9 oct 2026, 16:00 | jueves 15 oct, 10:00 (el lunes 12 es festivo) |
+| jueves 1 oct 2026, 17:00 | martes 6 oct, 11:00 (cruza el fin de semana) |
 
-### Edge case — abrir no basta
+### Edge case [HubSpot] — atender no basta
 
-**Dado** que el propietario abrió el negocio o tocó «Ya lo estoy atendiendo», pero la etapa sigue siendo la de entrada,
+**Dado** que el propietario registró actividad en el negocio antes de las 4 horas hábiles, pero la etapa sigue siendo la de entrada,
 **cuando** se cumplen 24 horas hábiles desde el aviso,
-**Entonces** la solicitud se escala igual a Dirección General
-**Y** el correo dice que el negocio se abrió y a qué hora, pero que no cambió de etapa
+**Entonces** el negocio se escala igual a Dirección General
+**Y** la notificación dice cuándo fue la primera atención y que el negocio no cambió de etapa
 
-### Error — HubSpot no responde al leer la etapa
+### Edge case [HubSpot] — el negocio avanzó a tiempo
 
-**Dado** que una solicitud cumplió 24 horas hábiles y HubSpot no responde al leer la etapa de su negocio,
-**cuando** el portal evalúa la solicitud,
-**Entonces** no la escala con una etapa que no pudo leer
-**Y** la vuelve a evaluar en la siguiente pasada de 15 minutos
-**Y** el responsable técnico recibe el aviso de fallo de la tarea de escalamiento desde el primer fallo
+**Dado** que el negocio pasó de la etapa de entrada a la siguiente antes de las 24 horas hábiles,
+**cuando** se cumple el plazo,
+**Entonces** Dirección General no recibe ninguna notificación de ese negocio
+
+### Error [HubSpot] — el negocio se quedó sin propietario a mitad del plazo
+
+**Dado** que alguien quitó el propietario del negocio y la etapa sigue siendo la de entrada,
+**cuando** se cumplen 24 horas hábiles desde el aviso,
+**Entonces** Dirección General recibe la notificación con copia a la dirección comercial
+**Y** la notificación dice que el negocio no tiene propietario
 
 ## Notas
 
-Cubre **RF-9.7.3** (segundo escalón): «a las 24 horas hábiles sin movimiento de etapa, se escala a Dirección General». Lo que cuenta es el **cambio de etapa**, no la apertura (prototipo `correo-aviso-interno--escalamiento`: «Abrir el negocio no basta»).
+Cubre **RF-9.7.3** (segundo escalón): «a las 24 horas hábiles sin movimiento de etapa, se escala a Dirección General». Lo que cuenta es el **cambio de etapa**, no la atención (prototipo `correo-aviso-interno--escalamiento`: «Abrir el negocio no basta»). Mecanismo de la **enmienda v4.18 del PRD**.
 
-**24 horas hábiles** con el calendario de T-4 (L–V 8:00–18:00 `America/Bogota`, festivos de Colombia) son 2,4 jornadas de 10 horas. **Discrepancia a resolver:** el prototipo de escalamiento pone el vencimiento del aviso del lunes 28 sep a las 10:42 en el **jueves 1 oct a las 10:42** (tres jornadas); con el calendario aprobado es el **miércoles 30 sep a las 14:42**. Pregunta al sponsor: ¿«24 horas hábiles» son 24 horas del calendario aprobado o tres días hábiles? **Opción conservadora que usan los escenarios:** el calendario aprobado (T-4), que escala antes y no deja a la cuenta esperando más de lo prometido. Si el sponsor elige tres días, cambia la tabla, no la regla.
+**Revisión 2026-10-02 (D55, D56; segunda ronda D76, D77).** **D76** mantiene el escalamiento en el workflow aunque el negocio lo cree el worker por la API. **D55**: el escalamiento es del workflow; desaparece el escenario «HubSpot no responde al leer la etapa», porque el portal no lee nada. **D77** (corrige D56): **calendario hábil aprobado T-4 con jornadas de 10 h** (lunes a viernes 8:00–18:00 `America/Bogota`, festivos de Colombia); 24 h hábiles ≈ **2,4 jornadas**. **Se corrige el prototipo**, que ponía el vencimiento del aviso del lunes 28 sep a las 10:42 en el jueves 1 oct. Con T-4: lunes 10:42–18:00 son 7 h 18 min, el martes suma 10 h y el miércoles faltan 6 h 42 min, así que vence el **miércoles 30 sep a las 14:42**. La E ✗ por la definición de 24 h queda resuelta.
 
-**Error de lectura:** `escalar` es tarea crítica en ADR-0009 (alerta al primer fallo). El escalamiento se retrasa como mucho lo que dure la caída, nunca se dispara con un dato inventado.
+**Ejemplos recalculados con T-4 (D77).** Viernes 9 oct 16:00: 2 h el viernes, el lunes 12 es festivo, 10 h el martes 13 y 10 h el miércoles 14 suman 22 h, y faltan 2 h del jueves 15 → 10:00. Jueves 1 oct 17:00: 1 h el jueves, 10 h el viernes 2 y 10 h el lunes 5 suman 21 h, y faltan 3 h del martes 6 → 11:00. Queda resuelta la pregunta que dejaba la frase «3 jornadas de 8 h» de D56: **D77 confirma T-4**.
 
-**Destinatario nominal** de Dirección General (R-36): no definido; pregunta abierta. El prototipo menciona además que «HubSpot también asignó una tarea de seguimiento a Dirección Comercial»: eso sería un workflow de HubSpot, no del portal; pregunta abierta si se quiere. Supuesto de los escenarios: el portal no crea esa tarea.
+**Riesgo heredado de HU-162:** que el workflow cuente horas hábiles con festivos de forma nativa. Se resuelve con la misma prueba de capacidades.
+
+**Destinatario nominal** de Dirección General (R-36): configuración del workflow; pregunta abierta. La tarea de seguimiento para Dirección Comercial que menciona el prototipo puede añadirse al workflow si Comercial la quiere; no cambia los escenarios.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.17 · RF-9.7.3 (24 h) · T-4 · CRN-3 · R-36 · ADR-0009 (`escalar`, tarea crítica) · depende de HU-162
+Épica madre: **EP-007** · PRD v4.18 · RF-9.7.3 (24 h) · T-4 · CRN-3 · R-36 · D55, D56 (corregida por D77), D76, D77 (sponsor, 2026-10-02) · ADR-0009 (enmienda 2026-10-02) · depende de HU-162
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: reutiliza la tarea, el calendario y los avisos de HU-162 |
-| N | Negociable | ✓ fija 24 horas hábiles, que cuenta la etapa y que no se escala a ciegas; el buzón y el texto se negocian |
+| I | Independiente | ✓ con dependencia declarada: reutiliza el workflow, el calendario y la marca de primera atención de HU-162 |
+| N | Negociable | ✓ fija 24 horas hábiles con T-4 (jornadas de 10 h) y que cuenta la etapa; los destinatarios y el texto se configuran |
 | V | Valiosa | ✓ la solicitud que nadie mueve llega a quien puede mover a todos |
-| E | Estimable | ✗ hasta que el sponsor cierre qué son «24 horas hábiles» (calendario T-4 o tres días hábiles): con la opción conservadora es S, una regla más sobre la tarea de HU-162 y una lectura de etapa; la otra opción cambia la tabla de vencimientos |
-| S | Pequeña | ✓ S: tres escenarios sobre un solo escalón |
-| T | Testeable | ✓ con reloj simulado y un doble de HubSpot con etapa fija, cambiada y caído se observan correos y marcas en las fechas de la tabla |
+| E | Estimable | ✗ por la misma razón que HU-162: falta comprobar si HubSpot cuenta horas hábiles con festivos de forma nativa. La definición de las 24 h está resuelta (D77) |
+| S | Pequeña | ✓ S: cuatro escenarios sobre un solo escalón |
+| T | Testeable | ✓ negocios ficticios creados en las horas de la tabla, uno que avanza, uno atendido sin avanzar y uno sin propietario dan notificaciones observables en HubSpot |

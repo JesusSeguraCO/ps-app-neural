@@ -47,7 +47,7 @@ depende_de: [HU-167]
 
 ## Notas
 
-Cubre la **primera mitad de RF-7.2** (*reporte de filtros más usados*) y la **métrica de éxito de EP-002** (*al menos el 50 % de las sesiones aplican un filtro propio más allá del conjunto curado*). La segunda mitad de RF-7.2 —búsquedas sin resultados— la cubren HU-172 (top 10 mensual) y HU-078 en EP-010 (registro de demanda, D-13). Vista `v_filtros_usados` de ADR-0006. Las visitas internas no cuentan (HU-167).
+Cubre la **primera mitad de RF-7.2** (*reporte de filtros más usados*) y la **métrica de éxito de EP-002** (*al menos el 50 % de las sesiones aplican un filtro propio más allá del conjunto curado*). La segunda mitad de RF-7.2 —búsquedas sin resultados— la cubren HU-172 (top 10 mensual) y HU-078 en EP-010 (registro de demanda, D-13). Vista `v_filtros_usados` de ADR-0006. Solo cuentan las **sesiones reales** (D68): código verificado de un correo que no es `@trycore.com`, por un enlace que no se generó con la casilla «demo» (HU-188); las visitas internas y las demo se registran, marcadas, pero quedan fuera de los indicadores (HU-167).
 
 **Esta historia reemplazó el 2026-09-22 a una HU-110 anterior** que duplicaba a HU-078. En el mapa de historias la fila de HU-110 conserva todavía el título antiguo («Ver qué pidieron las cuentas y no teníamos ⚠ duplicada»); hay que actualizar el mapa.
 
@@ -59,7 +59,7 @@ Cubre la **primera mitad de RF-7.2** (*reporte de filtros más usados*) y la **m
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.2 (primera mitad) · RF-14.2 · métrica de éxito de EP-002 · ADR-0006 (`v_filtros_usados`) · relacionada con HU-074, HU-078, HU-111 y HU-172 · depende de HU-167
+Épica madre: **EP-008** · PRD v4.17 · RF-7.2 (primera mitad) · RF-14.2 · métrica de éxito de EP-002 · ADR-0006 (`v_filtros_usados`) · D68 (sponsor, 2026-10-02) · relacionada con HU-074, HU-078, HU-111 y HU-172 · depende de HU-167
 
 ## INVEST
 
@@ -68,6 +68,6 @@ Cubre la **primera mitad de RF-7.2** (*reporte de filtros más usados*) y la **m
 | I | Independiente | ✓ con dependencia declarada: lectura sobre el contrato de HU-167; los datos reales llegan con EP-002 y hasta entonces lo declara. Ya no duplica a HU-078 |
 | N | Negociable | ✓ describe la lectura y la meta de EP-002, no el formato del informe |
 | V | Valiosa | ✓ permite retirar facetas muertas, mide la métrica de EP-002 y alimenta la lectura de la Fase 2 |
-| E | Estimable | ✓ S: conteo por faceta y valor, una proporción por visita y una separación por orden respecto de la instrucción |
+| E | Estimable | ✓ S: conteo por faceta y valor, una proporción por visita y una separación por orden respecto de la instrucción, sobre sesiones reales (D68) |
 | S | Pequeña | ✓ S: una lectura en cuatro escenarios |
 | T | Testeable | ✓ visitas fijadas que filtran, que no filtran, que solo navegan el conjunto curado y que filtran tras instruir dan conteos esperados |

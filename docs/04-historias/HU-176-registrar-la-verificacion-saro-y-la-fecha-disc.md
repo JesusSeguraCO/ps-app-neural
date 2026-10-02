@@ -1,30 +1,31 @@
 ---
 id: HU-176
 titulo: "Registrar el alcance y la fecha de la verificación SARO y la fecha de la evaluación DISC"
-epica: EP-006
+epica: EP-003
 prioridad: alta
 complejidad: M
 estado: draft
 fase: panel-crud
 prd_version: 4.17
-depende_de: [HU-125, HU-126]
+depende_de: [HU-125, HU-126, HU-128, HU-177]
 ---
 
 # HU-176 — Registrar el alcance y la fecha de la verificación SARO y la fecha de la evaluación DISC
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** registrar en el perfil, desde el panel, el alcance y la fecha de la verificación de seguridad bajo SARO y la fecha de la evaluación DISC,
-**para** que la ficha del cliente pueda mostrar cuándo y con qué alcance Trycore verificó a esa persona, sin afirmar nada que yo no haya registrado.
+**quiero** registrar en el perfil, desde el panel, el alcance de la verificación de seguridad bajo SARO elegido del catálogo, su fecha y la fecha de la evaluación DISC, y que el panel no me deje publicar sin ellos,
+**para** que ningún perfil nuevo llegue al cliente sin la evidencia de seguridad y DISC que el estándar promete, y que la ficha la muestre sin afirmar nada que yo no haya registrado.
 
 ## Criterios de aceptación
 
 ### Happy path — registrar los tres datos en un perfil
 
 **Dado** que tengo abierto en el editor del panel un perfil sin datos de seguridad ni de DISC
-**Y** que escribí como verificación SARO el alcance «Antecedentes judiciales, disciplinarios y fiscales» con fecha 15 de marzo de 2026, y como evaluación DISC la fecha 10 de abril de 2026
+**Y** que el catálogo de alcances SARO tiene el valor «Antecedentes judiciales, disciplinarios y fiscales»
+**Y** que elegí ese alcance con fecha 15 de marzo de 2026, y como evaluación DISC la fecha 10 de abril de 2026
 **Cuando** guardo el perfil
 **Entonces** el perfil queda guardado con esos tres datos
-**Y** la vista previa de la ficha muestra la verificación SARO con ese alcance y «marzo de 2026», y la evaluación DISC con «abril de 2026»
+**Y** la vista previa de la ficha muestra la verificación SARO con el texto de ese alcance y «marzo de 2026», y la evaluación DISC con «abril de 2026»
 
 ### Error — una fecha futura
 
@@ -33,47 +34,61 @@ depende_de: [HU-125, HU-126]
 **Entonces** el panel no guarda el cambio y me dice que la fecha de una verificación no puede ser posterior a hoy
 **Y** el perfil conserva los datos de seguridad que tenía
 
-### Error — fecha de SARO sin alcance
+### Error — publicar sin la verificación SARO o sin la fecha DISC
 
-**Dado** que en el editor de un perfil escribí una fecha de verificación SARO y dejé su alcance vacío,
-**cuando** guardo el perfil,
-**Entonces** el panel no guarda el cambio y me señala que la verificación de seguridad necesita alcance y fecha juntos
-**Y** el perfil conserva los datos de seguridad que tenía
+**Esquema del escenario:** el panel bloquea la publicación y dice qué falta
+**Dado** que un perfil en borrador tiene consentimiento y modalidad de prueba, pero le falta <dato_faltante>
+**Cuando** intento publicarlo
+**Entonces** el panel lo impide y me dice exactamente «Falta <motivo>»
+**Y** me lleva al campo que falta en el editor
+**Y** el perfil sigue en borrador, fuera del portal
+
+**Ejemplos:**
+
+| dato_faltante | motivo |
+|---|---|
+| el alcance de la verificación SARO | el alcance de la verificación SARO |
+| la fecha de la verificación SARO | la fecha de la verificación SARO |
+| la fecha de la evaluación DISC | la fecha de la evaluación DISC |
 
 ### Edge case — corregir el dato de un perfil publicado
 
 **Dado** que un perfil publicado tiene registrada la verificación SARO con fecha 15 de marzo de 2026
 **Y** que en el editor cambié esa fecha por el 20 de febrero de 2026
-**Cuando** guardo el perfil
+**Cuando** guardo y confirmo el cambio
 **Entonces** la ficha del cliente muestra «febrero de 2026»
 **Y** el historial del perfil registra quién cambió la fecha, cuándo, y el valor anterior y el nuevo
 
 ## Notas
 
-Cubre la parte de captura de **B.7** (campos del perfil: validación de seguridad con alcance y fecha; evaluación DISC con fecha) dentro de **RF-8** (edición del inventario en el panel), al servicio de **RF-3.2** y **B.1** en la ficha (HU-156). Se apoya en **RF-3.4** (la ficha no muestra lo que no está en el inventario) y en el historial de cambios de **HU-138**.
+Cubre la parte de captura de **B.7** (campos del perfil: validación de seguridad con alcance y fecha; evaluación DISC con fecha) dentro de **RF-8** (edición del inventario en el panel), al servicio de **RF-3.2** y **B.1** en la ficha (HU-156). Amplía la guarda de publicación de **RF-8.4 / RF-8.10** (HU-128) con dos condiciones nuevas, porque **B.6** dice que las tres validaciones son condición de entrada de todo perfil publicado. Se apoya en **RF-3.4** (la ficha no muestra lo que no está en el inventario) y en el historial de cambios de **HU-138**.
 
-**Nace el 2026-10-02 de la partición de HU-156 por validación INVEST (fallas I, E y S).** **Partición, no recorte**: HU-156 (EP-003) muestra los datos en la ficha; esta historia los captura en el panel. Va en **EP-006** porque es edición del inventario por Talento Humano, aunque EP-006 ya está archivada: la sesión principal debe decidir cómo se construye (reapertura de EP-006 o sub-slice dentro del release que construya EP-003). Resuelve la pregunta 1 que tenía HU-156 sobre quién construye la captura.
+**Nace el 2026-10-02 de la partición de HU-156 por validación INVEST (fallas I, E y S).** **Partición, no recorte**: HU-156 muestra los datos en la ficha; esta historia los captura en el panel.
 
-**Hoy el dato no existe en el modelo** (migraciones 0014 a 0018): EP-006 guarda el Sello Personal (las tres competencias) y la validación técnica, pero no estos tres campos. Esta historia incluye la migración, los campos en el editor, su validación, su paso a la vista previa (HU-129) y al contrato de la ficha, y el registro en el historial (HU-138). Las tres competencias del Sello Personal no cambian.
+**Decisiones del sponsor aplicadas (2026-10-02, `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`):**
+- **D60:** se construye como **sub-slice inicial de EP-003** (panel + migración). Por eso su `epica` pasa de EP-006 a **EP-003**. Toca el editor del panel que construyó EP-006, que **sigue cerrada**: no se reabre.
+- **D61:** SARO (alcance y fecha) y DISC (fecha) son **obligatorios para publicar**. Se añade el escenario de bloqueo con motivo: el panel dice qué falta y lleva al campo (explicabilidad de un bloqueo de publicación). El alcance SARO es un **catálogo cerrado administrable**. Administrar ese catálogo es otra capacidad, con sus propios escenarios, y haría que esta historia dejara de ser pequeña: pasa a **HU-177**, que entra en `depende_de`. Aquí el alcance solo se **elige** del catálogo, como las tecnologías de HU-089.
+- **D62 y D63:** el trato de los perfiles **ya publicados** sin estos datos (siguen visibles, marcados «incompleto: falta …», sin re-publicar tras editar hasta completarlos) y la regla común de las tres validaciones de entrada son de **HU-178**. Esta historia cubre los perfiles que se publican a partir de ahora.
 
-**Las reglas de validación son propuestas del modelo** (fecha no futura; alcance y fecha de SARO van juntos) y se llevan al sponsor con las preguntas de abajo. La fecha DISC sola es válida: sus competencias ya existen.
+**Cambios del 2026-10-02 tras las decisiones:** se retira el escenario «fecha de SARO sin alcance»: con los dos datos obligatorios para publicar, la combinación incompleta ya no llega al cliente y la señala el bloqueo con su motivo. Un borrador sí puede guardarse con parte de los datos, igual que con los demás obligatorios (HU-125). El edge de corrección añade «y confirmo», porque editar un publicado pasa por la confirmación de impacto de HU-126.
 
-**Preguntas abiertas para el sponsor:**
-1. B.6 dice que las tres validaciones son condición de entrada de todo perfil publicado. ¿Estos datos deben ser **obligatorios para publicar**, como la modalidad de prueba (D10, HU-128)? Si es así, se añade un escenario de bloqueo de publicación con motivo y HU-156 solo cubriría datos heredados. Hasta la decisión, guardar y publicar sin ellos sigue permitido.
-2. ¿El «alcance» de SARO es un **catálogo** cerrado (con texto de cara al cliente redactado por Talento Humano o Mercadeo) o texto libre por perfil? Un catálogo cambia la estimación (se administra como los demás catálogos, HU-089).
-3. ¿La **importación masiva** y la plantilla (HU-086, HU-088) deben incluir estas tres columnas? Si es así, es alcance adicional de esta historia o de esas, y debe acordarse; no se omite en silencio.
+**Hoy el dato no existe en el modelo** (migraciones 0014 a 0018): EP-006 guarda el Sello Personal (las tres competencias) y la validación técnica, pero no estos tres campos. Esta historia incluye la migración, los controles en el editor, la validación de fecha no futura, las dos condiciones nuevas en la guarda de publicación (individual y masiva, reutilizando la de HU-128), su paso a la vista previa (HU-129) y al contrato de la ficha, y el registro en el historial (HU-138). Las tres competencias del Sello Personal no cambian y siguen siendo **opcionales** (D63).
+
+**La regla de fecha no futura** es una propuesta del modelo que no contradice ninguna decisión; se mantiene como negociable.
+
+**Importación masiva resuelta por D81** (sponsor, 2026-10-02, segunda ronda). La pregunta que dejaba abierta esta historia —¿la importación masiva y la plantilla (HU-086, HU-088) incluyen estos tres datos?— se respondió que **sí**: columnas SARO alcance (validado contra el catálogo de HU-177), SARO fecha y DISC fecha. Sumarlo aquí sacaba a esta historia de M (editor más importación, plantilla y exportación), así que pasa a **HU-191**, en el mismo sub-slice inicial y detrás de esta. **Partición, no recorte.** Esta historia sigue cubriendo la captura en el editor y la guarda de publicación, que la importación reutiliza.
 
 ## Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.17 · RF-8 · B.1 · B.6 · B.7 · RF-3.2 · RF-3.4 · nace de la partición de HU-156 (2026-10-02) · depende de HU-125 y HU-126 (editor del perfil) · alimenta a HU-156 (EP-003) · relacionada con HU-129 (vista previa), HU-138 (historial) y HU-128 (bloqueos de publicación)
+Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · RF-8 · RF-8.4 · RF-8.10 · B.1 · B.6 · B.7 · RF-3.2 · RF-3.4 · D60 · D61 · D63 · nace de la partición de HU-156 (2026-10-02) · toca el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-125 y HU-126 (editor del perfil), HU-128 (guarda de publicación) y HU-177 (catálogo de alcances SARO) · alimenta a HU-156 · el trato de los perfiles ya publicados es de HU-178 · la importación masiva de estos datos es de HU-191 (D81) · relacionada con HU-129 (vista previa) y HU-138 (historial)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: amplía el editor que ya existe (HU-125, HU-126); no espera a ninguna historia de EP-003, que es la que la necesita |
-| N | Negociable | ✓ son fijos los tres datos y que alcance y fecha de SARO vayan juntos; si son obligatorios para publicar, si el alcance es catálogo y si entra en la importación quedan para el sponsor |
-| V | Valiosa | ✓ sin esta captura la ficha no puede mostrar la evidencia de seguridad y DISC que pide un área de riesgo (HU-156) |
-| E | Estimable | ✓ M: una migración con tres campos, sus controles en el editor con dos reglas, la vista previa, el contrato de la ficha y el historial; las preguntas 1 a 3 pueden subirla y están declaradas |
-| S | Pequeña | ✓ M: una capacidad de captura en cuatro escenarios |
-| T | Testeable | ✓ en el panel, un perfil sembrado acepta los tres datos, rechaza una fecha futura y una fecha SARO sin alcance, y una corrección aparece en la ficha y en el historial |
+| I | Independiente | ✓ con dependencias declaradas: amplía el editor y la guarda que ya existen (HU-125, HU-126, HU-128) y elige del catálogo de HU-177, que es del mismo sub-slice inicial y se construye antes; no espera a ninguna historia de cara al cliente |
+| N | Negociable | ✓ son fijos los tres datos, que sean obligatorios para publicar (D61) y que el alcance salga de un catálogo cerrado; la regla de fecha no futura, el texto del motivo y la disposición en el editor se pueden negociar |
+| V | Valiosa | ✓ sin esta captura y este bloqueo, un perfil nuevo podría llegar al cliente sin la evidencia de seguridad y DISC que el encabezado del estándar (HU-159) afirma de todos |
+| E | Estimable | ✓ M: una migración con tres campos, sus controles en el editor, una validación de fecha, dos condiciones más en una guarda que ya existe, la vista previa, el contrato de la ficha y el historial. D61 cerró las dudas de obligatoriedad y de catálogo; D81 llevó la importación a HU-191 |
+| S | Pequeña | ✓ M: una capacidad (capturar y exigir dos validaciones de entrada) en cuatro escenarios; la administración del catálogo (HU-177), el trato de lo ya publicado (HU-178) y la importación masiva (HU-191, D81) quedan fuera |
+| T | Testeable | ✓ en el panel, un perfil sembrado acepta los tres datos, rechaza una fecha futura, no se publica sin cada uno de los tres datos (tres filas de ejemplo con su motivo) y una corrección aparece en la ficha y en el historial |

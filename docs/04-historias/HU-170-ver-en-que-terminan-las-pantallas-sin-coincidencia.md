@@ -57,13 +57,15 @@ Cubre la **métrica de éxito de EP-010**: proporción de pantallas de cero que 
 
 **De dónde salen los datos.** EP-002 emite el cero y los cercanos; EP-010 emite la solicitud dirigida; las solicitudes las crea EP-005. Esta historia construye la lectura y su definición contra el contrato de HU-167 y se prueba con eventos fijados; mientras una épica no emita, la lectura dice «aún no se mide» (mismo criterio que HU-108).
 
-**Lo que esta historia no decide.** El umbral de suficiencia (cuántos casos hacen falta) es parte de **T-26** («sesión real») y está pendiente; por eso el AC conservador es rotular la lectura como descriptiva.
+**Sesiones reales (D68, sponsor 2026-10-02).** Solo cuentan las visitas con código verificado de un correo que no es `@trycore.com`, por un enlace que no se generó con la casilla «demo» (HU-188); las internas y las demo quedan fuera (HU-167). La visita termina al cerrar la pestaña o tras **30 minutos sin actividad** (D73), que es cuándo un cero cuenta como abandono.
+
+**Lo que esta historia no decide.** D68 cerró qué es una sesión real, pero **no** fijó cuántos casos hacen falta para que la proporción cuente; por eso el AC conservador sigue rotulando la lectura como descriptiva.
 
 **Abierto para el sponsor:** si una visita que llegó varias veces al cero cuenta una vez (por visita) o una por pantalla de cero; la métrica de EP-010 habla de «pantallas de cero» y esta lectura propone contar visitas.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.1 (abandono) · RF-14.3 · métrica de éxito de EP-010 · ADR-0006 (eventos de falsación, H32) · T-26 · partida con HU-184 y HU-185 · depende de HU-167
+Épica madre: **EP-008** · PRD v4.17 · RF-7.1 (abandono) · RF-14.3 · métrica de éxito de EP-010 · ADR-0006 (eventos de falsación, H32) · T-26 · D68 y D73 (sponsor, 2026-10-02) · partida con HU-184 y HU-185 · depende de HU-167
 
 ## INVEST
 

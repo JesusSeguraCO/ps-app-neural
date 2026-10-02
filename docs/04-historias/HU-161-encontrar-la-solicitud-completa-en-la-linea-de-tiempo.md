@@ -6,63 +6,72 @@ prioridad: alta
 complejidad: S
 estado: draft
 fase: integracion-hubspot
-prd_version: 4.17
-depende_de: [HU-102, HU-104]
+prd_version: 4.18
+depende_de: [HU-160]
 ---
 
 # HU-161 — Encontrar la solicitud completa en la línea de tiempo del contacto
 
 **Como** integrante de Coordinación de Servicio que prepara la sesión de alineación,
-**quiero** encontrar en la línea de tiempo del contacto y del negocio el resumen completo de la solicitud, con la especificación y si el cliente la revisó,
+**quiero** encontrar en la línea de tiempo del contacto y en el negocio la especificación completa de la solicitud y si el cliente la revisó,
 **para** llegar a la sesión sabiendo qué problema tiene el cliente y no solo qué perfiles marcó.
 
 ## Criterios de aceptación
 
-### Happy path — el resumen queda en la línea de tiempo
+### Happy path [portal] — la especificación revisada queda en una nota
 
-**Dado** que un cliente envió una solicitud con reto declarado, especificación revisada y perfiles seleccionados,
-**cuando** el portal termina de crear el negocio,
-**Entonces** la línea de tiempo del contacto y la del negocio muestran una nota con el reto, rol, seniority, tecnologías obligatorias y deseables, sector, modalidad, ubicación, los perfiles con su código y las respuestas del formulario
+**Dado** que un cliente envió una solicitud con reto declarado, especificación revisada, perfiles seleccionados y un mensaje libre,
+**cuando** el worker termina de crear el negocio,
+**Entonces** existe una nota asociada al negocio y al contacto con el reto, el rol, el seniority, las tecnologías obligatorias y deseables, el sector, la modalidad, la ubicación, los perfiles con su código y el mensaje libre
 **Y** la nota dice «Especificación revisada por el cliente: sí»
+**Y** la especificación también va en el párrafo de «Solicitudes People Service» (HU-160)
 
-### Edge case — el cliente no abrió el Perfil Objetivo
+### Edge case [portal] — el cliente no abrió el Perfil Objetivo
 
 **Dado** que el cliente envió la solicitud sin abrir el Perfil Objetivo,
-**cuando** el portal termina de crear el negocio,
-**Entonces** la nota lleva la especificación inferida marcada «Especificación revisada por el cliente: no (inferida)»
-**Y** el negocio lleva la misma marca en su propiedad de especificación revisada
-**Y** el negocio se crea igual, sin esperar a que el cliente la revise
+**cuando** el worker crea la nota,
+**Entonces** la nota lleva la especificación inferida y dice «Especificación revisada por el cliente: no (inferida)»
+**Y** el negocio se crea sin esperar a que el cliente la revise
 
-### Error — falla la nota después de crear el negocio
+### Edge case [portal] — la respuesta de la nota se perdió
 
-**Dado** que el negocio y sus asociaciones ya se crearon y la nota falló,
-**cuando** el portal reintenta la solicitud,
-**Entonces** crea solo la nota que faltaba
-**Y** el negocio tiene una sola nota de esa solicitud, aunque se reintente varias veces
+**Dado** que HubSpot creó la nota de una solicitud y su respuesta no llegó al worker,
+**cuando** el worker reintenta ese paso,
+**Entonces** encuentra entre las notas del negocio la que lleva el marcador de esa solicitud y no crea otra
+**Y** el negocio y el contacto muestran una sola nota de la solicitud
+
+### Happy path [HubSpot] — se ve en la línea de tiempo y en el negocio
+
+**Dado** que el worker creó el negocio y la nota de una solicitud,
+**cuando** Coordinación de Servicio abre el contacto y el negocio,
+**Entonces** la línea de tiempo del contacto muestra la nota con la especificación completa y su fecha
+**Y** el negocio muestra la misma nota en su actividad, con la marca de revisada o inferida
 
 ## Notas
 
-Cubre **RF-9.4**, **RF-17.1** y **RF-17.5** en su lado de HubSpot. El correo a Coordinación de Servicio con la misma especificación es HU-101 (EP-005, decisión T-28 del 2026-09-27); la nota en HubSpot sigue siendo la fuente para quien abre el negocio.
+Cubre **RF-9.4**, **RF-17.1** y **RF-17.5** en su lado de HubSpot, con el mecanismo de la **enmienda v4.18 del PRD** corregida por **D76**.
 
-**Una sola nota por solicitud:** la nota lleva un marcador con el identificador de la solicitud y el portal la busca entre las notas del negocio antes de crearla (ADR-0009, subpaso `nota`).
+**Revisión 2026-10-02, segunda ronda (D76, corrige D52).** Ya no hay envío de formulario que deje rastro en la línea de tiempo: el resumen vuelve a ser **una nota creada por la API**, el subpaso `nota` de `crear_negocio` (ADR-0009, enmienda D76), asociada al negocio y al contacto, con el marcador `[ps:<SOL>:nota]` para que un reintento no la duplique. Desaparece el duplicado en la línea de tiempo que aceptaba la versión del formulario. La marca revisada o inferida va **dentro del texto** de la nota y del párrafo: D76 limita a 2 las propiedades nuevas, así que no vuelve `ps_especificacion_revisada`.
 
-**Partida el 2026-10-02 (validación INVEST, criterio S): partir no es recortar.** Esta historia se queda con el resumen inicial de la solicitud en la línea de tiempo y el reintento de su nota (RF-9.4). El «contexto añadido» a una solicitud en curso (excepción de **D-7**) pasa a **HU-180**, que depende de esta y se construye en la misma épica.
+**Por verificar en el HubSpot real (prueba de capacidades D84):** que crear notas y leer las notas asociadas a un negocio funcione con los scopes mínimos de D76 (contactos y negocios, lectura y escritura). **Si exige un scope más, lo aprueba el sponsor**; no se recorta ni se cambia el mecanismo sin decisión.
 
-**Reintento de la nota:** si el negocio y sus asociaciones ya existen, el reintento no los vuelve a crear; solo crea la nota que falta (ADR-0009, subpasos idempotentes).
+**El correo a Coordinación de Servicio** con la misma especificación y el enlace al negocio lo envía el portal (D78, HU-101).
 
-**Datos personales:** la nota lleva nombre y primer apellido y código de los perfiles, nunca datos de la lista negra B.4 ni tarifas (D-9). Es la misma información que el cliente ya vio en el portal.
+**Datos personales:** nombre y primer apellido y código de los perfiles, nunca datos de la lista negra B.4 ni tarifas (D-9). Es lo mismo que el cliente ya vio en el portal.
+
+**Partición del 2026-10-02:** el contexto añadido a una solicitud en curso (excepción de D-7) es HU-180.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.17 · RF-9.4, RF-17.1, RF-17.5 · D-9 · B.4 · T-28 · ADR-0009 (subpaso `nota`, `ps_especificacion_revisada`) · depende de HU-102 y HU-104 · relacionada con HU-101 (EP-005) y HU-180 (contexto añadido, partida de esta)
+Épica madre: **EP-007** · PRD v4.18 · RF-9.4, RF-17.1, RF-17.5 · D-9 · B.4 · T-28 · D52 (sustituida en parte), D54, D76, D78, D84 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76: vuelve el subpaso `nota`) · depende de HU-160 · relacionada con HU-101 (EP-005), HU-105 y HU-180
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: anota el negocio de HU-102 en el contacto de HU-104; no necesita el contexto añadido (HU-180), que depende de esta |
-| N | Negociable | ✓ fija el contenido de RF-17.1, la marca revisada o inferida y una sola nota por solicitud aunque se reintente; la plantilla de la nota se negocia |
+| I | Independiente | ✓ con dependencia declarada: añade la nota al negocio de HU-160; no necesita el contexto añadido (HU-180) |
+| N | Negociable | ✓ fija el contenido de RF-17.1, la marca revisada o inferida y que la nota no se duplica; la redacción se negocia |
 | V | Valiosa | ✓ quien prepara la sesión llega con el problema del cliente, y una especificación inferida se reconoce como tal |
-| E | Estimable | ✓ S: una plantilla de nota con un marcador que se busca antes de crearla; el algoritmo está en ADR-0009 |
-| S | Pequeña | ✓ S: una capacidad (dejar el resumen inicial legible en HubSpot) en tres escenarios, tras sacar el contexto añadido a HU-180 |
-| T | Testeable | ✓ solicitudes revisada, inferida y con fallo de la nota reintentada varias veces dan notas y propiedades observables en un doble de HubSpot |
+| E | Estimable | ✓ S en el portal (una plantilla y un subpaso con marcador, como en el diseño original de ADR-0009); con riesgo declarado hasta D84 por los scopes de notas |
+| S | Pequeña | ✓ S: una capacidad (dejar la especificación legible en HubSpot) en cuatro escenarios |
+| T | Testeable | ✓ el doble de la API muestra la nota revisada e inferida y el reintento que no la duplica; en HubSpot, un negocio ficticio muestra la nota en el contacto y en el negocio |

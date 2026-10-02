@@ -3,72 +3,81 @@ id: HU-104
 titulo: "Que no se me duplique la empresa en el CRM"
 epica: EP-007
 prioridad: alta
-complejidad: M
+complejidad: S
 estado: draft
 fase: integracion-hubspot
-prd_version: 4.17
+prd_version: 4.18
 depende_de: [HU-102]
 ---
 
 # HU-104 — Que no se me duplique la empresa en el CRM
 
+> **Historia de configuración en HubSpot.** Responsable: **Mercadeo/RevOps**. Verificación: **prueba en el sandbox o el portal real de HubSpot con datos ficticios**. La asociación de la empresa por dominio, y su creación si no existe, son **funciones nativas de HubSpot** que dispara el workflow (D53, D79); el portal no crea ni asocia empresas. Su única parte son los dos escenarios **[portal]**: el **upsert del contacto por correo** que hace el worker (D76, HU-102), que se prueba con la suite del portal.
+
 **Como** responsable de Mercadeo que administra HubSpot,
-**quiero** que cada negocio del portal quede asociado al contacto y a la empresa que ya existen, y que nunca se cree una empresa repetida,
+**quiero** que cada negocio del portal quede asociado al contacto y a la empresa que ya existen, y que nunca se cree un contacto ni una empresa repetidos,
 **para** no tener que fusionar registros a mano ni perder el historial de la cuenta.
 
 ## Criterios de aceptación
 
-### Happy path — contacto y empresa ya existen
+### Happy path [portal] — el contacto ya existe
 
-**Dado** que quien envió la solicitud ya existe en HubSpot como contacto asociado a la empresa de su cuenta,
-**cuando** el portal procesa la solicitud,
-**Entonces** el negocio queda asociado a ese contacto y a esa empresa
-**Y** en HubSpot no aparece ningún contacto ni empresa nuevos
+**Dado** que quien envió la solicitud ya existe en HubSpot como contacto con su correo verificado,
+**cuando** el worker hace el upsert del contacto por ese correo y crea el negocio,
+**Entonces** el negocio queda asociado a ese contacto
+**Y** en HubSpot no aparece ningún contacto nuevo
+**Y** el worker solo escribe los campos que el portal conoce y no vacía los demás
 
-### Error — persona nueva en una empresa conocida
+### Happy path [HubSpot] — persona nueva en una empresa conocida
 
-**Dado** que quien envió la solicitud no existe en HubSpot y su empresa sí,
-**cuando** el portal procesa la solicitud,
-**Entonces** se crea el contacto con el nombre, el cargo y el correo verificado de quien solicita, asociado a la empresa existente
-**Y** el negocio queda asociado a ese contacto y a esa empresa
+**Dado** que el worker creó el contacto de una persona nueva y ya existe una empresa con el dominio de su correo,
+**cuando** el workflow procesa el negocio nuevo,
+**Entonces** el contacto y el negocio quedan asociados a esa empresa
 **Y** no se crea ninguna empresa
 
-### Edge case — la empresa no se puede identificar con certeza
+### Edge case [HubSpot] — ninguna empresa tiene ese dominio
 
-**Dado** que quien envió la solicitud no existe en HubSpot y ninguna empresa, o más de una, corresponde a su cuenta,
-**cuando** el portal procesa la solicitud,
-**Entonces** se crea el contacto y el negocio queda asociado a él, sin empresa
+**Dado** que el correo corporativo de quien solicita tiene un dominio que ninguna empresa de HubSpot tiene,
+**cuando** el workflow procesa el negocio nuevo,
+**Entonces** HubSpot crea una sola empresa a partir del dominio y la asocia al contacto y al negocio
+**Y** una segunda solicitud con el mismo dominio usa esa empresa y no crea otra
+
+### Edge case [HubSpot] — la empresa no se puede identificar con certeza
+
+**Dado** que el correo de quien solicita es de un dominio genérico o hay más de una empresa con su dominio,
+**cuando** el workflow procesa el negocio nuevo,
+**Entonces** el negocio queda asociado al contacto, sin empresa elegida al azar
 **Y** no se crea ninguna empresa
-**Y** el aviso al propietario y la solicitud en el portal dicen «empresa por confirmar», con el nombre de la cuenta del enlace
+**Y** la notificación del negocio dice «empresa por confirmar», con el nombre de la cuenta del enlace
 
-### Edge case — el contacto aparece en HubSpot mientras se procesa
+### Edge case [portal] — dos solicitudes del mismo contacto nuevo casi a la vez
 
-**Dado** que el contacto no existía cuando empezó el proceso y alguien lo creó en HubSpot antes de que el portal lo cree,
-**cuando** el portal intenta crear el contacto,
-**Entonces** usa el contacto existente
-**Y** en HubSpot queda un solo contacto con ese correo
+**Dado** que el contacto no existía y el worker procesa dos solicitudes con su correo con segundos de diferencia,
+**cuando** las dos hacen el upsert del contacto,
+**Entonces** en HubSpot queda un solo contacto con ese correo
+**Y** cada solicitud tiene su propio negocio asociado a ese contacto
 
 ## Notas
 
-Cubre **RF-9.2** en su parte de contacto y empresa: «nunca se duplican registros» y «jamás se crea una empresa duplicada». La parte de D-7 (negocio relacionado) está en HU-102. El correo que viaja es el verificado al entrar (D-4, HU-097); el contacto se busca por ese correo.
+Cubre **RF-9.2** en su parte de contacto y empresa: «nunca se duplican registros» y «jamás se crea una empresa duplicada». La parte de D-7 (negocio relacionado) está en HU-102.
 
-**Cómo se identifica la empresa: pregunta abierta al sponsor (E-7 del backlog arquitectónico).** ADR-0009 resolvía la empresa con el identificador de HubSpot guardado en la cuenta del enlace. Desde el 2026-09-28 la generación del enlace no lee HubSpot (HU-122) y el enlace solo guarda el **nombre** de la cuenta (`cuenta_ref` opcional). Opciones: (a) la empresa a la que HubSpot ya asocia el contacto, y para un contacto nuevo el dominio de su correo; (b) pedir el identificador de la empresa al generar el enlace; (c) que lo resuelva un workflow de HubSpot (E-6). Los escenarios se escribieron de forma conservadora y valen para (a) y (b): **el portal nunca crea empresas**, y si la empresa no se puede resolver con certeza el negocio no se pierde, queda con el contacto y se marca para revisión.
+**Revisión 2026-10-02 (D53; segunda ronda D76, D79).** **D76**: el contacto ya no lo crea un formulario sino **el worker, por la API, con upsert por `email`** (la propiedad única nativa del contacto), con los campos que el portal conoce (correo verificado, D-4; nombre, apellido y cargo, HU-097). Si dos upserts chocan, HubSpot responde con conflicto y el worker reutiliza el contacto existente (HU-166, clase Conflicto). **D53**: la empresa la asocia **HubSpot por el dominio del correo**; el portal no escribe `company` ni llama a la API de empresas (los scopes de D76 no la incluyen). **D79**: si ninguna empresa tiene ese dominio, **HubSpot la crea** (función nativa «crear y asociar empresas con contactos»); no es un duplicado, así que respeta RF-9.2. Contexto del sponsor: al portal solo entran clientes **invitados nominalmente**, así que es un caso de borde. Queda resuelta la pregunta para Mercadeo de la versión anterior.
 
-**Dominio distinto del de la empresa.** La versión anterior decía «se usa la cuenta del enlace». Ya no se puede: el enlace no guarda la empresa de HubSpot. Ese caso, por ejemplo un consultor externo invitado por la cuenta, cae en el escenario «empresa por confirmar».
+**Asociar la empresa al negocio.** La asociación nativa por dominio llega al **contacto**; que el negocio quede asociado a la misma empresa lo hace el workflow (acción de asociación). **Por verificar en la prueba de capacidades D84:** el orden en el tiempo (que la empresa ya esté asociada al contacto cuando el workflow procesa el negocio) y qué hace HubSpot cuando hay **más de una empresa** con el mismo dominio. El escenario exige que no elija una al azar; si la función nativa lo hace, el workflow debe detectarlo y marcar «empresa por confirmar».
 
-**Quién confirma la empresa** cuando queda por confirmar: el PRD no lo dice. Supuesto conservador: el propietario o el administrador de HubSpot la asocia a mano. Pregunta abierta.
+**Quién confirma la empresa** cuando queda por confirmar: el propietario o la administradora de HubSpot la asocia a mano. Supuesto conservador.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.17 · RF-9.2 · D-4 · E-7 (backlog arquitectónico) · ADR-0009 (subpaso `asociaciones`) · depende de HU-102 · relacionada con HU-097 (EP-005)
+Épica madre: **EP-007** · PRD v4.18 · RF-9.2 · D-4 · D52 (sustituida en parte), D53, D54, D76, D79, D84 (sponsor, 2026-10-02) · E-7 (resuelta por D53) · ADR-0009 (enmienda D76) · depende de HU-102 · relacionada con HU-097 (EP-005), HU-103 y HU-166
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: asocia el negocio que crea HU-102; no depende del aviso, las propiedades ni la bandeja |
-| N | Negociable | ✓ fija que nunca se crea una empresa ni un contacto repetido y que el caso dudoso se marca; la forma de identificar la empresa (E-7) se negocia |
-| V | Valiosa | ✓ el CRM no se ensucia con empresas repetidas y la oportunidad queda en la ficha de la cuenta correcta |
-| E | Estimable | ✗ hasta que se cierre E-7: con (a) es buscar por correo y dominio; con (b) se añade un campo al generar el enlace (EP-001) |
-| S | Pequeña | ✓ M: una capacidad (asociar sin duplicar) en cuatro escenarios |
-| T | Testeable | ✓ un doble de HubSpot con contacto existente, contacto nuevo con empresa, empresa ausente o repetida y un contacto creado durante el proceso da resultados observables en los registros de HubSpot |
+| I | Independiente | ✓ con dependencia declarada: asocia el negocio que crea HU-102; no depende del aviso, el requerimiento ni la bandeja |
+| N | Negociable | ✓ fija que nunca se crea un contacto ni una empresa repetidos y que el caso dudoso se marca; la redacción de la marca se configura |
+| V | Valiosa | ✓ el CRM no se ensucia con registros repetidos y la oportunidad queda en la ficha de la cuenta correcta |
+| E | Estimable | ✓ S: ajustes nativos de HubSpot más una acción de asociación y una rama del workflow; en el portal, el upsert por correo que ya hace HU-102. D79 cerró el caso del dominio nuevo |
+| S | Pequeña | ✓ S: una capacidad (asociar sin duplicar) en cinco escenarios cortos |
+| T | Testeable | ✓ con un doble de la API, upserts de un contacto existente y dos casi simultáneos dan un solo contacto; en HubSpot, negocios ficticios de un dominio conocido, uno sin empresa y uno genérico dan asociaciones observables |

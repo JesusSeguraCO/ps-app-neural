@@ -25,6 +25,7 @@ depende_de: [HU-147]
 **Entonces** veo, sin desplegar nada, que la conversación sobre este profesional va por Trycore, con ese contacto
 **Y** veo que Trycore responde por este perfil y lo pone a mi disposición
 **Y** veo que el portal no tiene una vía de contacto directo con el profesional
+**Y** no veo ningún botón ni acción aparte, como «Escribir a Trycore», fuera de ese bloque de contacto
 
 ### Error — no hay ningún camino hacia la persona
 
@@ -57,18 +58,20 @@ Cubre **RF-3.3** (se publican nombre y primer apellido; no foto, correo, teléfo
 
 **El campo `vinculo` existe en el modelo** (migración 0014, B.7: vinculado · banco no vinculado · fábrica de software). Se usa internamente para Neural Speed (HU-158) y **nunca cruza al portal**. El edge case lo prueba con un esquema de una ficha por fila, uno por cada valor de B.7 (refinado el 2026-10-02: antes un solo «Cuando» abría dos fichas).
 
-**Pregunta abierta para el sponsor:** ¿la ficha debe ofrecer una acción para iniciar esa conversación (por ejemplo «Escribir a Trycore sobre este perfil», con el código ya citado), o basta con mostrar el contacto? El PRD solo exige que se vea por dónde va la conversación. Una acción que abra el correo sería una vía nueva hacia Comercial que hoy no está especificada, y competiría con «Sumar al equipo».
+**D73 (sponsor, 2026-10-02, opción conservadora) cierra la pregunta abierta:** la ficha **no** ofrece una acción «Escribir a Trycore sobre este perfil» aparte del bloque de contacto. Basta con mostrar el contacto, que es lo que exige el PRD; una acción que abra el correo sería una vía nueva hacia Comercial sin especificar y competiría con «Sumar al equipo» (HU-175). Se añade al happy path como resultado observable.
+
+**Copy para revisión de copy (D73):** el texto de representación comercial («la conversación sobre este profesional va por Trycore», «Trycore responde por este perfil y lo pone a tu disposición») es copy visible al cliente; se redacta con la opción del prototipo/PRD y queda **marcado para revisión de copy**.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-3.3 · RF-3.3.1 · RF-3.3.2 · RF-3.13.4 · B.4 · D-1 · D-10 · depende de HU-147 (contacto de Trycore, EP-006) · relacionada con HU-158 (cierre de la ficha) y HU-154 (lista negra en la ficha)
+Épica madre: **EP-003** · PRD v4.17 · RF-3.3 · RF-3.3.1 · RF-3.3.2 · RF-3.13.4 · B.4 · D-1 · D-10 · D73 · depende de HU-147 (contacto de Trycore, EP-006) · relacionada con HU-158 (cierre de la ficha) y HU-154 (lista negra en la ficha)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: usa el contacto de HU-147, ya construida; no espera a ninguna otra historia de la épica |
-| N | Negociable | ✓ son fijos el mensaje (va por Trycore, sin contacto directo, sin vínculo) y la ausencia de vías a la persona; la redacción y la ubicación se pueden negociar |
+| N | Negociable | ✓ son fijos el mensaje (va por Trycore, sin contacto directo, sin vínculo), la ausencia de vías a la persona y que no haya acción aparte del bloque de contacto (D73); la redacción y la ubicación se pueden negociar |
 | V | Valiosa | ✓ protege el modelo de negocio (riesgo de contacto directo, §10.3) y le dice al cliente cuál es el siguiente paso |
 | E | Estimable | ✓ S: un bloque de texto con el contacto que ya existe, más pruebas de ausencia |
 | S | Pequeña | ✓ S: tres escenarios de presentación |

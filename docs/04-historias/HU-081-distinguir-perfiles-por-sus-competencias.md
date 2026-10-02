@@ -27,7 +27,7 @@ depende_de: [HU-153]
 **Y** las competencias aparecen marcadas como verificadas por Trycore
 **Y** ninguna tarjeta muestra una insignia, un estado ni un puntaje por dimensión Neural-Grid
 
-### Error — perfil publicado sin Sello Personal cargado
+### Error — perfil publicado sin Sello Personal (opcional por D63)
 
 **Dado** que un perfil publicado no tiene ninguna competencia del Sello Personal registrada,
 **cuando** aparece su tarjeta en la lista,
@@ -48,24 +48,24 @@ Cubre **RF-14.1** (la tarjeta lidera con identidad y capacidad, y diferencia con
 Reemplaza a **HU-079**, descartada al cerrarse D-15. El logro cuantificado no existe en el banco entregado por Talento Humano, su extracción tiene costo operativo recurrente y es autoreportado por naturaleza. Las competencias del Sello Personal cumplen lo que el logro prometía sin esos problemas: las produce Trycore, no el candidato, y son lo único de las tres validaciones que varía entre perfiles.
 
 **Refinada el 2026-10-02 (discovery de EP-003).** Cambios:
-- El escenario de error decía que el panel impide publicar un perfil sin Sello Personal. Eso es una regla del panel (EP-006), y EP-006 ya se construyó con el Sello Personal **opcional** (columna `sello_personal` de hasta tres valores; la ficha lo omite si no hay: `opcionalesVacios`). Bajo la regla de no inventar decisiones, el error pasa al lado del cliente con la opción más conservadora: la tarjeta omite el bloque sin hueco, igual que el diagrama de `docs/06-flows/EP-003`. Que publicar exija el Sello Personal queda como **pregunta abierta** (ver abajo).
+- El escenario de error decía que el panel impide publicar un perfil sin Sello Personal. Eso es una regla del panel (EP-006), y EP-006 ya se construyó con el Sello Personal **opcional** (columna `sello_personal` de hasta tres valores; la ficha lo omite si no hay: `opcionalesVacios`). Bajo la regla de no inventar decisiones, el error pasa al lado del cliente con la opción más conservadora: la tarjeta omite el bloque sin hueco, igual que el diagrama de `docs/06-flows/EP-003`. Que publicar exija el Sello Personal quedó como pregunta abierta, que cerró D63 (abajo).
 - El happy path ya no dice «difieren entre un perfil y otro», porque eso depende de los datos y no del portal. Ahora el «Dado» fija dos perfiles con sellos distintos.
 - La prohibición de RF-3.8 (sin insignia por dimensión) entra como resultado observable.
 
 **Ya construido:** la ficha muestra el Sello Personal en el bloque «Verificado por Trycore» (`packages/ui/src/FichaPerfil.tsx`, D47 de EP-006). Falta la **tarjeta**, que hoy no lo muestra (`apps/portal/src/seleccion/TarjetaPerfil.tsx`). El contrato del catálogo (`@ps/contratos/catalogo`) tendrá que exponer el sello a la tarjeta.
 
-**Pregunta abierta para el sponsor:** B.6 dice que Neural Fit es condición de entrada y que las tres competencias existen para el 100 % de los perfiles. EP-006 permite publicar sin ellas. ¿Debe el panel exigir las tres competencias para publicar, igual que el consentimiento y la modalidad de prueba? Si la respuesta es sí, sería un cambio de EP-006 (RF-8.10 / HU-128) y este escenario de error pasaría a tratar solo los datos heredados.
+**D63 (sponsor, 2026-10-02) cierra la pregunta abierta:** las **tres validaciones de entrada** (seguridad SARO, técnica y la evaluación DISC) son obligatorias para publicar, pero el **Sello Personal sigue opcional**. El escenario de error se mantiene tal cual: un perfil publicado sin Sello Personal es un caso válido y permanente, no un dato heredado, y la tarjeta omite el bloque sin hueco. No hay cambio en EP-006 por esta historia. La guarda de las tres validaciones es de HU-176 y HU-178, y HU-178 fija que la falta de Sello Personal no marca un perfil como incompleto.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-14.0 · RF-14.1 · RF-3.8 · B.6 · reemplaza a HU-079 · depende de HU-153 (la tarjeta en la que vive el bloque) · relacionada con HU-119 y HU-118 (compiten por la misma atención en la tarjeta, RF-3.8)
+Épica madre: **EP-003** · PRD v4.17 · RF-14.0 · RF-14.1 · RF-3.8 · B.6 · D63 · reemplaza a HU-079 · depende de HU-153 (la tarjeta en la que vive el bloque) · relacionada con HU-119 y HU-118 (compiten por la misma atención en la tarjeta, RF-3.8)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: el bloque vive en la tarjeta de HU-153 y usa un dato que ya existe en el modelo (`sello_personal`); no depende de la búsqueda de EP-009 |
-| N | Negociable | ✓ son fijos el contenido (las tres competencias, como verificadas) y la ausencia de insignias; la posición en la tarjeta y la forma visual se pueden negociar |
+| N | Negociable | ✓ son fijos el contenido (las tres competencias, como verificadas), la ausencia de insignias y que el Sello Personal es opcional (D63), con el bloque omitido sin hueco; la posición en la tarjeta y la forma visual se pueden negociar |
 | V | Valiosa | ✓ es el único discriminador verificado del banco: sin él, las tarjetas solo se diferencian por lo que declara la persona |
 | E | Estimable | ✓ S: exponer un campo existente en el contrato del catálogo y dibujarlo en la tarjeta, con la regla de omitir el bloque vacío que ya usa la ficha |
 | S | Pequeña | ✓ S: un bloque de la tarjeta con tres comportamientos |

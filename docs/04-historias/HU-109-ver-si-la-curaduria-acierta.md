@@ -54,24 +54,24 @@ depende_de: [HU-167, HU-112]
 
 ## Notas
 
-Cubre **RF-7.4** completo: el indicador de acierto (KPI de §11: *solicitudes que incluyen al menos un perfil del conjunto curado*, meta ≥ 70 %, mensual) y la distinción curado / descubrimiento en la interacción (fichas abiertas), que HU-167 calcula en el servidor. Es el indicador más útil del proyecto para Mercadeo: mide el criterio con que se arma el correo, no el portal. Vista `v_acierto_curaduria` de ADR-0006. Aparece en el tablero de HU-171.
+Cubre **RF-7.4** completo: el indicador de acierto (KPI de §11: *solicitudes que incluyen al menos un perfil del conjunto curado*, meta ≥ 70 %, mensual) y la distinción curado / descubrimiento en la interacción (fichas abiertas), que HU-167 calcula en el servidor. Es el indicador más útil del proyecto para Mercadeo: mide el criterio con que se arma el correo, no el portal. Vista `v_acierto_curaduria` de ADR-0006. Aparece en el tablero de HU-171, que entra en el **MVP** (D66).
 
-**Fuentes.** Las solicitudes con sus perfiles las crea EP-005; los filtros y las búsquedas, EP-002; el estado de cada perfil al abrir el enlace (RF-19.2) ya existe en EP-001. Mientras EP-005 no exista, el acierto dice «aún no se mide». Las visitas internas no cuentan (HU-167).
+**Fuentes.** Las solicitudes con sus perfiles las crea EP-005; los filtros y las búsquedas, EP-002; el estado de cada perfil al abrir el enlace (RF-19.2) ya existe en EP-001. Mientras EP-005 no exista, el acierto dice «aún no se mide». Solo cuentan las **sesiones reales** (D68): código verificado de un correo que no es `@trycore.com`, por un enlace que no se generó con la casilla «demo» (HU-188); las visitas internas y las demo se registran, marcadas, pero quedan fuera de los indicadores (HU-167). Una solicitud enviada desde una sesión demo o interna no entra ni en el numerador ni en el denominador.
 
-**Abierto para el sponsor:** si el caso del último edge (perfil curado no disponible al abrir) debe **seguir contando como no acierto**, como dice la definición literal del KPI, o salir del cálculo como las solicitudes sin selección previa. El AC aplica la definición literal y solo señala el caso.
+**Resuelto por el sponsor (D73, 2026-10-02), opción conservadora:** el perfil curado que no estaba disponible al abrir el enlace **cuenta como fallo de la curaduría** (no acierto), como dice la definición literal del KPI; el caso queda señalado aparte para distinguir un fallo del criterio de un cambio del inventario. Es lo que ya decía el último edge; no cambia el AC.
 
 **Complejidad.** Se mantiene S como en el backlog: es un cruce entre solicitudes y conjunto curado, más un conteo de fichas que ya viene marcado desde la captura.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.4 · §11 KPI de acierto · O2 · ADR-0006 (`v_acierto_curaduria`) · depende de HU-167 y HU-112
+Épica madre: **EP-008** · PRD v4.17 · RF-7.4 · §11 KPI de acierto · O2 · ADR-0006 (`v_acierto_curaduria`) · D66, D68 y D73 (sponsor, 2026-10-02) · depende de HU-167 y HU-112
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: usa la marca curado / descubrimiento de HU-167 y el enlace de origen de HU-112; las solicitudes llegan con EP-005 y hasta entonces lo declara |
-| N | Negociable | ✓ fija la definición del KPI, qué se excluye y qué se señala; la presentación por cuenta es negociable |
+| N | Negociable | ✓ fija la definición del KPI (confirmada por D73 para el perfil no disponible), qué se excluye y qué se señala; la presentación por cuenta es negociable |
 | V | Valiosa | ✓ le dice a Mercadeo si el criterio con que arma la selección sirve, que es la razón de ser de la épica |
 | E | Estimable | ✓ S: un cruce de solicitudes con el conjunto curado del enlace y un conteo de fichas por ámbito |
 | S | Pequeña | ✓ S: una lectura en cinco escenarios |

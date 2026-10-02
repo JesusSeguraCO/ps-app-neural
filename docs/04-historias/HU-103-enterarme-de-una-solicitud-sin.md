@@ -3,14 +3,16 @@ id: HU-103
 titulo: "Enterarme de una solicitud sin tener que vigilar el pipeline"
 epica: EP-007
 prioridad: alta
-complejidad: M
+complejidad: S
 estado: draft
 fase: integracion-hubspot
-prd_version: 4.17
+prd_version: 4.18
 depende_de: [HU-102, HU-104]
 ---
 
 # HU-103 — Enterarme de una solicitud sin tener que vigilar el pipeline
+
+> **Historia de configuración en HubSpot.** Responsable: **Mercadeo/RevOps** (administración de HubSpot). Verificación: **prueba en el sandbox o el portal real de HubSpot con datos ficticios**, sobre un negocio creado por el worker. El portal no implementa la asignación ni el aviso comercial (D55, confirmado por D76); su única parte es el escenario de error, que es una consecuencia de HU-105.
 
 **Como** ejecutivo comercial con varias cuentas a cargo,
 **quiero** quedar como propietario del negocio y recibir un aviso con lo necesario para decidir cuando una de mis cuentas envía una solicitud,
@@ -18,56 +20,54 @@ depende_de: [HU-102, HU-104]
 
 ## Criterios de aceptación
 
-### Happy path — el propietario de la cuenta queda a cargo y avisado
+### Happy path [HubSpot] — el propietario de la cuenta queda a cargo y avisado
 
-**Dado** que la empresa de la solicitud tiene propietario en HubSpot y el portal ya creó el negocio,
-**cuando** el portal termina de procesar la solicitud,
+**Dado** que la empresa del contacto tiene propietario en HubSpot,
+**cuando** el workflow procesa el negocio que creó el worker,
 **Entonces** el negocio queda asignado a ese propietario, que recibe la notificación de asignación de HubSpot
-**Y** el propietario recibe un correo del portal con la cuenta, quién solicita, los perfiles o la especificación, el momento de incorporación y un enlace al negocio
-**Y** el correo dice cuándo escala si nadie lo abre
+**Y** el propietario recibe la notificación interna del workflow con la cuenta, quién solicita, el requerimiento («Solicitudes People Service»), el momento de incorporación y el enlace al negocio
+**Y** esa notificación dice que la solicitud escala si nadie la atiende en 4 horas hábiles
 
-### Error — HubSpot todavía no confirmó el negocio
+### Edge case [HubSpot] — la empresa no tiene propietario
 
-**Dado** que el portal guardó la solicitud y el primer intento de crear el negocio en HubSpot falló,
-**cuando** el portal programa el siguiente intento,
-**Entonces** el propietario previsto no recibe ningún correo comercial
-**Y** la solicitud en el portal muestra «aviso al propietario: cuando HubSpot confirme», porque el correo solo sale con el enlace a un negocio que ya existe
-
-### Edge case — la empresa no tiene propietario en HubSpot
-
-**Dado** que la empresa de la solicitud no tiene propietario en HubSpot o quedó «por confirmar» (HU-104),
-**cuando** el portal termina de procesar la solicitud,
-**Entonces** el negocio queda sin propietario
-**Y** el correo va de inmediato a la dirección comercial y dice «cuenta sin propietario en HubSpot»
+**Dado** que la empresa del contacto no tiene propietario en HubSpot o quedó «empresa por confirmar» (HU-104),
+**cuando** el workflow procesa el negocio que creó el worker,
+**Entonces** el negocio queda asignado a Dirección Comercial
+**Y** Dirección Comercial recibe de inmediato la notificación con la marca «cuenta sin propietario en HubSpot»
 **Y** no se espera a las 4 horas hábiles del escalamiento
+
+### Error [portal] — el negocio todavía no existe en HubSpot
+
+**Dado** que el primer intento de crear el negocio de una solicitud falló y el worker programó el siguiente,
+**cuando** se consulta la solicitud en el panel,
+**Entonces** aparece como «pendiente de llegar a HubSpot»
+**Y** ningún comercial ha recibido aviso de esa solicitud, porque el aviso solo lo envía el workflow cuando el negocio existe
 
 ## Notas
 
-Cubre **RF-9.5**, **RF-9.7.1**, **RF-9.7.2** y **RF-17.2** en su lado comercial; RF-9.1.2 explica por qué el aviso es el mecanismo y no una cortesía.
+Cubre **RF-9.5**, **RF-9.7.1**, **RF-9.7.2** y **RF-17.2** en su lado comercial, con el mecanismo de la **enmienda v4.18 del PRD** corregida por **D76**.
 
-**Dos canales sin integración nueva** (decisión del sponsor, 2026-09-25, T-3): el correo del portal y la notificación nativa que HubSpot envía al asignar el propietario. No se integra Slack, Chat ni WhatsApp.
+**Revisión 2026-10-02 (D55, D73; segunda ronda D76, D78).** **D76** cambia cómo nace el negocio (lo crea el worker por la API, HU-102), no quién avisa al comercial: la asignación y la notificación **siguen en el workflow** (D55), que se dispara al crearse el negocio en el pipeline People Service. Los **dos canales sin integración nueva** de T-3 son (1) la **notificación interna** del workflow y (2) la **notificación nativa de asignación** de HubSpot. La cuenta sin propietario la recibe **Dirección Comercial** (D73, opción conservadora); la regla vive en el workflow.
 
-**Coordinación de Servicio** también recibe aviso (RF-9.7.1). Ese correo, con la especificación completa, es **HU-101 (EP-005)** por la decisión T-28 del 2026-09-27; aquí no se repite. HU-101 necesita el enlace al negocio que crea esta épica.
+**Coordinación de Servicio.** **D78**: el aviso a Delivery con la especificación y el **enlace directo al negocio** lo envía **el portal** por Mailgun tras crear el negocio (HU-101, EP-005). Queda resuelto el pendiente que dejaba D52.
 
-**Error: el comercial espera a HubSpot.** Lo fijan las pantallas aprobadas del prototipo (`correo-aviso-interno--fallo-integracion`: «aún no recibe el aviso comercial»; `integraciones-fallidas`: «recibe el aviso cuando HubSpot confirme»). Mientras tanto avisa al responsable técnico HU-105. Así queda cerrado el trade-off del «aviso degradado» que ADR-0009 dejaba abierto.
+**Enlace rastreado `/r/` y botón «Ya lo estoy atendiendo».** Dependían de que el correo saliera del portal; con D55 la señal de «atendida» se lee en HubSpot (HU-162). Su retirada se registra en la enmienda de ADR-0009.
 
-**Sin propietario: pregunta abierta al sponsor.** El PRD no dice qué pasa si la cuenta no tiene propietario. Supuesto conservador: nadie queda sin enterarse, así que el aviso va directo a la dirección comercial. Los **destinatarios nominales** (qué buzón es «la dirección comercial») tampoco están definidos (R-36): pregunta abierta.
+**Destinatarios nominales** (qué usuario o equipo de HubSpot es «Dirección Comercial», R-36): configuración del workflow; pregunta abierta para Comercial.
 
-**Enlace al negocio.** El enlace del correo es el rastreado de ADR-0009 (`/r/<id>` en el panel): abrirlo cuenta como apertura para el escalamiento (HU-162).
-
-**Prototipo:** `correo-aviso-interno` (aviso al comercial).
+**Prototipo:** `correo-aviso-interno` (aviso al comercial). Su contenido pasa a ser la plantilla de la notificación del workflow.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.17 · RF-9.5, RF-9.7.1, RF-9.7.2, RF-17.2 (comercial), RF-9.1.2 · T-3, T-28 · ADR-0009 (`notificar`, `/r/`) · depende de HU-102 y HU-104 · relacionada con HU-101 (EP-005), HU-105 y HU-162
+Épica madre: **EP-007** · PRD v4.18 · RF-9.5, RF-9.7.1, RF-9.7.2, RF-17.2 (comercial), RF-9.1.2 · T-3, T-28 · D52 (sustituida en parte), D55, D73, D76, D78 (sponsor, 2026-10-02) · ADR-0009 (enmiendas 2026-10-02 D52 y D76) · depende de HU-102 y HU-104 · relacionada con HU-101 (EP-005), HU-105 y HU-162
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: asigna y avisa sobre el negocio de HU-102 asociado por HU-104; el escalamiento es otra historia |
-| N | Negociable | ✓ fija el propietario de la cuenta como dueño, los cinco datos del aviso, el aviso solo tras confirmar y el caso sin propietario; la redacción del correo y los buzones se negocian |
+| I | Independiente | ✓ con dependencia declarada: asigna y avisa sobre el negocio que crea el workflow de HU-102 con la empresa de HU-104; el escalamiento es otra historia |
+| N | Negociable | ✓ fija el propietario de la cuenta como dueño, los cinco datos del aviso y que la cuenta sin propietario vaya a Dirección Comercial; la redacción y los destinatarios se configuran |
 | V | Valiosa | ✓ con pipeline propio, es lo único que evita que una solicitud exista y nadie la vea |
-| E | Estimable | ✓ M: leer el propietario, asignarlo y encolar un correo con plantilla; el adaptador de correo ya existe |
-| S | Pequeña | ✓ M: una capacidad (asignar y avisar) en tres escenarios |
-| T | Testeable | ✓ un doble de HubSpot con empresa con y sin propietario, y un doble de Mailgun, dan asignación y correos observables, incluido que no sale nada antes de confirmar |
+| E | Estimable | ✓ S: en HubSpot, un workflow disparado por la creación del negocio, una rama (con o sin propietario) y dos acciones nativas (asignar y notificar); en el portal no hay trabajo nuevo, solo el estado que ya pone HU-105 |
+| S | Pequeña | ✓ S: una capacidad (asignar y avisar) en tres escenarios |
+| T | Testeable | ✓ negocios ficticios creados por el worker para una empresa con propietario y otra sin él dan asignación y notificaciones observables en HubSpot; un doble de la API que falla deja la solicitud «pendiente» en el panel sin aviso |

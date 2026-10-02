@@ -63,18 +63,20 @@ Cubre la **prueba que falsea RF-14.7** (composiciones de referencia: *si no sube
 
 **Lo que esta historia no decide.** El umbral de suficiencia es parte de **T-26** y está pendiente; por eso el AC conservador es la lectura descriptiva. Retirar las composiciones lo decide el equipo con la regla de RF-14.7; la lectura solo dice si la regla se cumple.
 
-**Abierto para el sponsor:** el último edge adopta lo habitual en una comparación así —quien vio y descartó cuenta en el grupo que la vio, y el descarte se muestra aparte—; confirmar o pedir que cuente como grupo propio.
+**Resuelto por el sponsor (D73, 2026-10-02), opción conservadora:** quien vio y descartó una composición **cuenta en el grupo que la vio**, y el descarte se muestra aparte. Es lo que ya decía el último edge; no cambia el AC.
+
+**Sesiones reales (D68).** Solo cuentan las visitas con código verificado de un correo que no es `@trycore.com`, por un enlace sin la casilla «demo» (HU-188). D68 no fija el umbral de suficiencia: la lectura sigue siendo descriptiva (error).
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-14.7 (RF-14.7.0, RF-14.7.3) · D-19 · ADR-0006 (eventos de falsación, `v_composiciones`, H32) · T-26 · sale de HU-170 · depende de HU-167
+Épica madre: **EP-008** · PRD v4.17 · RF-14.7 (RF-14.7.0, RF-14.7.3) · D-19 · ADR-0006 (eventos de falsación, `v_composiciones`, H32) · T-26 · D68 y D73 (sponsor, 2026-10-02) · sale de HU-170 · depende de HU-167
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: solo usa el contrato de HU-167; no depende de HU-170 ni de HU-185; los datos reales llegan con EP-009 y EP-005 y mientras tanto dice «aún no se mide» |
-| N | Negociable | ✓ fija los dos grupos, las dos medidas y las dos condiciones de retirada del PRD; la forma de la lectura y el tratamiento del descarte son negociables |
+| N | Negociable | ✓ fija los dos grupos, las dos medidas y las dos condiciones de retirada del PRD; el tratamiento del descarte lo confirmó el sponsor (D73); la forma de la lectura es negociable |
 | V | Valiosa | ✓ es la única forma de aplicar la regla de retirada de RF-14.7, el primer peldaño de la venta de células (V2-4) |
 | E | Estimable | ✓ S: una consulta que asigna cada visita a un grupo y calcula promedio de perfiles y abandono, con dos rótulos |
 | S | Pequeña | ✓ S: una sola lectura en cinco escenarios |

@@ -13,7 +13,7 @@ depende_de: [HU-167]
 # HU-169 — Que mi rastro en el portal no lleve mi correo y caduque
 
 **Como** contacto de una cuenta cliente que entra al portal con su correo invitado,
-**quiero** que lo que hago en el portal se guarde sin mi correo, se desligue de mí al año y se borre a los dos años,
+**quiero** que lo que hago en el portal se guarde sin mi correo, se desligue de mí al año —o antes, si pido la supresión— y se borre a los dos años,
 **para** confiar en que Trycore mide el interés de mi empresa sin acumular para siempre un expediente de lo que miré.
 
 ## Criterios de aceptación
@@ -32,19 +32,25 @@ depende_de: [HU-167]
 **Entonces** ese campo se descarta, los eventos válidos se guardan
 **Y** el registro técnico solo cuenta lo recibido y lo descartado, sin el contenido del lote, el token ni la dirección IP
 
-### Edge case — eventos con más de 12 meses
+### Edge case — el rastro caduca con el tiempo
 
-**Dado** que tengo eventos de hace más de 12 meses,
+**Dado** que tengo eventos con la antigüedad de la tabla,
 **cuando** corre la tarea diaria de retención,
-**Entonces** esos eventos dejan de estar ligados a mi identificador interno y pasan a un seudónimo
-**Y** los informes de esos meses conservan sus conteos, pero ya no muestran a qué contacto corresponden
+**Entonces** esos eventos y los informes de ese período quedan como dice la tabla
 
-### Edge case — eventos con más de 24 meses
+| Antigüedad de los eventos | Qué pasa con los eventos | Qué muestra un informe de ese período |
+|---|---|---|
+| 11 meses | siguen ligados a mi identificador interno | los conteos y a qué contacto corresponden |
+| 13 meses | pasan a un seudónimo y dejan de estar ligados a mi identificador | los conteos, sin decir a qué contacto corresponden |
+| 25 meses | se eliminan | que el período está fuera del plazo de retención, en lugar de ceros |
 
-**Dado** que hay eventos de hace más de 24 meses,
+### Edge case — pido la supresión antes de los 24 meses
+
+**Dado** que pedí la supresión de mis datos por el canal que indica el aviso de privacidad y un administrador la registró en el panel para mi contacto,
 **cuando** corre la tarea diaria de retención,
-**Entonces** esos eventos se eliminan
-**Y** un informe que pida ese período lo declara fuera del plazo de retención en lugar de mostrar ceros
+**Entonces** todos mis eventos dejan de estar ligados a mi identificador interno y quedan sin contacto ni seudónimo, sin esperar a los 12 meses
+**Y** los informes conservan sus conteos, pero ya no muestran a qué contacto corresponden
+**Y** el panel muestra la supresión como aplicada, con su fecha
 
 ### Error — la tarea de retención deja de correr
 
@@ -60,21 +66,23 @@ Cubre la parte de **privacidad de RF-7** frente a la **Ley 1581 de 2012** (§8, 
 
 **El texto de las consultas sin coincidencia** no vive en los eventos sino en `operacion.consultas_sin_coincidencia` (ADR-0004, H43), con su propio enmascarado de correos, teléfonos y nombres del inventario y la misma retención. Su exposición en Medición la cubre HU-172.
 
-**Abierto para el sponsor (sin decidir en el PRD ni en los ADR):**
-- Si el contacto cliente debe **autorizar** la telemetría atribuida o basta informarla en el **aviso de privacidad** (ADR-0006 deja pendiente reflejar la retención en ese aviso), y quién redacta ese texto.
-- Cómo se atiende una **solicitud de supresión** de un contacto antes de los 24 meses (T-6 la resolvió para la auditoría, no para la telemetría).
+**Resuelto por el sponsor (D65, 2026-10-02): solo aviso de privacidad, sin casilla.** El contacto no autoriza la telemetría atribuida con una casilla: basta informarla en el **aviso de privacidad** enlazado en la puerta de acceso. Ver el aviso es una capacidad propia del cliente en la puerta y vive en **HU-187** (EP-008), que también dice qué plazos de esta historia debe declarar el aviso.
+
+**Supresión antes de los 24 meses (opción conservadora, a confirmar).** La HU no tenía opción escrita; se adopta la que más protege al titular sin romper los informes: al registrar un administrador la solicitud de supresión de un contacto, la siguiente corrida de la tarea diaria **anonimiza** todos sus eventos —sin contacto ni seudónimo, irreversible— y los conteos se conservan. Un dato anónimo ya no es dato personal (Ley 1581), así que la supresión se cumple sin borrar filas que sostienen meses cerrados. **Alcance que añade:** un control en el panel, solo para administradores, que registra la supresión de un contacto por su correo (el servidor lo traduce a `contacto_id`, el correo no se guarda en la solicitud) y la muestra como pendiente o aplicada. **Fuera de esta historia:** el correo del contacto en la lista nominal del enlace (EP-001) y su contacto en HubSpot; si la supresión los alcanza lo debe decidir el sponsor con Jurídico.
+
+**Revisión 2026-10-02.** Para dar cabida a la supresión sin pasar de cinco escenarios, los dos edges de 12 y 24 meses se unen en uno con tabla de ejemplos (11, 13 y 25 meses: a los dos lados de cada plazo). Ningún caso se pierde.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.3 · §8 Privacidad (Ley 1581) · §8.3 Respaldo · ADR-0006 (CRN-10, QA-5, QA-13, H13, H24, H40) · T-6 · depende de HU-167
+Épica madre: **EP-008** · PRD v4.17 · RF-7.3 · §8 Privacidad (Ley 1581) · §8.3 Respaldo · ADR-0006 (CRN-10, QA-5, QA-13, H13, H24, H40) · T-6 · D65 (sponsor, 2026-10-02) · relacionada con HU-187 (aviso de privacidad) · depende de HU-167
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: actúa sobre la tabla de HU-167; no depende de ninguna pantalla ni épica futura |
-| N | Negociable | ✓ fija plazos (decididos por el sponsor), ausencia de correo y registros sin contenido; la forma del seudónimo y del aviso técnico es del equipo |
+| N | Negociable | ✓ fija plazos (decididos por el sponsor), ausencia de correo, registros sin contenido y la supresión por anonimización (opción conservadora, a confirmar); la forma del seudónimo, del control de supresión y del aviso técnico es del equipo |
 | V | Valiosa | ✓ el contacto cliente tiene una garantía concreta sobre sus datos y Trycore cumple la temporalidad que exige la Ley 1581 |
-| E | Estimable | ✓ M: validación del lote, tarea diaria con seudonimización y borrado por partición, exclusión del volcado y su vigilancia; todo diseñado en ADR-0006 |
-| S | Pequeña | ✓ M: una capacidad (proteger y caducar el rastro) en cinco escenarios |
-| T | Testeable | ✓ reloj simulado con eventos de 11, 13 y 25 meses, un lote con campos prohibidos, la salida del volcado y la tarea detenida dan resultados observables |
+| E | Estimable | ✓ M en el límite alto: validación del lote, tarea diaria con seudonimización y borrado por partición, anonimización por supresión con su control en el panel, exclusión del volcado y su vigilancia; la retención está diseñada en ADR-0006, la supresión no (añade incertidumbre) |
+| S | Pequeña | ✓ M, justa: una capacidad (proteger y caducar el rastro, también a petición) en cinco escenarios, uno con tabla; si al estimar se pasa, la supresión sale a su propia historia, no se recorta |
+| T | Testeable | ✓ reloj simulado con eventos de 11, 13 y 25 meses, una supresión registrada, un lote con campos prohibidos, la salida del volcado y la tarea detenida dan resultados observables |
