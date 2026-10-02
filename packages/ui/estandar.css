@@ -1,6 +1,6 @@
 /* Encabezado del estándar Neural-Grid y respaldo del servicio (HU-159; prototipo hero-neural-grid y
    franja-servicio). En el flujo de la página: nada fijo ni superpuesto que reaparezca sobre la lista. */
-.ee-estandar { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--tc-sp-6); align-items: start; padding: var(--tc-sp-6); border: 1px solid var(--tc-primary-surface-border); border-radius: var(--tc-r-lg); background: var(--tc-primary-surface); }
+.ee-estandar { margin: 0 0 var(--tc-sp-10); display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--tc-sp-6); align-items: start; padding: var(--tc-sp-6); border: 1px solid var(--tc-primary-surface-border); border-radius: var(--tc-r-lg); background: var(--tc-primary-surface); }
 .ee-estandar__marca { width: 96px; height: 96px; }
 .ee-anillo { fill: none; stroke: var(--tc-primary-surface-border); stroke-width: 2; }
 .ee-nucleo { fill: var(--tc-primary); }
@@ -15,7 +15,7 @@
 .ee-dim__papel { font-size: var(--tc-fs-small); color: var(--tc-primary-ink); }
 .ee-dim--servicio .ee-dim__papel { color: var(--tc-text-m); }
 .ee-dim__detalle { font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-.ee-respaldo { padding: var(--tc-sp-6) 0 0; border-top: 1px solid var(--tc-border); }
+.ee-respaldo { margin-top: var(--tc-sp-10); padding: var(--tc-sp-6) 0 0; border-top: 1px solid var(--tc-border); }
 .ee-respaldo__titulo { margin: 0; font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
 .ee-respaldo__lista { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tc-sp-4); margin: var(--tc-sp-4) 0 0; padding: 0; list-style: none; }
 .ee-respaldo__lista li { display: grid; gap: var(--tc-sp-1); }
