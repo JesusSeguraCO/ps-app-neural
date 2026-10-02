@@ -1,0 +1,9 @@
+
+ RUN  v5.0.2 /Users/cmo/Local/claude/Apps/App People Service
+
+
+ Test Files  7 passed (7)
+      Tests  103 passed (103)
+   Start at  20:38:20
+   Duration  8.56s (tests 94%, import 3%, transform 3%)
+

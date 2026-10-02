@@ -1,0 +1,42 @@
+[
+ {
+  "item_id": "HU-125-ac1-borrador-catalogo",
+  "kind": "hu_ac",
+  "ref": "HU-125 · Happy path — perfil nuevo en borrador"
+ },
+ {
+  "item_id": "HU-125-ac2-familia-sin-modalidades",
+  "kind": "hu_ac",
+  "ref": "HU-125 · Error — familia sin modalidades de prueba"
+ },
+ {
+  "item_id": "HU-125-ac3-incompletos-que-falta",
+  "kind": "hu_ac",
+  "ref": "HU-125 · Error — campos obligatorios incompletos"
+ },
+ {
+  "item_id": "HU-125-ac4-parecidos-antes-de-crear",
+  "kind": "hu_ac",
+  "ref": "HU-125 · Edge — el valor que necesito no está en el catálogo"
+ },
+ {
+  "item_id": "HU-127-ac1-nominal-quien-cuando",
+  "kind": "hu_ac",
+  "ref": "HU-127 · Happy path — consentimiento nominal y explícito"
+ },
+ {
+  "item_id": "HU-127-ac2-anonimizado-rechazado",
+  "kind": "hu_ac",
+  "ref": "HU-127 · Error — consentimiento anterior para publicación anonimizada"
+ },
+ {
+  "item_id": "HU-127-ac3-revocado-despublica",
+  "kind": "hu_ac",
+  "ref": "HU-127 · Error — consentimiento revocado (RF-19.2)"
+ },
+ {
+  "item_id": "HU-127-ac4-parcial-despersonaliza",
+  "kind": "hu_ac",
+  "ref": "HU-127 · Edge — consentimiento parcial"
+ }
+]

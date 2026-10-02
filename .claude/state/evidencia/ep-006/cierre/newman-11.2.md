@@ -15,3 +15,7 @@ exportan y lee los de consulta; sin sesión, 401 sin datos; sin CSRF, 403.
 Ajustes que dejó la primera corrida (contrato real, no cambio de producto): una fecha que no existe es 422 `fecha_invalida`
 (no 400); la observadora que pide un borrador inexistente recibe 404 (pasa el permiso y llega al recurso); el id de la
 diferencia con Operaciones se toma de la pestaña Colocados (no hay un GET de diferencias).
+
+## Re-anclaje a HEAD b4110f8 (2026-10-01, tras los arreglos de 11.3 en importación y colocados)
+
+Mismo runner `tests/postman/correr-ep-006.sh`: **226 peticiones, 350 aserciones, 0 fallos**. Log: `newman-ep-006-head-b4110f8.log`.

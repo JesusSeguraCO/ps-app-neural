@@ -1,0 +1,76 @@
+[
+ {
+  "item": "HU-125-ac1-borrador-catalogo",
+  "mutante": "el alta nace publicada",
+  "fichero": "packages/infra/src/postgres/perfiles-panel.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  11 failed | 7 passed (18)"
+ },
+ {
+  "item": "HU-125-ac2-familia-sin-modalidades",
+  "mutante": "el selector nunca ve familias sin modalidades",
+  "fichero": "packages/infra/src/postgres/perfiles-panel.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  1 failed | 17 passed (18)"
+ },
+ {
+  "item": "HU-125-ac3-incompletos-que-falta",
+  "mutante": "no señala la ciudad que falta",
+  "fichero": "packages/dominio/src/inventario/perfil.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  2 failed | 27 passed (29)"
+ },
+ {
+  "item": "HU-127-ac1-nominal-quien-cuando",
+  "mutante": "no guarda quién lo registró",
+  "fichero": "packages/infra/src/postgres/perfiles-panel.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  2 failed | 16 passed (18)"
+ },
+ {
+  "item": "HU-127-ac2-anonimizado-rechazado",
+  "mutante": "acepta el anonimizado",
+  "fichero": "packages/dominio/src/inventario/perfil.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  2 failed | 27 passed (29)"
+ },
+ {
+  "item": "HU-127-ac3-revocado-despublica",
+  "mutante": "revocar no saca de publicado",
+  "fichero": "packages/dominio/src/inventario/estados.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  4 failed | 46 passed (50)"
+ },
+ {
+  "item": "HU-127-ac4-parcial-despersonaliza",
+  "mutante": "el portal ve el cliente sin autorización",
+  "fichero": "packages/infra/migraciones/0014_perfil_y_consentimiento.ts",
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Tests  2 failed | 24 passed (26)"
+ },
+ {
+  "item": "HU-089-ac2-seleccionar-no-escribir",
+  "mutante": "Enter guarda el texto escrito como valor",
+  "fichero": "apps/panel/src/inventario/BuscadorCatalogo.tsx",
+  "build_rc": 0,
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Error: expect(locator).toBeVisible() failed | 1 failed"
+ },
+ {
+  "item": "HU-125-ac4-parecidos-antes-de-crear",
+  "mutante": "la hoja de alta no muestra los parecidos",
+  "fichero": "apps/panel/src/inventario/EditorPerfil.tsx",
+  "build_rc": 0,
+  "rc": 1,
+  "resultado": "MUERTO",
+  "tests": "Error: expect(locator).toBeVisible() failed | 1 failed"
+ }
+]

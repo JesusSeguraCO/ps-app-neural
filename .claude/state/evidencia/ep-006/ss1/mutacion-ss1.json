@@ -1,0 +1,191 @@
+[
+ {
+  "item": "HU-089-ac1-rol-familia-con-modalidades",
+  "mutante": "el rol se crea sin exigir familia",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× la familia es obligatoria para un rol 3ms"
+  ]
+ },
+ {
+  "item": "HU-089-ac2-seleccionar-no-escribir",
+  "mutante": "las coincidencias solo por igualdad exacta",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× «Fig» ofrece «Figma» 3ms",
+   "× prefijo antes que contenido y sin distinguir acentos 0ms"
+  ]
+ },
+ {
+  "item": "HU-089-ac3-parecido-fgima",
+  "mutante": "umbral de parecido en cero",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× error — parecido: «Fgima» ofrece «Figma» y exige confirmar 3ms",
+   "× error: «Fgima» se parece a «Figma»; crearla exige confirmar que es distinta 3ms"
+  ]
+ },
+ {
+  "item": "HU-089-ac4-identico-mayusculas",
+  "mutante": "normalizar distingue mayúsculas",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× quita mayúsculas, diacríticos (incluida la ñ) y espacios de más 3ms",
+   "× error — idéntico salvo mayúsculas: «figma» se bloquea y nombra a «Figma» 1ms",
+   "× idéntico salvo acentos o espacios también se bloquea 0ms"
+  ]
+ },
+ {
+  "item": "HU-089-ac5-familia-sin-modalidades",
+  "mutante": "nunca advierte familia sin modalidades",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× edge: familia sin modalidades → el rol queda creado con la advertencia 5ms"
+  ]
+ },
+ {
+  "item": "HU-089-rf-8-16-8-modalidad-texto-cliente",
+  "mutante": "no exige el texto de cara al cliente",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× RF-8.16.8: una modalidad de prueba exige su texto de cara al cliente y su familia 3ms"
+  ]
+ },
+ {
+  "item": "HU-143-ac1-desactivar-en-uso",
+  "mutante": "desactivar no cambia el activo",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× desactivar informa cuántas fichas dependen, no se ofrece para elegir y las fichas lo conservan 5ms"
+  ]
+ },
+ {
+  "item": "HU-143-ac2-impacto-fusion",
+  "mutante": "el impacto lista perfiles de cualquier valor",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× la vista de impacto no escribe nada y cuenta los perfiles que pasarán 3ms",
+   "× confirmar: los 3 perfiles pasan a Figma, Fgima sale del catálogo, auditoría con origen fusion 4ms"
+  ]
+ },
+ {
+  "item": "HU-143-ac3-confirmar-fusion",
+  "mutante": "la fusión no retira las filas hijas del origen",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× reasigna sin duplicar, sube la versión de los perfiles y retira el origen 5ms"
+  ]
+ },
+ {
+  "item": "HU-143-ac4-fusion-imposible",
+  "mutante": "no rechaza fusionar un valor consigo mismo",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× error: mismo valor o catálogos distintos → rechazo con motivo, nada cambia 2ms"
+  ]
+ },
+ {
+  "item": "HU-143-ac5-cancelar-fusion",
+  "mutante": "ver el impacto ya escribe",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× la vista de impacto no escribe nada y cuenta los perfiles que pasarán 3ms"
+  ]
+ },
+ {
+  "item": "HU-139-ac1-equivalencia",
+  "mutante": "el vocabulario ignora el léxico aprobado",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× happy: registro un término con su equivalencia y la búsqueda siguiente del portal lo reconoce 25ms",
+   "× happy: apruebo una propuesta tal cual → entra con todas sus equivalencias y se reconoce 10ms",
+   "× happy: apruebo una propuesta editada → entra tal como quedó (sin lo que quité) 3ms"
+  ]
+ },
+ {
+  "item": "HU-139-ac2-aprobar-propuesta",
+  "mutante": "aprobar editada ignora la edición",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× happy: apruebo una propuesta editada → entra tal como quedó (sin lo que quité) 6ms"
+  ]
+ },
+ {
+  "item": "HU-139-ac3-rechazar-propuesta",
+  "mutante": "rechazar no cambia el estado",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× edge: rechazo una propuesta → no entra, deja de ofrecerse y no puede volver a proponerse 4ms"
+  ]
+ },
+ {
+  "item": "HU-139-ac4-valor-inexistente",
+  "mutante": "un valor inexistente cae al primero del catálogo",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× error: equivalencia a un valor inexistente → rechazo con lo más parecido del catálogo, nada escrito 3ms"
+  ]
+ },
+ {
+  "item": "HU-139-ac5-candidatas",
+  "mutante": "una candidata decidida se puede volver a decidir",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× edge: las consultas sin coincidencia se ofrecen como candidatas y van al léxico o a reclutamiento 17ms"
+  ]
+ },
+ {
+  "item": "IP-ss1-migracion-permisos",
+  "mutante": "el panel recibe DELETE sobre el léxico",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× ps_panel: DELETE FROM inventario.lexico → permiso denegado 3ms"
+  ]
+ },
+ {
+  "item": "IP-ss1-unidad-trabajo-auditoria",
+  "mutante": "la unidad de trabajo no sube la versión global",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× happy: rol nuevo en familia con modalidades → creado, sin advertencia, auditado y versión +1 15ms",
+   "× V3-1: escritores concurrentes dejan la cadena íntegra y una versión por escritura 20ms"
+  ]
+ },
+ {
+  "item": "IP-ss1-observador-403",
+  "mutante": "la observadora puede escribir catálogos",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× el observador solo puede cerrar su sesión 3ms",
+   "× EP-006: catálogos y léxico solo los escribe la administradora 0ms"
+  ]
+ },
+ {
+  "item": "IP-ss1-lexico-portal",
+  "mutante": "el portal pierde la vista del léxico aprobado",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× el portal lee el léxico aprobado y los valores buscables por sus vistas 3ms",
+   "× happy: registro un término con su equivalencia y la búsqueda siguiente del portal lo reconoce 8ms",
+   "× guardar el mismo término (otras mayúsculas) con otro tipo lo completa sin duplicarlo 20ms"
+  ]
+ },
+ {
+  "item": "IP-ss1-worker-proponer-lexico",
+  "mutante": "el lote no veta nombres de perfiles",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× excluye las consultas sin permiso para el modelo y las que contienen un nombre o apellido de un perfil 6ms",
+   "× el texto enviado no contiene ningún nombre ni apellido del inventario (sin distinguir tildes) 1ms",
+   "× el lote enviado no lleva ni la consulta con un nombre de perfil ni la que no permite el modelo 8ms"
+  ]
+ },
+ {
+  "item": "BND-llm-interpreter-suggest-lexicon-entries",
+  "mutante": "la llave viaja en la URL en vez de la cabecera",
+  "resultado": "MUERTO",
+  "tests_caidos": [
+   "× envía la llave por cabecera, esquema de respuesta y solo el lote; acepta la respuesta válida 24ms"
+  ]
+ }
+]
