@@ -120,7 +120,9 @@ export function FichaPerfil({
         </div>
         {cerrar}
       </header>
-      <div className="pp-hoja__cuerpo">
+      {/* Con contenido largo el cuerpo se desplaza: enfocable para recorrerlo con el teclado (WCAG
+          2.1.1, regla axe scrollable-region-focusable). */}
+      <div className="pp-hoja__cuerpo" tabIndex={0}>
         {f.resumen && <p className="fp-resumen">{f.resumen}</p>}
         <section className="fp-seccion" aria-labelledby="fp-verificado">
           <div className="pp-seccion__cabecera">

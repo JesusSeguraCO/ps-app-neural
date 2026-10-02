@@ -386,6 +386,19 @@ test.describe("sesión vencida al guardar (HU-138 escenario 2, HU-151)", () => {
 });
 
 // Crea un perfil publicado por la API del panel (alta → consentimiento → publicar) y devuelve su código.
+// Un alcance SARO activo del catálogo (lo siembra `sembrarFicticios`; si la BD se sembró antes de la
+// 0027, se crea el mismo).
+async function alcanceSaro(bd: pg.Client): Promise<string> {
+  await bd.query(
+    `INSERT INTO inventario.catalogo_alcances_saro (nombre, texto_cliente)
+     SELECT 'Antecedentes judiciales, disciplinarios y fiscales', 'Verificamos sus antecedentes judiciales, disciplinarios y fiscales.'
+      WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_alcances_saro WHERE activo)`,
+  );
+  return (
+    await bd.query(`SELECT id FROM inventario.catalogo_alcances_saro WHERE activo ORDER BY nombre LIMIT 1`)
+  ).rows[0].id as string;
+}
+
 async function crearPublicado(
   page: import("@playwright/test").Page,
   nombre = "E2E",
@@ -415,6 +428,10 @@ async function crearPublicado(
     modalidadTrabajoId: await id("catalogo_modalidades", "hibrido"),
     disponibilidad: { opcion: "ahora" },
     modalidadPruebaId: await id("catalogo_modalidades_prueba", "Prueba práctica revisada por un arquitecto"),
+    // Validaciones de entrada (EP-003, D61): publicar exige alcance SARO del catálogo y las dos fechas.
+    saroAlcanceId: await alcanceSaro(bd),
+    saroFecha: "2026-03-15",
+    discFecha: "2026-04-10",
     experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
   };
   await bd.end();

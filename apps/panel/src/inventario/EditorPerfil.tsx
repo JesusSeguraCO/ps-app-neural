@@ -15,6 +15,7 @@ import { horaCortaDeColombia, horaDeColombia, fechaCivil } from "@ps/dominio/fec
 import { ETIQUETA_ESTADO } from "@ps/dominio/inventario/estados";
 import {
   MENSAJE_FECHA_FUTURA,
+  MOTIVO_CONDICION,
   OPCIONES_DISPONIBILIDAD,
   clienteEnDescripcion,
   evaluarPublicacion,
@@ -1297,7 +1298,7 @@ export function EditorPerfil(p: {
                       {faltaEntrada("saro_alcance") && (
                         <ErrorCampo
                           id="pe-saro-alcance-error"
-                          texto={`${faltaDe({ motivo: "el alcance de la verificación SARO" })}.`}
+                          texto={`${faltaDe({ motivo: MOTIVO_CONDICION.saro_alcance })}.`}
                         />
                       )}
                       {alcance && (
@@ -1343,7 +1344,7 @@ export function EditorPerfil(p: {
                           faltaEntrada("saro_fecha") && (
                             <ErrorCampo
                               id="pe-saro-fecha-error"
-                              texto={`${faltaDe({ motivo: "la fecha de la verificación SARO" })}.`}
+                              texto={`${faltaDe({ motivo: MOTIVO_CONDICION.saro_fecha })}.`}
                             />
                           )
                         )}
@@ -1373,7 +1374,7 @@ export function EditorPerfil(p: {
                           faltaEntrada("disc_fecha") && (
                             <ErrorCampo
                               id="pe-disc-fecha-error"
-                              texto={`${faltaDe({ motivo: "la fecha de la evaluación DISC" })}.`}
+                              texto={`${faltaDe({ motivo: MOTIVO_CONDICION.disc_fecha })}.`}
                             />
                           )
                         )}
