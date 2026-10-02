@@ -102,7 +102,7 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
     panel = bd.como("ps_panel");
     portal = bd.como("ps_portal");
     await sembrarFicticios({
-      bd: bd.como("ps_worker"),
+      bd: bd.como("ps_panel"),
       auditoria: claves,
       appEnv: "ci",
       registrar: () => {},

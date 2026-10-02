@@ -107,14 +107,13 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
     beforeAll(async () => {
       bd = await crearBdPrueba();
       const entorno = { ...entornoDev("panel"), APP_ENV: "ci", DATABASE_URL: bd.urlDe("ps_panel") };
-      const worker = bd.como("ps_worker");
       await sembrarFicticios({
-        bd: worker,
+        bd: bd.como("ps_panel"),
         auditoria: { hmac: entorno.AUDIT_HMAC_KEY!, kek: entorno.AUDIT_KEK! },
         appEnv: "ci",
         registrar: () => {},
       });
-      await sembrarLexicoFicticio({ bd: worker, appEnv: "ci", registrar: () => {} });
+      await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
       portal = bd.como("ps_portal");
       admin = await sesion("karen@trycore.com", "administrador");
       observador = await sesion("mirar@trycore.com", "observador");

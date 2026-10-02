@@ -74,7 +74,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       const entorno = { ...entornoDev("panel"), APP_ENV: "ci", DATABASE_URL: bd.urlDe("ps_panel") };
       const auditoria = { hmac: entorno.AUDIT_HMAC_KEY!, kek: entorno.AUDIT_KEK! };
       const worker = bd.como("ps_worker");
-      await sembrarFicticios({ bd: worker, auditoria, appEnv: "ci", registrar: () => {} });
+      await sembrarFicticios({ bd: bd.como("ps_panel"), auditoria, appEnv: "ci", registrar: () => {} });
       admin = await sesion("karen@trycore.com", "administrador");
       observador = await sesion("mirar@trycore.com", "observador");
       panel = await arrancarServidor("panel", entorno);

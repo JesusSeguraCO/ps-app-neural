@@ -50,7 +50,7 @@ describe.skipIf(!HAY_BD)("registro de auditoría por perfil (HU-138)", () => {
     bd = await crearBdPrueba();
     panel = bd.como("ps_panel");
     worker = bd.como("ps_worker");
-    await sembrarFicticios({ bd: worker, auditoria: claves, appEnv: "ci", registrar: () => {} });
+    await sembrarFicticios({ bd: bd.como("ps_panel"), auditoria: claves, appEnv: "ci", registrar: () => {} });
     karen = await usuario("karen.rodriguez@trycore.com");
     eida = await usuario("eida.tinjaca@trycore.com");
 

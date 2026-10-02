@@ -2,9 +2,9 @@
 # Variables de entorno de desarrollo local por proceso (ADR-0010 §3.3), con todas las fronteras
 # como dobles declarados. Secretos de desarrollo fijos: nunca valen fuera de local.
 #
-#   eval "$(scripts/entorno-dev.sh portal)"    # o panel, worker, migrar
+#   eval "$(scripts/entorno-dev.sh portal)"    # o panel, worker, migrar, sembrar
 set -euo pipefail
-PROCESO="${1:?uso: entorno-dev.sh portal|panel|worker|migrar}"
+PROCESO="${1:?uso: entorno-dev.sh portal|panel|worker|migrar|sembrar}"
 POOL=postgres://ps_%s:dev@127.0.0.1:64329/ps
 DIRECTA=postgres://ps_%s:dev@127.0.0.1:54329/ps
 s() { printf 'dev-%s-%s' "$1" "0123456789abcdef0123456789abcdef"; }
@@ -49,6 +49,13 @@ case "$PROCESO" in
   migrar)
     echo "export APP_ENV=local"
     echo "export MIGRATOR_DATABASE_URL=$(printf "$DIRECTA" migrador)"
+    ;;
+  sembrar)
+    echo "export APP_ENV=local"
+    echo "export SEMBRAR_PANEL_URL=$(printf "$POOL" panel)"
+    echo "export SEMBRAR_WORKER_URL=$(printf "$POOL" worker)"
+    echo "export AUDIT_HMAC_KEY=$(s auditoria)"
+    echo "export AUDIT_KEK=$(s kek)"
     ;;
   *) echo "proceso desconocido: $PROCESO" >&2; exit 2 ;;
 esac

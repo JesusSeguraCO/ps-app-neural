@@ -105,7 +105,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Registro de auditoría por perfi
     bd = await crearBdPrueba();
     const worker = bd.como("ps_worker");
     const ps = bd.como("ps_panel");
-    await sembrarFicticios({ bd: worker, auditoria: claves, appEnv: "ci", registrar: () => {} });
+    await sembrarFicticios({ bd: bd.como("ps_panel"), auditoria: claves, appEnv: "ci", registrar: () => {} });
     const idKaren = await usuario("karen.rodriguez@trycore.com", "administrador");
     karen = { usuarioId: idKaren, correo: "karen.rodriguez@trycore.com" };
     admin = await sesion(idKaren, "administrador");

@@ -29,11 +29,11 @@ describe("sembrarFicticios se niega en producción", () => {
   });
 });
 
-describe.skipIf(!HAY_BD)("sembrarFicticios en local (ps_worker)", () => {
+describe.skipIf(!HAY_BD)("sembrarFicticios en local (ps_migrador; ps_worker no escribe consentimientos, 0026)", () => {
   let bd: BdPrueba;
   const eventos: Array<Record<string, unknown>> = [];
   const ctx = () => ({
-    bd: bd.como("ps_worker"),
+    bd: bd.como("ps_panel"),
     auditoria: CLAVES,
     appEnv: "ci" as const,
     registrar: (e: Record<string, unknown>) => eventos.push(e),
