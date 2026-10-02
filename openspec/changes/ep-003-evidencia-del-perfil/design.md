@@ -125,3 +125,15 @@ construyeron con los patrones aprobados de EP-006 (pestaña con alerta ámbar, s
 incompletos de demostración se siembran aparte (`sembrarHeredadosIncompletos`, `--heredados-incompletos`)
 para no mover los conteos del banco ficticio que fijan los tests. El guardado devuelve `avisos[]` junto al
 `motivo`/`campo` del rechazo existente (no se añade un `errores[]` paralelo: el rechazo ya es único).
+
+### Decisiones de construcción · SS3 (HU-191)
+
+- Las fechas SARO y DISC de la importación aceptan AAAA-MM-DD y DD/MM/AAAA (el ejemplo «15/11/2026» de
+  HU-191 debe leerse como fecha futura, no como ilegible) y se guardan como AAAA-MM-DD.
+- El bloqueo B.4 del emparejador (toda columna «DISC») deja pasar solo la fecha de la evaluación DISC; el
+  resultado detallado sigue sin columna.
+- La 0029 también amplía `solo_claves_de_formato` con `saroAlcance`, `saroFecha` y `discFecha` (la fila de
+  un lote debe poder guardarlas); su `down` restaura la de la 0015. Revertir un lote solo restaura SARO/DISC
+  si su estado previo los guardó (un lote de antes de EP-003 no los vacía).
+- Pantallas sin dibujo (columnas nuevas en emparejar, vista previa y errores): patrones aprobados de EP-006
+  (D124), capturas en `.claude/state/evidencia/ep-003/ss3/fidelidad.md`.
