@@ -47,12 +47,12 @@
 
 ## 5. Sub-slice 5 — Ficha: verificado vs declarado, validación técnica y conversación por Trycore (HU-154, HU-155, HU-157)
 
-- [ ] 5.1 Test primero que pide la respuesta de la ficha y de la tarjeta con un perfil sembrado con `aporte`, `vinculo` y todos los campos B.4 en el panel, y comprueba su ausencia; ajustar vistas/contratos si falla; verificar «datos internos que nunca cruzan al portal» de HU-154
-- [ ] 5.2 Bloques «Verificado por Trycore» y «Declarado por la persona» en `FichaPerfil` (tratamiento propio, la experiencia solo en lo declarado); verificar los dos escenarios restantes de HU-154 en el portal y en la vista previa del panel
-- [ ] 5.3 Validación técnica desplegable por clic/toque con los cinco campos de D59 en orden fijo, «Cumple el estándar», Nivel 0 sin fecha y la línea de la sesión de alineación, sin enlaces a artefactos; verificar los tres escenarios de HU-155 en computador y teléfono
-- [ ] 5.4 Bloque de contacto con `ContactoTrycore` y el texto de representación comercial, sin acción «Escribir a Trycore» ni vía a la persona, idéntico para los tres vínculos; verificar los tres escenarios de HU-157
+- [x] 5.1 Test primero que pide la respuesta de la ficha y de la tarjeta con un perfil sembrado con `aporte`, `vinculo` y todos los campos B.4 en el panel, y comprueba su ausencia; ajustar vistas/contratos si falla; verificar «datos internos que nunca cruzan al portal» de HU-154
+- [x] 5.2 Bloques «Verificado por Trycore» y «Declarado por la persona» en `FichaPerfil` (tratamiento propio, la experiencia solo en lo declarado); verificar los dos escenarios restantes de HU-154 en el portal y en la vista previa del panel
+- [x] 5.3 Validación técnica desplegable por clic/toque con los cinco campos de D59 en orden fijo, «Cumple el estándar», Nivel 0 sin fecha y la línea de la sesión de alineación, sin enlaces a artefactos; verificar los tres escenarios de HU-155 en computador y teléfono
+- [x] 5.4 Bloque de contacto con `ContactoTrycore` y el texto de representación comercial, sin acción «Escribir a Trycore» ni vía a la persona, idéntico para los tres vínculos; verificar los tres escenarios de HU-157
 - [ ] 5.5 Fidelidad con captura MCP de la ficha (`validacion-tecnica` Nivel 1 y Nivel 0, bloques verificado/declarado, contacto) en computador y teléfono
-- [ ] 5.6 Journey smoke: abrir la ficha desde la selección → desplegar la validación técnica → ver el contacto vigente → cambiar el contacto en el panel → la ficha lo refleja; evidencia en `ss5/` y checkpoint
+- [x] 5.6 Journey smoke: abrir la ficha desde la selección → desplegar la validación técnica → ver el contacto vigente → cambiar el contacto en el panel → la ficha lo refleja; evidencia en `ss5/` y checkpoint
 
 ## 6. Sub-slice 6 — Ficha: SARO/DISC y cierre con condiciones, SLA y garantía (HU-156, HU-158)
 

@@ -157,3 +157,19 @@ para no mover los conteos del banco ficticio que fijan los tests. El guardado de
 - Sin migraciones: `catalogo_publicable` ya traía `sello_personal` y el orden de carga (0028). La reserva
   0030–0031 (D127) sigue libre.
 - Capturas y desviaciones frente al prototipo: `.claude/state/evidencia/ep-003/ss4/fidelidad.md`.
+
+### Decisiones de construcción · SS5 (HU-154, HU-155, HU-157) — elegidas por el modelo por delegación del sponsor
+
+- **Resultado publicado**: la ficha muestra siempre «Cumple el estándar» (B.8.2, HU-155); el texto libre que
+  escribe Talento Humano en el reporte (`resultado`, hasta 200 caracteres) sigue en el panel y en el contrato,
+  pero no se dibuja en la cara cliente, porque podría traer un puntaje o una nota.
+- **Prueba aplicada**: en Nivel 1 es el nombre de la modalidad del reporte; en Nivel 0, el texto de cara al
+  cliente de la modalidad. **Qué se evaluó** = los criterios confirmados. **Fecha** = mes de año (`mesDeAnio`).
+- **Línea de la sesión de alineación** solo en Nivel 1: en Nivel 0 no hay reporte y la línea se leería como
+  la promesa de un detalle que no existe (HU-155 · error).
+- **Desplegable** con `details/summary` nativo, abierto por omisión (pregunta abierta de HU-155, opción del
+  prototipo): clic, toque y teclado sin JavaScript ni hover.
+- **Bloque «Conversación con Trycore»** al final del cuerpo de la ficha, también en la vista previa del panel
+  (mismo componente, contacto leído en el servidor en cada carga). Copy en `packages/ui/src/copy.ts`,
+  marcado para revisión (D73).
+- Sin migraciones (0030–0031 siguen libres). Capturas: `.claude/state/evidencia/ep-003/ss5/fidelidad.md`.

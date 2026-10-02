@@ -1,0 +1,62 @@
+[
+ {
+  "item_id": "HU-154-ac1-verificado-y-declarado",
+  "kind": "hu_ac",
+  "ref": "HU-154"
+ },
+ {
+  "item_id": "HU-154-ac2-experiencia-solo-declarada",
+  "kind": "hu_ac",
+  "ref": "HU-154"
+ },
+ {
+  "item_id": "HU-154-ac3-datos-internos-b4",
+  "kind": "hu_ac",
+  "ref": "HU-154"
+ },
+ {
+  "item_id": "HU-155-ac1-cinco-campos-desplegable",
+  "kind": "hu_ac",
+  "ref": "HU-155"
+ },
+ {
+  "item_id": "HU-155-ac2-nivel0-sin-fecha",
+  "kind": "hu_ac",
+  "ref": "HU-155"
+ },
+ {
+  "item_id": "HU-155-ac3-sin-artefacto-alineacion",
+  "kind": "hu_ac",
+  "ref": "HU-155"
+ },
+ {
+  "item_id": "HU-157-ac1-conversacion-por-trycore",
+  "kind": "hu_ac",
+  "ref": "HU-157"
+ },
+ {
+  "item_id": "HU-157-ac2-sin-via-a-la-persona",
+  "kind": "hu_ac",
+  "ref": "HU-157"
+ },
+ {
+  "item_id": "HU-157-ac3-mismo-texto-tres-vinculos",
+  "kind": "hu_ac",
+  "ref": "HU-157"
+ },
+ {
+  "item_id": "INT-SS5-contacto-panel-a-ficha",
+  "kind": "integration_point",
+  "ref": "EP-003#contacto-ficha"
+ },
+ {
+  "item_id": "INT-SS5-vista-previa-misma-ficha",
+  "kind": "integration_point",
+  "ref": "EP-003#vista-previa-ss5"
+ },
+ {
+  "item_id": "INT-SS5-journey-smoke",
+  "kind": "integration_point",
+  "ref": "EP-003#journey-ss5"
+ }
+]
