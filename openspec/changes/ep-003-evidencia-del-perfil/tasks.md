@@ -28,12 +28,12 @@
 
 ## 3. Sub-slice 3 — Columnas SARO/DISC en importación, plantilla y exportación (HU-191)
 
-- [ ] 3.1 Contrato `CAMPOS_IMPORTACION` con `saro_alcance`, `saro_fecha`, `disc_fecha` (encabezados autoexplicativos, ejemplo, alias); tests de contrato primero
-- [ ] 3.2 Exportación (CSV y JSON) con el alcance en su forma registrada y plantilla con un alcance activo de ejemplo; verificar la ida y vuelta «sin cambios» y que la fila de ejemplo no da error
-- [ ] 3.3 `calcularPlan`: alcance contra el catálogo cerrado normalizado (desconocido o desactivado sin tenerlo → error, nunca valor nuevo), fecha futura o ilegible → error con motivo y valor exacto, `[vaciar]` en publicado → error, en borrador → se aplica; tests primero con los tres ejemplos y el de vaciar
-- [ ] 3.4 `aplicar_importacion` escribe los tres datos por `ServicioPerfiles` sin cambiar estados, con `origen = importacion` y actor; verificar «completar los publicados incompletos con una hoja» (dejan de marcarse, la ficha del portal muestra SARO y DISC, historial por importación)
-- [ ] 3.5 Fidelidad con captura MCP de la vista previa con las tres columnas, las filas con error de SARO/DISC y la plantilla
-- [ ] 3.6 Journey smoke: exportar → completar SARO/DISC de tres incompletos → pegar → vista previa → confirmar → listado sin marcas → ficha del portal con SARO y DISC; evidencia en `ss3/` y checkpoint
+- [x] 3.1 Contrato `CAMPOS_IMPORTACION` con `saro_alcance`, `saro_fecha`, `disc_fecha` (encabezados autoexplicativos, ejemplo, alias); tests de contrato primero
+- [x] 3.2 Exportación (CSV y JSON) con el alcance en su forma registrada y plantilla con un alcance activo de ejemplo; verificar la ida y vuelta «sin cambios» y que la fila de ejemplo no da error
+- [x] 3.3 `calcularPlan`: alcance contra el catálogo cerrado normalizado (desconocido o desactivado sin tenerlo → error, nunca valor nuevo), fecha futura o ilegible → error con motivo y valor exacto, `[vaciar]` en publicado → error, en borrador → se aplica; tests primero con los tres ejemplos y el de vaciar
+- [x] 3.4 `aplicar_importacion` escribe los tres datos por `ServicioPerfiles` sin cambiar estados, con `origen = importacion` y actor; verificar «completar los publicados incompletos con una hoja» (dejan de marcarse, la ficha del portal muestra SARO y DISC, historial por importación)
+- [ ] 3.5 (capturas hechas en `ss3/fidelidad.md`; pendiente de aprobación del sponsor, D124) Fidelidad con captura MCP de la vista previa con las tres columnas, las filas con error de SARO/DISC y la plantilla
+- [x] 3.6 Journey smoke: exportar → completar SARO/DISC de tres incompletos → pegar → vista previa → confirmar → listado sin marcas → ficha del portal con SARO y DISC; evidencia en `ss3/` y checkpoint
 
 ## 4. Sub-slice 4 — Tarjeta (HU-153, HU-081, HU-119)
 
