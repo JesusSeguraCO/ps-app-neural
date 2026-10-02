@@ -53,6 +53,7 @@ test.describe("tarjeta del perfil (EP-003 · SS4)", () => {
     // 1. Entrar con el código que llega al buzón.
     const worker = arrancarWorker();
     try {
+      await worker.listo();
       await page.goto(`/e/#t=${token}`);
       await page.getByLabel("Correo corporativo").fill(correo);
       await page.getByRole("button", { name: "Enviarme el código" }).click();

@@ -137,6 +137,9 @@ test.describe("validaciones de entrada SARO/DISC (HU-177, HU-176)", () => {
     // La revisión del nombre corre mientras se escribe: ninguno parecido; luego se crea.
     await expect(page.locator("#ct-nombre-val")).toContainText("Ningún alcance SARO parecido");
     await page.locator('button[form="ct-form"]').click();
+    await expect(page.getByText(`Alcance SARO creado: ${ALCANCE}.`)).toBeVisible();
+    // El listado va por uso y pagina de 25: el recién creado (0 usos) se busca por su nombre.
+    await page.goto(`/catalogos?tipo=alcance_saro&q=${encodeURIComponent(ALCANCE)}`);
     await expect(page.getByRole("row", { name: new RegExp(ALCANCE) })).toBeVisible();
     await expect(page.getByRole("row", { name: new RegExp(ALCANCE) })).toContainText(TEXTO);
 

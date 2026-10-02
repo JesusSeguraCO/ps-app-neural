@@ -62,6 +62,7 @@ test.describe("ficha del perfil · SARO, DISC y cierre (EP-003 · SS6)", () => {
 
     const worker = arrancarWorker();
     try {
+      await worker.listo();
       await page.goto(`/e/#t=${token}`);
       await page.getByLabel("Correo corporativo").fill(correo);
       await page.getByRole("button", { name: "Enviarme el código" }).click();

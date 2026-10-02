@@ -180,6 +180,7 @@ export async function enlace(codigos: string[], correo: string): Promise<string>
 // El worker real del worktree con el doble de Mailgun: registra cada correo «enviado» con su texto.
 export function arrancarWorker(): {
   proceso: ChildProcess;
+  listo: () => Promise<void>;
   codigoPara: (correo: string) => Promise<string>;
 } {
   const e = entorno("worker");
@@ -216,7 +217,25 @@ export function arrancarWorker(): {
       .toMatch(/^\d{6}$/);
     return codigo;
   };
-  return { proceso, codigoPara };
+  // Esperar a que el worker arranque y dé su primera vuelta antes de pedir el código: si la última vuelta
+  // registrada tiene más de 2 min, el portal da el worker por caído y despacha el código él mismo
+  // (workerCaido → procesarCodigoPropio) y el correo sale por el portal, no por este worker.
+  const listo = async () => {
+    await expect.poll(() => salida.includes('"worker_arrancado"'), { timeout: 30_000 }).toBe(true);
+    await expect
+      .poll(
+        () =>
+          conBd(async (bd) => {
+            const r = await bd.query(
+              `SELECT ultima_vuelta > now() - interval '30 seconds' AS reciente FROM operacion.worker_ciclo WHERE id = 1`,
+            );
+            return Boolean(r.rows[0]?.reciente);
+          }),
+        { timeout: 30_000, intervals: [200] },
+      )
+      .toBe(true);
+  };
+  return { proceso, listo, codigoPara };
 }
 
 export async function sinIncidenciasGraves(page: Page) {

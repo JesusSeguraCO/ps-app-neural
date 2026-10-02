@@ -184,6 +184,9 @@ test.describe("recorrido integrado de EP-003 (tarea 8.1)", () => {
       await page.locator("#ct-texto").fill(TEXTO);
       await expect(page.locator("#ct-nombre-val")).toContainText("Ningún alcance SARO parecido");
       await page.locator('button[form="ct-form"]').click();
+      await expect(page.getByText(`Alcance SARO creado: ${ALCANCE}.`)).toBeVisible();
+      // El listado va por uso y pagina de 25: el recién creado (0 usos) se busca por su nombre.
+      await page.goto(`${PANEL}/catalogos?tipo=alcance_saro&q=${encodeURIComponent(ALCANCE)}`);
       const filaAlcance = page.getByRole("row", { name: new RegExp(ALCANCE) });
       await expect(filaAlcance).toBeVisible();
       await expect(filaAlcance).toContainText(TEXTO);
@@ -270,6 +273,7 @@ test.describe("recorrido integrado de EP-003 (tarea 8.1)", () => {
         );
       const w1 = arrancarWorker();
       try {
+        await w1.listo();
         await expect
           .poll(valoresImportado, { timeout: 60_000, intervals: [500] })
           .toEqual({
@@ -290,6 +294,7 @@ test.describe("recorrido integrado de EP-003 (tarea 8.1)", () => {
       const token = await enlace([completo, heredado!, importado!], correo);
       const worker = arrancarWorker();
       try {
+        await worker.listo();
         await page.goto(`/e/#t=${token}`);
         await page.getByLabel("Correo corporativo").fill(correo);
         await page.getByRole("button", { name: "Enviarme el código" }).click();
