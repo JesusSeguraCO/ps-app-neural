@@ -9,11 +9,14 @@ Arreglos de los bloqueantes en **PR #11** (`fix/release-r0-hallazgos`), runner v
 
 ## Pasos que faltan
 1. CI del PR #11 en verde → merge (decisión del sponsor).
-2. Re-verificación incremental (sobre el diff de PR #11 + rutas gemelas) de `smell`, `stack_arch`, `coherence` y `ux`
-   con sus agentes; contrastar una evidencia por PASS.
+2. ✅ Re-verificación incremental hecha (2026-10-02, `1f9f6cf`): smell, stack_arch, coherence y ux **PASS** (sección
+   «Re-verificación» al final de cada informe). Veredictos a reportar: security PASS · smell PASS · stack_arch PASS ·
+   coherence PASS · ux PASS · integration PARCIAL (riesgos declarados) → sin auto-cierre, cierre humano.
 3. Reportar los 6 veredictos con `release-ops.sh verdict R1-mvp <gate> <estado> --evidence-file …`.
-   **Bloqueado:** el hub responde 404 en `/releases/R1-mvp/verdicts` aunque el grafo v8 ya tiene `release_line=R1-mvp`
-   en las 11 épicas → el sponsor debe abrir/crear la release en la consola. `integration` queda parcial →
+   **Bloqueado:** el hub responde 404 «no hay release abierta de 'R1-mvp' en este proyecto» aunque el grafo v8 ya
+   tiene `release_line=R1-mvp` en las 11 épicas → el sponsor debe abrir la release en la consola (si la interfaz no
+   lo permite, es defecto del hub). Además el hub rechaza (422) `evidence` de más de 2000 caracteres y
+   `release-ops.sh` no lo recorta: enviar un resumen corto que apunte al informe. `integration` queda parcial →
    el cierre es humano (no hay auto-cierre).
 4. HU-152 (desbloquear acceso al panel; security MEDIO-2, D51.2): borrador en `docs/04-historias/`; cuando el sponsor
    la apruebe → `estado: lista`, graph-sync y slice pequeño (¿dentro de EP-006 reabierta o épica de mantenimiento? decidir).
