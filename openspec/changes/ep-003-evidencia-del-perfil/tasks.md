@@ -37,13 +37,13 @@
 
 ## 4. Sub-slice 4 — Tarjeta (HU-153, HU-081, HU-119)
 
-- [ ] 4.1 Contrato `PerfilCatalogo` con `selloPersonal` y tecnologías en orden de carga; dominio `capacidadDeTarjeta`, `tecnologiasDeTarjeta` (5) y `selloValido`; tests primero
-- [ ] 4.2 `TarjetaPerfil` con la capacidad primero, nombre y primer apellido, 5 tecnologías, sectores opcionales sin hueco, modalidad, país, banda de `banda.ts` y código al pie; verificar los tres escenarios de HU-153
-- [ ] 4.3 Sello Personal en la tarjeta sin insignia ni puntaje; sello fuera de contrato omitido con registro `sello_fuera_de_contrato` sin datos personales; verificar los cinco escenarios de HU-081
-- [ ] 4.4 Dominio `lineaDeEvidencia` con la tabla fija por tipo y el texto genérico de D96 con registro `criterio_sin_plantilla`; tests primero con todas las filas de la tabla y los ejemplos de HU-119
-- [ ] 4.5 Evidencia ✓/– en la tarjeta y en el bloque «Frente a tu búsqueda» de la ficha a partir de `CriterioResuelto[]` (fuente productiva: filtro activo del banco; sin criterios en la selección del correo), mismo texto y orden en los dos lugares, sin porcentajes; verificar los siete escenarios de HU-119
+- [x] 4.1 Contrato `PerfilCatalogo` con `selloPersonal` y tecnologías en orden de carga; dominio `capacidadDeTarjeta`, `tecnologiasDeTarjeta` (5) y `selloValido`; tests primero
+- [x] 4.2 `TarjetaPerfil` con la capacidad primero, nombre y primer apellido, 5 tecnologías, sectores opcionales sin hueco, modalidad, país, banda de `banda.ts` y código al pie; verificar los tres escenarios de HU-153
+- [x] 4.3 Sello Personal en la tarjeta sin insignia ni puntaje; sello fuera de contrato omitido con registro `sello_fuera_de_contrato` sin datos personales; verificar los cinco escenarios de HU-081
+- [x] 4.4 Dominio `lineaDeEvidencia` con la tabla fija por tipo y el texto genérico de D96 con registro `criterio_sin_plantilla`; tests primero con todas las filas de la tabla y los ejemplos de HU-119
+- [x] 4.5 Evidencia ✓/– en la tarjeta y en el bloque «Frente a tu búsqueda» de la ficha a partir de `CriterioResuelto[]` (fuente productiva: filtro activo del banco; sin criterios en la selección del correo), mismo texto y orden en los dos lugares, sin porcentajes; verificar los siete escenarios de HU-119
 - [ ] 4.6 Fidelidad con captura MCP de la tarjeta (con y sin Sello Personal, con evidencia ✓/–, «Por confirmar») en computador y teléfono
-- [ ] 4.7 Journey smoke: entrar con código → selección (tarjetas con capacidad, sello y código al pie, sin evidencia) → ampliar al banco con un filtro → tarjetas con su línea ✓ → abrir la ficha con «Frente a tu búsqueda»; evidencia en `ss4/` y checkpoint
+- [x] 4.7 Journey smoke: entrar con código → selección (tarjetas con capacidad, sello y código al pie, sin evidencia) → ampliar al banco con un filtro → tarjetas con su línea ✓ → abrir la ficha con «Frente a tu búsqueda»; evidencia en `ss4/` y checkpoint
 
 ## 5. Sub-slice 5 — Ficha: verificado vs declarado, validación técnica y conversación por Trycore (HU-154, HU-155, HU-157)
 

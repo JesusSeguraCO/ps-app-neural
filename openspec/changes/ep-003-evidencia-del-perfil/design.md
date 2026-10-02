@@ -137,3 +137,23 @@ para no mover los conteos del banco ficticio que fijan los tests. El guardado de
   si su estado previo los guardó (un lote de antes de EP-003 no los vacía).
 - Pantallas sin dibujo (columnas nuevas en emparejar, vista previa y errores): patrones aprobados de EP-006
   (D124), capturas en `.claude/state/evidencia/ep-003/ss3/fidelidad.md`.
+
+### Decisiones de construcción · SS4 (HU-153, HU-081, HU-119) — elegidas por el modelo por delegación del sponsor
+
+- **Plantilla de «categoría»**: el filtro del banco por categoría (y el contexto de la selección) es un tipo
+  productivo que la tabla de HU-119 no tenía; se le da plantilla con la misma forma que «rol» («✓ Categoría:
+  X» / «– Categoría registrada: Y» / «– Sin categoría declarada: X») en lugar del genérico de D96, que
+  registraría `criterio_sin_plantilla` en cada carga. Copy marcado para revisión (D73).
+- **Cumplido sin dato**: en los tipos de la tabla, un criterio que llega `cumple` sin el dato que lo sustenta
+  se dibuja como no cumplido (RF-3.4: no se afirma más de lo que dice el inventario); el genérico de D96
+  respeta `cumple` tal cual. En «sector», el dato son los años declarados («1 año declarado» en singular).
+- **Banda de la tarjeta**: se conservan los rótulos de cliente aprobados en EP-001 (`DISPONIBILIDAD_CLIENTE`,
+  «En 2 semanas», «Disponibilidad por confirmar»), los mismos de la ficha; contienen el rótulo del PRD y nunca
+  dicen «Inmediato» ni la fecha.
+- **Sello fuera de contrato en la ficha** (ruta gemela): `armarFicha` aplica la misma `selloValido`; antes
+  recortaba a tres y quitaba vacías (sello a medias). La BD ya impide más de tres (CHECK de la 0014).
+- **Rótulo de la evidencia en la tarjeta**: «Evidencia contra los criterios activos» (handoff v2,
+  `evidencia-criterio.tsx`), porque el conteo «Cumple N de M» es de HU-118 (EP-009).
+- Sin migraciones: `catalogo_publicable` ya traía `sello_personal` y el orden de carga (0028). La reserva
+  0030–0031 (D127) sigue libre.
+- Capturas y desviaciones frente al prototipo: `.claude/state/evidencia/ep-003/ss4/fidelidad.md`.

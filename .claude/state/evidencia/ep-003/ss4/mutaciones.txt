@@ -1,0 +1,29 @@
+M1 capacidad sin seniority ni años: rc=1 · 5 failed | 17 passed (22)
+M2 tecnologías sin corte: rc=1 · 2 failed | 20 passed (22)
+M3 sello acepta competencia vacía: rc=1 · 6 failed | 15 passed (21)
+M4 sello acepta cuatro: rc=1 · 3 failed | 18 passed (21)
+M5 proyección no registra el sello: rc=1 · 3 failed | 3 passed (6)
+M6 tarjeta sin sello: rc=1 · 1 failed | 10 passed (11)
+M7 evidencia vacía con título: rc=0 · 11 passed (11)
+M8 genérico D96 en blanco: rc=1 · 4 failed | 43 passed (47)
+M9 sin plantilla sin registro: rc=1 · 1 failed | 5 passed (6)
+M10 cumplido por omisión: rc=1 · 2 failed | 45 passed (47)
+M11 sector sin años: rc=1 · 5 failed | 44 passed (49)
+M12 plantilla de seniority: rc=1 · 2 failed | 34 passed (36)
+M13 ficha sin «Frente a tu búsqueda»: rc=1 · 1 failed | 1 passed (2)
+M15 filtro y evidencia discrepan: rc=1 · 2 failed | 40 passed (42)
+M16 orden distinto: rc=1 · 4 failed | 45 passed (49)
+M17 ficha recorta el sello: rc=1 · 3 failed | 1 passed (4)
+M19 banda vencida dice Inmediato: rc=1 · 1 failed | 10 passed (11)
+M20 código en la cabecera: rc=1 · 1 failed | 10 passed (11)
+M21 sector vacío con hueco: rc=1 · 2 failed | 9 passed (11)
+M22 señal de equivalencia: rc=1 · 2 failed | 9 passed (11)
+M23 contrato del catálogo sin tope: rc=1 · 1 failed | 9 passed (10)
+restaurado
+M7 evidencia vacía con título: rc=1 · 1 failed | 10 passed (11)
+restaurado
+M14 banco no pasa la evidencia a la tarjeta: rc=1 · 2 failed | 7 passed (9)
+M18 la vista no lee el sello: rc=1 · 3 failed | 6 passed (9)
+M24 recorrido: tarjeta sin capacidad: rc=1 · 1 failed
+M25 recorrido: ficha del banco sin evidencia: rc=1 · 1 failed
+restaurado

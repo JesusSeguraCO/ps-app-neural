@@ -1,0 +1,18 @@
+[
+  {"item_id": "HU-153-ac1-capacidad-primero", "kind": "hu_ac", "ref": "HU-153"},
+  {"item_id": "HU-153-ac2-banda-por-confirmar", "kind": "hu_ac", "ref": "HU-153"},
+  {"item_id": "HU-153-ac3-cinco-tecnologias-sin-sector", "kind": "hu_ac", "ref": "HU-153"},
+  {"item_id": "HU-081-ac1-sellos-distintos-sin-insignia", "kind": "hu_ac", "ref": "HU-081"},
+  {"item_id": "HU-081-ac2-sin-sello-sin-hueco", "kind": "hu_ac", "ref": "HU-081"},
+  {"item_id": "HU-081-ac3a-sello-cuatro-competencias", "kind": "hu_ac", "ref": "HU-081"},
+  {"item_id": "HU-081-ac3b-sello-competencia-vacia", "kind": "hu_ac", "ref": "HU-081"},
+  {"item_id": "HU-081-ac4-sellos-iguales-sin-equivalencia", "kind": "hu_ac", "ref": "HU-081"},
+  {"item_id": "HU-119-ac1-evidencia-tarjeta-y-ficha", "kind": "hu_ac", "ref": "HU-119"},
+  {"item_id": "HU-119-ac2-tipo-sin-plantilla", "kind": "hu_ac", "ref": "HU-119"},
+  {"item_id": "HU-119-ac3-sin-criterios-sin-bloque", "kind": "hu_ac", "ref": "HU-119"},
+  {"item_id": "HU-119-ac4-dato-ausente-no-cumplido", "kind": "hu_ac", "ref": "HU-119"},
+  {"item_id": "HU-119-ac5-plantilla-por-tipo", "kind": "hu_ac", "ref": "HU-119"},
+  {"item_id": "INT-SS4-catalogo-contrato-sello", "kind": "integration_point", "ref": "EP-003#catalogo-sello"},
+  {"item_id": "INT-SS4-filtro-banco-a-criterios", "kind": "integration_point", "ref": "EP-003#filtro-evidencia"},
+  {"item_id": "INT-SS4-journey-smoke", "kind": "integration_point", "ref": "EP-003#journey-ss4"}
+]
