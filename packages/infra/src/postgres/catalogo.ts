@@ -8,6 +8,7 @@ import { RespuestaCatalogo, type PerfilCatalogo } from "@ps/contratos/catalogo";
 import { FichaPerfil, armarFicha, type Necesidad } from "@ps/contratos/ficha";
 import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
+import { selloValido } from "@ps/dominio/catalogo/tarjeta";
 
 interface FilaCatalogo {
   codigo: string;
@@ -23,6 +24,22 @@ interface FilaCatalogo {
   pais: string | null;
   disponibilidad_fecha: string | null;
   disponibilidad_actualizada_en: Date | null;
+  sello_personal: string[];
+}
+
+// Columnas de la tarjeta: las leen el catálogo del banco y la selección del enlace (una sola lista).
+export const COLUMNAS_TARJETA = `codigo, nombre, primer_apellido, familia, roles, seniority, anios_experiencia, tecnologias,
+            sectores, modalidad, pais, disponibilidad_fecha::text AS disponibilidad_fecha,
+            disponibilidad_actualizada_en, sello_personal`;
+
+// Un sello fuera de contrato (HU-081 · error) no se dibuja a medias: viaja vacío, la lista no se cae y
+// queda el registro con el código —sin datos personales— para que Talento Humano lo corrija.
+function selloPublicable(codigo: string, sello: string[] | null): string[] {
+  const xs = sello ?? [];
+  if (xs.length === 0) return [];
+  if (selloValido(xs)) return xs.map((x) => x.trim());
+  console.error(JSON.stringify({ evento: "sello_fuera_de_contrato", codigo }));
+  return [];
 }
 
 export function proyectar(filas: FilaCatalogo[], ahora: Date): PerfilCatalogo[] {
@@ -43,6 +60,7 @@ export function proyectar(filas: FilaCatalogo[], ahora: Date): PerfilCatalogo[] 
         { fecha: f.disponibilidad_fecha, actualizadaEn: f.disponibilidad_actualizada_en },
         ahora,
       ),
+      selloPersonal: selloPublicable(f.codigo, f.sello_personal),
     })),
   }).perfiles;
 }
@@ -55,10 +73,7 @@ export async function proyeccionCatalogo(
   ahora: Date = new Date(),
 ): Promise<PerfilCatalogo[]> {
   const r = await bd.query<FilaCatalogo>(
-    `SELECT codigo, nombre, primer_apellido, familia, roles, seniority, anios_experiencia, tecnologias,
-            sectores, modalidad, pais, disponibilidad_fecha::text AS disponibilidad_fecha,
-            disponibilidad_actualizada_en
-       FROM operacion.catalogo_publicable ORDER BY codigo`,
+    `SELECT ${COLUMNAS_TARJETA} FROM operacion.catalogo_publicable ORDER BY codigo`,
   );
   return proyectar(r.rows, ahora);
 }
@@ -113,6 +128,7 @@ export async function fichaDelPortal(
   );
   const c = r.rows[0];
   if (!c) return null;
+  selloPublicable(c.codigo, c.sello_personal); // registra el sello fuera de contrato, como la tarjeta
   const trayectoria = (
     await bd.query(
       `SELECT cargo, cliente, desde, hasta, descripcion FROM operacion.experiencias_publicables

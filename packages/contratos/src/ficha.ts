@@ -16,6 +16,7 @@
 //    (B.4) viaja.
 import { z } from "zod";
 import { BANDAS, ROTULO_BANDA, bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
+import { selloValido } from "@ps/dominio/catalogo/tarjeta";
 import { mesDeAnio } from "@ps/dominio/fecha/colombia";
 import type { CampoObligatorio } from "@ps/dominio/inventario/perfil";
 
@@ -145,7 +146,8 @@ export function armarFicha(
       o.ahora,
     ),
     resumen: texto(d.resumen),
-    selloPersonal: lista(d.selloPersonal).slice(0, 3),
+    // Fuera de contrato (más de tres o alguna vacía) se omite entero, igual que en la tarjeta (HU-081).
+    selloPersonal: selloValido(d.selloPersonal) ? lista(d.selloPersonal) : [],
     formacion: texto(d.formacion),
     idiomas: lista(d.idiomas),
     trayectoria: d.trayectoria.map((e) => ({
