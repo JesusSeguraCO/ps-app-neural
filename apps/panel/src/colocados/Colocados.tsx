@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { bandaDeDisponibilidad, ROTULO_BANDA } from "@ps/dominio/catalogo/banda";
 import { fechaCivil } from "@ps/dominio/fecha/colombia";
+import { liberacionValida } from "@ps/dominio/inventario/colocados";
 import { enviarJson } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
 
@@ -212,7 +213,15 @@ export function RegistrarColocado(p: { candidatos: CandidatoEnHoja[]; hoy: strin
                   value={liberacion}
                   aria-invalid={invalido("liberacion")}
                   aria-describedby={`cl-lib-a${invalido("liberacion") ? " cl-lib-error" : ""}`}
-                  onChange={(e) => setLiberacion(e.target.value)}
+                  onChange={(e) => {
+                    setLiberacion(e.target.value);
+                    // El error de la liberación se va en cuanto la fecha escrita es válida.
+                    if (
+                      error?.campo === "liberacion" &&
+                      liberacionValida({ inicio, liberacion: e.target.value }, p.hoy)
+                    )
+                      setError(null);
+                  }}
                 />
                 <p className="pp-ayuda" id="cl-lib-a">
                   Obligatoria. Pasa a ser su disponibilidad: sigue publicado y el cliente ve la

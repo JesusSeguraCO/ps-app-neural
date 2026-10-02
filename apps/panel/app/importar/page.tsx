@@ -84,7 +84,7 @@ export default async function Importar({
         <HistorialImportaciones
           lotes={lotes}
           puedeImportar
-          noUltima={{ archivo: detalle.archivo, posteriores: detalle.posteriores, ultima }}
+          noUltima={{ id, archivo: detalle.archivo, posteriores: detalle.posteriores, ultima }}
         />,
       );
     }

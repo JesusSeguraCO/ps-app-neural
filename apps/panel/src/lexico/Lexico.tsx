@@ -3,7 +3,7 @@
 // --equivalencia-invalida). Un solo formulario lateral para agregar un término, editar uno existente,
 // editar una propuesta de Gemini antes de aprobarla o llevar una consulta sin coincidencia al léxico.
 // El valor del catálogo se escribe y se valida en el servidor: si no existe, se ofrece lo más parecido.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { enviarJson } from "../acceso/cliente";
 import { recargarConAviso } from "../marco/Hoja";
 
@@ -397,6 +397,16 @@ export function PantallaLexico(p: {
           ? modo.propuesta.id
           : modo.candidata.id;
   const editando = modo.tipo === "propuesta" ? modo.propuesta.id : null;
+  // La fila de la búsqueda de origen es del servidor: se resalta por su `data-lx-fila`.
+  const marco = useRef<HTMLDivElement>(null);
+  const deCandidata = modo.tipo === "candidata" ? modo.candidata.id : null;
+  useEffect(() => {
+    marco.current
+      ?.querySelectorAll<HTMLElement>("[data-lx-fila]")
+      .forEach((li) =>
+        li.classList.toggle("pp-fila--seleccionada", li.dataset.lxFila === deCandidata),
+      );
+  }, [deCandidata]);
 
   async function decidir(ruta: string, cuerpo: unknown, aviso: string) {
     setError(null);
@@ -440,7 +450,7 @@ export function PantallaLexico(p: {
   };
 
   return (
-    <div className="pp-con-lateral" onClick={alClic}>
+    <div className="pp-con-lateral" onClick={alClic} ref={marco}>
       <div className="lx-principal">
         {(p.propuestas.length > 0 || p.escribe) && (
           <section aria-labelledby="lx-prop-titulo">

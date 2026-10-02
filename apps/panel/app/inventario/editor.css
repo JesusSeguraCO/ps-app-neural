@@ -98,3 +98,6 @@
 @media (max-width: 767px) { .pe-sello { grid-template-columns: minmax(0, 1fr); } }
 .pe-reporte { display: grid; gap: var(--tc-sp-1); margin-bottom: var(--tc-sp-3); }
 .pe-reporte p { margin: 0; }
+/* Campos inertes (observadora o perfil no editable; prototipo perfil-editor--observador, .pe-solo-lectura):
+   fondo gris sin sombra, el texto sigue legible. */
+fieldset:disabled .pp-input, .pp-input:disabled { background: var(--tc-bg-subtle); box-shadow: none; color: var(--tc-text-h); opacity: 1; cursor: default; }

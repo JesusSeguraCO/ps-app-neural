@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { TipoCatalogo } from "@ps/dominio/catalogo/tipos";
 import { enviarJson } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
+import { cuantosSinPublicarLaConservan, laUsa, perfilesTexto } from "./concordancia";
 
 export interface Opcion {
   id: string;
@@ -52,7 +53,6 @@ interface ValorComparable {
 }
 
 const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const perfilesTexto = (n: number) => `${n} ${n === 1 ? "perfil" : "perfiles"}`;
 const conFamilia = (t: TipoCatalogo) => t === "rol" || t === "modalidad_prueba";
 
 function IconoMas() {
@@ -241,7 +241,7 @@ function HojaValor({
               </span>
               <p>
                 <span className="pp-aviso__titulo">{`Se parece a ${revision.parecidos.map((x) => x.nombre).join(", ")}, que ya existe.`}</span>
-                {`L${ctx.femenino ? "a" : "o"} usan `}
+                {`${laUsa(revision.parecidos[0]!.perfiles, ctx.femenino)} `}
                 <span className="pp-mono">{revision.parecidos[0]!.perfiles}</span>
                 {` ${revision.parecidos[0]!.perfiles === 1 ? "perfil" : "perfiles"}. Si es ${ctx.femenino ? "la misma" : "el mismo"}, úsal${ctx.femenino ? "a" : "o"} y el filtro del cliente no se parte en dos.`}
               </p>
@@ -507,7 +507,9 @@ function HojaDesactivar({
                 <span className="pp-mono">{dep.publicados.length}</span>
                 {` ${dep.publicados.length === 1 ? "ficha publicada l" + a + " cita" : "fichas publicadas l" + a + " citan"}.`}
               </span>
-              {`Conservan su texto tal cual y siguen explicando cómo se validó a cada profesional.`}
+              {dep.publicados.length === 1
+                ? "Conserva su texto tal cual y sigue explicando cómo se validó al profesional."
+                : "Conservan su texto tal cual y siguen explicando cómo se validó a cada profesional."}
               {dep.borradores > 0 && (
                 <>
                   {" "}
@@ -526,7 +528,7 @@ function HojaDesactivar({
             <p>
               <span className="pp-aviso__titulo">Ninguna ficha publicada l{a} cita.</span>
               {dep.borradores + dep.otros > 0
-                ? `${perfilesTexto(dep.borradores + dep.otros)} sin publicar l${a} conservan.`
+                ? cuantosSinPublicarLaConservan(dep.borradores + dep.otros, a)
                 : "Ningún perfil l" + a + " usa."}
             </p>
           </div>

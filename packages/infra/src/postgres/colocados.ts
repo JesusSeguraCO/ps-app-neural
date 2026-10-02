@@ -180,6 +180,10 @@ export interface Colocado {
   registradoPor: string | null;
   registradoEn: string;
   corte: string | null;
+  // Entró nuevo en la carga más reciente (no venía de una anterior ni de aceptar una diferencia): «· nuevo».
+  nuevo: boolean;
+  // Tiene una diferencia con Operaciones sin decidir: «· diferencia con Operaciones».
+  diferencia: boolean;
   disponibilidadFecha: string | null;
   disponibilidadActualizadaEn: string | null;
 }
@@ -205,6 +209,13 @@ export async function listarColocados(
                 WHERE h.perfil_id = p.id ORDER BY h.orden LIMIT 1) AS rol,
               c.cuenta, c.inicio::text AS inicio, c.liberacion::text AS liberacion, c.fuente,
               u.correo AS registrado_por, c.registrado_en, k.cargado_en AS corte,
+              (c.fuente = 'operaciones' AND c.registrado_en = k.cargado_en
+                AND k.cargado_en = (SELECT max(cargado_en) FROM inventario.cargas_operaciones WHERE filas_aplicadas > 0)
+                AND NOT EXISTS (
+                  SELECT 1 FROM inventario.colocaciones a
+                   WHERE a.perfil_id = c.perfil_id AND a.fuente = 'operaciones' AND a.cerrada_en = k.cargado_en)) AS nuevo,
+              EXISTS (SELECT 1 FROM inventario.diferencias_operaciones d
+                       WHERE d.colocacion_id = c.id AND d.decision IS NULL) AS diferencia,
               p.disponibilidad_fecha::text AS disponibilidad_fecha, p.disponibilidad_actualizada_en
          FROM inventario.colocaciones c
          JOIN inventario.perfiles p ON p.id = c.perfil_id
@@ -228,6 +239,8 @@ export async function listarColocados(
       registradoPor: f.registrado_por,
       registradoEn: f.registrado_en.toISOString(),
       corte: f.corte?.toISOString() ?? null,
+      nuevo: f.nuevo === true,
+      diferencia: f.diferencia,
       disponibilidadFecha: f.disponibilidad_fecha,
       disponibilidadActualizadaEn: f.disponibilidad_actualizada_en?.toISOString() ?? null,
     }),

@@ -299,20 +299,35 @@ export async function filasDelLote(
   id: string,
 ): Promise<{ estado: string; modo: Modo; filas: FilaMapeada[] } | null> {
   const l = (
-    await bd.query(`SELECT estado, modo FROM inventario.lotes_importacion WHERE id = $1`, [id])
+    await bd.query(
+      `SELECT estado, modo, emparejamiento FROM inventario.lotes_importacion WHERE id = $1`,
+      [id],
+    )
   ).rows[0];
   if (!l) return null;
   const r = await bd.query(
     `SELECT numero, datos, rechazadas FROM inventario.lote_filas WHERE lote_id = $1 ORDER BY numero`,
     [id],
   );
+  // JSONB no guarda el orden de las claves: se repone el de las columnas de la hoja (el del
+  // emparejamiento), para que la fila cruda de un error se lea igual que antes de recalcular.
+  const orden = (l.emparejamiento as ColumnaPlantilla[])
+    .map((c) => c.clave)
+    .filter((c): c is ClaveCampo => c !== null);
+  const enOrden = (datos: Partial<Record<ClaveCampo, string>>) => {
+    const celdas: Partial<Record<ClaveCampo, string>> = {};
+    for (const c of orden) if (c in datos) celdas[c] = datos[c];
+    for (const [c, v] of Object.entries(datos) as Array<[ClaveCampo, string]>)
+      if (!(c in celdas)) celdas[c] = v;
+    return celdas;
+  };
   return {
     estado: l.estado,
     modo: l.modo,
     filas: r.rows.map((f) =>
       f.rechazadas.length
-        ? { numero: f.numero, celdas: f.datos, rechazadas: f.rechazadas }
-        : { numero: f.numero, celdas: f.datos },
+        ? { numero: f.numero, celdas: enOrden(f.datos), rechazadas: f.rechazadas }
+        : { numero: f.numero, celdas: enOrden(f.datos) },
     ),
   };
 }
@@ -492,7 +507,10 @@ export interface LoteHistorial {
   fase: FaseLote;
   modo: Modo;
   formato: string;
+  // Lo que se aplicó: solo las filas incluidas (las con error cuentan siempre), igual que el
+  // resultado del lote. Las que la persona excluyó van aparte.
   conteos: Plan["conteos"];
+  excluidas: number;
   confirmadoPor: string | null;
   confirmadoEn: string;
   aplicadoEn: string | null;
@@ -502,10 +520,20 @@ export interface LoteHistorial {
 
 export async function listarLotes(bd: Consultor, limite = 50): Promise<LoteHistorial[]> {
   const r = await bd.query(
-    `SELECT l.id, l.archivo_nombre, l.estado, l.modo, l.formato, l.conteos, l.confirmado_en, l.aplicado_en, l.revertido_en,
-            l.motivo_aborto, u.correo
+    `SELECT l.id, l.archivo_nombre, l.estado, l.modo, l.formato, l.confirmado_en, l.aplicado_en, l.revertido_en,
+            l.motivo_aborto, u.correo, c.*
        FROM inventario.lotes_importacion l
        LEFT JOIN identidad_panel.usuarios_panel u ON u.id = l.confirmado_por
+       CROSS JOIN LATERAL (
+         SELECT count(*) FILTER (WHERE f.incluida AND f.grupo = 'nuevo')::int AS nuevos,
+                count(*) FILTER (WHERE f.incluida AND f.grupo = 'actualizado')::int AS actualizados,
+                count(*) FILTER (WHERE f.incluida AND f.grupo = 'archivado')::int AS archivados,
+                count(*) FILTER (WHERE f.incluida AND f.grupo = 'sin_cambios')::int AS sin_cambios,
+                count(*) FILTER (WHERE f.incluida AND f.grupo = 'omitido')::int AS omitidos,
+                count(*) FILTER (WHERE f.grupo = 'con_error')::int AS con_error,
+                count(*) FILTER (WHERE NOT f.incluida AND f.grupo <> 'con_error')::int AS excluidas
+           FROM inventario.lote_filas f WHERE f.lote_id = l.id
+       ) c
       WHERE l.confirmado_en IS NOT NULL
       ORDER BY l.confirmado_en DESC LIMIT $1`,
     [limite],
@@ -516,7 +544,15 @@ export async function listarLotes(bd: Consultor, limite = 50): Promise<LoteHisto
     fase: l.estado === "calculado" ? "aplicando" : l.estado,
     modo: l.modo,
     formato: l.formato,
-    conteos: l.conteos,
+    conteos: {
+      nuevos: l.nuevos,
+      actualizados: l.actualizados,
+      archivados: l.archivados,
+      sin_cambios: l.sin_cambios,
+      omitidos: l.omitidos,
+      con_error: l.con_error,
+    },
+    excluidas: l.excluidas,
     confirmadoPor: l.correo ?? null,
     confirmadoEn: l.confirmado_en.toISOString(),
     aplicadoEn: l.aplicado_en?.toISOString() ?? null,

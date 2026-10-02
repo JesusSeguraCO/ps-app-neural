@@ -59,11 +59,23 @@ const citas = (xs: string[]) => xs.map((x) => `«${x}»`).join(xs.length > 2 ? "
 const sugerido = (c: Candidata) =>
   [...c.reconocimiento.sinReconocer].sort((a, b) => b.length - a.length)[0] ?? c.consulta;
 
-function FilaCandidata({ c, escribe }: { c: Candidata; escribe: boolean }) {
+// `data-lx-fila`: la tarjeta lateral resalta la fila de la que sale el término al «Llevar al léxico».
+function FilaCandidata({
+  c,
+  escribe,
+  seleccionada,
+}: {
+  c: Candidata;
+  escribe: boolean;
+  seleccionada: boolean;
+}) {
   const r = c.reconocimiento;
   const resuelta = c.destino !== null;
   return (
-    <li className={`pp-fila${resuelta ? " lx-fila-resuelta" : ""}`}>
+    <li
+      className={`pp-fila${resuelta ? " lx-fila-resuelta" : seleccionada ? " pp-fila--seleccionada" : ""}`}
+      data-lx-fila={c.id}
+    >
       <div className="pp-fila__principal">
         <p className="pp-fila__titulo">
           <span className="lx-consulta">
@@ -339,7 +351,12 @@ export default async function Lexico({
           </div>
           <ul className="pp-lista" aria-label="Consultas sin coincidencia del período">
             {candidatas.slice(desde, desde + POR_PAGINA).map((c) => (
-              <FilaCandidata key={c.id} c={c} escribe={escribe} />
+              <FilaCandidata
+                key={c.id}
+                c={c}
+                escribe={escribe}
+                seleccionada={escribe && c.id === p.candidata}
+              />
             ))}
           </ul>
         </div>

@@ -74,6 +74,14 @@ export function VistaPrevia(p: {
   enlaceRegistro?: string;
   alPublicar: () => void;
   alRegistrarConsentimiento?: () => void;
+  // Publicado con cambios sin guardar (prototipo vista-previa-ficha): la primaria es «Guardar cambios»,
+  // la misma acción del editor. Solo llega si quien mira puede escribir.
+  alGuardar?: () => void;
+  guardando?: boolean;
+  // «Registrar reporte detallado» en «Opcionales sin datos» (prototipo vista-previa-ficha--bloque-opcional):
+  // prepara el borrador de validación y lleva a su página. Solo llega si quien mira puede escribir.
+  enlaceReporte?: string;
+  alRegistrarReporte?: () => void;
 }) {
   const [necesidad, setNecesidad] = useState<Necesidad>("remota");
   const ficha = armarFicha(datosFichaDePerfil(p.perfil), { ahora: new Date(), necesidad });
@@ -143,6 +151,16 @@ export function VistaPrevia(p: {
               onClick={p.alPublicar}
             >
               {p.publicando ? "Publicando…" : "Publicar"}
+            </button>
+          )}
+          {p.publicado && p.sinGuardar && p.alGuardar && (
+            <button
+              type="button"
+              className="pp-btn pp-btn--primario"
+              disabled={p.guardando}
+              onClick={p.alGuardar}
+            >
+              {p.guardando ? "Revisando…" : "Guardar cambios"}
             </button>
           )}
         </div>
@@ -320,6 +338,18 @@ export function VistaPrevia(p: {
                         La ficha se publica con el enunciado de Nivel 0 y sin ese bloque, igual que
                         la mostrará el portal.
                       </p>
+                      {p.enlaceReporte && p.alRegistrarReporte && (
+                        <a
+                          className="pp-enlace"
+                          href={p.enlaceReporte}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            p.alRegistrarReporte!();
+                          }}
+                        >
+                          Registrar reporte detallado
+                        </a>
+                      )}
                     </div>
                   </li>
                 )}

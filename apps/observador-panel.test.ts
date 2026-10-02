@@ -117,6 +117,13 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Observador en el panel (HU-124)"
     expect(inventario).toContain("¿Dato desactualizado?");
     expect(inventario).toContain(`Avisar a Talento Humano sobre el perfil de`);
     expect(inventario).toContain(`href="/inventario/${codigo}?vista=ficha"`);
+    // Menú de la observadora (D43): solo Inventario, Enlaces y Colocados, más el pie de Administración.
+    for (const ruta of ["inventario", "enlaces", "colocados"])
+      expect(inventario, ruta).toMatch(new RegExp(`<a class="pp-sidelink" href="/${ruta}"`));
+    for (const ruta of ["importar", "vigencia", "catalogos", "lexico", "peticiones"])
+      expect(inventario, ruta).not.toMatch(new RegExp(`class="pp-sidelink"[^>]*href="/${ruta}"`));
+    expect(inventario).not.toContain('aria-disabled="true"');
+    expect(inventario).toContain('href="/administracion"');
     for (const control of [
       "Crear perfil",
       "Editar el perfil",

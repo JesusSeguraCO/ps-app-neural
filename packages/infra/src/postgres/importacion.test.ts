@@ -17,6 +17,7 @@ import {
   filasDelLote,
   leerLote,
   leerPlantilla,
+  listarLotes,
   listarPlantillas,
   registrarLote,
 } from "./importacion";
@@ -253,6 +254,63 @@ describe.skipIf(!HAY_BD)(
       expect(lote.filas[0]!.avisos).toEqual([
         { campo: null, mensaje: "Columna «Consentimiento» rechazada: no se concede" },
       ]);
+    });
+
+    it("recalcular conserva el orden de columnas de la hoja y el historial no cuenta las excluidas", async () => {
+      const banco = await bancoEnFormato(panel);
+      const contexto = {
+        banco: new Map(banco.map((f) => [f.codigo as string, f])),
+        catalogos: await catalogosImportacion(panel),
+        hoy: HOY,
+      };
+      // Orden de la hoja: código, ciudad, nombre (el JSONB lo guardaría como ciudad, codigo, nombre).
+      const emparejamiento = [
+        { columna: "Código", clave: "codigo" as const },
+        { columna: "Nombre", clave: "nombre" as const },
+        { columna: "Ciudad", clave: "ciudad" as const },
+      ];
+      const filas = [
+        { numero: 2, celdas: { codigo: "PS-0142", nombre: "Tatiana", ciudad: "Cali" } },
+        {
+          numero: 3,
+          celdas: {
+            codigo: banco.find((f) => f.codigo !== "PS-0142")!.codigo as string,
+            nombre: "Ana",
+            ciudad: "Bogotá",
+          },
+        },
+      ];
+      const plan = calcularPlan({ ...contexto, filas, modo: "crear_y_actualizar" });
+      expect(plan.filas.map((f) => f.grupo)).toEqual(["actualizado", "actualizado"]);
+      const id = await registrarLote(panel, autor, {
+        archivoHash: "e".repeat(64),
+        formato: "csv",
+        modo: "crear_y_actualizar",
+        emparejamiento,
+        filas,
+        plan,
+      });
+      const guardado = (await filasDelLote(panel, id))!;
+      expect(guardado.filas.map((f) => Object.keys(f.celdas))).toEqual([
+        ["codigo", "nombre", "ciudad"],
+        ["codigo", "nombre", "ciudad"],
+      ]);
+      const nuevo = calcularPlan({
+        ...contexto,
+        filas: guardado.filas,
+        modo: "crear_y_actualizar",
+        excluidas: new Set([3]),
+      });
+      await actualizarPlanLote(panel, id, "crear_y_actualizar", nuevo);
+      await bd.instalacion.query(
+        `UPDATE inventario.lotes_importacion
+            SET estado = 'aplicado', confirmado_por = $2, confirmado_en = now(), aplicado_en = now()
+          WHERE id = $1`,
+        [id, autor.usuarioId],
+      );
+      const enHistorial = (await listarLotes(panel)).find((l) => l.id === id)!;
+      expect(enHistorial.conteos).toMatchObject({ actualizados: 1, nuevos: 0, con_error: 0 });
+      expect(enHistorial.excluidas).toBe(1);
     });
 
     it("un lote que ya no está calculado no se recalcula", async () => {

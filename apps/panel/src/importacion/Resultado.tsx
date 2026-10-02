@@ -455,6 +455,7 @@ function resultadoDe(l: LoteHistorial): string {
     c.archivados ? `${c.archivados} ${c.archivados === 1 ? "archivado" : "archivados"}` : null,
     c.omitidos ? `${c.omitidos} ${c.omitidos === 1 ? "omitido" : "omitidos"}` : null,
     c.con_error ? `${c.con_error} con error` : null,
+    l.excluidas ? `${l.excluidas} ${l.excluidas === 1 ? "excluida por ti" : "excluidas por ti"}` : null,
   ].filter(Boolean);
   const texto = partes.join(" · ") || "Sin cambios";
   return l.fase === "revertido" ? `Revertida · ${texto}` : texto;
@@ -463,7 +464,8 @@ function resultadoDe(l: LoteHistorial): string {
 export function HistorialImportaciones(p: {
   lotes: LoteHistorial[];
   puedeImportar: boolean;
-  noUltima?: { archivo: string | null; posteriores: LotePosterior[]; ultima: string };
+  // Se pidió deshacer `id` sin ser la última: su fila queda resaltada en la tabla.
+  noUltima?: { id: string; archivo: string | null; posteriores: LotePosterior[]; ultima: string };
 }) {
   const ultima = p.lotes.find((l) => l.fase === "aplicado")?.id;
   return (
@@ -534,7 +536,11 @@ export function HistorialImportaciones(p: {
             </thead>
             <tbody>
               {p.lotes.map((l) => (
-                <tr key={l.id}>
+                <tr
+                  key={l.id}
+                  className={l.id === p.noUltima?.id ? "ip-fila-pedida" : undefined}
+                  aria-current={l.id === p.noUltima?.id ? "true" : undefined}
+                >
                   <td>
                     <span className="pp-tabla__perfil pp-mono">{nombreLote(l.archivo)}</span>
                     <span className="pp-tabla__sub">{cuando(l.aplicadoEn ?? l.confirmadoEn)}</span>
@@ -550,7 +556,7 @@ export function HistorialImportaciones(p: {
                       className="pp-btn pp-btn--fantasma pp-btn--sm"
                       href={`/importar?lote=${l.id}`}
                     >
-                      Ver resultado
+                      Ver perfiles
                     </a>
                     {p.puedeImportar && l.id === ultima && (
                       <a

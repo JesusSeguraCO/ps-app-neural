@@ -109,7 +109,7 @@ Registrar un colocado es una operación del `ServicioPerfiles` que crea la `colo
 
 Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f671c), con tokens y componentes de `packages/ui`; el menú del panel habilita sus destinos a medida que cada sub-slice los entrega (hoy deshabilitados). Fidelidad verificada con captura real (MCP chrome-devtools) en la fase smoke de cada sub-slice; toda desviación se registra aquí con su razón y la aprobación del sponsor. No se generan pantallas sin aprobación humana.
 
-**Desviaciones del sub-slice 1** (evidencia `.claude/state/evidencia/ep-006/ss1/fidelidad-ss1.md`; pendientes del visto bueno del sponsor):
+**Desviaciones del sub-slice 1** (evidencia `.claude/state/evidencia/ep-006/ss1/fidelidad-ss1.md`; aprobadas por el sponsor 2026-10-01, D42):
 - Alta/edición de modalidad de prueba sin pantalla en el prototipo: hoja PP:hoja con nombre, familia, texto de cara al cliente (obligatorio, RF-8.16.8), reto, entregables y criterios (plantilla de HU-140).
 - Menú emergente «Más acciones» por fila (Editar, Desactivar, Fusionar / Reactivar): el prototipo solo dibuja el botón; en móvil es la única vía a Editar.
 - Hoja de fusión con «Elegir otros valores» para cambiar el par antes de ver el impacto.
@@ -117,7 +117,7 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - El reconocimiento de candidatas usa el intérprete determinista mínimo (catálogo + léxico); textos como «Reconoció «ingeniero»» del prototipo dependen del intérprete de EP-009.
 - Paginación de 25 (catálogos) y 20 (léxico) filas; grupos de tecnología como lista fija del dominio.
 
-**Desviaciones del sub-slice 2** (evidencia `.claude/state/evidencia/ep-006/ss2/fidelidad-ss2.md`; pendientes del visto bueno del sponsor):
+**Desviaciones del sub-slice 2** (evidencia `.claude/state/evidencia/ep-006/ss2/fidelidad-ss2.md`; aprobadas por el sponsor, D22 y D25):
 - Rol con buscador del catálogo (chip del valor elegido + campo con coincidencias) en lugar del `<select>` del prototipo (aprobada, D22): HU-125 edge exige escribir el rol y ver los parecidos antes de crear uno nuevo, y un `<select>` no deja escribir. Crear un valor abre la hoja de alta con los parecidos («Usar este») y, para el rol, su familia.
 - Campos del modelo que el prototipo del editor no dibuja: seniority y años de experiencia (obligatorios para publicar, RF-3.1) junto al rol, y la sección «Ficha para el cliente» (capacidad, anclaje, resumen, nivel de formación, vínculo con Trycore, idiomas y las tres competencias del Sello Personal, Anexo B.1/B.2/B.7).
 - Experiencia con su hoja de alta y edición (cargo, cliente en su propio campo, años, texto); el texto que nombra al cliente se rechaza, porque el consentimiento parcial solo puede ocultar el campo del cliente.
@@ -126,7 +126,7 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - Lo que el prototipo del editor muestra y entregan sub-slices posteriores, sin construir aquí: «Vista previa» y «Publicar» (sub-slice 5, HU-128/129/130); evaluador, fecha, resultado y reporte detallado (sub-slice 6, HU-140); el artefacto se difiere con HU-131 (D29). En el listado: disponibilidad editable en la fila, selección en bloque y «Más acciones» (sub-slice 7), pestaña «Con incoherencia» (8), «Importar» (3).
 - «Qué le interesa aportar» es Motivación (D20, sponsor 2026-10-01): dato interno (`aporte`, 280) que no cruza al portal (B.4, RF-3.7). Un perfil revocado se muestra al cliente con el estado genérico «No publicado» sin revelar la causa (D21).
 
-**Desviaciones del sub-slice 3** (evidencia `.claude/state/evidencia/ep-006/ss3/fidelidad-ss3.md`; pendientes del visto bueno del sponsor):
+**Desviaciones del sub-slice 3** (evidencia `.claude/state/evidencia/ep-006/ss3/fidelidad-ss3.md`; aprobadas por el sponsor, D25):
 - Aviso «Valores nuevos en la taxonomía» en la vista previa con el valor exacto, cuántas veces se repite y la sugerencia: HU-086 lo exige; el prototipo solo marca el valor en la tarjeta (eso también se hace).
 - La disponibilidad se muestra en la vista previa como la fecha que se guarda (AAAA-MM-DD); los rótulos de banda del prototipo son anteriores a la decisión del 2026-09-28.
 - Las migas no suben a un tercer nivel «Vista previa»: el asistente cambia de paso sin recargar la página.
@@ -174,6 +174,18 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 - Diferencias: una pendiente por colocado del panel, mostrando solo los campos que difieren; «Mantener la del panel» y «Aceptar la de Operaciones» con su autor en la auditoría.
 - Observador (D37): consulta del perfil en `?vista=ficha`; la dirección de edición, `/inventario/nuevo` y `/enlaces/nuevo` explican el rol de consulta y registran `acceso_rechazado` en `identidad.accesos_log` (0022), igual que el 403 de la API, que ahora trae el mensaje. La matriz conserva las acciones por familia de los sub-slices 1–8 en vez de la lista fina de §9; se suma `perfil.avisar` (ambos roles). «Avisar» va en la fila del listado y en el perfil, con nota opcional, por `notificar` (`dato_desactualizado`).
 - Fidelidad del sub-slice 9 (evidencia `.claude/state/evidencia/ep-006/ss9/fidelidad-ss9.md`): las 11 pantallas FIEL; desviaciones menores: los botones del encabezado bajan de línea cuando la meta es larga y, en consulta, los buscadores del catálogo del editor se ven deshabilitados en vez de ocultos (como desde ss2).
+
+**Sub-slice 6 (HU-140, HU-130; aprobadas por el modelo bajo D27, registradas en D30; evidencia `ss6/fidelidad-ss6.md`):**
+- Evaluador, fecha y resultado se escriben en la página del borrador; el editor muestra el reporte confirmado en lectura. `borradores_evidencia` se funde en `validaciones` con `estado`.
+- Criterios editables uno por línea; sin columna del artefacto ni «contra el artefacto» (D29: HU-131 diferida); el reporte vale para su modalidad.
+- `perfil-editor--adjunto-no-admitido` y `borrador-evidencia--sin-texto` no aplican en esta versión (D29, D30(7)).
+
+**Sub-slice 10 (HU-151, HU-147, HU-138; aprobadas por el modelo bajo D27, registradas en D38–D41; evidencia `ss10/fidelidad-ss10.md`):**
+- Administración cuelga del pie de la barra lateral; «Accesos al panel» solo para la administradora; avisos sin «Deshacer»; reinscribir reactiva; la lista sigue el orden del prototipo y dice «Entró hoy/ayer», «el 22 sep» o «rol cambiado … por …».
+- Contacto: vista del cliente con «escribe a People Service:» para el buzón; el correo viaja al navegador como `direccion` (guarda V8-4); historial con el correo en monoespaciado; sin enlace «Auditoría».
+- Registro por perfil: sin «Qué vio el cliente» (retirado de HU-138 en su revisión INVEST), sin «Exportar registro» ni «Enlaces y solicitudes»; hora en 12 h como el resto del panel; autor por correo; «Filtrar» visible (sin JavaScript); «Reglas automáticas» pasa a «Otros procesos»; las filas del alta y de la confirmación de disponibilidad se muestran (historial completo).
+
+**Aprobación de las desviaciones de los sub-slices 1–4:** el sponsor aprobó las de ss2 (D22) y las de ss2–ss4 en bloque (D25, 2026-10-01). Las del sub-slice 1 las aprobó el sponsor el 2026-10-01 (D42).
 
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 

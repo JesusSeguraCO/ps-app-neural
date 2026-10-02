@@ -119,6 +119,7 @@ export default async function Inventario({
   const enPagina = visibles.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
   const publicados = filas.filter((f) => enPestana(f, "publicado")).length;
   const escribe = puede(sesion.rol, "perfil.escribir");
+  const importa = puede(sesion.rol, "importacion.ejecutar");
   const url = (cambios: Record<string, string | undefined>) => {
     const s = new URLSearchParams();
     const v = { estado: pestana === "todos" ? undefined : pestana, q: q || undefined, ...cambios };
@@ -142,11 +143,19 @@ export default async function Inventario({
             )}
           </p>
         </div>
-        {escribe && (
+        {(escribe || importa) && (
           <div className="pp-encabezado__acciones">
-            <a className="pp-btn pp-btn--primario" href="/inventario/nuevo">
-              Crear perfil
-            </a>
+            {/* Prototipo inventario-perfiles: «Importar» secundario a la izquierda de «Crear perfil» */}
+            {importa && (
+              <a className="pp-btn pp-btn--contorno" href="/importar">
+                Importar
+              </a>
+            )}
+            {escribe && (
+              <a className="pp-btn pp-btn--primario" href="/inventario/nuevo">
+                Crear perfil
+              </a>
+            )}
           </div>
         )}
       </div>

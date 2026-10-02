@@ -47,6 +47,15 @@ export function validarColocado(
   return { ok: true, valor: { cuenta, inicio, liberacion: e.liberacion } };
 }
 
+// La fecha de liberación por sí sola pasa la regla (existe, es posterior a hoy y al inicio): la hoja
+// quita su error en cuanto se escribe una así, sin esperar al siguiente Guardar.
+export function liberacionValida(
+  e: { inicio: string | null; liberacion: string | null },
+  hoy: string,
+): boolean {
+  return validarColocado({ cuenta: "-", ...e }, hoy).ok;
+}
+
 export interface ColocadoEnTabla {
   codigo: string;
   liberacion: string;

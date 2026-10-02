@@ -3,7 +3,8 @@
 // con rol y fin de la jornada. Sin enlace al portal del cliente (HU-123, edge case). Los destinos con
 // trabajo pendiente llevan su conteo: peticiones de invitación sin decidir y perfiles por revisar en la
 // bandeja de vigencia (HU-136). El pie lleva a Administración (contacto de Trycore y accesos, HU-147 y
-// HU-151; prototipo admin-contacto); en móvil es un destino más de la barra horizontal.
+// HU-151; prototipo admin-contacto); en móvil es un destino más de la barra horizontal. La observadora
+// ve solo sus destinos de consulta (D43, `menuDelRol`).
 import type { ReactNode } from "react";
 import { horaCortaDeColombia } from "@ps/dominio/fecha/colombia";
 import { listarVigencia } from "@ps/infra/postgres/estado-perfil";
@@ -11,7 +12,7 @@ import { contarPeticionesPendientes } from "@ps/infra/postgres/invitaciones-pane
 import { poolDe } from "@ps/infra/postgres/pool";
 import type { SesionVerificada } from "../sesion/exigirSesion";
 import { BotonSalir } from "./BotonSalir";
-import { MENU_PANEL, ROL_ETIQUETA, iniciales } from "./menu";
+import { ROL_ETIQUETA, iniciales, menuDelRol } from "./menu";
 
 function Icono({ d }: { d: string }) {
   return (
@@ -53,7 +54,7 @@ export async function MarcoPanel({
             <span className="pp-sidebar__sub">Talento Humano</span>
           </span>
         </div>
-        {MENU_PANEL.map((seccion) => (
+        {menuDelRol(sesion.rol).map((seccion) => (
           <div key={seccion.titulo} className="mp-seccion">
             <p className="pp-sidebar__seccion">{seccion.titulo}</p>
             {seccion.destinos.map((d) =>

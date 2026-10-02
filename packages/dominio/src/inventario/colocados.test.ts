@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DIAS_DESTACADO,
+  liberacionValida,
   proximoCambioDeBanda,
   tablaDeColocados,
   validarColocado,
@@ -136,5 +137,19 @@ describe("proximoCambioDeBanda (lo que verá el cliente después)", () => {
   });
   it("ya liberado: sin cambio por delante", () => {
     expect(proximoCambioDeBanda(HOY, HOY)).toBeNull();
+  });
+});
+
+describe("liberacionValida (el error de la liberación se va al escribir una válida)", () => {
+  it("futura y posterior al inicio (o a hoy si no hay inicio): válida", () => {
+    expect(liberacionValida({ inicio: "2026-10-01", liberacion: "2026-12-18" }, HOY)).toBe(true);
+    expect(liberacionValida({ inicio: null, liberacion: "2026-10-02" }, HOY)).toBe(true);
+  });
+
+  it("vacía, inexistente, de hoy o antes, o no posterior al inicio: sigue el error", () => {
+    expect(liberacionValida({ inicio: "2026-10-01", liberacion: "" }, HOY)).toBe(false);
+    expect(liberacionValida({ inicio: "2026-10-01", liberacion: "2027-02-30" }, HOY)).toBe(false);
+    expect(liberacionValida({ inicio: "2026-10-01", liberacion: HOY }, HOY)).toBe(false);
+    expect(liberacionValida({ inicio: "2026-12-20", liberacion: "2026-12-18" }, HOY)).toBe(false);
   });
 });

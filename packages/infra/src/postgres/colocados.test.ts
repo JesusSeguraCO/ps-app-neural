@@ -338,7 +338,10 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
         cuenta: "Logística Magdalena",
         corte: r.cargadoEn,
         disponibilidadFecha: enDias(75),
+        nuevo: true,
+        diferencia: false,
       });
+      expect(colocados.find((c) => c.codigo === b.codigo)?.nuevo).toBe(true);
       expect(await enPortal(a.codigo)).toEqual({ fecha: enDias(75) });
       expect((await auditoriaOrigen(a.codigo)).slice(-3).map((x) => x.origen)).toEqual([
         "sincronizacion",
@@ -357,6 +360,10 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
         [enDias(90), true],
       ]);
       expect(await enPortal(a.codigo)).toEqual({ fecha: enDias(90) });
+      // «· nuevo» solo para lo que entró nuevo en la carga más reciente: `a` ya venía y `b` es de la anterior.
+      const tras = (await listarColocados(panel)).colocados;
+      expect(tras.find((c) => c.codigo === a.codigo)?.nuevo).toBe(false);
+      expect(tras.find((c) => c.codigo === b.codigo)?.nuevo).toBe(false);
     });
 
     it("filas con error: solo se aplican las válidas; cada error con número y motivo, también los del banco", async () => {
@@ -452,6 +459,11 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
         [q.codigo, 3, enDias(50), enDias(65)],
       ]);
       expect(difs[0]!.panel.registradoPor).toBe("karen@trycore.com");
+      // La fila de la tabla queda señalada «diferencia con Operaciones»; la igual, no.
+      const fil = (await listarColocados(panel)).colocados;
+      expect(fil.find((c) => c.codigo === p.codigo)).toMatchObject({ diferencia: true, nuevo: false });
+      expect(fil.find((c) => c.codigo === q.codigo)?.diferencia).toBe(true);
+      expect(fil.find((c) => c.codigo === igual.codigo)?.diferencia).toBe(false);
 
       await decidirDiferencia(panel, claves, autor, difs[0]!.id, "aceptada");
       expect((await colocaciones(p.codigo)).map((c) => [c.fuente, c.liberacion, c.vigente])).toEqual([
@@ -464,6 +476,10 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
         ["panel", enDias(50), true],
       ]);
       expect((await listarDiferencias(panel)).some((d) => [p.codigo, q.codigo].includes(d.codigo))).toBe(false);
+      // Decidida, la marca desaparece; aceptar la de Operaciones no la vuelve «nueva».
+      const dec = (await listarColocados(panel)).colocados;
+      expect(dec.find((c) => c.codigo === p.codigo)).toMatchObject({ diferencia: false, nuevo: false });
+      expect(dec.find((c) => c.codigo === q.codigo)?.diferencia).toBe(false);
       expect(
         (await rechazo(decidirDiferencia(panel, claves, autor, difs[1]!.id, "aceptada"))).motivo,
       ).toBe("ya_decidida");

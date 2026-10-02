@@ -530,6 +530,26 @@ export function EditorPerfil(p: {
             else window.scrollTo(0, 0);
           }}
           alPublicar={() => void publicar()}
+          // Mismo «Guardar cambios» del editor: vuelve al editor, donde se abre la hoja del impacto.
+          alGuardar={
+            editable && enPortal
+              ? () => {
+                  setModo("editar");
+                  void guardar();
+                }
+              : undefined
+          }
+          guardando={guardando}
+          enlaceReporte={editable ? `/inventario/${perfil.codigo}/validacion` : undefined}
+          alRegistrarReporte={
+            editable
+              ? () => {
+                  // Tras pintar el editor: si falta la modalidad, el aviso y el foco van a su selector.
+                  setModo("editar");
+                  setTimeout(() => void pedirReporte(), 0);
+                }
+              : undefined
+          }
           alRegistrarConsentimiento={
             p.registraConsentimiento
               ? () => {

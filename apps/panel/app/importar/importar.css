@@ -137,6 +137,7 @@
 .ip-aviso-sep { margin-bottom: var(--tc-sp-6); }
 .ip-tabla-hist .pp-tabla td.ip-resultado { white-space: normal; }
 .ip-tabla-hist .pp-tabla td.pp-tabla__acciones .pp-btn + .pp-btn { margin-left: var(--tc-sp-1); }
+.ip-tabla-hist .pp-tabla tbody tr.ip-fila-pedida { background: var(--tc-primary-surface); }
 .ip-toast-accion { display: inline-flex; align-items: center; }
 .ip-aviso-lista { margin: var(--tc-sp-2) 0 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
 .ip-aviso-lista li { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-2); }

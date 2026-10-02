@@ -361,7 +361,8 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
         [p.codigo],
       );
       await bd.instalacion.query(
-        `UPDATE inventario.perfiles SET disponibilidad_fecha = current_date WHERE codigo = $1`,
+        // «Disponible ahora» es el día civil de Bogotá, no el de UTC (falla de 19:00 a 24:00 en Bogotá).
+        `UPDATE inventario.perfiles SET disponibilidad_fecha = (now() AT TIME ZONE 'America/Bogota')::date WHERE codigo = $1`,
         [p.codigo],
       );
       expect((await leerPerfil(panel, p.codigo))!.coherencia?.clave).toBe(

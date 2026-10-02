@@ -92,6 +92,19 @@ export const MENU_PANEL: SeccionMenu[] = [
   },
 ];
 
+// D43 (prototipo inventario-perfiles--observador y D14): la observadora solo ve sus destinos de
+// consulta. Las demás páginas siguen abiertas para ella en solo lectura por su dirección; solo cambia
+// el menú. Las secciones que quedan sin destinos no se pintan.
+const DESTINOS_OBSERVADOR = new Set(["inventario", "enlaces", "colocados"]);
+
+export function menuDelRol(rol: keyof typeof ROL_ETIQUETA): SeccionMenu[] {
+  if (rol === "administrador") return MENU_PANEL;
+  return MENU_PANEL.map((s) => ({
+    ...s,
+    destinos: s.destinos.filter((d) => DESTINOS_OBSERVADOR.has(d.clave)),
+  })).filter((s) => s.destinos.length > 0);
+}
+
 export const ROL_ETIQUETA = {
   administrador: "Administración",
   observador: "Consulta",

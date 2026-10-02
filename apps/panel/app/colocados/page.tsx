@@ -9,7 +9,12 @@
 // Protegida: la guarda va en la primera línea.
 import { puede } from "@ps/dominio/acceso/permisos";
 import { bandaDeDisponibilidad, ROTULO_BANDA } from "@ps/dominio/catalogo/banda";
-import { diaCortoDeColombia, fechaCivil, momentoDeColombia } from "@ps/dominio/fecha/colombia";
+import {
+  diaCortoDeColombia,
+  fechaCivil,
+  momentoCortoDeColombia,
+  momentoDeColombia,
+} from "@ps/dominio/fecha/colombia";
 import { datoDesincronizado } from "@ps/contratos/operaciones";
 import { proximoCambioDeBanda, tablaDeColocados } from "@ps/dominio/inventario/colocados";
 import { ETIQUETA_ESTADO } from "@ps/dominio/inventario/estados";
@@ -54,8 +59,15 @@ function bandaDe(
   );
 }
 
-// De dónde salió el dato: en la fila (corto) y en la hoja (con fecha).
-function fuente(c: Colocado): { fila: string; hoja: string } {
+// El corte de una fila: con la hora si es de hoy («hoy 10:14»), si no solo el día («29 sep»).
+function corteDeFila(corte: Date, ahora: Date): string {
+  const m = momentoCortoDeColombia(corte, ahora);
+  return m.startsWith("hoy ") ? m : diaCortoDeColombia(corte);
+}
+
+// De dónde salió el dato: en la fila (corto) y en la hoja (con fecha). Lo recién traído por la carga
+// más reciente lleva «· nuevo» (prototipo colocados--carga-operaciones).
+function fuente(c: Colocado, ahora: Date): { fila: string; hoja: string } {
   const registrada = fechaCivil(c.registradoEn.slice(0, 10));
   switch (c.fuente) {
     case "panel":
@@ -64,9 +76,9 @@ function fuente(c: Colocado): { fila: string; hoja: string } {
         hoja: `Registrada en el panel por ${c.registradoPor ?? "sin autor"} · ${registrada}`,
       };
     case "operaciones": {
-      const corte = c.corte ? diaCortoDeColombia(new Date(c.corte)) : "sin fecha";
+      const corte = c.corte ? corteDeFila(new Date(c.corte), ahora) : "sin fecha";
       return {
-        fila: `Operaciones · corte ${corte}`,
+        fila: `Operaciones · corte ${corte}${c.nuevo ? " · nuevo" : ""}`,
         hoja: `Cargada de Operaciones · corte ${corte}`,
       };
     }
@@ -160,7 +172,7 @@ export default async function Colocados({
   ].join(" · ");
 
   const fila = (c: Colocado & { faltan: number }, pronto: boolean) => {
-    const f = fuente(c);
+    const f = fuente(c, ahora);
     const banda = ROTULO_BANDA[bandaDe(c, ahora)];
     const despues = c.disponibilidadFecha ? proximoCambioDeBanda(c.disponibilidadFecha, hoy) : null;
     const rolSeniority = [c.rol, c.seniority].filter(Boolean).join(" · ") || "Sin rol";
@@ -190,7 +202,15 @@ export default async function Colocados({
         </th>
         <td className="cl-col-cuenta">
           <span className="cl-cuenta">{c.cuenta}</span>
-          <span className="pp-tabla__sub cl-fuente">{f.fila}</span>
+          <span className="pp-tabla__sub cl-fuente">
+            {f.fila}
+            {c.diferencia && (
+              <>
+                {" · "}
+                <span className="cl-atraso">diferencia con Operaciones</span>
+              </>
+            )}
+          </span>
         </td>
         <td className="cl-col-inicio pp-tabla__num">
           {c.inicio ? (

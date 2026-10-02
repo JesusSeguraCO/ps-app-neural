@@ -1269,6 +1269,11 @@ export function Asistente(p: {
                 consentimiento.
               </p>
             </div>
+            <div className="pp-encabezado__acciones">
+              <a className="pp-btn pp-btn--fantasma" href="/importar?vista=historial">
+                Historial
+              </a>
+            </div>
           </div>
           <Formato totalBanco={p.totalBanco} />
           <PasoPegar

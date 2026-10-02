@@ -277,7 +277,8 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Colocados en el panel (HU-137, H
       expect(html).toContain("Carga aplicada: 1 fila de asignaciones-30sep.csv.");
       expect(html).toContain("Se ignoró la columna «Observaciones»");
       expect(html).toContain("La fecha de corte es el momento de esta carga.");
-      expect(html).toMatch(/Operaciones · corte \d{1,2} [a-z]{3}/);
+      // Corte de hoy con la hora y la fila recién traída marcada (prototipo colocados--carga-operaciones).
+      expect(html).toMatch(/Operaciones · corte hoy \d{2}:\d{2} · nuevo/);
       expect(html).toContain(" · corte ");
       expect(html).not.toContain("dato desincronizado");
     });
