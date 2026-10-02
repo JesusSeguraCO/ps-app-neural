@@ -204,4 +204,6 @@ Estos puntos de extensión los leen los agentes `security-reviewer`, `stack-guar
 ## Convenciones aprendidas (mantenido por /build:reflect)
 
 <!-- /build:reflect propone aquí viñetas concretas (convención nueva o error recurrente) tras cerrar un slice; se agregan SOLO con tu aprobación. Revísalas en PR como cualquier cambio de equipo. -->
+- (EP-001, EP-006) Al arreglar un hueco en una ruta, componente o rama, busca sus gemelas (misma guarda, mismo permiso, mismo tope) y arréglalas en el mismo commit con su test: el verificador adversarial y el Release Gate las cazaron en las dos épicas.
+- (EP-006) Ninguna pantalla queda muda ante un rechazo: con un 401/403 o un dato fuera de contrato, la UI explica o redirige (401 → `/acceso?motivo=…`), nunca un mensaje genérico ni un `null` callado; cada caso lleva su e2e.
 <!-- END trycore-build-learnings -->

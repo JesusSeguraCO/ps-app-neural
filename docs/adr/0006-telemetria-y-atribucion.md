@@ -18,6 +18,9 @@ add:
 > Su subsección «Revisión adversarial (2026-09-26)» incorpora los hallazgos H9, H13, H24, H26, H32,
 > H40 y H43 de la revisión multiagente (particiones, eventos de falsación, variante, logs, token).
 >
+> **Enmienda 2026-10-02 (D74):** los informes de Medición se leen con el **permiso «Medición»** por
+> persona, no con el rol observador. Ver la sección «Enmienda 2026-10-02 (D74)» al final.
+>
 > **Consolidación (2026-09-26, tras la revisión en paralelo):** esta ADR es la referencia única del
 > dueño de `eventos` (`ps_eventos_dueno`), de sus particiones (función `mantener_eventos(sal)` llamada
 > por la tarea `retencion_eventos`) y de los permisos sobre `eventos` (I-4, resuelta). Se retiran el
@@ -460,3 +463,32 @@ guardado es el de la consulta sin coincidencia, en su tabla):
 - El origen de `instruccion_enviada` (sugerencia editada o no) y `modelo_permitido` los declara el
   navegador; un cliente manipulado puede sesgar la proporción de RF-12.1 (no la atribución). Se acepta:
   no hay otra fuente y el incentivo para falsearlo es nulo.
+
+## Enmienda 2026-10-02 (D74)
+
+> Decisión del sponsor D74 (segunda ronda, 2026-10-02; corrige D67). Fuente:
+> `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`. Se conserva el
+> texto anterior; donde diga «rol observador (o superior)» como condición para leer los informes,
+> rige esta sección.
+
+| Mecanismo (texto anterior) | Implementación vigente |
+|----------------------------|------------------------|
+| `ConsultarInformeTelemetria`: solo rol observador (o superior); Route Handlers del panel «rol observador» (§3, §4 y la tabla de la enmienda de plataforma) | Los informes de Medición los sirve el panel solo a sesiones cuya persona tenga el **permiso «Medición»** en la lista nominal (RF-8.1.5), **independiente del rol**. La comprobación se hace en el servidor, en cada Route Handler de Medición, con la misma guarda que aplica el rol (HU-124); sin el permiso responde 403 con motivo y la UI lo explica (HU-171), nunca una pantalla vacía |
+| El rol decide lectura y escritura del panel | El **rol** (RF-8.1.2) sigue decidiendo qué se escribe; el **permiso** decide si se lee Medición. Escribir en Medición (encender o apagar el experimento de `operacion.experimentos`, HU-186) exige las dos cosas |
+| La lista de acceso guarda correo y rol | La lista guarda además el permiso (booleano, por persona), que conceden y quitan los administradores con evento de auditoría (HU-190). Quitarlo corta Medición en la siguiente petición de esa sesión, sin cortar el resto del panel (como D17 para el rol) |
+
+**Lo que no cambia.** El rol de base de datos sigue siendo `ps_panel` con `SELECT` solo sobre las vistas
+`v_*` (fila de permisos de la revisión adversarial): el permiso «Medición» es una regla de la aplicación
+del panel, no un rol de PostgreSQL nuevo. Las definiciones de los informes, la exclusión de sesiones
+internas y demo (D68) y la retención no cambian.
+
+**Relacionadas en la misma ronda (no son de esta ADR, se citan para la trazabilidad):** el top 10 de
+búsquedas sin resultados también se muestra en el destino Demanda a Talento Humano (D82, HU-172), y las
+decisiones de reclutamiento se registran en Demanda (D83, HU-189); el tablero mensual muestra O3 con la
+fecha de agendado que el worker lee una vez al día de HubSpot (D75, HU-171; D92: `engagements_last_meeting_booked`
+del contacto, no la propiedad «Agendada el»; el mecanismo de lectura
+pertenece a la enmienda 2026-10-02 de ADR-0009).
+
+**Veredictos que cambian en §5:** ninguno. UC-17 sigue cubierto; el control de acceso pasa a expresarse
+por persona y deja de depender de que el área coincida con un rol (riesgo que D67 abrió y HU-171 dejó
+escrito).

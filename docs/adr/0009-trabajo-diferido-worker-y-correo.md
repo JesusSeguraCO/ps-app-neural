@@ -461,3 +461,239 @@ V10-12, V10-13).
 condición de T-31; su medida en 0000 pasa a «tras un envío ambiguo solo el último código emitido es
 válido; uno invalidado responde igual y no suma fallo». QA-13 sigue ⚠️ con V10-20 como evidencia nueva.
 CRN-5 sin cambio de símbolo (en staging, R-12). Trazabilidad: backlog E-1, T-31, R-82, R-85, R-86.
+### Enmienda 2026-10-02 (D52–D55) — la solicitud llega a HubSpot por formulario y workflow — *sustituida en parte por D76*
+
+> **Sustituida en parte por la enmienda 2026-10-02 (D76), más abajo:** el formulario, `enviar_formulario`,
+> `FormularioPort`, `HUBSPOT_FORM_GUID`, la salida de `HUBSPOT_PRIVATE_APP_TOKEN`, la idempotencia por
+> campo oculto, los UTM en `pageUri`, la bandeja sin verificación y «el portal no consulta HubSpot» dejan
+> de valer. Siguen vigentes D53 (empresa por dominio), D54 (propiedades por defecto y párrafo), D55
+> (escalamiento y avisos comerciales en el workflow), la clasificación de errores de D73 y la vigilancia
+> de D58.
+
+> **Estado:** `proposed` (la promueve un humano a `accepted`, con Tecnología). Recoge las decisiones del
+> sponsor D52, D53, D54 y D55 del 2026-10-02 (acta en
+> `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`; también D56, D58 y
+> D73 en lo que tocan a esta ADR) y la enmienda v4.18 del PRD (RF-9). **No se borra el texto anterior:**
+> donde esta enmienda contradiga §2, §3 o §6, gana la enmienda.
+
+**Decisión.**
+
+- **D52.** La solicitud ya no crea el negocio por la API privada de CRM. El worker **envía un formulario
+  de HubSpot** por la Forms Submissions API (endpoint público de envío,
+  `POST https://api.hsforms.com/submissions/v3/integration/submit/{portalId}/{formGuid}`, sin token
+  privado). Un **workflow de HubSpot**, que configura Mercadeo/RevOps, crea o actualiza el contacto,
+  crea el negocio en el pipeline People Service (etapa de entrada, relacionado con el abierto según D-7),
+  asigna el propietario y notifica.
+- **D53.** La empresa la asocia **HubSpot por el dominio del correo** (función nativa). El portal no
+  crea ni asocia contactos ni empresas.
+- **D54.** El envío usa propiedades **por defecto**: campos ocultos prellenados `email` (el verificado),
+  `firstname`, `lastname`, `company` (texto, el nombre de la cuenta); `message` para el mensaje libre;
+  **una propiedad nueva «Solicitudes People Service»** (texto multilínea) con el requerimiento y la
+  especificación concatenados en un párrafo determinista (perfiles con código y nombre, modalidad,
+  momento de incorporación como banda, sector, duración, contexto, especificación y la marca
+  revisada/inferida). Origen y campaña por **UTM** en `context.pageUri`
+  (`utm_source=portal-people`, `utm_medium=curado|descubrimiento|a-medida`, `utm_campaign=<edición>`),
+  propuesta a confirmar por Mercadeo. Mercadeo crea formulario, propiedad y workflow y entrega el
+  `formGuid`.
+- **D55.** El escalamiento de 4 h y 24 h hábiles (calendario T-4, D56) lo hace el **workflow** con
+  retrasos en horario laboral. **El portal no consulta HubSpot.**
+- **Idempotencia por campo oculto.** El identificador `SOL-AAAA-NNNN` viaja en un campo oculto. El
+  workflow lo copia a una propiedad del negocio **de valor único**: un reenvío con el mismo identificador
+  no puede crear un segundo negocio. En el portal, `trabajos.clave_idempotencia` sigue garantizando un
+  trabajo por solicitud y cada reenvío lleva el mismo identificador y el mismo contenido.
+
+**Qué cambia en esta ADR.**
+
+| Mecanismo (texto anterior) | Vigente con la enmienda |
+|---|---|
+| Trabajo `crear_negocio` con subpasos `negocio` → `asociaciones` → `nota` (`trabajos_pasos`, `ps:<id>:<paso>`) | Un solo trabajo **`enviar_formulario`** (sustituye a `crear_negocio` en la lista blanca de encolado de ADR-0002). Éxito = HubSpot acepta el envío (2xx); la solicitud pasa a «enviada a HubSpot». Sin subpasos ni `ref_externa` del negocio |
+| `CrmPort` (leer negocio, crear, asociar, anotar, leer estado, escribir propiedad) | **`FormularioPort { enviar(e: EnvioFormulario): Promise<void> /* lanza Transitorio, Espera, Permanente */ }`** → `infra/hubspot-forms`, `fetch` con timeout. Sin lecturas de HubSpot |
+| `NotificarSolicitud` (correo del portal al propietario con enlace al negocio) | **Retirado**: lo hace el workflow (notificación interna + notificación nativa de asignación). El correo a Coordinación de Servicio (HU-101) pierde el enlace al negocio: **pendiente de revisar en EP-005** |
+| `EscalarSolicitudes` (tarea `escalar` cada 15 min), `/r/{id}`, `aperturas`, botón «Ya lo estoy atendiendo» | **Retirados**: el escalamiento y la marca de primera atención (RF-9.7.4) son del workflow. `calendario_habil` deja de usarse en EP-007 (se conserva si otra épica lo usa) |
+| `SincronizarNegocios` (diaria) y `solicitudes.fecha_alineacion_primera/actual` | **Retirados**: la marca «agendada el» (D57) la escribe el workflow en el negocio; O3 se informa en HubSpot. *D92 (2026-10-02) sustituye la marca: ver «Enmienda D92» más abajo* |
+| Errores: `Transitorio` (5xx, timeout, 429), `Conflicto`, `Permanente` (4xx de validación) | `Transitorio` (5xx, timeout) → espera 5-10-20-40-55 min ±10 %; **`Espera`** (429) → tras `Retry-After` o 1 min, tope 10 min, sin contar fallo; **`Permanente`** (400, 401, 403; 404 propuesto) → bandeja y aviso inmediato, **sin reintento automático** (D73), reenvío manual desde la bandeja. `Conflicto` desaparece del portal |
+| Bandeja: «Ya lo creé en HubSpot…» con verificación del ID por la API | «**Ya lo registré en HubSpot…**» con referencia obligatoria guardada **sin verificar** (el portal no lee HubSpot) |
+| Vigilancia: `vigilar` sobre `escalar` y la cola; latido a `LATIDO_URL`; proveedor del monitor sin decidir | Vigilancia de **envíos vencidos sin tomar** (> 10 min, el arrendamiento) desde la salud completa, y **alertas de DigitalOcean App Platform** como monitor externo (D58) sobre la salud, que responde 503 si `worker_ciclo` no avanza. `LATIDO_URL` queda **a revisar** con Tecnología (puede sobrar) |
+| Runbook PITR: lista de negocios con `ps_solicitud_id` sin solicitud local | Sin lectura de HubSpot: tras restaurar se reenvían las solicitudes `pendiente`; el identificador único en el negocio impide duplicados. La revisión de huérfanos pasa a ser un informe en HubSpot |
+| Propiedades `ps_especificacion_revisada`, `ps_fecha_alineacion_primera`, `ps_fecha_alineacion_actual` | La marca revisada va en el párrafo. Propiedades del negocio para D57 («Fecha de la sesión de alineación», «Agendada el») y para RF-9.7.4 («Primera atención»), creadas por Mercadeo. *D92: las de D57 no se crean; la fecha de agendado es `engagements_last_meeting_booked` del contacto* |
+
+**Configuración.**
+
+- **Sale del portal `HUBSPOT_PRIVATE_APP_TOKEN`**: con D52 ningún componente llama a la API privada de
+  CRM. Se retira de ADR-0010 §3.3, del bloque de secretos de `CLAUDE.md` y de App Platform cuando EP-007
+  se construya. *Si otra épica necesitara leer HubSpot (p. ej. el tablero de O3 en EP-008), se reabre
+  con una decisión del sponsor; hoy contradice D55.*
+- **Entran `HUBSPOT_PORTAL_ID` y `HUBSPOT_FORM_GUID`** en el worker, como variables normales (no
+  secretas: el endpoint es público). Uno por entorno: staging apunta a un formulario de pruebas o al
+  sandbox, nunca al workflow de producción. Si faltan, el worker no envía y avisa (HU-102).
+- Mercadeo/RevOps es dueño del formulario, de las propiedades y del workflow (§10.1 del PRD).
+
+**Consecuencias.**
+
+- *Positivas:* desaparece la credencial más sensible del worker; el portal no depende de la Search API,
+  de las asociaciones ni de las notas; Mercadeo puede cambiar la lógica comercial (propietario,
+  escalamiento, destinatarios) sin desplegar el portal; menos código (sin `escalar`,
+  `sincronizar_negocios`, `/r/` ni subpasos).
+- *Negativas:* la lógica de negocio queda **repartida** entre el portal y una configuración de HubSpot
+  que no se versiona en el repositorio. Sus criterios de aceptación se verifican con una **prueba de
+  aceptación en HubSpot** (sandbox o portal real con datos ficticios), no con la suite del portal. El
+  portal deja de saber si el negocio existe: «enviada a HubSpot» significa «envío aceptado».
+- *O4 y O3:* con un párrafo, O4 se calcula desde las solicitudes del portal; O3 se informa en HubSpot.
+
+**Trade-offs y riesgos (a numerar por el backlog).**
+
+- **Prueba de capacidades del HubSpot real antes del DoR de EP-007** (bloquea la E de HU-102, HU-106,
+  HU-107, HU-162, HU-163 y HU-180): (1) retrasos de **4 h / 24 h hábiles exactas con festivos de
+  Colombia** (un retraso nativo cuenta horas de reloj; las ventanas de ejecución solo aplazan);
+  (2) asociar negocio↔negocio «relacionado» desde un workflow; (3) que la creación con un identificador
+  repetido **falle sin seguir** con los avisos; (4) que un envío **del servidor sin `hutk`** pueble
+  `hs_analytics_source`/`hs_latest_source` con los UTM de `pageUri`, y qué fuente hereda el negocio de un
+  contacto existente; (5) días hábiles en el informe de O3; (6) anotar el contexto añadido en el negocio
+  sin pisar la descripción. Si alguna no existe en la suscripción, la alternativa (código propio,
+  propiedad calculada, cookie del cliente) la decide Mercadeo/RevOps con el sponsor; **no se recorta**.
+- **Segunda propiedad nueva.** La idempotencia necesita el identificador en una propiedad (campo oculto)
+  y de valor único en el negocio; D54 pedía una sola propiedad nueva pero permite otra «solo si hace
+  falta». Propuesta: «Id de solicitud People Service». **Pendiente de confirmar por Mercadeo.**
+- **Envíos repetidos visibles.** Tras una respuesta perdida, la línea de tiempo del contacto muestra el
+  envío dos veces (mismo identificador); el negocio sigue siendo uno. Aceptado por D55.
+- **Envíos casi simultáneos del mismo contacto.** «Solicitudes People Service» vive en el contacto: dos
+  envíos seguidos de un mismo contacto podrían hacer que el workflow lea el valor del segundo al crear
+  el primer negocio. Mitigación propuesta: el worker no envía un segundo formulario del mismo contacto
+  hasta unos minutos después de que HubSpot aceptara el anterior; a validar en la prueba de aceptación.
+- **Falso escalamiento (R-23)** sigue aceptado: HubSpot no ve aperturas; cuenta como atendida el cambio
+  de etapa, de propietario o una actividad registrada.
+- **Conciliación.** Sin lecturas, una solicitud aceptada cuyo workflow falle (apagado, error) no la ve el
+  portal. Mitigación: Mercadeo activa las notificaciones de errores de workflow de HubSpot y un informe
+  de envíos del formulario sin negocio. Riesgo residual aceptado por D55.
+
+**Verificaciones nuevas.** V9-E1: test del worker con doble del endpoint (2xx, 5xx, timeout, 429 con y
+sin `Retry-After`, 400, 401, 403, 404) y mismo identificador en cada reenvío. V9-E2: prueba de aceptación
+en HubSpot con datos ficticios (negocio, relacionado, empresa por dominio, duplicado por identificador,
+notificaciones, escalamiento en la semana con festivo, UTM). V9-E3: alerta de DigitalOcean disparada en
+staging parando el worker.
+
+**Trazabilidad.** D52–D58, D73 · PRD v4.18 (RF-9.1–RF-9.7) · HU-102–HU-107, HU-160–HU-166, HU-180 ·
+backlog E-6 y E-7 (resueltas), E-14 (resuelta por D58), T-4 · ADR-0002 (lista blanca de encolado),
+ADR-0010 §3.3 (variables) y alertas.
+
+### Enmienda 2026-10-02 (D76) — híbrido API + workflow
+
+> **Estado:** `proposed` (la promueve un humano a `accepted`, con Tecnología). Recoge la segunda ronda de
+> decisiones del sponsor del 2026-10-02 — **D76** (corrige D52), **D75**, **D77**, **D78**, **D79** y
+> **D84** — del acta `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`.
+> **Sustituye en parte a la enmienda D52–D55** (arriba, que no se borra): donde esta contradiga a
+> aquella, o a §2, §3 y §6, gana esta. Lo que aquella no toca aquí sigue vigente.
+
+**Decisión.**
+
+- **D76 · Portal.** El doble envío se corta **en origen**: el botón «Enviar» se bloquea al primer toque y
+  cada formulario lleva una **clave única por envío** (`solicitudes.clave_envio`, restricción `UNIQUE`).
+  Un POST repetido con la misma clave devuelve la solicitud ya guardada sin insertar otra ni encolar otro
+  trabajo; el trabajo conserva `trabajos.clave_idempotencia` única (HU-098, EP-005).
+- **D76 · Worker.** Vuelve la **API privada de CRM**: un trabajo **`crear_negocio`** (sustituye a
+  `enviar_formulario` en la lista blanca de encolado de ADR-0002) con subpasos idempotentes en
+  `trabajos_pasos`, que un reintento salta si ya están hechos:
+  1. `contacto`: **upsert por `email`** (el verificado, D-4) con los campos que el portal conoce
+     (`firstname`, `lastname`, `jobtitle`) y `message` (mensaje libre, D54) si lo hay. Ante conflicto,
+     reutiliza el existente. **No** escribe `company` ni llama a la API de empresas.
+  2. `negocio`: crea el negocio en el pipeline «Comercial (People y Tecnología)» (D85) con `soluciones_ofrecidas` = «People Service» y `dealtype` = «Existing Business» (etapa de entrada a definir con Comercial), asociado al contacto,
+     con **«Id solicitud People Service»** (propiedad de **valor único**) y **«Solicitudes People
+     Service»** (el párrafo determinista de D54, ahora en el negocio). **Son las 2 propiedades nuevas de
+     D76.** Ante el rechazo por valor duplicado (respuesta perdida tras un tiempo agotado) **lee el
+     negocio existente por ese identificador** (`idProperty`) y lo reutiliza: idempotencia real, sin
+     depender del workflow. Origen y campaña en propiedades **por defecto** que admitan escritura por API,
+     o la propuesta de D54 llevada a la propiedad que designe Mercadeo (HU-106, **a confirmar con
+     Mercadeo**).
+  3. `nota`: nota asociada al negocio y al contacto con la especificación completa de RF-17.1 y la
+     marca revisada/inferida, con marcador `[ps:<SOL>:nota]`; un reintento lee las notas del negocio y no
+     la duplica (HU-161). El contexto añadido de D-7 es otra nota con `[ps:<SOL>:contexto:<n>]` (HU-180).
+  Al completar, la solicitud guarda el ID y el enlace del negocio («registrada en HubSpot») y se encola
+  **`notificar_coordinacion`** (D78).
+- **D78.** El aviso a **Coordinación de Servicio** lo envía **el portal** por Mailgun tras crear el
+  negocio, con el enlace directo (`https://app.hubspot.com/contacts/{HUBSPOT_PORTAL_ID}/record/0-3/{id}`,
+  forma a confirmar en D84); `clave_idempotencia` = la solicitud, un solo correo (HU-101).
+- **Workflow de HubSpot** (Mercadeo/RevOps), disparado por la creación del negocio en el pipeline
+  «Comercial (People y Tecnología)» con `soluciones_ofrecidas` = «People Service» (D85): asocia la **empresa por dominio** y **la crea si no existe** (D53, D79; HU-104),
+  asocia el negocio **relacionado** al abierto de la cuenta (D-7, HU-102), asigna el propietario y hace
+  los **avisos comerciales** (HU-103), el **escalamiento 4 h / 24 h hábiles** y la marca de primera
+  atención (D55; HU-162, HU-163). *La marca «Agendada el» (D57) ya no la hace el workflow: D92.*
+- **D77.** Calendario hábil **T-4 con jornadas de 10 h** (L–V 8:00–18:00 `America/Bogota`, festivos de
+  Colombia); 24 h hábiles ≈ 2,4 jornadas. Corrige la frase «3 jornadas de 8 h» de D56.
+- **D75 · Excepción de lectura (fuente corregida por D92).** Una tarea diaria **`sincronizar_alineacion`** (nombre propuesto) lee
+  `engagements_last_meeting_booked` **del contacto** de cada solicitud con negocio en el pipeline «Comercial (People y Tecnología)» (D85) y la guarda en
+  `solicitudes.agendada_el`; O3 se calcula en el portal en días hábiles T-4. La tarea vive en HU-107;
+  el tablero de HU-171 solo muestra el dato. Una lectura
+  fallida conserva lo que había y muestra la hora de la última lectura completa.
+- **Enmienda D92 (sponsor, 2026-10-02, tercera ronda).** La fecha de agendado **no** es una propiedad
+  «Agendada el» marcada por el workflow (D57 queda sustituida en este punto): es
+  `engagements_last_meeting_booked` del **contacto** de la solicitud (el que crea o actualiza HU-102),
+  que HubSpot llena cuando el comercial agenda con su enlace de la **herramienta de reuniones**. Sin
+  propiedad nueva; la lectura cabe en `crm.objects.contacts.read`, ya dentro de los scopes mínimos.
+  `leerAgendadas(desde)` lee contactos, no negocios. Riesgo aceptado: lo agendado fuera de la
+  herramienta de reuniones no se mide. O3 en días hábiles cruzados (D91; HU-107, HU-196).
+
+**Qué cambia respecto de la enmienda D52.**
+
+| Mecanismo de la enmienda D52 | Vigente con D76 |
+|---|---|
+| `enviar_formulario` (un solo paso; éxito = envío aceptado) | `crear_negocio` por subpasos `contacto` → `negocio` → `nota`; éxito = negocio creado y su ID guardado |
+| `FormularioPort` → `infra/hubspot-forms` | **`CrmPort` reducido** → `infra/hubspot`: `upsertContacto`, `crearNegocio` (lanza `Conflicto`), `leerNegocioPorSolicitud`, `leerNegocio`, `escribirIdSolicitud` (enlace manual), `notaConMarcador`, `anotar`, `leerAgendadas(desde)`. **Sin** empresas, asociaciones negocio↔negocio ni lecturas de etapa o propietario (el escalamiento sigue en el workflow) |
+| Idempotencia por campo oculto que copia el workflow | Valor único en el negocio que **rechaza HubSpot** + lectura por `idProperty`; doble clic cortado en origen |
+| «El portal no consulta HubSpot» (D55) | El worker **lee** lo justo: el negocio duplicado por identificador, el negocio indicado en el enlace manual y, una vez al día, la fecha de agendado (D75; D92: `engagements_last_meeting_booked` del contacto). El escalamiento sigue sin leer nada |
+| Bandeja: «Ya lo registré en HubSpot…» sin verificar | Vuelve **«Ya lo creé en HubSpot…» verificado** (existe, está en el pipeline, no tiene otro identificador) y el worker le **escribe el «Id solicitud People Service»**, para que ningún reintento lo duplique. El panel encola `enlazar_negocio`; el token vive solo en el worker (HU-164) |
+| Resumen en la línea de tiempo = envío del formulario (duplicado aceptado tras respuesta perdida) | Nota con marcador, sin duplicado (HU-161, HU-180) |
+| UTM en `context.pageUri` | Propiedades por defecto escribibles por API o propuesta D54 (HU-106) |
+| Errores `Transitorio`, `Espera`, `Permanente` | Igual (D73) y vuelve **`Conflicto`** (valor único duplicado o contacto ya existente) → reutilizar, no es fallo. 401 = token revocado o rotado; 403 = falta un scope (HU-166) |
+| `SincronizarNegocios` y `fecha_alineacion_*` retirados | Vuelve solo la lectura de la fecha de agendado (`sincronizar_alineacion`, D75) y `solicitudes.agendada_el`; D92: la fuente es `engagements_last_meeting_booked` del contacto (herramienta de reuniones), no una marca del workflow |
+| `NotificarSolicitud` retirado; HU-101 sin enlace | `notificar_coordinacion` (D78) con enlace; el aviso al comercial sigue en el workflow |
+| Runbook PITR sin lectura de HubSpot | Tras restaurar, se reintentan las solicitudes `pendiente`; el valor único impide duplicados y el worker **reutiliza** el negocio existente, de modo que una solicitud restaurada recupera su enlace. La lista de huérfanos (negocios con identificador sin solicitud local) vuelve a poder sacarse por API |
+
+**Configuración.**
+
+- **Vuelve `HUBSPOT_PRIVATE_APP_TOKEN`** (secreto, solo en el **worker**), app privada con **scopes
+  mínimos** `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.objects.deals.read`,
+  `crm.objects.deals.write`. Queda como estaba en ADR-0010 §3.3 y en el bloque de secretos de
+  `CLAUDE.md`: **no se retira**, contra lo que proponía la enmienda D52.
+- **Se retira `HUBSPOT_FORM_GUID`**: no hay formulario.
+- **`HUBSPOT_PORTAL_ID` se conserva** (no secreto) para construir el enlace al negocio. Identificadores
+  del pipeline y de la etapa de entrada como configuración no secreta del worker (propuesta).
+- Uno por entorno: staging apunta al sandbox o a un portal de pruebas, nunca al workflow de producción.
+- Si falta el token, el worker no llama a HubSpot, avisa nombrando la variable y la solicitud sigue
+  pendiente (HU-102).
+
+**Consecuencias.**
+
+- *Positivas:* idempotencia que no depende de configuración externa; el portal sabe si el negocio
+  existe y lo enlaza (HU-101, HU-164); desaparecen los duplicados aceptados en la línea de tiempo; O3 se
+  mide en el portal con días hábiles reales (D75), sin depender de los informes de HubSpot.
+- *Negativas:* vuelve la credencial más sensible del worker (mitigación: scopes mínimos, solo en el
+  worker, rotación documentada; 401/403 a la bandeja con aviso, HU-166); la lógica sigue **repartida**
+  entre el portal y un workflow que no se versiona en el repositorio, verificado con prueba de
+  aceptación en HubSpot (V9-E2).
+
+**Trade-offs y riesgos (a numerar por el backlog).** La **prueba de capacidades D84** (en solo lectura
+por el conector + lista de verificación para Mercadeo/RevOps; no se escribe en HubSpot) sustituye a la de
+la enmienda D52 y comprueba: (1) **scopes de notas**: que crear notas y leer las notas asociadas a un
+negocio funcione con los cuatro scopes mínimos; si exige uno más, lo aprueba el sponsor; (2) **unicidad
+de «Id solicitud People Service»**: comprobarla en el arranque exige `crm.schemas.deals.read`, fuera de
+los scopes mínimos; propuesta: comprobarla en la prueba de aceptación de cada entorno; (3) qué
+propiedades **por defecto de origen y campaña** admiten escritura por API (HU-106); (4) que el workflow
+asocie la empresa al negocio **después** de que la función nativa la asocie al contacto, y qué hace con
+varias empresas del mismo dominio (HU-104); (5) negocio **relacionado** desde el workflow (HU-102);
+(6) retrasos de **4 h / 24 h hábiles exactas con festivos** (HU-162, HU-163, sin cambio); (7) límite de
+tasa de la búsqueda diaria (HU-107). Si una capacidad no existe, la alternativa la decide Mercadeo/RevOps
+con el sponsor; **no se recorta**. Se retiran de la lista de la enmienda D52 los riesgos de `hutk`, de la
+copia del párrafo por el workflow, de los envíos casi simultáneos sobre una propiedad del contacto y de
+la anotación del contexto por el workflow, que con D76 ya no existen.
+
+**Verificaciones (sustituyen a V9-E1 y V9-E2 de la enmienda D52).** **V9-E1′**: test del worker con
+doble de la API (2xx, 5xx, timeout tras crear, 409/valor duplicado → lectura por identificador, 429 con y
+sin `Retry-After`, 400, 401, 403, 404), subpasos que se saltan al reintentar, un solo
+`notificar_coordinacion` y doble POST con la misma `clave_envio` → una fila y un trabajo. **V9-E2′**:
+prueba de aceptación en HubSpot con datos ficticios (empresa por dominio y creada si no existe,
+relacionado, propietario y avisos, escalamiento en la semana con el festivo del 12 oct 2026, una reunión agendada con la herramienta
+de reuniones que llena `engagements_last_meeting_booked` del contacto (D92), unicidad de la propiedad). **V9-E3** (alerta de DigitalOcean parando el worker) sigue igual.
+
+**Trazabilidad.** D52 (sustituida en parte), D53–D55, D57 (sustituida por D92), D58, D73, D75–D79, D84, D91, D92 · PRD v4.18 (RF-9,
+nota D76) · HU-098 y HU-101 (EP-005) · HU-102–HU-107, HU-160–HU-166, HU-180 · T-4 · ADR-0002 (lista
+blanca: `crear_negocio`, `notificar_coordinacion`, `enlazar_negocio`), ADR-0010 §3.3 (variables).

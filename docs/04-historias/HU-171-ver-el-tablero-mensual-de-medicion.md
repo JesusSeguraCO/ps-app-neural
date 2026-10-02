@@ -1,0 +1,118 @@
+---
+id: HU-171
+titulo: "Ver el tablero mensual de medición"
+epica: EP-008
+prioridad: alta
+complejidad: M
+estado: lista
+fase: telemetria-y-medicion
+prd_version: 4.18
+depende_de: [HU-167, HU-190]
+---
+
+# HU-171 — Ver el tablero mensual de medición
+
+**Como** Dirección de Mercadeo, que responde ante Dirección General por los objetivos del portal,
+**quiero** abrir en el panel el tablero de un mes con la conversión, los perfiles por solicitud, la calidad del brief (O4), los días hasta la alineación agendada, el acierto de la curaduría, las diez búsquedas sin resultados más repetidas y las cuentas que envían al menos una solicitud, cada indicador junto a su meta,
+**para** reportar cada mes si el portal cumple sin que nadie tenga que sacar los datos a mano.
+
+## Criterios de aceptación
+
+### Happy path — el mes cerrado está listo sin trabajo manual
+
+**Dado** que tengo el permiso «Medición» y terminó un mes en el que entraron cuentas con sesiones reales, algunas enviaron solicitudes —unas con sector, fecha de inicio y duración diligenciados y otras sin alguno de los tres— y de una de esas solicitudes nunca llegó el evento «solicitud enviada»,
+**cuando** abro el tablero de ese mes en Medición,
+**Entonces** veo la conversión —cuentas con al menos una solicitud enviada en el mes entre cuentas que entraron en el mes— junto a la meta del 20 % y con el número de cuentas de cada lado, y los perfiles promedio por solicitud junto a la meta de 1,8
+**Y** veo O4 —solicitudes del mes con sector, fecha de inicio y duración diligenciados entre solicitudes del mes— junto a la meta del 85 % y con el número de solicitudes de cada lado
+**Y** la solicitud sin evento cuenta igual en la conversión, en los perfiles por solicitud y en O4, porque el tablero las toma de las solicitudes registradas
+**Y** cada solicitud cuenta en el mes en que se envió
+**Y** nadie tuvo que cargar, exportar ni calcular nada para que aparezcan
+
+### Edge case — un panel depende de algo que aún no está
+
+**Dado** que el panel del tablero está en la situación de la tabla,
+**cuando** abro el tablero de un mes cerrado,
+**Entonces** ese panel aparece con su meta y el rótulo «aún no se mide», y nombra lo que falta, como dice la tabla
+**Y** la conversión, los perfiles por solicitud y O4 se muestran completos, sin esperar a ese panel
+
+| Panel y situación | Meta que muestra | Lo que falta |
+|---|---|---|
+| acierto de la curaduría, sin HU-109 construida | 70 % | HU-109 |
+| top 10 sin resultados, sin HU-172 construida | top 10 | HU-172 |
+| días hasta la alineación agendada (O3), sin HU-196 construida | 3 días hábiles | HU-196 |
+| cuentas que envían al menos una solicitud (trimestral), mientras EP-011 no registre los envíos de cada edición | 35 % de las cuentas contactadas, por trimestre | EP-011 |
+
+### Edge case — mes sin actividad o en curso
+
+**Dado** que el mes está en la situación de la tabla,
+**cuando** abro su tablero,
+**Entonces** los indicadores aparecen como dice la tabla
+
+| Situación del mes | Indicadores |
+|---|---|
+| cerrado, sin ninguna cuenta con sesión real | cada uno dice «sin dato en este período» y ninguno muestra 0 % como si fuera un resultado |
+| en curso | rotulados como parciales, con la fecha y la hora hasta las que cuentan |
+
+### Edge case — las visitas internas y las demo quedan fuera
+
+**Dado** que en el mes hubo, además de sesiones reales de clientes, visitas de personas de Trycore y visitas por enlaces generados con la casilla «demo»,
+**cuando** abro el tablero,
+**Entonces** los indicadores cuentan solo las sesiones reales y las solicitudes enviadas desde ellas
+**Y** el tablero dice cuántas visitas internas y cuántas demo dejó fuera
+
+### Error — quien no tiene el permiso «Medición»
+
+**Dado** que entré al panel con un correo inscrito sin el permiso «Medición», sea administrador de inventario u observador,
+**cuando** abro Medición, desde el menú o con su dirección,
+**Entonces** no veo ningún indicador ni ninguna cifra del tablero
+**Y** el panel me explica que Medición la consultan las personas con el permiso «Medición» y que lo concede un administrador del panel, en lugar de una pantalla vacía o un error genérico
+
+## Notas
+
+Es la **métrica de éxito de EP-008**: *el tablero mensual reporta conversión, acierto de la curaduría y el top 10 de búsquedas sin resultados sin intervención manual*. Reúne los KPI de §11 cuya fuente es la telemetría o el portal: conversión (O2, meta ≥ 20 %), perfiles promedio por solicitud (meta ≥ 1,8, que es también la métrica de EP-004), calidad del brief (O4, meta ≥ 85 %, D93), días hasta la alineación agendada (O3, meta ≤ 3 días hábiles, panel de HU-196), acierto de la curaduría (meta ≥ 70 %, calculado en HU-109), búsquedas sin resultados (top 10, calculado en HU-172) y cuentas que envían al menos una solicitud (≥ 35 % de las cuentas contactadas, trimestral, D93, a la espera de EP-011). Vive en el destino **Medición** del menú del panel, hoy deshabilitado hasta que se construya esta épica.
+
+**Decisiones del sponsor (2026-10-02) aplicadas.**
+- **D66 — línea de release: MVP.** El tablero mensual entra con EP-008 en el MVP, no en v1.1. Resuelve el conflicto con el backlog y el flow (ver abajo).
+- **D70 — conversión.** **Cuentas con al menos una solicitud enviada / cuentas que entraron**, por mes; la solicitud cuenta en el **mes de envío** (O2). «Entró en el mes» = tuvo al menos una sesión real con actividad en ese mes, así que la cuenta que envía en un mes siempre está en el denominador de ese mes. El happy path muestra los dos lados del cociente.
+- **D68 — sesión real.** Código verificado de un correo que no es `@trycore.com`, por un enlace sin la casilla «demo» (HU-188). Internas y demo se cuentan aparte (edge).
+- **D67 — quién ve Medición** (corregida por D74, abajo). Administradores, Mercadeo, Comercial y Dirección General; Talento Humano y la observadora no.
+- **D74 (segunda ronda, corrige D67) — permiso «Medición» por persona.** Medición la abre quien tenga el **permiso «Medición»** en la lista nominal del panel, **independiente del rol**; lo concede y lo quita un administrador (**HU-190**). El acceso denegado explica el motivo (error), como pide la convención del proyecto: ninguna pantalla muda ante un 403. La regla vale para todo el destino Medición (también las lecturas de HU-108 a HU-112, HU-167, HU-170, HU-172 a HU-173 y HU-184 a HU-186); este escenario la prueba una vez. Se enmiendan RF-8.1.2 (nota v4.18) y ADR-0006 (enmienda 2026-10-02).
+- **D75 (segunda ronda) — O3 en el tablero.** **Excepción de lectura** a «el portal no consulta HubSpot» (D55): la lectura diaria de la fecha de agendado (`engagements_last_meeting_booked` del contacto, D92) con el token privado (D76) **vive en HU-107**, que la guarda junto a la solicitud. Este tablero **solo la muestra**: calcula O3 con esa fecha ya guardada, sin leer HubSpot: días hábiles (calendario T-4) entre la solicitud enviada y la fecha de agendado, por solicitudes enviadas en el mes. *Desde la tercera ronda, el panel de O3 vive en HU-196 (ver abajo).*
+
+**Revisión 2026-10-02 (D67).** Para añadir el acceso denegado sin pasar de cinco escenarios, el mes sin actividad y el mes en curso se unen en un edge con tabla de ejemplos; ningún caso se pierde.
+
+**Revisión 2026-10-02 (validador independiente: fallaba la I).** El tablero dependía de HU-109 y HU-172 para existir. Ahora entrega por sí solo sus indicadores propios (conversión, cuentas con solicitud y perfiles por solicitud) y muestra los paneles de acierto y de top 10 en estado «aún no se mide» hasta que esas dos historias estén construidas; cuando lo estén, los paneles se llenan sin cambiar el tablero. **No es recorte**: los cinco indicadores siguen en el alcance; solo cambia el orden en que pueden construirse. Para no pasar de cinco escenarios, la solicitud cuyo evento se perdió pasa del edge propio al happy path, con el mismo resultado observable.
+
+**Las métricas comerciales no se duplican.** Oportunidades creadas y tasa de cierre se leen en HubSpot (ADR-0006, ADR-0005). Los días hasta la alineación (O3) son la excepción de D75: los cuenta el portal con la fecha que guarda la lectura diaria de HU-107 y los muestra HU-196.
+
+**Dependencias de datos.** Las solicitudes las crea EP-005; sin ellas la conversión, los perfiles por solicitud y el acierto dicen «aún no se mide». Las consultas sin coincidencia llegan con EP-002. El tablero se construye y prueba con datos fijados del contrato de HU-167.
+
+**Conflicto de release resuelto por D66.** El backlog (fila HU-059–HU-064) decía «MVP · tablero en v1.1» y que el primer trimestre los datos se leerían a mano; el sponsor decidió el tablero en el **MVP**. El flow de EP-008 quedó alineado el 2026-10-02; el backlog y el mapa de historias se alinearon el mismo día (nota D66 en ambos).
+
+**Riesgo de D67 cerrado por D74.** Con los dos roles del panel (administrador = Talento Humano, observador = Mercadeo y Comercial) D67 no se podía expresar. D74 lo resuelve con un permiso por persona, independiente del rol (HU-190). El escenario de error deja de nombrar áreas y prueba el permiso con los dos roles.
+
+**Dependencia con HU-107 (EP-007) por D75 — pasa a HU-196.** La lectura diaria que trae la fecha de agendado al portal vive en HU-107 (D75; fuente `engagements_last_meeting_booked` del contacto por D92). Quien la muestra en el tablero es ahora **HU-196**; esta historia solo reserva el panel en «aún no se mide».
+
+**Revisión de validación 2026-10-02.** Se quitó la afirmación de que los días hasta la alineación se leen en HubSpot (contradecía D75) y la reclamación de la lectura diaria, que es de HU-107.
+
+**Propuesta del modelo, negociable (no es decisión del sponsor):** O4 cuenta como diligenciado un campo con valor, sin juzgar su calidad; la agregación de O3 (mediana) y el aviso de atraso se proponen en HU-196.
+
+**Tercera ronda 2026-10-02 (D93, D91) y partición en HU-196.**
+- **D93 — O4 y el KPI del 35 % entran al tablero.** **O4** (solicitudes con sector, fecha de inicio y duración diligenciados ≥ 85 %, §3 del PRD) se muestra **desde ya**: sale de las solicitudes registradas en el portal, no de HubSpot, porque el requerimiento llega a HubSpot en un párrafo (HU-160, D54). El KPI **«cuentas que envían al menos una solicitud ≥ 35 % de las cuentas contactadas»** (trimestral, §11) aparece con su meta y en **«aún no se mide»** hasta que **EP-011** registre los envíos de cada edición, que son su denominador. Cierra la pregunta que estaba abierta aquí.
+- **D91 — unidad de O3.** Días hábiles **cruzados**, sin fracción, con el calendario T-4 (mismo día = 0; lunes → miércoles = 2). Lo cuenta HU-107 y lo muestra HU-196.
+- **Partición, no recorte: O3 pasa a HU-196.** Con O4 y el KPI del 35 % la historia dejaba de ser M (ya estaba en el límite alto). El panel de O3 (sus cifras, las solicitudes sin agendar, la fecha de la última lectura y el aviso de atraso) sale entero a **HU-196**, también en EP-008. HU-171 lo muestra en «aún no se mide» hasta que HU-196 exista, como hace con el acierto y el top 10. Efecto colateral bueno: HU-171 ya no depende de HU-107; esa dependencia pasa a HU-196. Sigue en cinco escenarios y en M.
+
+## Trazabilidad
+
+Épica madre: **EP-008** · PRD v4.17 · §3 O2 · §11 KPIs · RF-7.2 · RF-7.4 · métrica de éxito de EP-008 y de EP-004 · ADR-0006 (UC-17, QA-6) · §3 O3 · RF-9.1.3 · RF-8.1.2 (enmienda v4.18, D74) · ADR-0006 (enmienda 2026-10-02, D74) · §3 O4 · §11 KPI de cuentas que envían (trimestral) · D66, D67, D68 y D70 (sponsor, 2026-10-02) · D74 y D75 (segunda ronda) · D91 y D93 (tercera ronda) · relacionada con HU-188 · depende de HU-167 y HU-190 (permiso «Medición») · el panel O3 es de HU-196 (partición, D93), que depende de HU-107 · muestra los cálculos de HU-109, HU-172 y HU-196 cuando existan · el KPI del 35 % espera a EP-011
+
+## INVEST
+
+| | Criterio | Estado |
+|---|---|---|
+| I | Independiente | ✓ con dependencias declaradas: la captura de HU-167 y el permiso de HU-190; se construye y entrega antes o después de HU-109, HU-172 y HU-196, cuyos paneles muestra en «aún no se mide» hasta que existan, igual que el KPI del 35 % hasta EP-011; las solicitudes llegan con EP-005 y hasta entonces el tablero lo declara. Ya no depende de HU-107 (pasó a HU-196) |
+| N | Negociable | ✓ fija los indicadores, la definición de conversión (D70) y de O4, sus metas del PRD, quién lo ve (permiso «Medición», D74), el cierre automático y los estados sin dato, parcial y «aún no se mide»; la disposición del tablero y su visualización son del equipo |
+| V | Valiosa | ✓ es el informe que Mercadeo lleva a Dirección General cada mes y lo que hace cumplir la métrica de la épica |
+| E | Estimable | ✓ M: pantalla de Medición en el panel, conversión por cuentas y mes de envío, perfiles por solicitud, O4 sobre tres campos de la solicitud, exclusión de internas y demo, cuatro paneles reservados en «aún no se mide» y la negación con explicación sobre el permiso de HU-190. Sacar O3 a HU-196 le quitó el límite alto |
+| S | Pequeña | ✓ M: una pantalla con cinco escenarios (dos con tabla); el acierto, el top 10 y O3 se calculan o muestran en sus propias historias y el permiso se administra en HU-190 |
+| T | Testeable | ✓ meses fijados con actividad (incluidas una solicitud sin evento y solicitudes con y sin los tres campos de O4), sin actividad, en curso y con visitas internas y demo, un entorno sin HU-109, HU-172, HU-196 ni EP-011 y sesiones de administrador y observador sin el permiso dan cifras, rótulos y negaciones observables |

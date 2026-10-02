@@ -3,8 +3,8 @@ artefacto: epicas
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
 prd_version: 4.13
-version: 5.6
-fecha: 2026-10-01
+version: 5.7
+fecha: 2026-10-02
 total_epicas: 11
 prd_version_alineada: 4.13
 ---
@@ -119,6 +119,13 @@ prd_version_alineada: 4.13
 
 **Historias anticipadas:** leer la tarjeta y entender la capacidad · abrir la ficha completa · consultar las 4 dimensiones Neural-Grid · ver condiciones operativas y SLA · citar el perfil por su código · leer el encuadre del estándar antes del primer resultado.
 
+**Historias escritas (2026-10-02):** *sub-slice inicial de panel* HU-177 · HU-176 · HU-178 · HU-191 · HU-194 — *cara cliente* HU-153 · HU-081 · HU-154 · HU-155 · HU-156 · HU-157 · HU-158 · HU-159 · HU-119 · HU-120 · HU-175.
+
+**Discovery 2026-10-02** (decisiones en `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`):
+- **Sub-slice inicial de panel (D60):** SARO (alcance y fecha) y DISC (fecha) se capturan en un sub-slice inicial de esta épica (panel + migración: HU-177, HU-176, HU-178, HU-191, HU-194); **EP-006 sigue cerrada**, no se reabre. SARO y DISC son **obligatorios para publicar** y el alcance SARO es catálogo cerrado administrable (D61). Los perfiles ya publicados sin ellos **siguen visibles** con marca «incompleto» y la ficha omite el dato ausente (D62). Las **tres validaciones de entrada** son obligatorias para publicar; el **Sello Personal sigue opcional** (D63). Columnas SARO/DISC en la importación masiva y su plantilla (D81, HU-191).
+- **Ficha:** validación técnica con los 5 campos ya construidos (D59); **cuatro dimensiones**, no cinco (D64); el encabezado del estándar afirma «ningún perfil sin…» solo con 0 publicados incompletos (D80); opciones conservadoras de D73 (5 tecnologías por orden de carga, quitar desde la ficha, aviso —no bloqueo— de lenguaje de inventario).
+- **HU-174 pasa a EP-009 (D87)**, junto al motor de criterios: EP-003 queda sin dependencia de EP-009. HU-175 depende de **HU-192** (EP-004, D88).
+
 ### Requisitos de esta épica
 
 - **RF-3.1** La tarjeta muestra **nombre y primer apellido** del profesional (D-1 revertida), con la **capacidad como descriptor inmediato** —rol, seniority y anclaje de experiencia— y debajo 3–5 tecnologías ancla, sector, modalidad y disponibilidad. Incluye el **sello Neural-Grid** en la forma definida por RF-3.8. Sin foto.
@@ -171,6 +178,10 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** sumar un perfil al equipo · quitarlo · ver el contador desde cualquier pantalla · revisar el equipo como conjunto con fecha de inicio más temprana · comparar hasta tres perfiles · recuperar el equipo al volver.
 
+**Historias escritas:** HU-080 · HU-084 · **HU-192** (2026-10-02).
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): **D88** redacta ya **HU-192** «Sumar y quitar perfiles de Mi equipo» (RF-4.1, RF-4.2, con su indicador), que absorbe los criterios recibidos de EP-001 (HU-094 y HU-095, happy path) y de la que depende HU-175 (EP-003). Siguen sin historia el resumen del conjunto (RF-4.3), el comparador de tres (RF-4.4) y la recuperación al volver (RF-4.5).
+
 ### Requisitos de esta épica
 
 - **RF-4.1 · «Mi equipo» vive en el servidor, por invitado.** Sumar y quitar perfiles a una selección que se guarda en el servidor **ligada al correo verificado del invitado y al enlace por el que entró** (D-4). *(Decisión del sponsor, 2026-09-25, T-1 del backlog de arquitectura.)*
@@ -198,6 +209,10 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Métrica de éxito:** al menos el 85% de las solicitudes llegan con sector, fecha de inicio y duración diligenciados; ninguna pieza del flujo comunica reserva o contratación.
 
 **Historias anticipadas:** declarar el contexto del proyecto · identificarse cuando no se es el contacto del correo · revisar el resumen antes de enviar · enviar la solicitud · recibir la confirmación con el paso siguiente · agendar la alineación · intentar enviar con el equipo vacío.
+
+**Historias escritas:** HU-096 · HU-097 · HU-098 · HU-099 · HU-100 · HU-101.
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): el envío **impide el doble clic** —botón bloqueado y clave única por envío en la base de datos: una sola solicitud, un solo trabajo en cola— como parte del híbrido API + workflow de EP-007 (D76). El aviso a Coordinación de Servicio **lo envía el portal** por Mailgun tras crear el negocio, con enlace directo a él (D78, HU-101).
 
 ### Requisitos de esta épica
 
@@ -309,6 +324,13 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** crear la oportunidad al enviar · asociar contacto y empresa existentes · crear contacto nuevo dentro de empresa conocida · escribir las propiedades del requerimiento · registrar el resumen en la línea de tiempo · asignar propietario y notificar · recuperar una solicitud cuya integración falló.
 
+**Historias escritas:** HU-102 · HU-104 · HU-103 · HU-105 · HU-106 · HU-107 · HU-160 · HU-161 · HU-180 · HU-162 · HU-163 · HU-164 · HU-165 · HU-166.
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`). Estas decisiones enmiendan RF-9 y ADR-0009; el texto de los requisitos de abajo se conserva hasta que el PRD los reescriba:
+- **Híbrido API + workflow (D76, corrige D52).** El worker crea o actualiza **contacto y negocio por API** con la propiedad única **«Id solicitud People Service»** (HubSpot rechaza el duplicado: idempotencia real). Vuelve `HUBSPOT_PRIVATE_APP_TOKEN` con scopes mínimos. El requerimiento va en el párrafo de la propiedad nueva **«Solicitudes People Service»** (D54, D86) y el mensaje libre en `message`. La **asociación de empresa por dominio** (D53; la crea si no existe, D79), el **escalamiento 4 h / 24 h hábiles** (D55; calendario T-4 de jornadas de 10 h, D77) y los avisos comerciales **se quedan en el workflow de HubSpot**: el portal no consulta HubSpot para escalar.
+- **Pipeline «Comercial (People y Tecnología)» (D85).** No existe un pipeline «People Service»: el negocio entra en el existente con `soluciones_ofrecidas = People Service` y `dealtype = Existing Business`. La etapa inicial queda por definir con Comercial (propuesta: «35% Gestión con cliente / Solicitud de información»). Corrige la lectura de D-6 en RF-9.1.
+- **O3** mide cuándo se agendó (D57); el worker lee una vez al día esa fecha con token de lectura (D75). HU-165 (aviso de detención) **se construye en esta épica**, con alertas de DigitalOcean como monitor externo (D58). La prueba de capacidades de HubSpot del DoR es en solo lectura más lista de verificación para Mercadeo/RevOps (D84).
+
 ### Requisitos de esta épica
 
 - **RF-9.1** Al enviar la solicitud se crea un negocio en el **pipeline propio de la línea People Service** (D-6), en su etapa de entrada.
@@ -344,6 +366,15 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** registrar la entrada atribuida al correo · registrar filtros aplicados · distinguir curaduría de descubrimiento · registrar el embudo hasta el envío · reportar búsquedas sin resultados · reportar filtros más usados.
 
+**Historias escritas:** *base* HU-167 · HU-168 · HU-169 · HU-187 · HU-193 · HU-188 · HU-190 — *atribución y lecturas* HU-112 · HU-109 · HU-110 · HU-108 · HU-111 · HU-171 · HU-196 · HU-172 · HU-170 · HU-184 · HU-185 · HU-195 · HU-173 · HU-186 · HU-189.
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`):
+- **Tablero mensual en el MVP (D66)**, no en v1.1: HU-171, HU-108 y HU-111 entran con la épica. Conversión = cuentas con solicitud / cuentas que entraron, por mes de envío (D70); atribución heredada del último correo curado a 90 días (D69, HU-112 pasa de S a M).
+- **Permiso «Medición» por persona (D74, corrige D67)** en la lista nominal del panel, independiente del rol (HU-190). Toca la lista de HU-151 de EP-006, que está cerrada: el cambio se construye en esta épica. Se enmiendan RF-8.1.2 y ADR-0006.
+- **Sesión real (D68):** código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo» (HU-188). Vista del recorrido de una visita incluida (D72). Ley 1581: solo aviso de privacidad en la puerta (D65, HU-187) y supresión como historia propia (D89, HU-193). A/B con/sin Perfil Objetivo por cuenta 50/50, lectura descriptiva (D71, HU-186). Decisiones de reclutamiento registradas por Talento Humano (D83, HU-189); top 10 sin resultados también en «Demanda» (D82).
+- Particiones sin recorte: HU-170 → HU-170 + HU-184 + HU-185; HU-173 → HU-173 + HU-186; HU-169 → HU-169 + HU-193; HU-185 → HU-185 + HU-195 (D94); HU-171 → HU-171 + HU-196.
+- **Tercera ronda (D91–D99), todo en MVP:** **HU-195** «Registrar la validación de Delivery de las composiciones de referencia» — la registra Coordinación de Servicio (rol observador) con el permiso por persona «Validar composiciones», concedido como «Medición» (D94, D99); es la tercera condición de §14.5 y el disparador se cumple solo con las tres a la vez (D95, D98). **HU-196** «Ver en el tablero los días hasta la alineación agendada» — O3 en días hábiles cruzados (D91) con la fecha de agendado que lee HU-107 de `engagements_last_meeting_booked` del contacto (D92).
+
 ### Requisitos de esta épica
 
 - **RF-7.1** Eventos: entrada, filtros aplicados, ampliación de búsqueda, fichas abiertas, perfiles sumados y retirados, comparaciones, solicitud iniciada, solicitud enviada, abandono.
@@ -371,6 +402,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Sin bloqueos.** D-16 se cerró el 2026-09-21 en persistencia por dispositivo y el 2026-09-25 quedó acotada al Perfil Objetivo (T-1): «Mi equipo» va al servidor por invitado (EP-004, RF-4.1); el Perfil Objetivo sigue en el dispositivo de quien lo especificó.
 
 **Historias anticipadas:** escribir una instrucción en lenguaje natural · partir de una sugerencia precargada · pegar un requerimiento y obtener chips editables · ver cómo se interpretó la consulta · corregir la interpretación · revisar y editar el Perfil Objetivo · responder una pregunta de perfilamiento sin perder los resultados · recuperar el Perfil Objetivo al volver · seguir buscando si el modelo no responde.
+
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): **HU-174** «Ver la evidencia de cada perfil calculada por el mismo motor que decide los resultados» **se mueve a esta épica (D87)**, junto al motor único de criterios (RF-13.8) y HU-118. No es recorte: cambia de épica. Depende de HU-118 y de HU-119 (presentación, EP-003).
 
 ### Requisitos de esta épica
 

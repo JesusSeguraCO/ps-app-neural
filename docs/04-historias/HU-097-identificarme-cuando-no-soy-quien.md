@@ -4,7 +4,7 @@ titulo: "Identificarme cuando no soy quien recibió el correo"
 epica: EP-005
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.0
 ---
@@ -17,43 +17,66 @@ prd_version: 4.0
 
 ## Criterios de aceptación
 
-### Happy path
+### Happy path — la solicitud sale a mi nombre
 
-**Dado** que entré con mi correo invitado y no soy el contacto principal del envío,
-**cuando** diligencio mis datos,
-**Entonces** la solicitud viaja con mi nombre, mi cargo y el correo con el que entré
-**Y** la cuenta sigue siendo la misma
+**Dado** que entré con mi correo invitado luis.gomez@cliente.com por un enlace cuyo contacto principal es Ana Pérez
+**Y** que en el formulario de solicitud puse mi nombre «Luis Gómez» y mi cargo «Arquitecto de soluciones»
+**Cuando** envío la solicitud
+**Entonces** la confirmación dice que Trycore contactará a Luis Gómez, Arquitecto de soluciones, en luis.gomez@cliente.com
+**Y** la solicitud queda registrada a mi nombre, en la misma cuenta del enlace, y no a nombre de Ana Pérez
 
-### Error — intento cambiar el correo
+### Error — falta el nombre o el cargo
 
-**Dado** que en el formulario escribo un correo distinto del que verifiqué al entrar,
-**cuando** intento enviar,
-**Entonces** la solicitud usa el correo verificado
-**Y** el portal me explica que el correo es el de mi invitación
+**Esquema del escenario:** la solicitud no sale sin nombre y cargo
+**Dado** que entré con mi correo invitado luis.gomez@cliente.com y en el formulario de solicitud dejé <campo_vacio> vacío
+**Cuando** envío la solicitud
+**Entonces** la solicitud no se envía ni se registra
+**Y** el formulario señala <campo_vacio> con el mensaje «falta nombre o cargo»
+**Y** conserva lo que ya había escrito
 
-### Edge case — contacto desconocido en empresa conocida
+**Ejemplos:**
 
-**Dado** que mi correo no existe en el CRM,
-**cuando** se envía la solicitud,
-**Entonces** se crea el contacto y se asocia a la empresa existente
-**Y** nunca se crea una empresa duplicada
+| campo_vacio |
+|---|
+| el nombre |
+| el cargo |
 
+### Edge case — el formulario no trae los datos del contacto principal
+
+**Dado** que entré con mi correo invitado por un enlace cuyo contacto principal es Ana Pérez, Gerente de TI
+**Cuando** abro el formulario de solicitud
+**Entonces** el formulario muestra mi correo verificado como texto de solo lectura, sin campo para cambiarlo, con la explicación de que es el de mi invitación, con el que verifiqué el código
+**Y** los campos de nombre y cargo aparecen vacíos y editables, sin el nombre ni el cargo de Ana Pérez
+**Y** el formulario no presenta a Ana Pérez como la persona a la que Trycore buscará
+
+### Edge case — una petición alterada trae otro correo
+
+**Dado** que entré con el correo verificado luis.gomez@cliente.com y el formulario muestra ese correo de solo lectura
+**Cuando** envío por una dirección directa una solicitud que trae el correo luis.personal@correo.com
+**Entonces** la solicitud se registra con luis.gomez@cliente.com, el correo de la sesión
+**Y** la confirmación dice que Trycore contactará en luis.gomez@cliente.com, nunca en el correo de la petición
 
 ## Notas
 
-Cubre RF-5.2, RF-5.6 y RF-9.2. Con acceso nominal (D-4 revisada el 2026-09-25) el correo de quien solicita siempre es uno invitado y verificado; el último escenario sigue vigente porque un invitado puede no existir aún en el CRM.
+Cubre RF-5.2 y RF-5.6, y del lado del portal RF-9.2 (los datos de quien solicita que llegan al CRM). Con acceso nominal (D-4 revisada el 2026-09-25) el correo de quien solicita siempre es uno invitado y verificado.
+
+**Validación 2026-10-02 (validador independiente).** (1) El happy path tenía un «Cuando diligencio mis datos» sin acción de cierre: ahora el «Dado» deja los datos puestos y el «Cuando» es enviar, con resultado visible en la confirmación. (2) El error tenía una acción en el «Dado»; ahora el «Dado» es estado (correo verificado y correo escrito) y el «Cuando» es enviar. (3) El edge «contacto desconocido en empresa conocida» era invisible para el cliente y repetía **HU-104** (EP-007, upsert del contacto y asociación de empresa por dominio, D76 y D79): se retira de aquí y lo cubre HU-104. **No es recorte**: el comportamiento sigue especificado en EP-007. En su lugar entra un edge que el portal muestra: el formulario no hereda los datos del contacto principal del enlace.
+
+**Revisión 2026-10-02 (D90, tercera ronda).** El correo de quien solicita es **de solo lectura**: el formulario muestra el correo verificado y solo deja editar nombre y cargo. El error anterior («el correo del formulario no es el que verifiqué») suponía un campo de correo editable y contradecía el edge del formulario; se sustituye por el error real de D90, **«falta nombre o cargo»** (esquema con los dos campos). La garantía de que nunca viaja otro correo no se pierde: pasa a un edge de petición alterada, que prueba que el servidor toma el correo de la sesión y no el de la petición. El edge del formulario ahora dice explícitamente que el correo es de solo lectura, así que los cuatro escenarios quedan coherentes entre sí. Cuatro escenarios; sigue en S.
+
+**Revisión 2026-10-02 (D76, D79).** El contacto lo crea o actualiza el worker por la API con upsert por el correo verificado, con el nombre, el apellido y el cargo de esta historia; la empresa la asocia HubSpot por el dominio, y la crea si no existe (D79). Detalle en HU-104 (EP-007).
 
 ## Trazabilidad
 
-Épica madre: **EP-005** · PRD v4.0
+Épica madre: **EP-005** · PRD v4.0 · RF-5.2 · RF-5.6 · RF-9.2 · D76, D79 y D90 (sponsor, 2026-10-02) · validación 2026-10-02 · relacionada con HU-102 y HU-104 (EP-007, dueña del contacto nuevo en empresa conocida) y HU-098 (confirmación)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ describe el resultado, no la implementación |
-| V | Valiosa | ✓ el beneficio es visible para quien la ejecuta |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ los criterios describen resultados observables |
+| I | Independiente | ✓ se apoya en el acceso nominal ya construido (EP-001: correo verificado por invitado) y en el formulario de solicitud de EP-005; lo que pasa en HubSpot es de HU-104 |
+| N | Negociable | ✓ son fijos que el correo sea el verificado y de solo lectura (D90), que nombre y cargo sean obligatorios y editables y que nunca viajen los datos del contacto principal; la forma del formulario y el texto de la explicación se pueden negociar |
+| V | Valiosa | ✓ Trycore llama a quien de verdad pidió el equipo, no a quien recibió el correo |
+| E | Estimable | ✓ S: dos campos obligatorios (nombre, cargo), el correo mostrado de solo lectura y tomado de la sesión en el servidor, y un formulario sin datos heredados del contacto principal |
+| S | Pequeña | ✓ S: cuatro escenarios sobre un formulario |
+| T | Testeable | ✓ e2e con un invitado que no es el contacto principal: confirmación con su nombre, cargo y correo verificado, envío bloqueado sin nombre o sin cargo con «falta nombre o cargo», correo de solo lectura sin datos del contacto principal, y una petición directa con otro correo que se registra con el de la sesión |

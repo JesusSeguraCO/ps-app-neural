@@ -1,7 +1,7 @@
 ---
 id: flow-009-instruccion-y-perfil-objetivo
 epica: EP-009
-historias_cubiertas: [HU-065, HU-066, HU-067, HU-068, HU-069, HU-070, HU-071, HU-072, HU-073, HU-082, HU-083, HU-085, HU-118]
+historias_cubiertas: [HU-065, HU-066, HU-067, HU-068, HU-069, HU-070, HU-071, HU-072, HU-073, HU-082, HU-083, HU-085, HU-118, HU-174]
 ---
 
 # Flow 009 — Entrada por instrucción y Perfil Objetivo
@@ -73,6 +73,24 @@ sequenceDiagram
   alt Ningún perfil cumple los obligatorios
     %% HU-118
     P-->>C: Señala qué obligatorio está vaciando el resultado
+  end
+
+  %% HU-174
+  P-->>C: La evidencia ✓/–, los resultados y el conteo de deseables salen de la misma evaluación del motor
+  %% HU-174
+  alt El perfil falla un obligatorio
+    %% HU-174
+    P-->>C: No aparece en los resultados; ningún resultado muestra «–» en un obligatorio
+  end
+  %% HU-174
+  alt Opción que no existe en el banco
+    %% HU-174
+    P-->>C: No produce línea ni cuenta como deseable
+  end
+  %% HU-174
+  alt Quita un criterio
+    %% HU-174
+    P-->>C: La línea desaparece y el conteo se actualiza en la misma respuesta
   end
 
   %% HU-083
@@ -185,6 +203,10 @@ sequenceDiagram
 | Interpretación visible | HU-068 | AC-1 (happy) · AC-2 (edge) |
 | Corregir la interpretación | HU-069 | AC-1 (happy) · AC-2 (error) |
 | Obligatorio frente a deseable | HU-118 | AC-1 (happy) · AC-3 (error) |
+| Evidencia del motor | HU-174 | AC-1 (happy) |
+| Falla un obligatorio | HU-174 | AC-2 (error) |
+| Opción fuera del banco | HU-174 | AC-3 (edge) |
+| Quitar un criterio | HU-174 | AC-4 (edge) |
 | El reto | HU-083 | AC-1 y AC-2 (happy) · AC-3 (error) |
 | Ubicación de la necesidad | HU-082 | AC-1 (happy) · AC-2 (error) |
 | Ciudad visible en presencial e híbrido | HU-082 | AC-4 (edge) |
@@ -204,6 +226,8 @@ sequenceDiagram
 **HU-072 es la historia que protege a todas las demás.** Si la interpretación falla y el portal muere con ella, la sesión con clientes mide frustración en vez de medir la hipótesis. Por eso está entre las quick wins del orden de construcción.
 
 **D-16 cerró el 2026-09-21 en persistencia por dispositivo.** El Perfil Objetivo queda en el navegador de quien lo escribió, no en el servidor contra la cuenta. Por eso el último ramal del diagrama cambió de sentido: un enlace reenviado **no** arrastra la especificación, y quien lo abre en otro dispositivo arranca limpio. Es el comportamiento correcto, no una carencia — y es lo que elimina la implicación ISO 27000.
+
+**HU-174 llegó desde EP-003 por D87** (sponsor, 2026-10-02): vive junto al motor único de criterios (RF-13.8) y HU-118. Conecta con el motor la presentación ✓/– que HU-119 dejó construida en EP-003 (tarjeta y bloque «Frente a tu búsqueda» de la ficha). No es recorte: cambia de épica, y EP-003 queda sin dependencia de EP-009.
 
 **HU-067 está condicionada** a la prueba previa de RF-12.2. Sale del MVP por eso, no por falta de valor.
 

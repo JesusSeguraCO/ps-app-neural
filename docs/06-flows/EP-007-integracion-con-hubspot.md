@@ -105,20 +105,36 @@ sequenceDiagram
   end
 
   %% HU-107
-  CO->>H: Registra la fecha de la sesión de alineación
+  CO->>H: Agenda la alineación con su enlace de la herramienta de reuniones
   %% HU-107
-  H-->>CO: Propiedad de fecha escrita, O3 queda medible
+  H-->>CO: Llena engagements_last_meeting_booked del contacto (D92)
+  %% HU-107
+  P->>H: Lectura diaria del worker sobre los contactos de solicitudes sin «agendada el»
+  %% HU-107
+  H-->>P: Devuelve la fecha; el portal guarda «agendada el» y calcula O3 en días hábiles T-4
 
   %% HU-107
-  alt Se agenda por fuera del portal
+  alt Envío y agendamiento en días distintos, con fin de semana o festivo
     %% HU-107
-    CO->>H: La fecha se escribe igual, a mano
+    P->>P: Cuenta días hábiles cruzados, enteros (mismo día = 0; el festivo no cuenta)
   end
 
   %% HU-107
-  alt Se reagenda
+  alt Se reagenda con la herramienta de reuniones
     %% HU-107
-    H-->>CO: Conserva la primera fecha y registra la nueva
+    H-->>P: Devuelve una fecha posterior; el portal conserva la primera y O3 no cambia
+  end
+
+  %% HU-107
+  alt Fecha vacía o anterior al envío (agendado por fuera o reunión previa)
+    %% HU-107
+    P->>P: La solicitud figura «sin alineación agendada», con sus días desde el envío
+  end
+
+  %% HU-107
+  alt HubSpot no responde a la lectura diaria
+    %% HU-107
+    P->>P: Conserva las fechas guardadas, marca la lectura fallida y reintenta; si no completa en el día, avisa al responsable técnico
   end
 ```
 
@@ -141,9 +157,11 @@ sequenceDiagram
 | Cola de reintento | HU-105 | AC-1 (happy) |
 | Reintento fallido | HU-105 | AC-2 (error) |
 | Respuesta perdida | HU-105 | AC-3 (edge) |
-| Fecha de alineación | HU-107 | AC-1 (happy) |
-| Agendado por fuera | HU-107 | AC-2 (error) |
-| Reagendamiento | HU-107 | AC-3 (edge) |
+| Lectura diaria de la fecha de agendado | HU-107 | AC-1 (happy) |
+| Días hábiles cruzados, sin fracción (D91) | HU-107 | AC-2 (edge, esquema) |
+| Reagendamiento conserva la primera fecha | HU-107 | AC-3 (edge) |
+| Sin agendamiento medible | HU-107 | AC-4 (edge) |
+| HubSpot no responde a la lectura diaria | HU-107 | AC-5 (error) |
 
 ## Notas
 
@@ -151,4 +169,4 @@ sequenceDiagram
 
 **HU-105 acompaña obligatoriamente a HU-102.** Sin cola de reintento el modo de falla es silencioso: la oportunidad se pierde y el cliente cree que lo ignoraron.
 
-**HU-107 es el único registro del tramo de O3.** Al usar las etapas del pipeline comercial vigente (D-21), la alineación no tiene etapa propia y la propiedad de fecha de RF-9.1.3 es lo único que la mide.
+**HU-107 es el único registro del tramo de O3.** Al usar las etapas del pipeline comercial vigente (D-21), la alineación no tiene etapa propia y la fecha de agendado es lo único que la mide. **Alineado con HU-107 el 2026-10-02 (D91, D92):** la fecha ya no la escribe Coordinación de Servicio ni la marca el workflow; es `engagements_last_meeting_booked` del contacto, que llena la herramienta de reuniones de HubSpot, y la lee a diario el worker del portal. Lo agendado fuera de la herramienta no se mide (riesgo aceptado).
