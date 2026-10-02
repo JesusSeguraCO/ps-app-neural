@@ -11,8 +11,10 @@ import {
   type FilaBanco,
   type FilaMapeada,
   calcularPlan,
+  datosParaPublicarDeFila,
   mapearFilas,
 } from "./plan";
+import { evaluarPublicacion } from "../inventario/perfil";
 
 const HOY = "2026-10-01";
 
@@ -668,9 +670,7 @@ describe("un publicado no queda incompleto por importación (D1, D10, RF-8.4; ga
   });
 
   it("vaciar tecnologías y experiencia de un publicado es error y nombra los dos campos", () => {
-    const p = plan([
-      fila(2, { codigo: "PS-0142", tecnologias: VACIAR, aniosExperiencia: VACIAR }),
-    ]);
+    const p = plan([fila(2, { codigo: "PS-0142", tecnologias: VACIAR, aniosExperiencia: VACIAR })]);
     expect(p.filas[0]!.grupo).toBe("con_error");
     expect(errorDe(p)).toEqual(expect.arrayContaining(["tecnologias", "aniosExperiencia"]));
   });
@@ -701,6 +701,65 @@ describe("un publicado no queda incompleto por importación (D1, D10, RF-8.4; ga
     // Mario ya está publicado sin trayectoria (dato heredado): actualizar su ciudad sigue valiendo.
     const p = plan([fila(2, { codigo: "PS-0143", ciudad: "Cali" })]);
     expect(p.filas[0]!.grupo).toBe("actualizado");
+  });
+
+  // Gate data EP-003: la importación no lleva una segunda lista de lo exigido; traduce la ficha y
+  // pregunta a la guarda única del panel (evaluarPublicacion), con SARO y DISC incluidos (D61).
+  describe("la guarda es la misma que la del panel (evaluarPublicacion)", () => {
+    const completa: FilaBanco = {
+      ...laura,
+      saroAlcance: "Antecedentes judiciales",
+      saroFecha: "2026-03-15",
+      discFecha: "2026-04-10",
+    };
+    const consentida = (f: FilaBanco) => ({
+      ...datosParaPublicarDeFila(f, CATALOGOS),
+      consentimiento: { vigente: true, nominal: true },
+    });
+    const sinCumplir = (f: FilaBanco) =>
+      evaluarPublicacion(consentida(f))
+        .condiciones.filter((c) => !c.cumple)
+        .map((c) => c.clave);
+
+    it("la ficha completa con SARO y DISC es publicable para el panel", () => {
+      expect(evaluarPublicacion(consentida(completa)).publicable).toBe(true);
+    });
+
+    it("sin SARO ni DISC la guarda dice exactamente qué falta", () => {
+      expect(sinCumplir(laura)).toEqual(["saro_alcance", "saro_fecha", "disc_fecha"]);
+    });
+
+    it("una modalidad de prueba de otra familia no cuenta (como en el panel, D10)", () => {
+      expect(sinCumplir({ ...completa, rol: "Analista QA", familia: "Calidad" })).toEqual([
+        "modalidad_prueba",
+      ]);
+    });
+
+    it("vaciar la fecha DISC de un publicado completo es error de la fila", () => {
+      const banco = new Map([["PS-0142", completa]]);
+      const p = plan([fila(2, { codigo: "PS-0142", discFecha: VACIAR })], { banco });
+      expect(p.filas[0]!.grupo).toBe("con_error");
+      expect(errorDe(p)).toEqual(["discFecha"]);
+    });
+
+    it("vaciar la ciudad de un publicado completo nombra la ciudad y no las validaciones", () => {
+      const banco = new Map([["PS-0142", completa]]);
+      const p = plan([fila(2, { codigo: "PS-0142", ciudad: VACIAR })], { banco });
+      expect(p.filas[0]!.grupo).toBe("con_error");
+      expect(p.filas[0]!.errores).toEqual([
+        {
+          campo: "ciudad",
+          mensaje:
+            "Dejaría incompleto un perfil publicado (sin ciudad). Corrígelo o pásalo a borrador en la misma fila",
+        },
+      ]);
+    });
+
+    it("un publicado heredado sin SARO ni DISC (HU-178) se sigue actualizando si la fila no los toca", () => {
+      const p = plan([fila(2, { codigo: "PS-0142", ciudad: "Cali" })]);
+      expect(p.filas[0]!.grupo).toBe("actualizado");
+      expect(p.filas[0]!.errores).toEqual([]);
+    });
   });
 
   it("vaciar la disponibilidad de un publicado es error (publicado sin disponibilidad, D5 ALTA)", () => {

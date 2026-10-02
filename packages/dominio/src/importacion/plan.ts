@@ -10,12 +10,22 @@ import { clasificarNombre, masCercanos, normalizar } from "../catalogo/parecidos
 import { evaluarCoherencia } from "../inventario/coherencia";
 import type { EstadoAlmacenado } from "../inventario/estados";
 import {
+  type CampoObligatorio,
+  type ClaveCondicion,
+  type DatosParaPublicar,
   OPCIONES_DISPONIBILIDAD,
   clienteEnDescripcion,
+  evaluarPublicacion,
   validarFechaVerificacion,
 } from "../inventario/perfil";
 import { CAMPOS_LISTA, CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
-import { VACIAR, formatearExperiencia, leerExperiencia, partirLista, sinNeutralizar } from "./celdas";
+import {
+  VACIAR,
+  formatearExperiencia,
+  leerExperiencia,
+  partirLista,
+  sinNeutralizar,
+} from "./celdas";
 import type { ColumnaEmparejada } from "./emparejar";
 
 export type Valor = string | string[] | number | null;
@@ -171,7 +181,11 @@ const TOPE_LISTA: Partial<Record<ClaveCampo, number>> = {
 };
 const LARGO_ELEMENTO: Partial<Record<ClaveCampo, number>> = { idiomas: 60, selloPersonal: 80 };
 // Validaciones de entrada (HU-191): ni vaciables en un publicado ni valores nuevos de la taxonomía.
-const VALIDACIONES_ENTRADA: ReadonlySet<ClaveCampo> = new Set(["saroAlcance", "saroFecha", "discFecha"]);
+const VALIDACIONES_ENTRADA: ReadonlySet<ClaveCampo> = new Set([
+  "saroAlcance",
+  "saroFecha",
+  "discFecha",
+]);
 const NOMBRE_FECHA = { saroFecha: "La fecha SARO", discFecha: "La fecha DISC" } as const;
 export const MENSAJE_VACIAR_VALIDACION =
   "No se puede vaciar una validación de entrada de un perfil publicado; pásalo a borrador desde el editor";
@@ -600,10 +614,14 @@ function evaluarFila(
   return { ...base, grupo: cambios.length ? "actualizado" : "sin_cambios" };
 }
 
-// Lo que la publicación exige de la ficha y la importación puede quitar (evaluarPublicacion; el
-// consentimiento no viaja en el archivo). La modalidad de prueba vale si está en el catálogo de la
-// importación —que solo trae las activas— y es de la familia del rol.
+// Lo que la publicación exige de la ficha y la importación puede quitar: lo decide la misma guarda que
+// el panel (evaluarPublicacion), no una segunda lista (gate data EP-003). La ficha del archivo se
+// traduce a sus datos igual que el panel (perfiles-panel.ts): la modalidad de prueba vale si está en el
+// catálogo de la importación —que solo trae las activas— y es de la familia del rol. El consentimiento
+// no viaja en el archivo, así que no entra en la comparación.
 const ETIQUETA_FALTA = {
+  nombre: "sin nombre",
+  primerApellido: "sin primer apellido",
   rol: "sin rol",
   seniority: "sin seniority",
   aniosExperiencia: "sin años de experiencia",
@@ -613,22 +631,75 @@ const ETIQUETA_FALTA = {
   disponibilidad: "sin disponibilidad",
   experiencias: "sin trayectoria",
   modalidadPrueba: "sin modalidad de prueba de la familia de su rol",
+  saroAlcance: "sin alcance de la verificación SARO",
+  saroFecha: "sin fecha de la verificación SARO",
+  discFecha: "sin fecha de la evaluación DISC",
 } as const satisfies Partial<Record<ClaveCampo, string>>;
 type CampoExigido = keyof typeof ETIQUETA_FALTA;
 
-function faltasDePublicado(f: FilaBanco, catalogos: Catalogos): CampoExigido[] {
-  const vacio = (v: Valor | undefined) =>
-    v === null ||
-    v === undefined ||
-    (typeof v === "string" && !v.trim()) ||
-    (Array.isArray(v) && !v.length);
-  const faltas = (Object.keys(ETIQUETA_FALTA) as CampoExigido[]).filter(
-    (c) => c !== "modalidadPrueba" && vacio(f[c]),
-  );
+// De la clave de la guarda única al campo del archivo.
+const CAMPO_DE_FALTA: Record<
+  CampoObligatorio | Exclude<ClaveCondicion, "consentimiento">,
+  CampoExigido
+> = {
+  nombre: "nombre",
+  primer_apellido: "primerApellido",
+  rol: "rol",
+  tecnologias: "tecnologias",
+  seniority: "seniority",
+  anios_experiencia: "aniosExperiencia",
+  ciudad: "ciudad",
+  modalidad_trabajo: "modalidad",
+  disponibilidad: "disponibilidad",
+  trayectoria: "experiencias",
+  modalidad_prueba: "modalidadPrueba",
+  saro_alcance: "saroAlcance",
+  saro_fecha: "saroFecha",
+  disc_fecha: "discFecha",
+};
+
+export function datosParaPublicarDeFila(f: FilaBanco, catalogos: Catalogos): DatosParaPublicar {
+  const lleno = (v: Valor | undefined) =>
+    !(
+      v === null ||
+      v === undefined ||
+      (typeof v === "string" && !v.trim()) ||
+      (Array.isArray(v) && !v.length)
+    );
+  const cuantos = (v: Valor | undefined) => (Array.isArray(v) ? v.length : 0);
   const familia = typeof f.familia === "string" ? normalizar(f.familia) : null;
   const prueba = catalogos.modalidadesPrueba.find((m) => m.nombre === f.modalidadPrueba);
-  if (!prueba || !familia || normalizar(prueba.familia) !== familia) faltas.push("modalidadPrueba");
-  return faltas;
+  return {
+    nombre: typeof f.nombre === "string" ? f.nombre : "",
+    primerApellido: typeof f.primerApellido === "string" ? f.primerApellido : "",
+    rol: lleno(f.rol),
+    tecnologias: cuantos(f.tecnologias),
+    seniority: lleno(f.seniority),
+    aniosExperiencia: lleno(f.aniosExperiencia) ? Number(f.aniosExperiencia) : null,
+    ciudad: lleno(f.ciudad),
+    modalidadTrabajo: lleno(f.modalidad),
+    disponibilidadFecha:
+      typeof f.disponibilidad === "string" && f.disponibilidad.trim() ? f.disponibilidad : null,
+    experiencias: cuantos(f.experiencias),
+    modalidadPrueba: {
+      elegida: lleno(f.modalidadPrueba),
+      activa: Boolean(prueba && familia && normalizar(prueba.familia) === familia),
+    },
+    familiaConModalidades:
+      !familia || catalogos.modalidadesPrueba.some((m) => normalizar(m.familia) === familia),
+    consentimiento: null,
+    saro: { alcance: lleno(f.saroAlcance), fecha: lleno(f.saroFecha) },
+    disc: { fecha: lleno(f.discFecha) },
+  };
+}
+
+function faltasDePublicado(f: FilaBanco, catalogos: Catalogos): CampoExigido[] {
+  const e = evaluarPublicacion(datosParaPublicarDeFila(f, catalogos));
+  const claves = [
+    ...e.faltanDatos.map((x) => x.campo),
+    ...e.condiciones.flatMap((c) => (c.cumple || c.clave === "consentimiento" ? [] : [c.clave])),
+  ];
+  return [...new Set(claves.map((c) => CAMPO_DE_FALTA[c as keyof typeof CAMPO_DE_FALTA]))];
 }
 
 // ─── el plan ─────────────────────────────────────────────────────────────────────────────────
