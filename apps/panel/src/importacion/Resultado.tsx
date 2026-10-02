@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { horaDeColombia } from "@ps/dominio/fecha/colombia";
 import type { FaseLote, LoteHistorial, LoteLeido } from "@ps/infra/postgres/importacion";
 import type { DetalleReversion, LotePosterior } from "@ps/infra/postgres/revertir-importacion";
-import { enviarJson } from "../acceso/cliente";
+import { enviarJson, pedir } from "../acceso/cliente";
 
 export interface ResumenErrores {
   filas: number;
@@ -55,7 +55,7 @@ function useLoteVivo(inicial: { lote: LoteLeido; errores: ResumenErrores }) {
   useEffect(() => {
     if (!enCurso) return;
     const t = setInterval(async () => {
-      const r = await fetch(`/api/v1/importacion/lotes/${estado.lote.id}`, {
+      const r = await pedir(`/api/v1/importacion/lotes/${estado.lote.id}`, {
         credentials: "same-origin",
       }).catch(() => null);
       if (r?.ok) setEstado(await r.json());
@@ -107,6 +107,8 @@ export function ResultadoImportacion(p: {
   inicial: { lote: LoteLeido; errores: ResumenErrores };
   esUltima: boolean;
   puedeDeshacer: boolean;
+  // La observadora consulta el resultado (HU-124) pero no descarga las filas ni las vuelve a pegar.
+  puedeImportar: boolean;
 }) {
   const { lote, errores } = useLoteVivo(p.inicial);
   // Si se abrió mientras se aplicaba, al terminar es la última aplicada.
@@ -127,7 +129,7 @@ export function ResultadoImportacion(p: {
   const archivoErrores = `/api/v1/importacion/lotes/${lote.id}/errores`;
 
   async function verParaCopiar() {
-    const r = await fetch(archivoErrores, { credentials: "same-origin" }).catch(() => null);
+    const r = await pedir(archivoErrores, { credentials: "same-origin" }).catch(() => null);
     setCopiar(r?.ok ? (await r.text()).replace(/^﻿/, "") : "");
   }
 
@@ -234,7 +236,10 @@ export function ResultadoImportacion(p: {
             [excluidas, excluidas === 1 ? "excluida por ti" : "excluidas por ti"],
             [conError.length, "con error"],
           ]
-            .filter(([x, l]) => x || !["omitidos", "excluida por ti", "excluidas por ti"].includes(l as string))
+            .filter(
+              ([x, l]) =>
+                x || !["omitidos", "excluida por ti", "excluidas por ti"].includes(l as string),
+            )
             .map(([x, l]) => (
               <li key={l as string}>
                 <span className="ip-resumen__nolink">
@@ -305,21 +310,23 @@ export function ResultadoImportacion(p: {
               </tbody>
             </table>
           </div>
-          <div className="ip-pie">
-            <div className="ip-pie__texto">
-              <p style={{ margin: 0 }}>Incluye una columna «motivo».</p>
+          {p.puedeImportar && (
+            <div className="ip-pie">
+              <div className="ip-pie__texto">
+                <p style={{ margin: 0 }}>Incluye una columna «motivo».</p>
+              </div>
+              <div className="ip-pie__acciones">
+                <button type="button" className="pp-btn pp-btn--contorno" onClick={verParaCopiar}>
+                  Ver para copiar
+                </button>
+                <a className="pp-btn pp-btn--primario" href={archivoErrores} download>
+                  {conError.length === 1
+                    ? "Descargar la fila"
+                    : `Descargar las ${conError.length} filas`}
+                </a>
+              </div>
             </div>
-            <div className="ip-pie__acciones">
-              <button type="button" className="pp-btn pp-btn--contorno" onClick={verParaCopiar}>
-                Ver para copiar
-              </button>
-              <a className="pp-btn pp-btn--primario" href={archivoErrores} download>
-                {conError.length === 1
-                  ? "Descargar la fila"
-                  : `Descargar las ${conError.length} filas`}
-              </a>
-            </div>
-          </div>
+          )}
           {copiar !== null && (
             <div className="ip-copiar">
               <label className="pp-label" htmlFor="copiar-errores">
@@ -338,7 +345,7 @@ export function ResultadoImportacion(p: {
         </section>
       )}
 
-      {!revertida && (conError.length > 0 || creados.length > 0) && (
+      {!revertida && ((p.puedeImportar && conError.length > 0) || creados.length > 0) && (
         <section className="pp-seccion" aria-labelledby="ip-siguiente">
           <div className="pp-seccion__cabecera">
             <h2 className="pp-seccion__titulo" id="ip-siguiente">
@@ -346,7 +353,7 @@ export function ResultadoImportacion(p: {
             </h2>
           </div>
           <div className="pp-tarjeta ip-tarjeta-lista">
-            {conError.length > 0 && (
+            {p.puedeImportar && conError.length > 0 && (
               <div className="ip-sig">
                 <div>
                   <p className="ip-sig__titulo">Pegar las filas corregidas</p>
@@ -455,7 +462,9 @@ function resultadoDe(l: LoteHistorial): string {
     c.archivados ? `${c.archivados} ${c.archivados === 1 ? "archivado" : "archivados"}` : null,
     c.omitidos ? `${c.omitidos} ${c.omitidos === 1 ? "omitido" : "omitidos"}` : null,
     c.con_error ? `${c.con_error} con error` : null,
-    l.excluidas ? `${l.excluidas} ${l.excluidas === 1 ? "excluida por ti" : "excluidas por ti"}` : null,
+    l.excluidas
+      ? `${l.excluidas} ${l.excluidas === 1 ? "excluida por ti" : "excluidas por ti"}`
+      : null,
   ].filter(Boolean);
   const texto = partes.join(" · ") || "Sin cambios";
   return l.fase === "revertido" ? `Revertida · ${texto}` : texto;
@@ -579,10 +588,7 @@ export function HistorialImportaciones(p: {
 
 // ─── deshacer la última importación ──────────────────────────────────────────────────────────
 
-export function DeshacerImportacion(p: {
-  loteId: string;
-  detalle: DetalleReversion;
-}) {
+export function DeshacerImportacion(p: { loteId: string; detalle: DetalleReversion }) {
   const d = p.detalle;
   const [incluir, setIncluir] = useState<Set<string>>(new Set());
   const [enviando, setEnviando] = useState(false);

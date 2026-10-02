@@ -104,6 +104,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Observador en el panel (HU-124)"
         correoTalentoHumano: TALENTO,
         auditoria: { hmac: workerEnv.AUDIT_HMAC_KEY!, kek: workerEnv.AUDIT_KEK! },
       },
+      importacion: { auditoria: { hmac: workerEnv.AUDIT_HMAC_KEY!, kek: workerEnv.AUDIT_KEK! } },
     };
   });
 
@@ -142,6 +143,34 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Observador en el panel (HU-124)"
     expect(importar).not.toContain('type="file"');
     // Ninguna de estas consultas es un intento de escritura.
     expect(await rechazos()).toEqual([]);
+  });
+
+  it("el resultado de una importación con errores: la observadora no ve descargas ni «Pegar filas» que le darían 403 (HU-124)", async () => {
+    const c = await pedir(
+      "/api/v1/importacion/lotes",
+      {
+        texto: ["Código\tAños de experiencia", `${codigo}\t13`, "XX-1\t4"].join("\n"),
+        formato: "tsv",
+        modo: "crear_y_actualizar",
+        archivo: "con-error.tsv",
+        columnas: [
+          { columna: "Código", clave: "codigo" },
+          { columna: "Años de experiencia", clave: "aniosExperiencia" },
+        ],
+      },
+      admin,
+    );
+    expect(c.status).toBe(201);
+    const loteId = (await c.json()).loteId as string;
+    expect((await pedir(`/api/v1/importacion/lotes/${loteId}/aplicar`, {}, admin)).status).toBe(202);
+    await vuelta(ctx);
+    const controles = ["Ver para copiar", "Descargar la fila", "Pegar filas"];
+    const deAdmin = await pagina(`/importar?lote=${loteId}`, admin);
+    for (const control of controles) expect(deAdmin, control).toContain(control);
+    const html = await pagina(`/importar?lote=${loteId}`);
+    expect(html).toContain("XX-1");
+    for (const control of controles) expect(html, control).not.toContain(control);
+    expect(html).not.toContain(`/api/v1/importacion/lotes/${loteId}/errores`);
   });
 
   it("por la dirección de edición: formulario inerte, «tu rol es de consulta», intento registrado y sin cambio en el perfil", async () => {

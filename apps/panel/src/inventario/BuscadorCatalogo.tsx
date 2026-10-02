@@ -5,6 +5,7 @@
 // al final de la lista, que abre la hoja de alta con los parecidos a la vista antes de dejar crear.
 import { useEffect, useId, useRef, useState } from "react";
 import { accionEnter, coincidenciaExacta, indiceInicial } from "./buscador-enter";
+import { pedir } from "../acceso/cliente";
 
 export interface ValorElegible {
   id: string;
@@ -47,7 +48,7 @@ export function BuscadorCatalogo(p: {
     }
     const n = ++pedido.current;
     const t = setTimeout(async () => {
-      const r = await fetch(`/api/v1/catalogos/${p.tipo}?q=${encodeURIComponent(q)}`, {
+      const r = await pedir(`/api/v1/catalogos/${p.tipo}?q=${encodeURIComponent(q)}`, {
         credentials: "same-origin",
       }).catch(() => null);
       if (!r?.ok || n !== pedido.current) return;

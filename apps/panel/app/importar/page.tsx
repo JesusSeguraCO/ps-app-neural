@@ -68,6 +68,7 @@ export default async function Importar({
         }}
         esUltima={ultima === lote.id}
         puedeDeshacer={admin}
+        puedeImportar={admin}
       />,
     );
   }

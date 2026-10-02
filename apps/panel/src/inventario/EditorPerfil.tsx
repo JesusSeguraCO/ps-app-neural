@@ -24,7 +24,7 @@ import type {
   PerfilEditor,
 } from "@ps/infra/postgres/perfiles-panel";
 import type { CambioDeCaraAlCliente } from "@ps/contratos/ficha";
-import { enviarJson } from "../acceso/cliente";
+import { enviarJson, pedir } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
 import { BuscadorCatalogo, type ValorElegible } from "./BuscadorCatalogo";
 import type { PerfilParaFicha } from "./ficha";
@@ -2148,7 +2148,7 @@ function HojaCrearValor(p: {
 
   useEffect(() => {
     void (async () => {
-      const r = await fetch(`/api/v1/catalogos/${p.tipo}?revisar=${encodeURIComponent(p.texto)}`, {
+      const r = await pedir(`/api/v1/catalogos/${p.tipo}?revisar=${encodeURIComponent(p.texto)}`, {
         credentials: "same-origin",
       }).catch(() => null);
       setRevision(r?.ok ? await r.json() : { tipo: "nuevo" });

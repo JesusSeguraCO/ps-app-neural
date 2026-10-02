@@ -286,6 +286,33 @@ test.describe("editor de perfiles (HU-089, HU-125)", () => {
   });
 });
 
+test.describe("sesión vencida al guardar (HU-138 escenario 2, HU-151)", () => {
+  const VENCE = "e2e-vence@trycore.com";
+  test.beforeEach(async ({ context, baseURL }, info) => {
+    test.skip(info.project.name !== "panel", "solo el panel");
+    await abrirSesion(context, baseURL!, { correo: VENCE, rol: "administrador" });
+  });
+
+  test("Guardar con la sesión vencida no escribe nada y lleva a la puerta con la causa", async ({ page }) => {
+    await page.goto("/inventario/nuevo");
+    await page.getByLabel("Nombre", { exact: true }).fill("E2E vencida");
+    const bd = new pg.Client({ connectionString: INSTALACION });
+    await bd.connect();
+    try {
+      await bd.query(
+        `UPDATE identidad_panel.sesiones_panel s SET creada = now() - interval '2 days', ultima_actividad = now() - interval '2 days'
+           FROM identidad_panel.usuarios_panel u WHERE u.id = s.usuario_id AND u.correo = $1`,
+        [VENCE],
+      );
+    } finally {
+      await bd.end();
+    }
+    await page.getByRole("button", { name: "Guardar borrador" }).click();
+    await expect(page).toHaveURL(/\/acceso\?motivo=sesion_expirada/);
+    await expect(page.getByText("No se pudo guardar")).toHaveCount(0);
+  });
+});
+
 // Crea un perfil publicado por la API del panel (alta → consentimiento → publicar) y devuelve su código.
 async function crearPublicado(
   page: import("@playwright/test").Page,
@@ -821,6 +848,8 @@ test.describe("administración (HU-151, HU-147, HU-138)", () => {
     const otra = `e2e-admin-${randomBytes(3).toString("hex")}@trycore.com`;
     const bd = new pg.Client({ connectionString: INSTALACION });
     await bd.connect();
+    // La BD de desarrollo es la del e2e: el contacto que hubiera se repone al terminar, no se borra.
+    const contactoPrevio = (await bd.query(`SELECT * FROM inventario.configuracion_contacto`)).rows[0];
     try {
       await page.goto("/administracion/accesos");
       await page.getByRole("button", { name: "Inscribir correo" }).click();
@@ -881,6 +910,12 @@ test.describe("administración (HU-151, HU-147, HU-138)", () => {
       ).toEqual([]);
     } finally {
       await bd.query(`DELETE FROM inventario.configuracion_contacto`);
+      if (contactoPrevio)
+        await bd.query(
+          `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por, actualizado_en)
+           VALUES (true, $1, $2, $3, $4, $5)`,
+          [contactoPrevio.correo, contactoPrevio.nombre, contactoPrevio.cargo, contactoPrevio.actualizado_por, contactoPrevio.actualizado_en],
+        );
       await bd.query(
         `UPDATE identidad_panel.usuarios_panel SET activo = false, dado_de_baja_en = now() WHERE correo = $1`,
         [otra],

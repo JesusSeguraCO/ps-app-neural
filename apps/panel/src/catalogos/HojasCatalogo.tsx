@@ -6,7 +6,7 @@
 // que dependen y fusionar con la vista de impacto antes de confirmar. Nada se borra.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TipoCatalogo } from "@ps/dominio/catalogo/tipos";
-import { enviarJson } from "../acceso/cliente";
+import { enviarJson, pedir } from "../acceso/cliente";
 import { Hoja, recargarConAviso } from "../marco/Hoja";
 import { cuantosSinPublicarLaConservan, laUsa, perfilesTexto } from "./concordancia";
 
@@ -98,7 +98,7 @@ function HojaValor({
       const q = new URLSearchParams({ revisar: nombre });
       if (familiaId) q.set("familiaId", familiaId);
       if (valor) q.set("excepto", valor.id);
-      const r = await fetch(`/api/v1/catalogos/${tipo}?${q}`).catch(() => null);
+      const r = await pedir(`/api/v1/catalogos/${tipo}?${q}`).catch(() => null);
       if (r?.ok) setRevision((await r.json()) as Revision);
     }, 250);
     return () => clearTimeout(t);
@@ -449,7 +449,7 @@ function HojaDesactivar({
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   useEffect(() => {
-    fetch(`/api/v1/catalogos/${ctx.tipo}/${valor.id}`)
+    pedir(`/api/v1/catalogos/${ctx.tipo}/${valor.id}`)
       .then((r) => (r.ok ? (r.json() as Promise<DependientesDatos>) : null))
       .then(setDep)
       .catch(() => setError("No se pudo leer cuántas fichas dependen."));

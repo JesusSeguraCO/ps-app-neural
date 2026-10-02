@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { ETIQUETA_CAMPO_IMPORTACION, type ClaveCampo } from "@ps/dominio/importacion/campos";
 import type { ColumnaEmparejada, ColumnaPlantilla } from "@ps/dominio/importacion/emparejar";
 import type { FilaPlan, Grupo, Modo, Plan, Valor } from "@ps/dominio/importacion/plan";
-import { enviarJson } from "../acceso/cliente";
+import { enviarJson, pedir } from "../acceso/cliente";
 
 interface Plantilla {
   id: string;
@@ -73,7 +73,7 @@ function Formato(p: { totalBanco: number }) {
 
   async function bajar(ruta: string, titulo: string) {
     setError(null);
-    const r = await fetch(ruta, { credentials: "same-origin" }).catch(() => null);
+    const r = await pedir(ruta, { credentials: "same-origin" }).catch(() => null);
     if (!r || !r.ok) return setError("No pudimos preparar el archivo. Inténtalo de nuevo.");
     const texto = await r.text();
     setCopiar({ titulo, texto });
@@ -106,7 +106,7 @@ function Formato(p: { totalBanco: number }) {
     const abre = e.currentTarget.open;
     setAbierto(abre);
     if (abre && !copiar) {
-      const r = await fetch("/api/v1/importacion/plantilla?formato=csv", {
+      const r = await pedir("/api/v1/importacion/plantilla?formato=csv", {
         credentials: "same-origin",
       }).catch(() => null);
       if (r?.ok) setCopiar({ titulo: "la plantilla de muestra", texto: await r.text() });
