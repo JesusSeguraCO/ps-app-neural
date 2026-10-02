@@ -41,6 +41,7 @@ describe.skipIf(!HAY_BD)("migraciones 0027 y 0028: down y up", () => {
     const abajo = await migrator.migrateTo("0026_worker_minimo_inventario");
     expect(abajo.error).toBeUndefined();
     expect(abajo.results?.map((r) => [r.migrationName, r.status])).toEqual([
+      ["0029_indicadores_publicacion", "Success"],
       ["0028_saro_disc_perfil", "Success"],
       ["0027_catalogo_alcances_saro", "Success"],
     ]);

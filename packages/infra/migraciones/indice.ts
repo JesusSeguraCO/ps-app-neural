@@ -30,6 +30,7 @@ import * as m0025 from "./0025_referencias_auditoria";
 import * as m0026 from "./0026_worker_minimo_inventario";
 import * as m0027 from "./0027_catalogo_alcances_saro";
 import * as m0028 from "./0028_saro_disc_perfil";
+import * as m0029 from "./0029_indicadores_publicacion";
 
 export const MIGRACIONES: Record<string, Migration> = {
   "0001_identidad_y_cola": m0001,
@@ -60,4 +61,5 @@ export const MIGRACIONES: Record<string, Migration> = {
   "0026_worker_minimo_inventario": m0026,
   "0027_catalogo_alcances_saro": m0027,
   "0028_saro_disc_perfil": m0028,
+  "0029_indicadores_publicacion": m0029,
 };
