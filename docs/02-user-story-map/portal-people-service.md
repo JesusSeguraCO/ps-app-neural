@@ -39,7 +39,7 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 | HU-093 Entrar sin selección previa y ser encuadrado | HU-094 Volver a la selección después de explorar | HU-068 Ver cómo el portal entendió lo que pedí | HU-075 Entender qué pedí cuando no hay nada que mostrar | HU-081 Distinguir un perfil por sus competencias verificadas | HU-206 Saber qué pasó con un perfil de mi equipo que dejó de estar disponible *(D114)* | HU-096 Revisar mi equipo antes de pedirlo *(D111, D118)* |
 | HU-095 Compartir el enlace con un colega |  | HU-069 Corregir la interpretación sin volver a escribir | HU-076 Ver alternativas solo cuando de verdad se parecen | HU-119 Saber por qué coincide cada perfil y por qué no | HU-205 Encontrar mi equipo al volver, en otro dispositivo o al renovar el enlace *(D113)* | HU-198 Enviar exactamente el equipo que revisé *(D118, D122)* |
 | HU-187 Ver el aviso de privacidad antes de entrar · *EP-008, D65* |  | HU-070 Revisar y ajustar la especificación | HU-077 Pedir el perfil que no existe todavía | HU-154 Distinguir en la ficha lo verificado de lo declarado | HU-080 Ver qué le falta al equipo que estoy armando *(D115)* | HU-098 Saber qué pasa después de enviar *(D119, D120)* |
-|  |  | HU-072 Seguir usando el portal cuando la interpretación falla *(draft: T-23, D131 pendiente del sponsor)* | HU-219 Filtrar el banco combinando facetas | HU-155 Consultar cómo se validó técnicamente a un profesional |  | HU-199 Saber que pedir el equipo no reserva a nadie |
+|  |  | HU-072 Seguir usando el portal cuando la interpretación falla *(D135)* | HU-219 Filtrar el banco combinando facetas | HU-155 Consultar cómo se validó técnicamente a un profesional |  | HU-199 Saber que pedir el equipo no reserva a nadie |
 |  |  | HU-082 Decir en qué país y ciudad necesito el perfil | HU-220 Ver y quitar cada filtro activo | HU-156 Ver con fecha y alcance la verificación de seguridad y la evaluación DISC |  | HU-099 Agendar la sesión de alineación *(D116: sube de v1.1)* |
 |  |  | HU-083 Decir qué tiene que estar funcionando cuando el proyecto termine | HU-223 Salir del cero que dejaron mis filtros *(D132)* | HU-157 Saber desde la ficha que la conversación va por Trycore |  | HU-201 Añadir contexto a mi solicitud en curso *(D119, D120)* |
 |  |  | HU-085 Ajustar mi especificación con las opciones que el banco tiene | HU-222 Ordenar los resultados | HU-158 Cerrar la ficha con condiciones operativas, SLA y garantía de servicio |  | HU-100 Ser advertido si intento pedir sin haber elegido nada *(D121)* |
@@ -49,10 +49,10 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 |  |  | HU-210 Ver debajo de las coincidencias a quienes cumplen todo menos uno | HU-019 Responder la pregunta de Trycore sobre agentes autónomos |  |  |  |
 |  |  | HU-211 Enviar mi especificación con la solicitud, revisada o inferida | HU-020 No volver a ver el sondeo cuando ya respondí o lo descarté |  |  |  |
 |  |  | HU-212 Ver siempre la variante de mi cuenta, con o sin Perfil Objetivo *(D71)* | HU-227 Entender que el banco es selectivo y no pequeño *(EP-010)* |  |  |  |
-|  |  |  | HU-228 Pedir el perfil a medida desde una opción vacía, un cero por filtros o un equipo vacío *(EP-010, D121)* |  |  |  |
+|  |  | HU-067 Pegar el requerimiento que ya tengo escrito *(D135: vuelve de v1.1)* | HU-228 Pedir el perfil a medida desde una opción vacía, un cero por filtros o un equipo vacío *(EP-010, D121)* |  |  |  |
+|  |  | HU-213 Decidir si mi requerimiento pegado sale a un servicio externo *(D135: vuelve de v1.1, va con HU-067)* |  |  |  |  |
 | **━━━━━━━━━━ v1.1 ━━━━━━━━━━** | | | | | | |
-| | | HU-067 Pegar el requerimiento que ya tengo escrito *(draft: T-23, D131)* | | | HU-204 Comparar hasta tres perfiles con los mismos criterios *(D112)* | |
-| | | HU-213 Decidir si mi requerimiento pegado sale a un servicio externo *(draft: T-23, D131; va con HU-067)* | | | | |
+| | | | | | HU-204 Comparar hasta tres perfiles con los mismos criterios *(D112)* | |
 | | | HU-071 Responder una pregunta de afinamiento | | | | |
 | | | HU-073 Encontrar mi especificación como la dejé | | | | |
 | | | HU-084 Ver la forma típica del trabajo *(EP-009 desde D108; se dibuja en la vista de la columna 6)* | | | | |
@@ -62,6 +62,8 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 **Discovery 2026-10-02 — cuarta ronda (D108–D123).** Columna 6 (EP-004): nacen HU-203 (resumen del conjunto, arranque por el perfil más tardío, D110), HU-206 (perfiles no disponibles: siguen en el contador, no cuentan en roles ni arranque, D114), HU-205 (recuperación, con copia del equipo al renovar un enlace vencido, D113) y HU-204 (comparador, desde «Mi equipo» y desde la tabla con filas fijas, D112; sigue en la línea v1.1, que es ubicación y no recorte). HU-080 pasa a S con reglas fijas validadas por Delivery (D115). **HU-084 pasa a EP-009 (D108)** y se ubica en la columna 3, junto a HU-083. Columna 7 (EP-005): nacen HU-197, HU-198, HU-199 y HU-201; **HU-099 sube de v1.1 a MVP (D116)** con enlace de reuniones de equipo con rotación de HubSpot. HU-200 (eventos de la solicitud, EP-005) se ubica en la columna H del backbone 3, y HU-207 (composiciones de Delivery, EP-008, D109) también.
 
 **Discovery 2026-10-02 — quinta ronda (D132–D131).** Columna 3 (EP-009): nacen HU-209 (contador = resultados, motor único), HU-210 (relacionados bajo las coincidencias directas), HU-211 (la especificación viaja con la solicitud) y HU-212 (variante por cuenta, D71) en MVP, y HU-213 (aviso de servicio externo) junto a HU-067 en v1.1. HU-067, HU-213 y HU-072 siguen en draft por la prueba previa T-23 de RF-12.2; **D131** (qué hacer si T-23 no se ejecuta) queda **pendiente del sponsor**. HU-084 pasa a lista. Columna 4 (EP-002): nacen HU-219 a HU-223, HU-226, HU-250 y el sondeo HU-019 y HU-020 (su voto a HubSpot, HU-224, va a la columna G del backbone 3 y la lectura del umbral, HU-225, a la H); la tabla en teléfono se desplaza en su contenedor (M-6). Columna 4 (EP-010): nacen HU-227 y HU-228 (D121; D132 cablea la salida a medida de HU-223); D130 mantiene PRD y ADR-0004 para la especificación del cero. Backbone 2: HU-233 (permiso «Envíos», EP-011, D129, enmienda RF-8.1.2). Backbone 3, columna F (EP-011): nacen HU-229, HU-232, HU-230 y HU-231.
+
+**D135 (2026-10-02): HU-067 y HU-213 vuelven al MVP** (T-23 PASA con reserva). El párrafo siguiente queda como antecedente para HU-067.
 
 **Por qué HU-067, HU-071 y HU-073 salen del MVP.** Las tres dependen de que la entrada por instrucción ya esté validada: pegar un requerimiento largo (HU-067) está condicionado a la prueba previa de RF-12.2; la pregunta de afinamiento (HU-071) solo tiene sentido cuando el modelo acierta lo suficiente como para que afinar valga la pena; y persistir la especificación (HU-073) queda en v1.1 por alcance, no por bloqueo: **D-16 cerró el 2026-09-21 en persistencia por dispositivo**, que la abarata mucho —vive en el navegador, no en el servidor— y la deja disponible para adelantar al MVP si se quiere.
 
@@ -185,7 +187,7 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 
 ## Historias bloqueadas por decisión abierta
 
-**Ninguna por decisión de producto abierta**, salvo **D131 (pendiente del sponsor)**: HU-067, HU-213 y HU-072 siguen en draft hasta que se ejecute la prueba previa T-23 o el sponsor decida qué hacer sin ella. D-16 y D-19 cerraron el 2026-09-21.
+**Ninguna por decisión de producto abierta.** **D135** cerró D131: T-23 PASA con reserva; HU-067, HU-213 y HU-072 pasan a lista y HU-067 y HU-213 vuelven al MVP (repetir T-23 con textos de Comercial es prerrequisito del DoR de EP-009). D-16 y D-19 cerraron el 2026-09-21.
 
 | Historia | Antes bloqueada por | Estado |
 |---|---|---|

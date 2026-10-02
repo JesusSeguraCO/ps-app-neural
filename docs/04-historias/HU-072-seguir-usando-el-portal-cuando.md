@@ -4,7 +4,7 @@ titulo: "Seguir usando el portal cuando el servicio externo falla"
 epica: EP-009
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: fase-2-rediseno
 prd_version: 4.18
 depende_de: [HU-067, HU-213]
@@ -66,19 +66,23 @@ Cubre **RF-12.2.1** («si Gemini falla o tarda, el portal aplica el intérprete 
 
 **Decisión por delegación del sponsor (elegida por el modelo):** la respuesta tardía del servicio se descarta (no sustituye lo que el cliente ya ve), para que la pantalla no cambie debajo de quien está leyendo. Timeout de 6 s, de ADR-0004.
 
-**Por qué sigue en draft.** Solo hay servicio externo en el requerimiento pegado de RF-12.2, que el PRD condiciona a la prueba previa **T-23** (pendiente). Refinada y con INVEST completo; sube a `lista` junto con HU-067 y HU-213.
+**Latencia observada en T-23 (D135).** Mediana 1,8 s y 14 de 15 llamadas por debajo de 3 s, pero una tardó 17,5 s: con este timeout habría caído al intérprete propio. La degradación a los 6 s se mantiene y el escenario «el servicio tarda» es real.
 
-**D131 (2026-10-02) — pendiente del sponsor.** Qué hacer con RF-12.2 si T-23 no se ejecuta (posible diferimiento) lo decide el sponsor, no el modelo. Mientras tanto esta historia sigue en `draft` junto con HU-067, HU-213 y HU-072; EP-009 arranca con sus 17 HU en `lista`.
+**T-23 (2026-10-02): PASA, con reserva.** Precisión 100 % (0 etiquetas que sobran en 15 corridas), 0 criterios inventados, exhaustividad 98,2 % (109 de 111 esperados), salida con esquema válido 15/15. Reserva de método: los cinco textos y sus conjuntos esperados los escribió el agente, no Comercial (mismo autor, sesgo a favor). Es un ensayo válido del mecanismo, no la prueba definitiva. **D135** (cierra D131): RF-12.2 se construye.
+
+**Prerrequisito del DoR de EP-009 (no es recorte):** repetir T-23 con 5 textos reales anonimizados por Comercial (método c), cambiando solo `esperados.json`, y registrar el resultado.
+
+**Pregunta abierta del sponsor (D135):** la dimensión «idioma» («Inglés intermedio») que pedía HU-067 no existe hoy en el catálogo; mientras no se decida, no produce etiqueta.
 
 ## Trazabilidad
 
-Épica madre: **EP-009** · PRD v4.18 · RF-12.2.1 · RF-16.1 · QA-15 · ADR-0004 (timeout, degradación, vigilancia, V4-7) · ADR-0009 (`vigilar`) · T-23 · D131 (pendiente del sponsor) · depende de HU-067 y HU-213 (misma épica)
+Épica madre: **EP-009** · PRD v4.18 · RF-12.2.1 · RF-16.1 · QA-15 · ADR-0004 (timeout, degradación, vigilancia, V4-7) · ADR-0009 (`vigilar`) · T-23 (PASA con reserva) · D131 → D135 · depende de HU-067 y HU-213 (misma épica)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✗ depende de HU-067, que el PRD condiciona a la prueba previa T-23 (pendiente) |
+| I | Independiente | ✓ depende solo de HU-067 y HU-213 de la misma épica, declaradas; la condición del PRD (T-23) se ejecutó y PASA (D135) |
 | N | Negociable | ✓ son fijos que el portal nunca muere con el servicio, que lo dice sin jerga, el límite de 8 s y la alerta; el texto del aviso se negocia |
 | V | Valiosa | ✓ el cliente con urgencia no se queda sin portal y el equipo técnico se entera si el servicio cae en silencio |
 | E | Estimable | ✓ S: timeout y respaldo local en el cliente, registro de la causa y la regla de la alerta sobre el registro de llamadas |

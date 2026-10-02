@@ -4,7 +4,7 @@ titulo: "Decidir si mi requerimiento pegado sale a un servicio externo"
 epica: EP-009
 prioridad: media
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.18
 depende_de: [HU-065]
@@ -67,21 +67,25 @@ Cubre **RF-16.2** (al modelo se le envía la consulta y la taxonomía, nunca los
 
 **Riesgo aceptado (ADR-0004):** el saneamiento no detecta nombres propios de terceros dentro del texto pegado; lo cubre solo el aviso. La base legal de la transferencia internacional queda como trade-off de negocio abierto en ADR-0004 §6.
 
-**Por qué sigue en draft.** Existe solo para el requerimiento pegado de RF-12.2, que el PRD condiciona a la prueba previa **T-23** (pendiente; método elegido por delegación: opción (c), Comercial reescribe y anonimiza cinco requerimientos reales). Refinada y con INVEST completo; sube a `lista` junto con HU-067.
+**T-23 (2026-10-02): PASA, con reserva.** Precisión 100 % (0 etiquetas que sobran en 15 corridas), 0 criterios inventados, exhaustividad 98,2 % (109 de 111 esperados), salida con esquema válido 15/15. Reserva de método: los cinco textos y sus conjuntos esperados los escribió el agente, no Comercial (mismo autor, sesgo a favor). Es un ensayo válido del mecanismo, no la prueba definitiva. **D135** (cierra D131): RF-12.2 se construye.
 
-**D131 (2026-10-02) — pendiente del sponsor.** Qué hacer con RF-12.2 si T-23 no se ejecuta (posible diferimiento) lo decide el sponsor, no el modelo. Mientras tanto esta historia sigue en `draft` junto con HU-067, HU-213 y HU-072; EP-009 arranca con sus 17 HU en `lista`.
+**Prerrequisito del DoR de EP-009 (no es recorte):** repetir T-23 con 5 textos reales anonimizados por Comercial (método c), cambiando solo `esperados.json`, y registrar el resultado.
+
+**Pregunta abierta del sponsor (D135):** la dimensión «idioma» («Inglés intermedio») que pedía HU-067 no existe hoy en el catálogo; mientras no se decida, no produce etiqueta.
+
+**Línea de release.** Vuelve al MVP con HU-067 (D135).
 
 **Fuente de diseño:** `docs/05-prototipo/pantallas/inicio-busqueda--requerimiento-pegado.html` (borrador).
 
 ## Trazabilidad
 
-Épica madre: **EP-009** · PRD v4.18 · RF-16.2 · RF-12.2.1 · RF-8.12.1 · CON-8 · ADR-0004 (aviso, saneamiento, `modelo_permitido`, V4-5) · ADR-0006 (consultas sin coincidencia) · T-23 · D131 (pendiente del sponsor) · depende de HU-065 (intérprete, misma épica) · habilita HU-067 y HU-072 · relacionada con HU-139 (EP-006)
+Épica madre: **EP-009** · PRD v4.18 · RF-16.2 · RF-12.2.1 · RF-8.12.1 · CON-8 · ADR-0004 (aviso, saneamiento, `modelo_permitido`, V4-5) · ADR-0006 (consultas sin coincidencia) · T-23 (PASA con reserva) · D131 → D135 · depende de HU-065 (intérprete, misma épica) · habilita HU-067 y HU-072 · relacionada con HU-139 (EP-006)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✗ no tiene sentido construirla sin RF-12.2, que el PRD condiciona a la prueba previa T-23 (pendiente); fuera de eso solo depende de HU-065 |
+| I | Independiente | ✓ RF-12.2 se construye tras T-23 (PASA, D135); solo depende de HU-065, de la misma épica |
 | N | Negociable | ✓ son fijos el aviso antes de cualquier envío, la opción sin servicio externo, el saneamiento y que no viajen perfiles; el texto y la forma del aviso se negocian |
 | V | Valiosa | ✓ el cliente decide qué sale de su empresa; Trycore cumple el deber de información y la promesa de RF-16.2 |
 | E | Estimable | ✓ M: diálogo con elección guardada en el navegador, saneamiento por patrones, test de contrato del payload y la marca en la consulta sin coincidencia |

@@ -21,7 +21,7 @@ historias_descartadas: 2
 | PRD | **4.13** | `docs/01-prd/portal-people-service.md` |
 | Épicas | **5.9** — 11 épicas, con requisitos por épica y notas del discovery 2026-10-02 (cuarta ronda: EP-004 y EP-005; quinta ronda D132–D131: EP-002, EP-009, EP-010 y EP-011) | `docs/03-backlog/epicas.md` |
 | Mapa de historias | **3.8** — alineado a épicas 5.9 y al discovery 2026-10-02 (quinta ronda) | `docs/02-user-story-map/portal-people-service.md` |
-| Historias escritas | **158** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01). El 2026-10-02 entran 40 (HU-153–HU-178, HU-180, HU-184–HU-196; los IDs HU-179 y HU-181–HU-183 no se usaron); HU-195 y HU-196 nacen en la tercera ronda (D93, D94); en la cuarta ronda (D108–D123) entran 10 más: HU-197–HU-201 (EP-005) y HU-203–HU-207 (EP-004 y EP-008; el ID HU-202 no se usó); en la quinta ronda (D132–D131) entran 23 más: HU-019, HU-020, HU-219–HU-226 y HU-250 (EP-002), HU-209–HU-213 (EP-009), HU-227 y HU-228 (EP-010) y HU-229–HU-233 (EP-011). Quedan en draft HU-067, HU-213 y HU-072 (prueba previa T-23; D131 pendiente del sponsor) | `docs/04-historias/` |
+| Historias escritas | **158** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01). El 2026-10-02 entran 40 (HU-153–HU-178, HU-180, HU-184–HU-196; los IDs HU-179 y HU-181–HU-183 no se usaron); HU-195 y HU-196 nacen en la tercera ronda (D93, D94); en la cuarta ronda (D108–D123) entran 10 más: HU-197–HU-201 (EP-005) y HU-203–HU-207 (EP-004 y EP-008; el ID HU-202 no se usó); en la quinta ronda (D132–D131) entran 23 más: HU-019, HU-020, HU-219–HU-226 y HU-250 (EP-002), HU-209–HU-213 (EP-009), HU-227 y HU-228 (EP-010) y HU-229–HU-233 (EP-011). HU-067, HU-213 y HU-072 pasan a lista con D135 (T-23 PASA con reserva; cierra D131) | `docs/04-historias/` |
 | Prototipo Low-Fi (v1) | entregado | `prototipo-portal-people-service.html` |
 | Prototipo Mid-Fi (v2) | entregado, con llamada real al modelo | `prototipo-midfi-portal-people-service.html` |
 | Auditoría de usabilidad (Krug) | 1.0 — 7 hallazgos corregidos | `docs/08-usabilidad/auditoria-krug.md` |
@@ -38,12 +38,12 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 |---|---|---|---|---|---|---|
 | **HU-065** | Buscar escribiendo lo que necesito en mis propias palabras | EP-009 | alta | M | lista | Depende de HU-139 · *Discovery 2026-10-02*: refinada: intérprete determinista propio, la búsqueda corta nunca pasa por el modelo (D-24) |
 | **HU-066** | Arrancar desde una sugerencia en lugar de un campo vacío | EP-009 | alta | S | lista | Depende de HU-065 · *Discovery 2026-10-02*: refinada |
-| **HU-067** | Pegar el requerimiento que ya tengo escrito | EP-009 | media | M | **draft** | Depende de HU-065, HU-068, HU-213 · *Discovery 2026-10-02*: refinada; **draft** hasta ejecutar la prueba previa T-23 de RF-12.2; **D131 pendiente del sponsor** |
+| **HU-067** | Pegar el requerimiento que ya tengo escrito | EP-009 | media | M | **lista** | Depende de HU-065, HU-068, HU-213 · *Discovery 2026-10-02*: **D135** (T-23 PASA con reserva): tope de 6 etiquetas aplicadas, modalidad/país obligatorios solo si el texto los exige, lista vacía → intérprete propio con aviso; DoR de EP-009: repetir T-23 con 5 textos de Comercial; «idioma» pendiente del sponsor |
 | **HU-068** | Ver cómo el portal entendió lo que pedí | EP-009 | alta | S | lista | Depende de HU-065 · *Discovery 2026-10-02*: refinada |
 | **HU-069** | Corregir la interpretación sin volver a escribir | EP-009 | alta | S | lista | Depende de HU-068, HU-209 · *Discovery 2026-10-02*: refinada |
 | **HU-070** | Revisar y ajustar la especificación de lo que necesito | EP-009 | alta | M | lista | Depende de HU-065, HU-209 · *Discovery 2026-10-02*: refinada; el viaje con la solicitud sale a HU-211 (partición) |
 | **HU-071** | Responder una pregunta de afinamiento sin perder lo que ya veo | EP-009 | media | M | lista | Depende de HU-065, HU-118 · *Discovery 2026-10-02*: refinada |
-| **HU-072** | Seguir usando el portal cuando el servicio externo falla | EP-009 | alta | S | **draft** | Depende de HU-067, HU-213 · *Discovery 2026-10-02*: refinada; **draft** con HU-067 y HU-213 (T-23); **D131 pendiente del sponsor** |
+| **HU-072** | Seguir usando el portal cuando el servicio externo falla | EP-009 | alta | S | **lista** | Depende de HU-067, HU-213 · *Discovery 2026-10-02*: **D135**: se mantiene la degradación a 6 s (T-23: mediana 1,8 s, una llamada de 17,5 s) |
 | **HU-073** | Encontrar mi especificación como la dejé | EP-009 | media | S | lista | Depende de HU-070 · *Discovery 2026-10-02*: refinada; D-16 cerrada (persistencia por dispositivo) |
 | **HU-074** | Refinar con filtros lo que la instrucción me devolvió | EP-002 | alta | S | lista | Depende de HU-219, HU-220 · *Discovery 2026-10-02*: refinada; independiente de EP-009 por partición (patrón D87); el cero de filtros sigue en HU-223 |
 | **HU-219** | Filtrar el banco combinando facetas y viendo cuántos perfiles deja cada opción | EP-002 | alta | M | lista | Depende de HU-167 · *Discovery 2026-10-02*: (nueva): facetas combinables con contadores por opción (RF-2.3, RF-2.4) |
@@ -86,7 +86,7 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-210** | Ver debajo de las coincidencias a quienes cumplen todo menos un requisito | EP-009 | alta | S | lista | Depende de HU-118, HU-209 · *Discovery 2026-10-02*: (nueva): relacionados bajo las coincidencias directas (RF-2.6.1) |
 | **HU-211** | Recibir la especificación del cliente con su solicitud, revisada o inferida | EP-009 | alta | M | lista | Depende de HU-070, HU-198 · *Discovery 2026-10-02*: (nueva): partida de HU-070; la especificación viaja con la solicitud, revisada o inferida (RF-17.5) |
 | **HU-212** | Que cada cuenta vea siempre su variante, con o sin Perfil Objetivo | EP-009 | media | M | lista | Depende de HU-070 · *Discovery 2026-10-02*: (nueva): variante del experimento fija por cuenta (D71) |
-| **HU-213** | Decidir si mi requerimiento pegado sale a un servicio externo | EP-009 | media | M | **draft** | Depende de HU-065 · *Discovery 2026-10-02*: (nueva): partida de HU-067; aviso y saneamiento antes de Gemini; **draft** (T-23, **D131 pendiente del sponsor**) |
+| **HU-213** | Decidir si mi requerimiento pegado sale a un servicio externo | EP-009 | media | M | **lista** | Depende de HU-065 · *Discovery 2026-10-02*: (nueva): partida de HU-067; aviso y saneamiento antes de Gemini; **D135** (T-23 PASA con reserva) |
 | **HU-088** | Descargar una plantilla o el banco para editarlo y devolverlo | EP-006 | media | S | lista | — |
 | **HU-086** | Pegar mi hoja de cálculo y ver qué va a pasar | EP-006 | media | M | lista | *Dividida el 22-sep en 086 + 141 + 142* |
 | **HU-148** | Reutilizar un emparejamiento de columnas guardado | EP-006 | media | S | lista | Depende de HU-086 · sale de HU-086 el 2026-09-30 (D2, partición, no recorte) |
@@ -216,7 +216,7 @@ Reservadas en el mapa de historias. Se redactan cuando entren en construcción.
 
 ## Decisiones que bloquean backlog
 
-**Ninguna de construcción.** Pendiente del sponsor **D131** (qué hacer con RF-12.2 si la prueba previa T-23 no se ejecuta): solo afecta a HU-067, HU-213 y HU-072, que siguen en draft; EP-009 arranca con sus otras 17 historias. D-16 y D-19 se cerraron el 2026-09-21 y con ellas se fue el último bloqueo. Quedan dos decisiones abiertas y ninguna detiene construcción: **D-2** (nombre del portal, afecta diseño visual) y **D-5** (detalle de la ficha, cuyo VoBo Talento Humano condicionó a ver primero la propuesta).
+**Ninguna de construcción.** **D135** cerró D131: T-23 PASA con reserva y HU-067, HU-213 y HU-072 pasan a lista; repetir T-23 con 5 textos reales anonimizados por Comercial es prerrequisito del DoR de EP-009 (no recorte). Pendiente del sponsor: la dimensión «idioma», que no existe en el catálogo. D-16 y D-19 se cerraron el 2026-09-21 y con ellas se fue el último bloqueo. Quedan dos decisiones abiertas y ninguna detiene construcción: **D-2** (nombre del portal, afecta diseño visual) y **D-5** (detalle de la ficha, cuyo VoBo Talento Humano condicionó a ver primero la propuesta).
 
 El backlog ya no espera a nadie. Lo que lo limita ahora es lo que no está escrito, no lo que no está decidido.
 
