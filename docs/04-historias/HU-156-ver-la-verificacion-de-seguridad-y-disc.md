@@ -4,7 +4,7 @@ titulo: "Ver con fecha y alcance la verificación de seguridad y la evaluación 
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 depende_de: [HU-154, HU-176]

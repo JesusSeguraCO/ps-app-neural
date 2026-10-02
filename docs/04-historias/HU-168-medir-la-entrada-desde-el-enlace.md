@@ -4,7 +4,7 @@ titulo: "Medir la entrada al portal desde que se abre el enlace"
 epica: EP-008
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

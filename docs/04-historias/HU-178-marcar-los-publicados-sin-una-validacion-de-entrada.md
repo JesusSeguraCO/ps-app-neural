@@ -4,7 +4,7 @@ titulo: "Ver marcados como incompletos los perfiles publicados a los que les fal
 epica: EP-003
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.18
 depende_de: [HU-176, HU-126, HU-128]

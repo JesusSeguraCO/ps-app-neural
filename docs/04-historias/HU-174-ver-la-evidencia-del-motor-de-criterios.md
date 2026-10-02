@@ -4,7 +4,7 @@ titulo: "Ver la evidencia de cada perfil calculada por el mismo motor que decide
 epica: EP-009
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: referencias-juicebox
 prd_version: 4.17
 depende_de: [HU-118, HU-119]

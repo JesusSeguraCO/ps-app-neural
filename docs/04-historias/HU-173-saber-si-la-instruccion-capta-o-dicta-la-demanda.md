@@ -4,7 +4,7 @@ titulo: "Saber si la entrada por instrucción capta la demanda o la dicta"
 epica: EP-008
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

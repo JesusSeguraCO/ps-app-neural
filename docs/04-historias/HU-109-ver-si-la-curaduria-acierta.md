@@ -4,7 +4,7 @@ titulo: "Ver si la curaduría acierta"
 epica: EP-008
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 depende_de: [HU-167, HU-112]

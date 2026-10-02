@@ -4,7 +4,7 @@ titulo: "Ver las diez búsquedas sin resultados más repetidas del mes"
 epica: EP-008
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.18
 depende_de: [HU-167]

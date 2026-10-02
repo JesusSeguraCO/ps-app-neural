@@ -4,7 +4,7 @@ titulo: "Ver en qué terminan las pantallas sin coincidencia"
 epica: EP-008
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

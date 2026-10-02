@@ -4,7 +4,7 @@ titulo: "Sumar o quitar un perfil de mi equipo desde su ficha sin cerrarla"
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: referencias-juicebox
 prd_version: 4.17
 depende_de: [HU-120, HU-192]

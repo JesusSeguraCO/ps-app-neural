@@ -4,7 +4,7 @@ titulo: "Comparar la búsqueda con y sin Perfil Objetivo"
 epica: EP-008
 prioridad: media
 complejidad: M
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

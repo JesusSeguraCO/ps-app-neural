@@ -4,7 +4,7 @@ titulo: "Distinguir un perfil de otro por sus competencias verificadas"
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: fase-2-rediseno
 prd_version: 4.17
 reemplaza_a: HU-079

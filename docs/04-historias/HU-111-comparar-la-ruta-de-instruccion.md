@@ -4,7 +4,7 @@ titulo: "Comparar la ruta de instrucción con la de filtros"
 epica: EP-008
 prioridad: media
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.18
 depende_de: [HU-167, HU-110]

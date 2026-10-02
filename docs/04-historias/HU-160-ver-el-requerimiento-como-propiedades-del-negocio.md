@@ -4,7 +4,7 @@ titulo: "Ver el requerimiento completo en «Solicitudes People Service»"
 epica: EP-007
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: integracion-hubspot
 prd_version: 4.18
 depende_de: [HU-102]

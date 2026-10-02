@@ -4,7 +4,7 @@ titulo: "Que mi rastro en el portal no lleve mi correo y caduque"
 epica: EP-008
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

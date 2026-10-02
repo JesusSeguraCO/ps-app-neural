@@ -4,7 +4,7 @@ titulo: "Registrar el alcance y la fecha de la verificación SARO y la fecha de 
 epica: EP-003
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.17
 depende_de: [HU-125, HU-126, HU-128, HU-177]

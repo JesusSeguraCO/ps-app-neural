@@ -4,7 +4,7 @@ titulo: "Distinguir en la ficha lo que Trycore verificó de lo que declara el pr
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 ---

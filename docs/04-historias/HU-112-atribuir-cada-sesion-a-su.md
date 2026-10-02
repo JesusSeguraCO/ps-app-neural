@@ -4,7 +4,7 @@ titulo: "Atribuir cada sesión a su envío de correo"
 epica: EP-008
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 depende_de: [HU-167, HU-168]

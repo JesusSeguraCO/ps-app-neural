@@ -4,7 +4,7 @@ titulo: "Registrar una decisión de reclutamiento"
 epica: EP-008
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.18
 depende_de: [HU-078]

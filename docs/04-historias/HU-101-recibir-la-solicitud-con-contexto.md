@@ -4,7 +4,7 @@ titulo: "Recibir la solicitud con contexto suficiente para preparar la sesión"
 epica: EP-005
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.18
 ---

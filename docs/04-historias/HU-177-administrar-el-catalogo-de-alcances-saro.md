@@ -4,7 +4,7 @@ titulo: "Administrar el catálogo de alcances de la verificación SARO"
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.17
 depende_de: [HU-089]

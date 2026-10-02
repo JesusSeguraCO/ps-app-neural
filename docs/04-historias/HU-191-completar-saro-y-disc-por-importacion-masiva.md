@@ -4,7 +4,7 @@ titulo: "Completar SARO y DISC por importación masiva"
 epica: EP-003
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.18
 spec: docs/10-specs/importacion-masiva.md

@@ -4,7 +4,7 @@ titulo: "Leer en la tarjeta qué capacidad ofrece cada profesional"
 epica: EP-003
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 ---

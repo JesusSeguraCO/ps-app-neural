@@ -4,7 +4,7 @@ titulo: "Recibir un aviso de lenguaje de inventario al escribir la trayectoria"
 epica: EP-003
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: panel-crud
 prd_version: 4.18
 depende_de: [HU-125, HU-126, HU-176]

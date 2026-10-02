@@ -4,7 +4,7 @@ titulo: "Ver si las composiciones de referencia agrandan los equipos pedidos"
 epica: EP-008
 prioridad: media
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

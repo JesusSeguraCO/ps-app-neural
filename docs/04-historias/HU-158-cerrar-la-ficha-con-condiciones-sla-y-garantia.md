@@ -4,7 +4,7 @@ titulo: "Cerrar la ficha con las condiciones operativas, el SLA y la garantía d
 epica: EP-003
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 depende_de: [HU-154]

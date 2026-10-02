@@ -4,7 +4,7 @@ titulo: "Sumar y quitar perfiles de Mi equipo"
 epica: EP-004
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.18
 ---

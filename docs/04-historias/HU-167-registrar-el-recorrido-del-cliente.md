@@ -4,7 +4,7 @@ titulo: "Registrar el recorrido del cliente y consultarlo en Medición"
 epica: EP-008
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: []

@@ -4,7 +4,7 @@ titulo: "Conceder o quitar el permiso de Medición a una persona del panel"
 epica: EP-008
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.18
 depende_de: [HU-151]

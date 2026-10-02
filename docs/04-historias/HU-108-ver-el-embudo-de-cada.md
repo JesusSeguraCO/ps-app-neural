@@ -4,7 +4,7 @@ titulo: "Ver el embudo de cada cuenta"
 epica: EP-008
 prioridad: media
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.17
 depende_de: [HU-167, HU-168]

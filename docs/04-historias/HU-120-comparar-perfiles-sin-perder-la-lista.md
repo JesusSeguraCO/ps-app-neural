@@ -4,7 +4,7 @@ titulo: "Comparar perfiles sin perder la lista"
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: referencias-juicebox
 prd_version: 4.17
 depende_de: []

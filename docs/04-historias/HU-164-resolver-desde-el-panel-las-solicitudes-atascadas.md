@@ -4,7 +4,7 @@ titulo: "Resolver desde el panel las solicitudes que no llegaron a HubSpot"
 epica: EP-007
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: integracion-hubspot
 prd_version: 4.18
 depende_de: [HU-105]

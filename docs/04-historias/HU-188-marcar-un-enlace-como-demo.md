@@ -4,7 +4,7 @@ titulo: "Marcar un enlace como demo para que no cuente en Medición"
 epica: EP-008
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: telemetria-y-medicion
 prd_version: 4.17
 depende_de: [HU-167]

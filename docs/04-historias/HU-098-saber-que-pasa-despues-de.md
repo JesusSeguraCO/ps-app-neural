@@ -4,7 +4,7 @@ titulo: "Saber qué pasa después de enviar"
 epica: EP-005
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.0
 ---
