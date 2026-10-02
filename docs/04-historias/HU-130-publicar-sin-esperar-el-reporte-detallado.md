@@ -54,6 +54,8 @@ Cubre **RF-8.10** y los **tres niveles progresivos del Anexo B.9**.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.10 (D10) · RF-8.16.4 · Anexo B.8.1 y B.9 · se apoya en HU-126 (editar publicado) y HU-140 (origen del reporte detallado; HU-131 diferida a v2 por D29)
 
 ## INVEST

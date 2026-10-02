@@ -60,6 +60,8 @@ Cubre **RF-8.7**. Se apoya en **RF-3.13** (banda de disponibilidad) y en la revi
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · RF-8.7 · RF-3.13 · D-18 revisada · D3 del sponsor (2026-09-30) · relacionada con HU-126 (antes/después al guardar), HU-125 (atributos obligatorios) y HU-130 (Nivel 0)
 
 ## INVEST

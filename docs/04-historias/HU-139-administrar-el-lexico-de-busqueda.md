@@ -68,6 +68,8 @@ Cubre **RF-8.12** y **RF-8.12.1**.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · RF-8.12 · RF-8.12.1 · D-24 · relacionada con HU-072 y HU-078 (EP-010)
 
 ## INVEST

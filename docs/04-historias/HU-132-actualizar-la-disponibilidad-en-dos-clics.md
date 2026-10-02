@@ -54,6 +54,8 @@ Cubre **RF-8.5** y se apoya en **RF-8.14.1** y **RF-8.14.3**. Los roles del pane
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · RF-8.5 · O5 · RF-3.13 · D-22 · D6 del sponsor (2026-09-30) · depende de HU-123 (roles del panel) · relacionada con HU-134
 
 ## INVEST

@@ -56,7 +56,7 @@ Se construye en diez sub-slices de hasta tres historias, de uno en uno y con el 
 - Historias: HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-150, HU-151
 - Discovery: docs/03-backlog/epicas.md#ep-006--administración-del-inventario
 - Decisiones: .claude/state/evidencia/ep-006/decisiones-sponsor-2026-09-30.md (D1–D19; HU-149 descartada por D11, no entra)
-- Decisiones: .claude/state/evidencia/ep-006/decisiones-sponsor-2026-10-01.md (D20–D30; HU-131 diferida a una versión futura por D29, no entra en este change: su historia y sus AC se conservan para cuando se retome)
+- Decisiones: .claude/state/evidencia/ep-006/decisiones-sponsor-2026-10-01.md (D20–D48; HU-131 diferida a una versión futura por D29, no entra en este change: su historia y sus AC se conservan para cuando se retome; D46 lleva el consumidor del léxico a EP-009; D47 monta aquí la ficha del cliente en el portal —sin «Frente a tu búsqueda», «Sumar al equipo» ni competencias en tarjeta, que siguen en EP-003 con HU-119, HU-120 y HU-081—)
 - DoR: .claude/state/evidencia/ep-006/dor-pass.md (orden de los 10 sub-slices)
 - Arquitectura: docs/adr/0002, 0003, 0006, 0008, 0009, 0010 y docs/adr/_backlog-arquitectonico.md (UC-9 a UC-14, QA-4, QA-5, QA-9 a QA-11, QA-20)
 - Diseño: docs/05-prototipo/manifest.json (66 pantallas de EP-006 aprobadas, 33f671c)

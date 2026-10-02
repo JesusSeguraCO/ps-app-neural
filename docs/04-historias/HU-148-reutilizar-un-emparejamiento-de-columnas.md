@@ -61,6 +61,8 @@ Cubre el paso 2 de `docs/10-specs/importacion-masiva.md` (plantillas de mapeo) d
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.14 · D2 · sale de HU-086 · depende de HU-086
 
 ## INVEST

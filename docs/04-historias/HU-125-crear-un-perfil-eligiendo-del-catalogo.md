@@ -61,6 +61,8 @@ Cubre **RF-8.2**, **RF-8.16.2**, **RF-8.16.3** y **RF-8.16.4**.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.10 (D10) · Anexo B.8.1 · depende de HU-089 · habilita HU-127 y HU-128
 
 ## INVEST

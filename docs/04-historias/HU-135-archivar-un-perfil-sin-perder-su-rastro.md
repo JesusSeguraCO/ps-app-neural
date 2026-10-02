@@ -57,6 +57,8 @@ Cubre **RF-8.3**. El último edge case se apoya en **RF-19.2** (reevaluación al
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · RF-8.3 · RF-19.2 · D-22 · depende de HU-122 (enlace curado con reevaluación al abrir)
 
 ## INVEST

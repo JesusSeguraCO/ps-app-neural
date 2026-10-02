@@ -73,6 +73,8 @@ Cubre **RF-8.13.1** en su parte de carga de Operaciones (enmienda v4.15: D8 y D1
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.13.1 · D8, D12, D15 y D16 (sponsor, 2026-09-30) · sale de HU-137 · depende de HU-137
 
 ## INVEST

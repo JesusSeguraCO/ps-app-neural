@@ -68,6 +68,8 @@ Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, p
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9, D11 y D19 (sponsor, 2026-09-30) · ADR-0003 · D29 (sponsor, 2026-10-01): sin dependencia de HU-131, diferida a v2
 
 ## INVEST

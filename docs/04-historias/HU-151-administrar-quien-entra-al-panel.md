@@ -73,6 +73,8 @@ Cubre **RF-8.1.5** (lista nominal de acceso mantenida desde el panel) y **RF-8.1
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.1.5 · RF-8.1.2 · RF-8.1.3 · D-22 · D13 y D17 (sponsor, 2026-09-30) · depende de HU-123 (construida en EP-001) · relacionada con HU-124 y HU-138
 
 ## INVEST

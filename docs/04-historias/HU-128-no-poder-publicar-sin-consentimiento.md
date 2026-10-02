@@ -60,6 +60,8 @@ Cubre **RF-8.4** desde el lado del bloqueo, **RF-8.10** (enmienda v4.15, modalid
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.4 · RF-8.10 (D10) · RF-8.15.7 · Anexo B.8.1 · depende de HU-127 (registro del consentimiento), HU-086 (importación) y HU-125 (elección de la modalidad en el editor)
 
 ## INVEST

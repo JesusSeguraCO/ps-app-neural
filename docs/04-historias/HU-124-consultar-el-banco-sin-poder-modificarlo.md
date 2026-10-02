@@ -53,6 +53,8 @@ Cubre **RF-8.1.2**, rol *observador*. Es el rol de Mercadeo y Comercial.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.1.2 · D-22 · D14 (sponsor, 2026-09-30) · depende de HU-123 (construida en EP-001) · relacionada con HU-113
 
 ## INVEST

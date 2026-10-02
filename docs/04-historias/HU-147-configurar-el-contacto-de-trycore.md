@@ -74,6 +74,8 @@ Pantallas del portal que hoy ofrecen a quién escribir (todas con el buzón fijo
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.14 · RF-1.4 (pantalla de renovación «con contacto») · HU-095 y HU-145 («el contacto de Trycore a quien consultar») · RF-8.1.2 (roles: solo el administrador de inventario escribe) · RF-8.9 (auditoría) · depende de HU-123 (login del panel)
 
 ## INVEST

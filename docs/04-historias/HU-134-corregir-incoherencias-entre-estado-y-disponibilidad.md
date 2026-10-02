@@ -87,6 +87,8 @@ Cubre **RF-8.14.3** y **RF-8.14.4**.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · RF-8.14.3 · RF-8.14.4 · RF-3.13.3 · D5 y D6 del sponsor (2026-09-30) · depende de HU-136 (bandeja de vigencia) · relacionada con HU-132 · la cara cliente de «Disponibilidad por confirmar» la cubren **RF-3.13** y **HU-096**
 
 ## INVEST

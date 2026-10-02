@@ -64,6 +64,8 @@ Cubre **RF-8.15.2**, **RF-8.15.3**, **RF-8.15.4** y **RF-8.15.7**.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · spec `docs/10-specs/importacion-masiva.md` §4.2 y §5.1 · depende de HU-086 · habilita HU-087, HU-137 y HU-142
 
 ## INVEST

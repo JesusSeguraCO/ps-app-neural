@@ -58,6 +58,8 @@ Cubre **RF-8.4**. Es consecuencia directa de la **reversión de D-1** (2026-09-1
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.8 · D-1 revertida · condiciona D-3 · depende de HU-125 · habilita HU-128 · RF-19.2
 
 ## INVEST

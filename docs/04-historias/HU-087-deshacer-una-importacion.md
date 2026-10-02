@@ -53,6 +53,8 @@ Cubre RF-8.15.8.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v3.5 · depende de HU-141 (que depende de HU-086)
 
 ## INVEST

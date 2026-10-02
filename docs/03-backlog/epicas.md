@@ -214,6 +214,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 ## EP-006 — Administración del inventario
 
+> OpenSpec change: administracion-del-inventario
+
 **Resumen.** Talento Humano publica, actualiza, pausa y archiva perfiles desde un panel propio, con consentimiento obligatorio para publicar y bandeja de vigencia.
 
 **Justificación.** Es el objetivo habilitante O5. Un perfil marcado disponible que no lo está quema la credibilidad de una cuenta activa, que es el activo más caro de la línea. Además es donde el requisito de habeas data deja de depender de la memoria de alguien y pasa a ser imposible de saltar por diseño.

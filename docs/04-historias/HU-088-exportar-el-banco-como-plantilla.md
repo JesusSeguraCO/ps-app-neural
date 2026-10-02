@@ -69,6 +69,8 @@ Cubre RF-8.15.9 y el paso 1 de la spec (plantilla de muestra y exportación).
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v3.5 · habilita HU-086 (fija el formato que HU-086 consume, D2)
 
 ## INVEST

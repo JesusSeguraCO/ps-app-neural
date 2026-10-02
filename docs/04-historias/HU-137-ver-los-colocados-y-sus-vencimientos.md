@@ -64,6 +64,8 @@ Cubre **RF-8.13**, **RF-8.13.1** (en su parte de registro en el panel) y **RF-8.
 
 ## Trazabilidad
 
+> OpenSpec change: administracion-del-inventario
+
 Épica madre: **EP-006** · PRD v4.15 · RF-8.13 · RF-8.13.1 · RF-8.13.2 · RF-3.13 · D8 y D12 (sponsor, 2026-09-30) · la carga de Operaciones en HU-150 · disparador de V2-2
 
 ## INVEST
