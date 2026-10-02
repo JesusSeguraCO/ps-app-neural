@@ -1268,80 +1268,78 @@
       "archivo": "pantallas/inventario-perfiles.html",
       "epica": "EP-006",
       "historias": [
-        "HU-124",
         "HU-132",
         "HU-133",
         "HU-134",
-        "HU-135"
+        "HU-137"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Inventario · origen v2-adaptar"
+      "notas": "Inventario · origen v2-adaptar · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "inventario-perfiles--archivar",
       "archivo": "pantallas/inventario-perfiles--archivar.html",
       "epica": "EP-006",
       "historias": [
-        "HU-124",
-        "HU-132",
-        "HU-133",
-        "HU-134",
         "HU-135"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "inventario-perfiles"
+      "variante_de": "inventario-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "inventario-perfiles--incoherencia",
       "archivo": "pantallas/inventario-perfiles--incoherencia.html",
       "epica": "EP-006",
       "historias": [
-        "HU-124",
-        "HU-132",
-        "HU-133",
-        "HU-134",
-        "HU-135"
+        "HU-134"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "inventario-perfiles"
+      "variante_de": "inventario-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "inventario-perfiles--lote",
       "archivo": "pantallas/inventario-perfiles--lote.html",
       "epica": "EP-006",
       "historias": [
-        "HU-124",
-        "HU-132",
-        "HU-133",
-        "HU-134",
-        "HU-135"
+        "HU-132"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "inventario-perfiles"
+      "variante_de": "inventario-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "inventario-perfiles--observador",
@@ -1350,38 +1348,57 @@
       "historias": [
         "HU-124",
         "HU-132",
-        "HU-133",
-        "HU-134",
         "HU-135"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "inventario-perfiles"
+      "variante_de": "inventario-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "inventario-perfiles--pausar-motivo",
       "archivo": "pantallas/inventario-perfiles--pausar-motivo.html",
       "epica": "EP-006",
       "historias": [
-        "HU-124",
-        "HU-132",
-        "HU-133",
-        "HU-134",
-        "HU-135"
+        "HU-133"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "inventario-perfiles"
+      "variante_de": "inventario-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "inventario-perfiles--publicacion-masiva",
+      "archivo": "pantallas/inventario-perfiles--publicacion-masiva.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-128"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "inventario-perfiles",
+      "notas": "Publicación masiva con resultado por perfil (HU-128 edge, D10) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor",
@@ -1389,104 +1406,96 @@
       "epica": "EP-006",
       "historias": [
         "HU-125",
-        "HU-126",
         "HU-127",
-        "HU-128",
         "HU-130",
         "HU-131"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Crear/editar perfil · origen v2-adaptar"
+      "notas": "Crear/editar perfil · origen v2-adaptar · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor--adjunto-no-admitido",
       "archivo": "pantallas/perfil-editor--adjunto-no-admitido.html",
       "epica": "EP-006",
       "historias": [
-        "HU-125",
-        "HU-126",
-        "HU-127",
-        "HU-128",
-        "HU-130",
         "HU-131"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "perfil-editor"
+      "variante_de": "perfil-editor",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor--cambios-declarados",
       "archivo": "pantallas/perfil-editor--cambios-declarados.html",
       "epica": "EP-006",
       "historias": [
-        "HU-125",
-        "HU-126",
-        "HU-127",
-        "HU-128",
-        "HU-130",
-        "HU-131"
+        "HU-126"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "perfil-editor"
+      "variante_de": "perfil-editor",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor--campos-incompletos",
       "archivo": "pantallas/perfil-editor--campos-incompletos.html",
       "epica": "EP-006",
       "historias": [
-        "HU-125",
-        "HU-126",
-        "HU-127",
-        "HU-128",
-        "HU-130",
-        "HU-131"
+        "HU-125"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "perfil-editor"
+      "variante_de": "perfil-editor",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor--consentimiento-invalido",
       "archivo": "pantallas/perfil-editor--consentimiento-invalido.html",
       "epica": "EP-006",
       "historias": [
-        "HU-125",
-        "HU-126",
-        "HU-127",
-        "HU-128",
-        "HU-130",
-        "HU-131"
+        "HU-127"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "perfil-editor"
+      "variante_de": "perfil-editor",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor--familia-sin-modalidades",
@@ -1494,41 +1503,96 @@
       "epica": "EP-006",
       "historias": [
         "HU-125",
-        "HU-126",
-        "HU-127",
-        "HU-128",
-        "HU-130",
-        "HU-131"
+        "HU-130"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "perfil-editor"
+      "variante_de": "perfil-editor",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "perfil-editor--publicar-bloqueado",
       "archivo": "pantallas/perfil-editor--publicar-bloqueado.html",
       "epica": "EP-006",
       "historias": [
-        "HU-125",
-        "HU-126",
-        "HU-127",
-        "HU-128",
-        "HU-130",
-        "HU-131"
+        "HU-128"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "perfil-editor"
+      "variante_de": "perfil-editor",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "perfil-editor--sin-modalidad",
+      "archivo": "pantallas/perfil-editor--sin-modalidad.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-128"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor",
+      "notas": "Bloqueo por modalidad de prueba no elegida (D10) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "perfil-editor--incompleto-al-guardar",
+      "archivo": "pantallas/perfil-editor--incompleto-al-guardar.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-126"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor",
+      "notas": "Pregunta «¿descarto el cambio o paso el perfil a borrador?» (D1) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "perfil-editor--observador",
+      "archivo": "pantallas/perfil-editor--observador.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-124",
+        "HU-131"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "perfil-editor",
+      "notas": "Observador por ruta de edición; artefacto visible sin descarga (D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "borrador-evidencia",
@@ -1537,14 +1601,16 @@
       "historias": [
         "HU-140"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Borrador de campos desde el artefacto · origen nueva"
+      "notas": "Borrador de campos desde el artefacto · origen nueva · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "borrador-evidencia--campo-ambiguo",
@@ -1553,14 +1619,17 @@
       "historias": [
         "HU-140"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "borrador-evidencia"
+      "variante_de": "borrador-evidencia",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "borrador-evidencia--sin-texto",
@@ -1569,14 +1638,17 @@
       "historias": [
         "HU-140"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "borrador-evidencia"
+      "variante_de": "borrador-evidencia",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "vista-previa-ficha",
@@ -1585,14 +1657,16 @@
       "historias": [
         "HU-129"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Vista previa de la ficha · origen v2-existe"
+      "notas": "Vista previa de la ficha · origen v2-existe · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "vista-previa-ficha--bloque-incompleto",
@@ -1601,134 +1675,58 @@
       "historias": [
         "HU-129"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "vista-previa-ficha"
+      "variante_de": "vista-previa-ficha",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "vista-previa-ficha--bloque-opcional",
+      "archivo": "pantallas/vista-previa-ficha--bloque-opcional.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-129",
+        "HU-130"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "vista-previa-ficha",
+      "notas": "Bloque opcional sin datos: no se dibuja y no impide publicar · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "importar-perfiles",
       "archivo": "pantallas/importar-perfiles.html",
       "epica": "EP-006",
       "historias": [
-        "HU-086",
         "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
+        "HU-086",
+        "HU-148",
+        "HU-141"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Importar, exportar y revertir · origen v2-adaptar"
-    },
-    {
-      "slug": "importar-perfiles--campos-rechazados",
-      "archivo": "pantallas/importar-perfiles--campos-rechazados.html",
-      "epica": "EP-006",
-      "historias": [
-        "HU-086",
-        "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
-      ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
-      "viewports_verificados": [
-        "desktop",
-        "tablet",
-        "mobile"
-      ],
-      "variante_de": "importar-perfiles"
-    },
-    {
-      "slug": "importar-perfiles--codigo-duplicado",
-      "archivo": "pantallas/importar-perfiles--codigo-duplicado.html",
-      "epica": "EP-006",
-      "historias": [
-        "HU-086",
-        "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
-      ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
-      "viewports_verificados": [
-        "desktop",
-        "tablet",
-        "mobile"
-      ],
-      "variante_de": "importar-perfiles"
-    },
-    {
-      "slug": "importar-perfiles--filas-con-error",
-      "archivo": "pantallas/importar-perfiles--filas-con-error.html",
-      "epica": "EP-006",
-      "historias": [
-        "HU-086",
-        "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
-      ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
-      "viewports_verificados": [
-        "desktop",
-        "tablet",
-        "mobile"
-      ],
-      "variante_de": "importar-perfiles"
-    },
-    {
-      "slug": "importar-perfiles--revertir-no-ultima",
-      "archivo": "pantallas/importar-perfiles--revertir-no-ultima.html",
-      "epica": "EP-006",
-      "historias": [
-        "HU-086",
-        "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
-      ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
-      "viewports_verificados": [
-        "desktop",
-        "tablet",
-        "mobile"
-      ],
-      "variante_de": "importar-perfiles"
-    },
-    {
-      "slug": "importar-perfiles--revertir",
-      "archivo": "pantallas/importar-perfiles--revertir.html",
-      "epica": "EP-006",
-      "historias": [
-        "HU-086",
-        "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
-      ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
-      "viewports_verificados": [
-        "desktop",
-        "tablet",
-        "mobile"
-      ],
-      "variante_de": "importar-perfiles"
+      "notas": "Importar, exportar y revertir · origen v2-adaptar · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "importar-perfiles--vista-previa",
@@ -1736,19 +1734,172 @@
       "epica": "EP-006",
       "historias": [
         "HU-086",
-        "HU-088",
-        "HU-141",
-        "HU-142",
-        "HU-087"
+        "HU-141"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "importar-perfiles"
+      "variante_de": "importar-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--codigo-duplicado",
+      "archivo": "pantallas/importar-perfiles--codigo-duplicado.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-086"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--campos-rechazados",
+      "archivo": "pantallas/importar-perfiles--campos-rechazados.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-141",
+        "HU-128"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--filas-con-error",
+      "archivo": "pantallas/importar-perfiles--filas-con-error.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-142"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--revertir",
+      "archivo": "pantallas/importar-perfiles--revertir.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-087"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--revertir-no-ultima",
+      "archivo": "pantallas/importar-perfiles--revertir-no-ultima.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-087"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--plantilla-guardada",
+      "archivo": "pantallas/importar-perfiles--plantilla-guardada.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-148"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "Emparejamiento guardado como plantilla (D2) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--plantilla-aplicada",
+      "archivo": "pantallas/importar-perfiles--plantilla-aplicada.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-148"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "Plantilla aplicada; columna nueva sin emparejar · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "importar-perfiles--plantilla-columna-faltante",
+      "archivo": "pantallas/importar-perfiles--plantilla-columna-faltante.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-148"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "importar-perfiles",
+      "notas": "Plantilla con columna que falta en la hoja · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "catalogos",
@@ -1758,99 +1909,111 @@
         "HU-089",
         "HU-143"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Catálogos · origen nueva"
+      "notas": "Catálogos · origen nueva · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "catalogos--duplicado",
       "archivo": "pantallas/catalogos--duplicado.html",
       "epica": "EP-006",
       "historias": [
-        "HU-089",
-        "HU-143"
+        "HU-089"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "catalogos"
+      "variante_de": "catalogos",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "catalogos--familia-sin-modalidades",
       "archivo": "pantallas/catalogos--familia-sin-modalidades.html",
       "epica": "EP-006",
       "historias": [
-        "HU-089",
-        "HU-143"
+        "HU-089"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "catalogos"
+      "variante_de": "catalogos",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "catalogos--fusion",
       "archivo": "pantallas/catalogos--fusion.html",
       "epica": "EP-006",
       "historias": [
-        "HU-089",
         "HU-143"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "catalogos"
+      "variante_de": "catalogos",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "catalogos--modalidad-en-uso",
       "archivo": "pantallas/catalogos--modalidad-en-uso.html",
       "epica": "EP-006",
       "historias": [
-        "HU-089",
         "HU-143"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "catalogos"
+      "variante_de": "catalogos",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "catalogos--parecidos",
       "archivo": "pantallas/catalogos--parecidos.html",
       "epica": "EP-006",
       "historias": [
-        "HU-089",
-        "HU-143"
+        "HU-089"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "catalogos"
+      "variante_de": "catalogos",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "lexico-busqueda",
@@ -1859,14 +2022,16 @@
       "historias": [
         "HU-139"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Léxico de búsqueda · origen nueva"
+      "notas": "Léxico de búsqueda · origen nueva · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "lexico-busqueda--candidatas",
@@ -1875,14 +2040,17 @@
       "historias": [
         "HU-139"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "lexico-busqueda"
+      "variante_de": "lexico-busqueda",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "lexico-busqueda--equivalencia-invalida",
@@ -1891,30 +2059,55 @@
       "historias": [
         "HU-139"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "lexico-busqueda"
+      "variante_de": "lexico-busqueda",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "lexico-busqueda--propuestas",
+      "archivo": "pantallas/lexico-busqueda--propuestas.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-139"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "lexico-busqueda",
+      "notas": "Propuestas de Gemini: aprobar, editar, rechazar · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "bandeja-vigencia",
       "archivo": "pantallas/bandeja-vigencia.html",
       "epica": "EP-006",
       "historias": [
-        "HU-136"
+        "HU-136",
+        "HU-133"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Bandeja de vigencia · origen v2-existe"
+      "notas": "Bandeja de vigencia · origen v2-existe · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "bandeja-vigencia--vacia",
@@ -1923,46 +2116,75 @@
       "historias": [
         "HU-136"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "bandeja-vigencia"
+      "variante_de": "bandeja-vigencia",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "bandeja-vigencia--pausado-reactivar",
+      "archivo": "pantallas/bandeja-vigencia--pausado-reactivar.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-136",
+        "HU-133"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "bandeja-vigencia",
+      "notas": "Pausado > 30 días: reactivar o archivar (D4) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "colocados",
       "archivo": "pantallas/colocados.html",
       "epica": "EP-006",
       "historias": [
-        "HU-137"
+        "HU-137",
+        "HU-150"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Colocados y vencimientos · origen nueva"
+      "notas": "Colocados y vencimientos · origen nueva · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "colocados--corte-desactualizado",
       "archivo": "pantallas/colocados--corte-desactualizado.html",
       "epica": "EP-006",
       "historias": [
-        "HU-137"
+        "HU-150"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "colocados"
+      "variante_de": "colocados",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "colocados--en-el-portal",
@@ -1971,14 +2193,131 @@
       "historias": [
         "HU-137"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "colocados"
+      "variante_de": "colocados",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "colocados--registrar",
+      "archivo": "pantallas/colocados--registrar.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-137"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados",
+      "notas": "Registrar colocado en el panel (D8) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "colocados--sin-fecha-liberacion",
+      "archivo": "pantallas/colocados--sin-fecha-liberacion.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-137"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados",
+      "notas": "Colocado sin fecha de liberación no se guarda · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "colocados--carga-operaciones",
+      "archivo": "pantallas/colocados--carga-operaciones.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-150"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados",
+      "notas": "Carga JSON/CSV de Operaciones; corte = momento de la carga (D12, D16) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "colocados--carga-filas-con-error",
+      "archivo": "pantallas/colocados--carga-filas-con-error.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-150"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados",
+      "notas": "Filas con error de formato, con número y motivo · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "colocados--diferencia-operaciones",
+      "archivo": "pantallas/colocados--diferencia-operaciones.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-150"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados",
+      "notas": "Diferencia con Operaciones: gana el panel (D15) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "colocados--formato-no-admitido",
+      "archivo": "pantallas/colocados--formato-no-admitido.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-150"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "colocados",
+      "notas": "Archivo que no es JSON ni CSV · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "auditoria-perfil",
@@ -1987,14 +2326,16 @@
       "historias": [
         "HU-138"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "notas": "Registro de auditoría · origen nueva"
+      "notas": "Registro de auditoría · origen nueva · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "auditoria-perfil--archivado",
@@ -2003,14 +2344,187 @@
       "historias": [
         "HU-138"
       ],
-      "estado": "borrador",
-      "generada_en": "2026-09-27T23:58:58Z",
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
       "viewports_verificados": [
         "desktop",
         "tablet",
         "mobile"
       ],
-      "variante_de": "auditoria-perfil"
+      "variante_de": "auditoria-perfil",
+      "notas": "actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18 · actualizada 2026-09-30 a las HU vigentes y D1–D18",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-contacto",
+      "archivo": "pantallas/admin-contacto.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-147"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Contacto de Trycore · Administración vive en el pie del menú (no se añade un 13.º destino) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-contacto--correo-externo",
+      "archivo": "pantallas/admin-contacto--correo-externo.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-147"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-contacto",
+      "notas": "Correo no @trycore.com · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-contacto--observador",
+      "archivo": "pantallas/admin-contacto--observador.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-147",
+        "HU-124"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-contacto",
+      "notas": "Observador en solo lectura · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-accesos",
+      "archivo": "pantallas/admin-accesos.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-151"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "notas": "Accesos al panel · lista con rol · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-accesos--alta",
+      "archivo": "pantallas/admin-accesos--alta.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-151"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-accesos",
+      "notas": "Inscribir correo con rol · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-accesos--correo-externo",
+      "archivo": "pantallas/admin-accesos--correo-externo.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-151"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-accesos",
+      "notas": "Correo no @trycore.com · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-accesos--cambio-rol",
+      "archivo": "pantallas/admin-accesos--cambio-rol.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-151"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-accesos",
+      "notas": "Pasar a observador corta la sesión (D17) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-accesos--baja",
+      "archivo": "pantallas/admin-accesos--baja.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-151"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-accesos",
+      "notas": "Baja corta la sesión (D17) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
+    },
+    {
+      "slug": "admin-accesos--ultimo-admin",
+      "archivo": "pantallas/admin-accesos--ultimo-admin.html",
+      "epica": "EP-006",
+      "historias": [
+        "HU-151"
+      ],
+      "estado": "aprobada",
+      "generada_en": "2026-09-30T22:30:00Z",
+      "viewports_verificados": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "variante_de": "admin-accesos",
+      "notas": "Guarda del último administrador · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18) · nueva 2026-09-30 (modo feature, D1–D18)",
+      "aprobada_por": "Jesús Segura (sponsor)",
+      "aprobada_en": "2026-09-30"
     },
     {
       "slug": "integraciones-fallidas",

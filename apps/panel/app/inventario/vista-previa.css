@@ -1,0 +1,43 @@
+/* Vista previa de la ficha (prototipos vista-previa-ficha y variantes; HU-129). La ficha es la del
+   portal (packages/ui/ficha.css); aquí solo el escenario inerte, la necesidad simulada y el lateral. */
+.vp-rejilla { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 420px); justify-content: start; gap: var(--tc-sp-8); align-items: start; }
+.vp-columna { min-width: 0; display: grid; gap: var(--tc-sp-4); }
+.vp-motivo { margin-bottom: var(--tc-sp-6); }
+.vp-barra { display: grid; gap: var(--tc-sp-4); }
+.vp-modalidad { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.vp-modalidad legend { float: left; padding: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.vp-segmento { display: inline-flex; gap: var(--tc-sp-1); padding: var(--tc-sp-1); border-radius: var(--tc-r-md); background: var(--tc-bg-subtle); }
+.vp-segmento button { min-height: 28px; padding: 0 var(--tc-sp-3); border: 0; border-radius: var(--tc-r-sm); background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease), background var(--tc-dur-fast) var(--tc-ease); }
+.vp-segmento button:hover { color: var(--tc-text-h); }
+.vp-segmento button[aria-pressed="true"] { background: var(--tc-card); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); box-shadow: var(--tc-sh-1); }
+.vp-segmento button:focus-visible, .vp-bloque a:focus-visible { outline: 2px solid var(--tc-focus-ring); outline-offset: 2px; }
+.vp-escenario { cursor: default; }
+.vp-escenario .pp-hoja { position: static; z-index: auto; width: 100%; max-width: 600px; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+.vp-escenario .pp-hoja__cuerpo { overflow: visible; }
+.vp-escenario .pp-btn { cursor: default; }
+.vp-lateral { display: grid; gap: var(--tc-sp-8); min-width: 0; }
+.vp-lateral .pp-seccion + .pp-seccion { margin-top: 0; }
+.vp-listo { display: grid; gap: var(--tc-sp-1); }
+.vp-listo .pp-estado { font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+.vp-listo .pp-meta { margin: 0; padding-left: var(--tc-sp-4); }
+.vp-grupo { display: flex; align-items: baseline; justify-content: space-between; margin: var(--tc-sp-5) 0 0; padding-bottom: var(--tc-sp-2); border-bottom: 1px solid var(--tc-border); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+.vp-grupo:first-of-type { margin-top: 0; }
+.vp-bloques { margin: 0; padding: 0; list-style: none; }
+.vp-bloque { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); align-items: start; padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+.vp-bloque > div { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+.vp-bloque p { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); color: var(--tc-text-b); }
+.vp-bloque .vp-bloque__campo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+.vp-bloque a { justify-self: start; font-size: var(--tc-fs-caption); }
+
+@media (max-width: 1100px) {
+  .vp-rejilla { grid-template-columns: minmax(0, 1fr); }
+  .vp-lateral { order: -1; }
+  .vp-escenario .pp-hoja { max-width: none; }
+}
+@media (max-width: 767px) {
+  .vp-modalidad { gap: var(--tc-sp-2); }
+  .vp-modalidad legend { float: none; width: 100%; }
+  .vp-segmento { display: flex; width: 100%; }
+  .vp-segmento button { flex: 1; min-height: 44px; font-size: var(--tc-fs-small); }
+  .vp-bloque a { display: inline-flex; align-items: center; min-height: 44px; }
+}

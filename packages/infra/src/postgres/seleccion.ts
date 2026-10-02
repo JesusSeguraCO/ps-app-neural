@@ -47,6 +47,9 @@ export async function aterrizajeDelEnlace(
        FROM operacion.estado_seleccion_perfil WHERE codigo = ANY($1) AND estado <> 'disponible'`,
     [codigos],
   );
+  const colocados = new Set(
+    otros.rows.filter((f) => f.estado === "colocado").map((f) => f.codigo as string),
+  );
   const estados: EstadoNoPublicado[] = otros.rows.map((f) => ({
     codigo: f.codigo,
     estado: f.estado as EstadoSeleccion,
@@ -69,6 +72,15 @@ export async function aterrizajeDelEnlace(
     razon: enlace.razon,
     vigenteHasta: enlace.vigente_hasta,
     generadoEn: enlace.vigente_desde,
-    seleccion: reevaluarSeleccion(codigos, proyectar(publicados.rows, ahora), estados),
+    // Un colocado sigue publicado (y en el catálogo con su banda), pero en una selección curada se muestra
+    // con su estado real y la fecha en que se libera (RF-19.2): su estado gana sobre la tarjeta.
+    seleccion: reevaluarSeleccion(
+      codigos,
+      proyectar(
+        publicados.rows.filter((f) => !colocados.has(f.codigo)),
+        ahora,
+      ),
+      estados,
+    ),
   };
 }

@@ -1,0 +1,86 @@
+/* Administración (HU-147, HU-151; prototipos admin-contacto y admin-accesos con sus variantes): composición
+   propia del prototipo, prefijo ad-. Los patrones PP:* vienen de packages/ui. */
+.ad-pestanas {
+  margin-bottom: var(--tc-sp-6);
+}
+.ad-texto {
+  margin: 0 0 var(--tc-sp-5);
+  max-width: 72ch;
+  font-size: var(--tc-fs-small);
+  line-height: var(--tc-lh-body);
+  color: var(--tc-text-b);
+}
+.ad-vista {
+  display: grid;
+  gap: var(--tc-sp-2);
+  padding: var(--tc-sp-4);
+  border: 1px solid var(--tc-border);
+  border-radius: var(--tc-r-md);
+  background: var(--tc-surface-quiet);
+}
+.ad-vista__frase {
+  margin: 0;
+  font-size: var(--tc-fs-small);
+  line-height: var(--tc-lh-body);
+  color: var(--tc-text-h);
+}
+.ad-vista__frase a {
+  color: var(--pp-teal-ink);
+}
+.ad-lateral {
+  display: grid;
+  gap: var(--tc-sp-8);
+  align-content: start;
+}
+.ad-vista + .pp-ayuda {
+  margin-top: var(--tc-sp-3);
+}
+.ad-vista .pp-meta {
+  margin: 0;
+}
+.ad-lista {
+  margin: 0;
+  padding-left: var(--tc-sp-4);
+  list-style: disc;
+  font-size: var(--tc-fs-caption);
+  line-height: var(--tc-lh-body);
+  color: var(--tc-text-m);
+}
+.ad-avisos {
+  margin-bottom: var(--tc-sp-5);
+}
+.ad-fila-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--tc-sp-2);
+}
+.ad-tu {
+  font-size: var(--tc-fs-caption);
+  font-weight: var(--tc-fw-medium);
+  color: var(--tc-text-m);
+}
+.ad-grupo + .ad-grupo {
+  margin-top: var(--tc-sp-8);
+}
+.ad-hoja-bloque {
+  display: grid;
+  gap: var(--tc-sp-3);
+}
+.ad-hoja-bloque > p {
+  margin: 0;
+  font-size: var(--tc-fs-small);
+  line-height: var(--tc-lh-body);
+  color: var(--tc-text-b);
+}
+.ad-roles {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ad-hoja-cuerpo {
+  display: grid;
+  gap: var(--tc-sp-4);
+}

@@ -6,8 +6,9 @@ import { randomBytes } from "node:crypto";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
+import { MODALIDADES_FICTICIAS } from "./sembrar-lexico";
 
-type Estado = "borrador" | "publicado" | "pausado" | "archivado" | "colocado";
+type Estado = "borrador" | "publicado" | "pausado" | "archivado";
 
 export interface PerfilFicticio {
   codigo: string;
@@ -23,7 +24,8 @@ export interface PerfilFicticio {
   modalidad: "remoto" | "hibrido" | "presencial";
   ciudad: string;
   disponibleEnDias: number;
-  liberaEn?: string;
+  // Colocado (HU-137): sigue publicado; la cuenta de su colocación y su liberación = su disponibilidad.
+  colocadoEn?: string;
 }
 
 const MODALIDADES = { remoto: "Remoto", hibrido: "Híbrido", presencial: "Presencial" } as const;
@@ -154,7 +156,8 @@ export const PERFILES_FICTICIOS: PerfilFicticio[] = [
     codigo: "PS-0137",
     nombre: "Sara",
     primerApellido: "Londoño",
-    estado: "colocado",
+    estado: "publicado",
+    colocadoEn: "Seguros Altamira",
     familia: "Calidad",
     roles: ["Analista QA automatización"],
     seniority: "Senior",
@@ -164,7 +167,6 @@ export const PERFILES_FICTICIOS: PerfilFicticio[] = [
     modalidad: "hibrido",
     ciudad: "Medellín",
     disponibleEnDias: 90,
-    liberaEn: "2026-12-15",
   },
   {
     codigo: "PS-0160",
@@ -225,6 +227,17 @@ async function valor(
   return i.rows[0].id;
 }
 
+// Los tres motivos de pausa de RF-8.14.2, con la ayuda que se ve al elegirlos (HU-133). En producción
+// se crean desde Catálogos (RF-8.16); aquí, para local, CI y staging.
+export const MOTIVOS_PAUSA_FICTICIOS = [
+  { nombre: "En proceso de selección con otro cliente", descripcion: "Entrevistas en curso sin decisión." },
+  {
+    nombre: "En licencia o ausencia temporal",
+    descripcion: "Incapacidad, licencia o vacaciones largas sin fecha de regreso.",
+  },
+  { nombre: "Decisión de Talento Humano", descripcion: "Se revisa el perfil o su evidencia." },
+];
+
 function fechaEnDias(dias: number): string {
   return new Date(Date.now() + dias * 86_400_000).toISOString().slice(0, 10);
 }
@@ -234,6 +247,12 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
     throw new Error("sembrar_ficticios: bloqueado en producción (solo local, CI y staging)");
   }
   let creados = 0;
+  for (const m of MOTIVOS_PAUSA_FICTICIOS)
+    await ctx.bd.query(
+      `INSERT INTO inventario.catalogo_motivos_pausa (nombre, descripcion)
+       SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_motivos_pausa WHERE nombre = $1)`,
+      [m.nombre, m.descripcion],
+    );
   for (const p of PERFILES_FICTICIOS) {
     const creado = await conAuditoria(ctx.bd, ctx.auditoria, async (tx) => {
       const existe = await tx.query(`SELECT 1 FROM inventario.perfiles WHERE codigo = $1`, [
@@ -282,14 +301,42 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
         }
       }
       if (p.estado !== "borrador") {
+        // Publicar exige modalidad de prueba activa de la familia (D10, migración 0017).
+        const prueba = MODALIDADES_FICTICIAS.find((m) => m.familia === p.familia)!;
+        await tx.query(
+          `INSERT INTO inventario.catalogo_modalidades_prueba (familia_id, nombre, texto_cliente, enunciado_reto, entregables, criterios)
+           SELECT $1, $2, $3, $4, $5, $6 WHERE NOT EXISTS (
+             SELECT 1 FROM inventario.catalogo_modalidades_prueba WHERE familia_id = $1 AND nombre = $2)`,
+          [familia, prueba.nombre, prueba.texto, prueba.enunciadoReto, prueba.entregables, prueba.criterios.join("\n")],
+        );
+        await tx.query(
+          `UPDATE inventario.perfiles SET modalidad_prueba_id = (
+             SELECT id FROM inventario.catalogo_modalidades_prueba WHERE familia_id = $2 AND nombre = $3)
+            WHERE id = $1`,
+          [id, familia, prueba.nombre],
+        );
         await tx.query(
           `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'dato ficticio de prueba: nombre, trayectoria y clientes')`,
           [id],
         );
+        // Un pausado lleva su motivo del catálogo (HU-133; migración 0019); pausado y archivado no
+        // tienen disponibilidad (matriz D5, D32).
         await tx.query(
-          `UPDATE inventario.perfiles SET estado = $2, fecha_liberacion = $3 WHERE id = $1`,
-          [id, p.estado, p.liberaEn ?? null],
+          `UPDATE inventario.perfiles SET estado = $2,
+                  motivo_pausa_id = CASE WHEN $2 = 'pausado'
+                    THEN (SELECT id FROM inventario.catalogo_motivos_pausa WHERE nombre = $3) END,
+                  disponibilidad_fecha = CASE WHEN $2 IN ('pausado', 'archivado') THEN NULL
+                    ELSE disponibilidad_fecha END
+            WHERE id = $1`,
+          [id, p.estado, MOTIVOS_PAUSA_FICTICIOS[1]!.nombre],
         );
+        if (p.colocadoEn)
+          await tx.query(
+            `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
+             SELECT id, $2, disponibilidad_fecha - 180, disponibilidad_fecha, 'siembra'
+               FROM inventario.perfiles WHERE id = $1`,
+            [id, p.colocadoEn],
+          );
       }
       await tx.query(
         `INSERT INTO identidad.claves_titular (titular, clave_envuelta) VALUES ($1, $2) ON CONFLICT (titular) DO NOTHING`,
@@ -313,6 +360,22 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
     });
     if (creado) creados++;
   }
+  // Trayectoria (RF-8.4: publicar exige al menos una experiencia; la ficha del portal la muestra, D47).
+  // Aparte del alta para completar también lo sembrado antes: una por perfil, solo si no tiene ninguna,
+  // sin cliente nombrado (el consentimiento ficticio no los incluye).
+  for (const p of PERFILES_FICTICIOS.filter((x) => x.estado !== "borrador"))
+    await ctx.bd.query(
+      `INSERT INTO inventario.perfil_experiencias (perfil_id, orden, cargo, desde, descripcion)
+       SELECT id, 1, $2, $3, $4 FROM inventario.perfiles p
+        WHERE codigo = $1
+          AND NOT EXISTS (SELECT 1 FROM inventario.perfil_experiencias e WHERE e.perfil_id = p.id)`,
+      [
+        p.codigo,
+        p.roles[0],
+        new Date().getUTCFullYear() - p.anios,
+        `Experiencia ficticia de prueba: ${p.tecnologias.slice(0, 2).join(" y ")} en ${p.sectores[0] ?? "proyectos de software"}.`,
+      ],
+    );
   ctx.registrar({ evento: "ficticios_sembrados", creados, total: PERFILES_FICTICIOS.length });
   return { creados };
 }

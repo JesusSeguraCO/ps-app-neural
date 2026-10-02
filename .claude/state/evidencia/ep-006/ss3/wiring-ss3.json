@@ -1,0 +1,72 @@
+[
+ {
+  "item_id": "HU-088-ac1-exportar-hoja",
+  "kind": "hu_ac",
+  "ref": "HU-088 · Exportar el banco en el formato de importación"
+ },
+ {
+  "item_id": "HU-088-ac2-plantilla-muestra",
+  "kind": "hu_ac",
+  "ref": "HU-088 · Plantilla de muestra"
+ },
+ {
+  "item_id": "HU-088-ac3-mismo-banco-json",
+  "kind": "hu_ac",
+  "ref": "HU-088 · El mismo banco en JSON"
+ },
+ {
+  "item_id": "HU-088-ac4-descarga-bloqueada",
+  "kind": "hu_ac",
+  "ref": "HU-088 · El navegador bloquea la descarga"
+ },
+ {
+  "item_id": "HU-088-ac5-internos-sin-consentimiento",
+  "kind": "hu_ac",
+  "ref": "HU-088 · Campos internos"
+ },
+ {
+  "item_id": "HU-086-ac1-pegar-hoja",
+  "kind": "hu_ac",
+  "ref": "HU-086 · Pegar desde la hoja de cálculo"
+ },
+ {
+  "item_id": "HU-086-ac2-vista-previa-grupos",
+  "kind": "hu_ac",
+  "ref": "HU-086 · La vista previa al terminar de procesar"
+ },
+ {
+  "item_id": "HU-086-ac3-solo-lo-que-cambia",
+  "kind": "hu_ac",
+  "ref": "HU-086 · Abrir un perfil actualizado"
+ },
+ {
+  "item_id": "HU-086-ac4-codigo-repetido",
+  "kind": "hu_ac",
+  "ref": "HU-086 · Dos filas con el mismo código"
+ },
+ {
+  "item_id": "HU-086-ac5-valores-nuevos",
+  "kind": "hu_ac",
+  "ref": "HU-086 · Valores que no existen en el banco"
+ },
+ {
+  "item_id": "HU-148-ac1-guardar",
+  "kind": "hu_ac",
+  "ref": "HU-148 · Guardar el emparejamiento"
+ },
+ {
+  "item_id": "HU-148-ac2-reutilizar",
+  "kind": "hu_ac",
+  "ref": "HU-148 · Reutilizar el emparejamiento en la hoja del mes siguiente"
+ },
+ {
+  "item_id": "HU-148-ac3-columna-faltante",
+  "kind": "hu_ac",
+  "ref": "HU-148 · A la hoja le falta una columna de la plantilla"
+ },
+ {
+  "item_id": "HU-148-ac4-columna-nueva",
+  "kind": "hu_ac",
+  "ref": "HU-148 · La hoja trae una columna que la plantilla no conoce"
+ }
+]

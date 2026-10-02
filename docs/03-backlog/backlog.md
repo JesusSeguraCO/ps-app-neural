@@ -1,12 +1,12 @@
 ---
 artefacto: backlog
 proyecto: portal-people-service
-version: 5.5
-fecha: 2026-09-27
+version: 5.6
+fecha: 2026-10-01
 prd_version: 4.13
-epicas_version: 5.5
-historias_escritas: 80
-historias_descartadas: 1
+epicas_version: 5.6
+historias_escritas: 87
+historias_descartadas: 2
 ---
 
 # Backlog consolidado — Portal de Perfiles People Service
@@ -19,9 +19,9 @@ historias_descartadas: 1
 | Artefacto | Versión | Dónde |
 |---|---|---|
 | PRD | **4.13** | `docs/01-prd/portal-people-service.md` |
-| Épicas | **5.5** — 11 épicas, con requisitos por épica | `docs/03-backlog/epicas.md` |
-| Mapa de historias | **3.3** — alineado a PRD 4.13 y épicas 5.5 | `docs/02-user-story-map/portal-people-service.md` |
-| Historias escritas | **79** activas, 1 descartada | `docs/04-historias/` |
+| Épicas | **5.6** — 11 épicas, con requisitos por épica | `docs/03-backlog/epicas.md` |
+| Mapa de historias | **3.5** — alineado a PRD 4.13 y épicas 5.5 | `docs/02-user-story-map/portal-people-service.md` |
+| Historias escritas | **85** activas, 2 descartadas (HU-079, HU-149); de las activas, HU-131 diferida a v2 (D29, 2026-10-01) | `docs/04-historias/` |
 | Prototipo Low-Fi (v1) | entregado | `prototipo-portal-people-service.html` |
 | Prototipo Mid-Fi (v2) | entregado, con llamada real al modelo | `prototipo-midfi-portal-people-service.html` |
 | Auditoría de usabilidad (Krug) | 1.0 — 7 hallazgos corregidos | `docs/08-usabilidad/auditoria-krug.md` |
@@ -57,10 +57,12 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-083** | Decir qué tiene que estar funcionando cuando el proyecto termine | EP-009 | alta | M | borrador | — |
 | **HU-084** | Ver la forma típica del trabajo que estoy por emprender | EP-004 | media | M | borrador | Bloqueada por D-19 |
 | **HU-085** | Ajustar mi especificación con las opciones que el banco realmente tiene | EP-009 | alta | M | borrador | — |
-| **HU-086** | Pegar mi hoja de cálculo y ver qué va a pasar | EP-006 | media | M | prototipado | *Dividida el 22-sep en 086 + 141 + 142* |
-| **HU-087** | Deshacer una importación que salió mal | EP-006 | media | M | prototipado | — |
-| **HU-088** | Descargar una plantilla o el banco para editarlo y devolverlo | EP-006 | media | S | prototipado | — |
-| **HU-089** | Crear valores de catálogo sin duplicar los que ya existen | EP-006 | alta | M | prototipado | *Dividida el 22-sep en 089 + 143* |
+| **HU-088** | Descargar una plantilla o el banco para editarlo y devolverlo | EP-006 | media | S | lista | — |
+| **HU-086** | Pegar mi hoja de cálculo y ver qué va a pasar | EP-006 | media | M | lista | *Dividida el 22-sep en 086 + 141 + 142* |
+| **HU-148** | Reutilizar un emparejamiento de columnas guardado | EP-006 | media | S | lista | Depende de HU-086 · sale de HU-086 el 2026-09-30 (D2, partición, no recorte) |
+| **HU-141** | Confirmar la importación sabiendo qué campos toca | EP-006 | media | M | lista | Depende de HU-086 |
+| **HU-087** | Deshacer una importación que salió mal | EP-006 | media | M | lista | Depende de HU-141 (deshace lo que aplicó la confirmación; revisión INVEST 2026-09-30) |
+| **HU-089** | Crear valores de catálogo sin duplicar los que ya existen | EP-006 | alta | M | lista | *Dividida el 22-sep en 089 + 143* |
 | **HU-090** | Entrar al portal desde el correo sin registrarme | EP-001 | alta | M | borrador | — |
 | **HU-091** | Reconocer que la selección se armó para mi proyecto | EP-001 | alta | S | borrador | — |
 | **HU-092** | Recuperar el acceso cuando el enlace venció | EP-001 | alta | S | borrador | — |
@@ -94,27 +96,29 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-120** | Comparar perfiles sin perder la lista | EP-003 | alta | M | prototipado | — |
 | **HU-121** | Comparar muchos perfiles por el mismo criterio | EP-002 | alta | M | prototipado | — |
 | **HU-122** | Generar un enlace con exactamente los perfiles que elegí | EP-001 | alta | S | prototipado | *Dividida el 22-sep en 122 + 144* |
-| **HU-123** | Entrar al panel con mi correo corporativo | EP-001 | alta | M | borrador | Sin proveedor de identidad: correo inscrito + código (D-22 rev. 2026-09-24). *Reasignada de EP-006 a EP-001 el 2026-09-27 (T-19): la caparazón necesita el login del panel para generar enlaces (HU-122)* |
-| **HU-124** | Consultar el banco sin poder modificarlo | EP-006 | media | S | borrador | Depende de HU-123 |
-| **HU-125** | Crear un perfil eligiendo del catálogo | EP-006 | alta | M | borrador | — |
-| **HU-126** | Editar un perfil publicado sin sorpresas | EP-006 | alta | M | borrador | — |
-| **HU-127** | Registrar el consentimiento nominal del profesional | EP-006 | alta | M | borrador | Exige recoger de nuevo el consentimiento del banco existente |
-| **HU-128** | Ser bloqueada si intento publicar sin consentimiento | EP-006 | alta | S | borrador | Depende de HU-127 |
-| **HU-129** | Previsualizar la ficha exactamente como la verá el cliente | EP-006 | alta | S | borrador | — |
-| **HU-130** | Publicar un perfil sin esperar el reporte detallado | EP-006 | alta | S | borrador | — |
-| **HU-131** | Adjuntar el artefacto de evidencia tal como lo tengo | EP-006 | media | M | borrador | *Dividida el 22-sep* |
-| **HU-132** | Actualizar la disponibilidad en dos clics | EP-006 | alta | S | borrador | Condición operativa de O5 |
-| **HU-133** | Pausar un perfil declarando el motivo | EP-006 | alta | S | borrador | — |
-| **HU-134** | Corregir incoherencias entre estado y disponibilidad | EP-006 | alta | M | borrador | — |
-| **HU-135** | Archivar un perfil sin perder su rastro | EP-006 | media | S | borrador | — |
-| **HU-136** | Revisar la bandeja de vigencia | EP-006 | alta | S | borrador | Instrumento de O5 |
-| **HU-137** | Ver los perfiles colocados y sus vencimientos | EP-006 | media | M | borrador | Depende del sistema de asignación |
-| **HU-138** | Consultar quién cambió qué y cuándo | EP-006 | alta | M | borrador | Depende de HU-123 |
-| **HU-139** | Administrar el léxico de búsqueda | EP-006 | media | M | borrador | — |
-| **HU-140** | Obtener un borrador de los campos desde el artefacto | EP-006 | media | L | borrador | Depende de HU-131 · plantilla determinista sin IA (T-2, 2026-09-25) · la marca «candidata a v2» no es un acuerdo del equipo: diferirla exige ese acuerdo |
-| **HU-141** | Confirmar la importación sabiendo qué campos toca | EP-006 | media | M | borrador | Depende de HU-086 |
-| **HU-142** | Corregir solo las filas que fallaron | EP-006 | media | S | borrador | Depende de HU-141 |
-| **HU-143** | Retirar y fusionar valores sin romper los perfiles que los usan | EP-006 | media | M | borrador | Depende de HU-089 |
+| **HU-123** | Entrar al panel con mi correo corporativo | EP-001 | alta | M | lista | Sin proveedor de identidad: correo inscrito + código (D-22 rev. 2026-09-24). *Reasignada de EP-006 a EP-001 el 2026-09-27 (T-19): la caparazón necesita el login del panel para generar enlaces (HU-122)* |
+| **HU-124** | Consultar el banco sin poder modificarlo | EP-006 | media | S | lista | Depende de HU-123 · limitada a inventario, enlaces y colocados; demanda y cobertura se añaden con EP-010 (D14, 2026-09-30) |
+| **HU-151** | Administrar quién entra al panel y con qué rol | EP-006 | alta | M | lista | Depende de HU-123 · nace el 2026-09-30 (D13, bloqueo B4 del DoR): RF-8.1.5 y RF-8.1.2 |
+| **HU-125** | Crear un perfil eligiendo del catálogo | EP-006 | alta | M | lista | — |
+| **HU-126** | Editar un perfil publicado sin sorpresas | EP-006 | alta | M | lista | — |
+| **HU-127** | Registrar el consentimiento nominal del profesional | EP-006 | alta | M | lista | Exige recoger de nuevo el consentimiento del banco existente |
+| **HU-128** | Ser bloqueada si intento publicar sin consentimiento o sin modalidad de prueba | EP-006 | alta | S | lista | Depende de HU-127, HU-086 y HU-125 · modalidad obligatoria para publicar (D10, 2026-09-30) |
+| **HU-129** | Previsualizar la ficha exactamente como la verá el cliente | EP-006 | alta | S | lista | — |
+| **HU-130** | Publicar un perfil sin esperar el reporte detallado | EP-006 | alta | S | lista | — |
+| **HU-131** | Adjuntar el artefacto de evidencia tal como lo tengo | EP-006 | media | M | lista | **DIFERIDA a v2** por el sponsor el 2026-10-01 (D29): fuera del alcance de EP-006 en esta versión («hacerlo nos va a costar más en producción»); se conserva con sus AC para cuando se retome. La evidencia de esta versión es el reporte de validación que registra Talento Humano (HU-130, HU-140) · *Dividida el 22-sep* |
+| **HU-132** | Actualizar la disponibilidad en dos clics | EP-006 | alta | S | lista | Condición operativa de O5 |
+| **HU-133** | Pausar un perfil declarando el motivo | EP-006 | alta | S | lista | — |
+| **HU-134** | Corregir incoherencias entre estado y disponibilidad | EP-006 | alta | M | lista | — |
+| **HU-135** | Archivar un perfil sin perder su rastro | EP-006 | media | S | lista | — |
+| **HU-136** | Revisar la bandeja de vigencia | EP-006 | alta | S | lista | Instrumento de O5 |
+| **HU-137** | Ver los perfiles colocados y sus vencimientos | EP-006 | media | M | lista | Registro en el panel, que es la fuente (D8); la carga de Operaciones sale a HU-150 (D12, 2026-09-30) |
+| **HU-150** | Cargar la información de colocados de Operaciones | EP-006 | media | M | lista | Depende de HU-137 · sale de HU-137 el 2026-09-30 (D12, partición, no recorte): JSON o CSV, fecha de corte, «dato desincronizado» a los más de 7 días |
+| **HU-138** | Consultar quién cambió qué y cuándo | EP-006 | alta | M | lista | Depende de HU-123 |
+| **HU-139** | Administrar el léxico de búsqueda | EP-006 | media | M | lista | — |
+| **HU-140** | Precargar el borrador desde la modalidad de prueba | EP-006 | media | S | lista | Sin dependencia de HU-131 (D29, 2026-10-01: el borrador sale de la modalidad, no del artefacto; D11, D19) · plantilla determinista sin IA (T-2, 2026-09-25) · la marca «candidata a v2» no es un acuerdo del equipo: diferirla exige ese acuerdo |
+| **HU-149** | Reconocer fecha y resultado por patrones en el artefacto | EP-006 | media | M | **descartada** | DESCARTADA por el sponsor el 2026-09-30 (D11): sin lectura automática del artefacto; la evidencia se descarga y se ve en el panel (HU-131, diferida a v2 por D29) |
+| **HU-142** | Corregir solo las filas que fallaron | EP-006 | media | S | lista | Depende de HU-141 |
+| **HU-143** | Retirar y fusionar valores sin romper los perfiles que los usan | EP-006 | media | M | lista | Depende de HU-089 |
 | **HU-144** | Abrir el enlace y encontrar la selección que me armaron | EP-001 | alta | S | borrador | Depende de HU-122 |
 | **HU-145** | Aprobar o rechazar la invitación de un colega | EP-001 | media | S | lista | Depende de HU-123 y HU-095 · dividida de HU-095 el 2026-09-27 |
 | **HU-146** | Enterarme de cada enlace nuevo que piden los clientes | EP-001 | alta | S | lista | Depende de HU-123 y HU-092 · dividida de HU-092 el 2026-09-29 (sponsor: la renovación no consulta HubSpot) |

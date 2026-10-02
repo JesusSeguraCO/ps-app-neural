@@ -3,6 +3,7 @@ import {
   diaCortoDeColombia,
   horaDesbloqueoDeColombia,
   momentoCortoDeColombia,
+  momentoCercanoDeColombia,
   momentoDeColombia,
 } from "./colombia";
 
@@ -43,5 +44,16 @@ describe("hora de desbloqueo", () => {
   });
   it("un minuto exacto no se mueve", () => {
     expect(horaDesbloqueoDeColombia(new Date("2026-09-29T21:12:00.000Z"))).toBe("4:12 p. m.");
+  });
+});
+
+describe("momento cercano (prototipo admin-accesos: «Entró hoy, 8:02 a. m.», «ayer, 4:15 p. m.», «el 22 sep»)", () => {
+  it("hoy y ayer con la hora; antes, solo el día", () => {
+    expect(momentoCercanoDeColombia(new Date("2026-09-29T13:02:00Z"), AHORA)).toBe("hoy, 8:02 a. m.");
+    expect(momentoCercanoDeColombia(new Date("2026-09-28T21:15:00Z"), AHORA)).toBe("ayer, 4:15 p. m.");
+    // 29 sep 03:00 UTC sigue siendo ayer en Bogotá.
+    expect(momentoCercanoDeColombia(new Date("2026-09-29T03:00:00Z"), AHORA)).toBe("ayer, 10:00 p. m.");
+    expect(momentoCercanoDeColombia(new Date("2026-09-22T15:00:00Z"), AHORA)).toBe("el 22 sep");
+    expect(momentoCercanoDeColombia(new Date("2025-12-30T17:00:00Z"), AHORA)).toBe("el 30 dic 2025");
   });
 });

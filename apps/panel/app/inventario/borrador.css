@@ -1,0 +1,25 @@
+/* Borrador de la validación técnica (prototipo borrador-evidencia; prefijo be-): solo layout y
+   tipografía sobre tokens. Sin la columna del artefacto (D29). */
+.be-form { display: grid; gap: var(--tc-sp-8); padding: var(--tc-sp-6); }
+.be-grupo__cabecera { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); padding-bottom: var(--tc-sp-3); margin-bottom: var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+.be-grupo .pp-form-fila:first-child { padding-top: 0; }
+.be-grupo .pp-form-fila:last-child { padding-bottom: 0; }
+.be-origen { margin-top: var(--tc-sp-1); }
+.be-origen__marca { color: var(--pp-teal-ink); font-weight: var(--tc-fw-medium); }
+.be-origen__marca--tuyo { color: var(--tc-text-h); }
+.be-valor { margin: 0; font-size: var(--tc-fs-body); color: var(--tc-text-h); }
+.be-cita { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+.be-cita__donde { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.be-fecha { max-width: 200px; }
+.be-pie { display: grid; gap: var(--tc-sp-3); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+.be-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2); }
+.be-acciones__descartar { margin-right: auto; color: var(--tc-danger-ink); }
+.be-acciones__descartar:hover { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+.be-pie__motivo { text-align: right; }
+.be-lateral { display: grid; align-content: start; gap: var(--tc-sp-4); min-width: 0; }
+.be-datos { display: grid; margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); }
+.be-datos div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); padding: var(--tc-sp-2) 0; }
+.be-datos div + div { border-top: 1px solid var(--tc-border); }
+.be-datos dt { color: var(--tc-text-m); }
+.be-datos dd { margin: 0; color: var(--tc-text-h); }
+@media (max-width: 767px) { .be-form { padding: var(--tc-sp-4); } .be-pie__motivo { text-align: left; } }

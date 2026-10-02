@@ -1,0 +1,1061 @@
+ep-006.postman_collection.json: 226 peticiones en 8 carpetas
+ps_t_f5c0c9bb
+newman
+
+EP-006 · Administración del inventario (contrato del panel)
+
+❏ Catálogos
+↳ lista el catálogo de tecnologías
+  GET http://127.0.0.1:3101/api/v1/catalogos/tecnologia [200 OK, 6.02kB, 59ms]
+  ✓  200
+  ✓  trae valores
+
+↳ coincidencias para elegir (?q=)
+  GET http://127.0.0.1:3101/api/v1/catalogos/tecnologia?q=Jav [200 OK, 917B, 7ms]
+  ✓  200
+  ✓  trae valores
+
+↳ tipo de catálogo inexistente → 404
+  GET http://127.0.0.1:3101/api/v1/catalogos/planeta [404 Not Found, 871B, 5ms]
+  ✓  404
+
+↳ crear un valor → 201
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia [201 Created, 970B, 21ms]
+  ✓  201
+  ✓  trae valor.id
+
+↳ duplicado salvo tildes y mayúsculas → 409
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia [409 Conflict, 1.01kB, 6ms]
+  ✓  409
+  ✓  motivo duplicado
+
+↳ entrada inválida → 400
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia [400 Bad Request, 880B, 5ms]
+  ✓  400
+
+↳ fichas que dependen del valor
+  GET http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3 [200 OK, 933B, 7ms]
+  ✓  200
+
+↳ editar el nombre
+  PATCH http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3 [200 OK, 969B, 10ms]
+  ✓  200
+
+↳ desactivar
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/desactivar [200 OK, 919B, 10ms]
+  ✓  200
+
+↳ reactivar
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/reactivar [200 OK, 918B, 9ms]
+  ✓  200
+
+↳ previsualizar la fusión no escribe
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/fusionar?previsualizar [200 OK, 1.06kB, 7ms]
+  ✓  200
+  ✓  trae impacto
+
+↳ fusionar consigo mismo → 409
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/fusionar [409 Conflict, 872B, 5ms]
+  ✓  409
+  ✓  motivo mismo_valor
+
+↳ valor inexistente → 404
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/00000000-0000-4000-8000-000000000000/desactivar [404 Not Found, 871B, 7ms]
+  ✓  404
+
+❏ Léxico
+↳ guardar un término con su equivalencia → 201
+  POST http://127.0.0.1:3101/api/v1/lexico [201 Created, 892B, 11ms]
+  ✓  201
+
+↳ valor que no existe en el catálogo → 422
+  POST http://127.0.0.1:3101/api/v1/lexico [422 Unprocessable Entity, 982B, 13ms]
+  ✓  422
+
+↳ aprobar una propuesta tal cual
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/e860319c-c19b-45f8-8a29-b84ec0fa36a8/aprobar [200 OK, 893B, 12ms]
+  ✓  200
+
+↳ aprobarla otra vez → 409
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/e860319c-c19b-45f8-8a29-b84ec0fa36a8/aprobar [409 Conflict, 872B, 4ms]
+  ✓  409
+  ✓  motivo ya_decidida
+
+↳ rechazar otra propuesta
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/rechazar [200 OK, 864B, 7ms]
+  ✓  200
+
+↳ propuesta inexistente → 404
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/00000000-0000-4000-8000-000000000000/rechazar [404 Not Found, 871B, 4ms]
+  ✓  404
+
+↳ mandar una candidata a la agenda de reclutamiento
+  POST http://127.0.0.1:3101/api/v1/lexico/candidatas/2521a848-093c-4e82-af8e-8fe22a18d6c2 [200 OK, 876B, 7ms]
+  ✓  200
+  ✓  destino
+
+↳ decidirla otra vez → 409
+  POST http://127.0.0.1:3101/api/v1/lexico/candidatas/2521a848-093c-4e82-af8e-8fe22a18d6c2 [409 Conflict, 872B, 5ms]
+  ✓  409
+
+↳ destino inválido → 400
+  POST http://127.0.0.1:3101/api/v1/lexico/candidatas/2521a848-093c-4e82-af8e-8fe22a18d6c2 [400 Bad Request, 880B, 5ms]
+  ✓  400
+
+❏ Perfiles
+↳ listado del inventario
+  GET http://127.0.0.1:3101/api/v1/perfiles [200 OK, 4.91kB, 49ms]
+  ✓  200
+
+↳ crear un perfil → 201 en borrador
+  POST http://127.0.0.1:3101/api/v1/perfiles [201 Created, 2.75kB, 18ms]
+  ✓  201
+  ✓  borrador
+
+↳ un campo de la lista negra B.4 → 400
+  POST http://127.0.0.1:3101/api/v1/perfiles [400 Bad Request, 880B, 4ms]
+  ✓  400
+
+↳ un valor que no está en el catálogo → 422
+  POST http://127.0.0.1:3101/api/v1/perfiles [422 Unprocessable Entity, 961B, 5ms]
+  ✓  422
+
+↳ leer el perfil con lo que le falta
+  GET http://127.0.0.1:3101/api/v1/perfiles/PS-0239 [200 OK, 2.74kB, 9ms]
+  ✓  200
+  ✓  trae perfil.evaluacion
+
+↳ perfil inexistente → 404
+  GET http://127.0.0.1:3101/api/v1/perfiles/PS-9999 [404 Not Found, 871B, 6ms]
+  ✓  404
+
+↳ guardar sin la versión abierta → 428
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0239 [428 Precondition Required, 887B, 3ms]
+  ✓  428
+  ✓  motivo falta_version
+
+↳ guardar con la versión abierta
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0239 [200 OK, 2.74kB, 14ms]
+  ✓  200
+
+↳ guardar con una versión vieja → 409
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0239 [409 Conflict, 2.79kB, 7ms]
+  ✓  409
+
+↳ publicar sin consentimiento → 409 con lo que falta
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/publicar [409 Conflict, 1.36kB, 8ms]
+  ✓  409
+  ✓  motivo no_publicable
+
+↳ registrar el consentimiento → 201
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/consentimiento [201 Created, 2.99kB, 16ms]
+  ✓  201
+
+↳ consentimiento no nominal → 422
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/consentimiento [422 Unprocessable Entity, 883B, 4ms]
+  ✓  422
+
+↳ pedir el borrador del reporte de validación
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/validacion [200 OK, 2.1kB, 7ms]
+  ✓  200
+
+↳ leer el borrador pendiente
+  GET http://127.0.0.1:3101/api/v1/perfiles/PS-0239/validacion [200 OK, 2.1kB, 4ms]
+  ✓  200
+  ✓  trae borrador.id
+
+↳ guardar el borrador sin confirmar
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0239/validacion [200 OK, 2.15kB, 6ms]
+  ✓  200
+
+↳ confirmar sin «Revisé cada campo» → 422
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/validacion/confirmar [422 Unprocessable Entity, 913B, 7ms]
+  ✓  422
+
+↳ confirmar el reporte
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/validacion/confirmar [200 OK, 3.67kB, 13ms]
+  ✓  200
+
+↳ descartar un borrador ya resuelto → 409
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/validacion/descartar [409 Conflict, 900B, 5ms]
+  ✓  409
+  ✓  motivo borrador_resuelto
+
+↳ publicar sin versión → 428
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/publicar [428 Precondition Required, 887B, 3ms]
+  ✓  428
+
+↳ publicar con la versión abierta
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/publicar [200 OK, 3.68kB, 13ms]
+  ✓  200
+  ✓  publicado
+
+↳ publicar en bloque: un resultado por perfil
+  POST http://127.0.0.1:3101/api/v1/perfiles/publicar [200 OK, 1.05kB, 12ms]
+  ✓  200
+  ✓  trae resultados
+
+↳ publicar en bloque sin códigos válidos → 400
+  POST http://127.0.0.1:3101/api/v1/perfiles/publicar [400 Bad Request, 880B, 3ms]
+  ✓  400
+
+↳ disponibilidad en bloque
+  POST http://127.0.0.1:3101/api/v1/perfiles/disponibilidad [200 OK, 910B, 9ms]
+  ✓  200
+  ✓  trae resultados
+
+↳ pausar con un motivo del catálogo
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/pausar [200 OK, 3.79kB, 12ms]
+  ✓  200
+
+↳ pausar un pausado → 409
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/pausar [409 Conflict, 899B, 4ms]
+  ✓  409
+  ✓  motivo transicion_invalida
+
+↳ quitar la disponibilidad que contradice la pausa
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/quitar-disponibilidad [200 OK, 3.79kB, 10ms]
+  ✓  200
+
+↳ reactivar con su disponibilidad
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/reactivar [200 OK, 3.68kB, 17ms]
+  ✓  200
+
+↳ reactivar un publicado → 409
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/reactivar [409 Conflict, 901B, 5ms]
+  ✓  409
+  ✓  motivo transicion_invalida
+
+↳ quitar disponibilidad a un publicado → 409
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/quitar-disponibilidad [409 Conflict, 891B, 5ms]
+  ✓  409
+  ✓  motivo no_aplica
+
+↳ usar la liberación sin colocación → 409
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/usar-liberacion [409 Conflict, 891B, 5ms]
+  ✓  409
+  ✓  motivo no_aplica
+
+↳ avisar a Talento Humano (la observadora)
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/avisar [202 Accepted, 864B, 6ms]
+  ✓  202
+
+↳ avisar sobre un perfil inexistente → 404
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-9999/avisar [404 Not Found, 871B, 3ms]
+  ✓  404
+
+❏ Colocados
+↳ registrar un colocado
+  POST http://127.0.0.1:3101/api/v1/colocados [200 OK, 3.81kB, 11ms]
+  ✓  200
+
+↳ ya colocado → 409
+  POST http://127.0.0.1:3101/api/v1/colocados [409 Conflict, 898B, 4ms]
+  ✓  409
+  ✓  motivo ya_colocado
+
+↳ fecha que no existe → 422
+  POST http://127.0.0.1:3101/api/v1/colocados [422 Unprocessable Entity, 887B, 3ms]
+  ✓  422
+  ✓  motivo fecha_invalida
+
+↳ usar la fecha de liberación como disponibilidad
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/usar-liberacion [200 OK, 3.81kB, 10ms]
+  ✓  200 o 409 no_aplica (ya coincide)
+
+↳ carga de Operaciones con una diferencia → 201
+  POST http://127.0.0.1:3101/api/v1/colocados/cargas [201 Created, 1.09kB, 8ms]
+  ✓  201
+  ✓  trae carga
+
+↳ otro formato → 422 sin escribir
+  POST http://127.0.0.1:3101/api/v1/colocados/cargas [422 Unprocessable Entity, 892B, 2ms]
+  ✓  422
+  ✓  motivo formato_no_admitido
+
+↳ faltan columnas → 422
+  POST http://127.0.0.1:3101/api/v1/colocados/cargas [422 Unprocessable Entity, 940B, 3ms]
+  ✓  422
+  ✓  motivo faltan_columnas
+
+↳ la pestaña Colocados muestra la diferencia (se toma su id)
+  GET http://127.0.0.1:3101/colocados [200 OK, 34.22kB, 54ms]
+  ✓  200
+  ✓  diferencia del perfil
+
+↳ aceptar la diferencia con Operaciones
+  POST http://127.0.0.1:3101/api/v1/colocados/diferencias/5667b828-20ad-4d8e-81cf-0ef3379fe5e7 [200 OK, 862B, 14ms]
+  ✓  200
+
+↳ decidirla otra vez → 409
+  POST http://127.0.0.1:3101/api/v1/colocados/diferencias/5667b828-20ad-4d8e-81cf-0ef3379fe5e7 [409 Conflict, 894B, 5ms]
+  ✓  409
+  ✓  motivo ya_decidida
+
+↳ diferencia inexistente → 404
+  POST http://127.0.0.1:3101/api/v1/colocados/diferencias/00000000-0000-4000-8000-000000000000 [404 Not Found, 871B, 5ms]
+  ✓  404
+
+❏ Importación
+↳ emparejar lo pegado
+  POST http://127.0.0.1:3101/api/v1/importacion/emparejar [200 OK, 1.18kB, 6ms]
+  ✓  200
+
+↳ emparejar nada → 422
+  POST http://127.0.0.1:3101/api/v1/importacion/emparejar [422 Unprocessable Entity, 878B, 3ms]
+  ✓  422
+
+↳ exportar el banco en CSV
+  GET http://127.0.0.1:3101/api/v1/importacion/exportar?formato=csv [200 OK, 4.09kB, 18ms]
+  ✓  200
+  ✓  csv
+
+↳ exportar en otro formato → 400
+  GET http://127.0.0.1:3101/api/v1/importacion/exportar?formato=xlsx [400 Bad Request, 883B, 3ms]
+  ✓  400
+
+↳ plantilla de muestra en JSON
+  GET http://127.0.0.1:3101/api/v1/importacion/plantilla?formato=json [200 OK, 2.08kB, 4ms]
+  ✓  200
+
+↳ guardar una plantilla de emparejamiento → 201
+  POST http://127.0.0.1:3101/api/v1/importacion/plantillas [201 Created, 1.15kB, 4ms]
+  ✓  201
+
+↳ con el mismo nombre → 409
+  POST http://127.0.0.1:3101/api/v1/importacion/plantillas [409 Conflict, 910B, 5ms]
+  ✓  409
+  ✓  motivo nombre_repetido
+
+↳ plantillas guardadas
+  GET http://127.0.0.1:3101/api/v1/importacion/plantillas [200 OK, 1.14kB, 4ms]
+  ✓  200
+
+↳ calcular la vista previa → 201
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes [201 Created, 1.39kB, 13ms]
+  ✓  201
+
+↳ recalcular con otro modo
+  PATCH http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [200 OK, 1.39kB, 12ms]
+  ✓  200
+
+↳ leer el lote calculado
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [200 OK, 1.69kB, 5ms]
+  ✓  200
+  ✓  calculado
+
+↳ confirmar → 202 con el trabajo
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/aplicar [202 Accepted, 865B, 5ms]
+  ✓  202
+  ✓  trae trabajoId
+
+↳ confirmar otra vez devuelve el mismo trabajo → 202
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/aplicar [202 Accepted, 865B, 33ms]
+  ✓  202
+
+↳ seguir el lote hasta que el worker lo aplique
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [200 OK, 1.77kB, 6ms]
+  ✓  200
+  ✓  aplicado
+
+↳ filas con error del lote
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/errores [200 OK, 979B, 6ms]
+  ✓  200
+
+↳ reporte del lote
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/reporte [200 OK, 1.04kB, 5ms]
+  ✓  200
+
+↳ historial de importaciones
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes [200 OK, 1.28kB, 6ms]
+  ✓  200
+
+↳ lo que hay que saber antes de deshacer
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/revertir [200 OK, 1.11kB, 6ms]
+  ✓  200
+
+↳ incluir un código mal escrito → 400
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/revertir [400 Bad Request, 880B, 3ms]
+  ✓  400
+
+↳ deshacer → 202
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/revertir [202 Accepted, 865B, 6ms]
+  ✓  202
+
+↳ lote inexistente → 404
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/00000000-0000-4000-8000-000000000000 [404 Not Found, 871B, 5ms]
+  ✓  404
+
+❏ Perfiles · revocar y archivar
+↳ revocar el consentimiento: sale de publicado
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/consentimiento/revocar [200 OK, 3.9kB, 13ms]
+  ✓  200
+
+↳ revocar sin consentimiento → 409
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/consentimiento/revocar [409 Conflict, 879B, 5ms]
+  ✓  409
+  ✓  motivo sin_consentimiento
+
+↳ archivar sin borrar
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/archivar [200 OK, 3.83kB, 10ms]
+  ✓  200
+
+↳ archivar otra vez informa sin escribir
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0239/archivar [200 OK, 3.82kB, 7ms]
+  ✓  200
+  ✓  yaArchivado
+
+❏ Administración
+↳ inscribir un correo @trycore.com → 201
+  POST http://127.0.0.1:3101/api/v1/accesos [201 Created, 976B, 7ms]
+  ✓  201
+
+↳ ya inscrito → 409
+  POST http://127.0.0.1:3101/api/v1/accesos [409 Conflict, 891B, 5ms]
+  ✓  409
+  ✓  motivo ya_inscrito
+
+↳ correo externo → 422
+  POST http://127.0.0.1:3101/api/v1/accesos [422 Unprocessable Entity, 887B, 3ms]
+  ✓  422
+  ✓  motivo correo_externo
+
+↳ cambiar el rol
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/rol [200 OK, 892B, 7ms]
+  ✓  200
+  ✓  rol anterior y nuevo
+
+↳ dar de baja
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/baja [200 OK, 860B, 6ms]
+  ✓  200
+
+↳ cambiar el rol de un dado de baja → 409
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/rol [409 Conflict, 873B, 4ms]
+  ✓  409
+  ✓  motivo dado_de_baja
+
+↳ la única administradora no se quita el rol → 409
+  POST http://127.0.0.1:3101/api/v1/accesos/c7cad73f-adbe-4004-b33d-b63cdb71f3e0/rol [409 Conflict, 881B, 4ms]
+  ✓  409
+  ✓  motivo ultimo_administrador
+
+↳ inscrito inexistente → 404
+  POST http://127.0.0.1:3101/api/v1/accesos/00000000-0000-4000-8000-000000000000/baja [404 Not Found, 871B, 3ms]
+  ✓  404
+
+↳ guardar el contacto de Trycore
+  POST http://127.0.0.1:3101/api/v1/contacto [200 OK, 857B, 8ms]
+  ✓  200
+  ✓  cambio
+
+↳ contacto con correo externo → 422
+  POST http://127.0.0.1:3101/api/v1/contacto [422 Unprocessable Entity, 887B, 4ms]
+  ✓  422
+  ✓  motivo correo_externo
+
+❏ Transversal · roles, sesión y CSRF
+↳ observadora POST /catalogos/tecnologia → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora PATCH /catalogos/tecnologia/{{valorId}} → 403 «tu rol es de consulta»
+  PATCH http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3 [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /catalogos/tecnologia/{{valorId}}/desactivar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/desactivar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /catalogos/tecnologia/{{valorId}}/reactivar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/reactivar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /catalogos/tecnologia/{{valorId}}/fusionar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/fusionar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /lexico → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/lexico [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /lexico/propuestas/{{propuestaRechazar}}/aprobar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/aprobar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /lexico/propuestas/{{propuestaRechazar}}/rechazar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/rechazar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /lexico/candidatas/{{candidataId}} → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/lexico/candidatas/2521a848-093c-4e82-af8e-8fe22a18d6c2 [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora PATCH /perfiles/PS-0142 → 403 «tu rol es de consulta»
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0142 [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/publicar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/publicar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/publicar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/publicar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/disponibilidad → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/disponibilidad [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/consentimiento → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/consentimiento [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/consentimiento/revocar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/consentimiento/revocar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/pausar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/pausar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/reactivar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/reactivar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/archivar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/archivar [403 Forbidden, 965B, 5ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/quitar-disponibilidad → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/quitar-disponibilidad [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/usar-liberacion → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/usar-liberacion [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/validacion → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora PATCH /perfiles/PS-0142/validacion → 403 «tu rol es de consulta»
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [403 Forbidden, 965B, 5ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/validacion/confirmar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion/confirmar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /perfiles/PS-0142/validacion/descartar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion/descartar [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /colocados → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/colocados [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /colocados/cargas → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/colocados/cargas [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /colocados/diferencias/00000000-0000-4000-8000-000000000000 → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/colocados/diferencias/00000000-0000-4000-8000-000000000000 [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /importacion/emparejar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/importacion/emparejar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora GET /importacion/exportar?formato=csv → 403 «tu rol es de consulta»
+  GET http://127.0.0.1:3101/api/v1/importacion/exportar?formato=csv [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora GET /importacion/plantilla?formato=csv → 403 «tu rol es de consulta»
+  GET http://127.0.0.1:3101/api/v1/importacion/plantilla?formato=csv [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora GET /importacion/plantillas → 403 «tu rol es de consulta»
+  GET http://127.0.0.1:3101/api/v1/importacion/plantillas [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /importacion/plantillas → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/importacion/plantillas [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /importacion/lotes → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora PATCH /importacion/lotes/{{loteId}} → 403 «tu rol es de consulta»
+  PATCH http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /importacion/lotes/{{loteId}}/aplicar → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/aplicar [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora GET /importacion/lotes/{{loteId}}/errores → 403 «tu rol es de consulta»
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/errores [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /importacion/lotes/{{loteId}}/revertir → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/revertir [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /accesos → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/accesos [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /accesos/{{inscritoId}}/rol → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/rol [403 Forbidden, 965B, 3ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /accesos/{{inscritoId}}/baja → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/baja [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora POST /contacto → 403 «tu rol es de consulta»
+  POST http://127.0.0.1:3101/api/v1/contacto [403 Forbidden, 965B, 4ms]
+  ✓  403
+  ✓  motivo sin_permiso
+
+↳ observadora pide el borrador de validación sin pendiente → 404 (pasa el permiso)
+  GET http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [404 Not Found, 871B, 4ms]
+  ✓  404
+  ✓  motivo no_existe
+
+↳ observadora lee /catalogos/tecnologia → 200
+  GET http://127.0.0.1:3101/api/v1/catalogos/tecnologia [200 OK, 6.2kB, 3ms]
+  ✓  200
+
+↳ observadora lee /perfiles → 200
+  GET http://127.0.0.1:3101/api/v1/perfiles [200 OK, 5.27kB, 41ms]
+  ✓  200
+
+↳ observadora lee /perfiles/PS-0142 → 200
+  GET http://127.0.0.1:3101/api/v1/perfiles/PS-0142 [200 OK, 3.18kB, 6ms]
+  ✓  200
+
+↳ observadora lee /importacion/lotes → 200
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes [200 OK, 1.3kB, 4ms]
+  ✓  200
+
+↳ observadora lee /importacion/lotes/{{loteId}} → 200
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [200 OK, 1.79kB, 3ms]
+  ✓  200
+
+↳ observadora lee /importacion/lotes/{{loteId}}/reporte → 200
+  GET http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/reporte [200 OK, 1.04kB, 5ms]
+  ✓  200
+
+↳ sin sesión POST /catalogos/tecnologia → 401
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión PATCH /catalogos/tecnologia/{{valorId}} → 401
+  PATCH http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3 [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /catalogos/tecnologia/{{valorId}}/desactivar → 401
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/desactivar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /catalogos/tecnologia/{{valorId}}/reactivar → 401
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/reactivar [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /catalogos/tecnologia/{{valorId}}/fusionar → 401
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/fusionar [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /lexico → 401
+  POST http://127.0.0.1:3101/api/v1/lexico [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /lexico/propuestas/{{propuestaRechazar}}/aprobar → 401
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/aprobar [401 Unauthorized, 875B, 4ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /lexico/propuestas/{{propuestaRechazar}}/rechazar → 401
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/rechazar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /lexico/candidatas/{{candidataId}} → 401
+  POST http://127.0.0.1:3101/api/v1/lexico/candidatas/2521a848-093c-4e82-af8e-8fe22a18d6c2 [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión PATCH /perfiles/PS-0142 → 401
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0142 [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/publicar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/publicar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/publicar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/publicar [401 Unauthorized, 875B, 4ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/disponibilidad → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/disponibilidad [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/consentimiento → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/consentimiento [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/consentimiento/revocar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/consentimiento/revocar [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/pausar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/pausar [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/reactivar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/reactivar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/archivar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/archivar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/quitar-disponibilidad → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/quitar-disponibilidad [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/usar-liberacion → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/usar-liberacion [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/validacion → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión PATCH /perfiles/PS-0142/validacion → 401
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/validacion/confirmar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion/confirmar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /perfiles/PS-0142/validacion/descartar → 401
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion/descartar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /colocados → 401
+  POST http://127.0.0.1:3101/api/v1/colocados [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /colocados/cargas → 401
+  POST http://127.0.0.1:3101/api/v1/colocados/cargas [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /colocados/diferencias/00000000-0000-4000-8000-000000000000 → 401
+  POST http://127.0.0.1:3101/api/v1/colocados/diferencias/00000000-0000-4000-8000-000000000000 [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /importacion/emparejar → 401
+  POST http://127.0.0.1:3101/api/v1/importacion/emparejar [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /importacion/plantillas → 401
+  POST http://127.0.0.1:3101/api/v1/importacion/plantillas [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /importacion/lotes → 401
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión PATCH /importacion/lotes/{{loteId}} → 401
+  PATCH http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /importacion/lotes/{{loteId}}/aplicar → 401
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/aplicar [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /importacion/lotes/{{loteId}}/revertir → 401
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/revertir [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /accesos → 401
+  POST http://127.0.0.1:3101/api/v1/accesos [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /accesos/{{inscritoId}}/rol → 401
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/rol [401 Unauthorized, 875B, 3ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /accesos/{{inscritoId}}/baja → 401
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/baja [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión POST /contacto → 401
+  POST http://127.0.0.1:3101/api/v1/contacto [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin sesión GET /perfiles → 401
+  GET http://127.0.0.1:3101/api/v1/perfiles [401 Unauthorized, 875B, 2ms]
+  ✓  401
+  ✓  sin datos
+
+↳ sin CSRF POST /catalogos/tecnologia → 403
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia [403 Forbidden, 968B, 4ms]
+  ✓  403
+
+↳ sin CSRF PATCH /catalogos/tecnologia/{{valorId}} → 403
+  PATCH http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3 [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /catalogos/tecnologia/{{valorId}}/desactivar → 403
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/desactivar [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF POST /catalogos/tecnologia/{{valorId}}/reactivar → 403
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/reactivar [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF POST /catalogos/tecnologia/{{valorId}}/fusionar → 403
+  POST http://127.0.0.1:3101/api/v1/catalogos/tecnologia/0120ca7d-01ff-448e-aecf-e3e136e9c1d3/fusionar [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF POST /lexico → 403
+  POST http://127.0.0.1:3101/api/v1/lexico [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /lexico/propuestas/{{propuestaRechazar}}/aprobar → 403
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/aprobar [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /lexico/propuestas/{{propuestaRechazar}}/rechazar → 403
+  POST http://127.0.0.1:3101/api/v1/lexico/propuestas/7e03917f-d430-4f94-b1d1-2ea814e93547/rechazar [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF POST /lexico/candidatas/{{candidataId}} → 403
+  POST http://127.0.0.1:3101/api/v1/lexico/candidatas/2521a848-093c-4e82-af8e-8fe22a18d6c2 [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF PATCH /perfiles/PS-0142 → 403
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0142 [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/publicar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/publicar [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/publicar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/publicar [403 Forbidden, 866B, 2ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/disponibilidad → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/disponibilidad [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/consentimiento → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/consentimiento [403 Forbidden, 866B, 5ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/consentimiento/revocar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/consentimiento/revocar [403 Forbidden, 866B, 6ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/pausar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/pausar [403 Forbidden, 866B, 5ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/reactivar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/reactivar [403 Forbidden, 866B, 8ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/archivar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/archivar [403 Forbidden, 866B, 8ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/quitar-disponibilidad → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/quitar-disponibilidad [403 Forbidden, 866B, 15ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/usar-liberacion → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/usar-liberacion [403 Forbidden, 866B, 12ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/validacion → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [403 Forbidden, 866B, 10ms]
+  ✓  403
+
+↳ sin CSRF PATCH /perfiles/PS-0142/validacion → 403
+  PATCH http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion [403 Forbidden, 866B, 10ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/validacion/confirmar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion/confirmar [403 Forbidden, 866B, 6ms]
+  ✓  403
+
+↳ sin CSRF POST /perfiles/PS-0142/validacion/descartar → 403
+  POST http://127.0.0.1:3101/api/v1/perfiles/PS-0142/validacion/descartar [403 Forbidden, 866B, 5ms]
+  ✓  403
+
+↳ sin CSRF POST /colocados → 403
+  POST http://127.0.0.1:3101/api/v1/colocados [403 Forbidden, 866B, 4ms]
+  ✓  403
+
+↳ sin CSRF POST /colocados/cargas → 403
+  POST http://127.0.0.1:3101/api/v1/colocados/cargas [403 Forbidden, 866B, 4ms]
+  ✓  403
+
+↳ sin CSRF POST /colocados/diferencias/00000000-0000-4000-8000-000000000000 → 403
+  POST http://127.0.0.1:3101/api/v1/colocados/diferencias/00000000-0000-4000-8000-000000000000 [403 Forbidden, 866B, 5ms]
+  ✓  403
+
+↳ sin CSRF POST /importacion/emparejar → 403
+  POST http://127.0.0.1:3101/api/v1/importacion/emparejar [403 Forbidden, 866B, 5ms]
+  ✓  403
+
+↳ sin CSRF POST /importacion/plantillas → 403
+  POST http://127.0.0.1:3101/api/v1/importacion/plantillas [403 Forbidden, 866B, 8ms]
+  ✓  403
+
+↳ sin CSRF POST /importacion/lotes → 403
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes [403 Forbidden, 866B, 6ms]
+  ✓  403
+
+↳ sin CSRF PATCH /importacion/lotes/{{loteId}} → 403
+  PATCH http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5 [403 Forbidden, 866B, 9ms]
+  ✓  403
+
+↳ sin CSRF POST /importacion/lotes/{{loteId}}/aplicar → 403
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/aplicar [403 Forbidden, 866B, 8ms]
+  ✓  403
+
+↳ sin CSRF POST /importacion/lotes/{{loteId}}/revertir → 403
+  POST http://127.0.0.1:3101/api/v1/importacion/lotes/74922de0-85e1-47a8-82c8-67cccc000ca5/revertir [403 Forbidden, 866B, 7ms]
+  ✓  403
+
+↳ sin CSRF POST /accesos → 403
+  POST http://127.0.0.1:3101/api/v1/accesos [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /accesos/{{inscritoId}}/rol → 403
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/rol [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /accesos/{{inscritoId}}/baja → 403
+  POST http://127.0.0.1:3101/api/v1/accesos/09d1ef41-5d91-4da5-ad00-3b14f5832f0e/baja [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+↳ sin CSRF POST /contacto → 403
+  POST http://127.0.0.1:3101/api/v1/contacto [403 Forbidden, 866B, 3ms]
+  ✓  403
+
+┌─────────────────────────┬─────────────────┬─────────────────┐
+│                         │        executed │          failed │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│              iterations │               1 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│                requests │             226 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│            test-scripts │             226 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│      prerequest-scripts │               0 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│              assertions │             350 │               0 │
+├─────────────────────────┴─────────────────┴─────────────────┤
+│ total run duration: 3.8s                                    │
+├─────────────────────────────────────────────────────────────┤
+│ total data received: 118.22kB (approx)                      │
+├─────────────────────────────────────────────────────────────┤
+│ average response time: 6ms [min: 2ms, max: 59ms, s.d.: 7ms] │
+└─────────────────────────────────────────────────────────────┘

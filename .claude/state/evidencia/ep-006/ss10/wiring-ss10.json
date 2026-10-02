@@ -1,0 +1,77 @@
+[
+{
+"item_id": "HU-151-ac1-inscribir",
+"kind": "hu_ac",
+"ref": "HU-151 · Inscribir un correo @trycore.com con su rol: queda activo, auditado, y al pedir entrar recibe su código"
+},
+{
+"item_id": "HU-151-ac2-bajar-rol",
+"kind": "hu_ac",
+"ref": "HU-151 · Pasar a observador a otra administradora corta su sesión en su siguiente petición"
+},
+{
+"item_id": "HU-151-ac3-baja",
+"kind": "hu_ac",
+"ref": "HU-151 · Dar de baja: sale de los activos sin borrarse, la sesión se corta y no recibe código"
+},
+{
+"item_id": "HU-151-ac4-correo-externo",
+"kind": "hu_ac",
+"ref": "HU-151 · Un correo que no es @trycore.com no se inscribe y la lista queda igual"
+},
+{
+"item_id": "HU-151-ac5-ultimo-admin",
+"kind": "hu_ac",
+"ref": "HU-151 · El panel nunca se queda sin administradora, ni con dos bajas concurrentes"
+},
+{
+"item_id": "HU-147-ac1-cambio",
+"kind": "hu_ac",
+"ref": "HU-147 · Cambiar el contacto: las cinco pantallas de contacto del portal lo muestran en su siguiente carga, auditado"
+},
+{
+"item_id": "HU-147-ac2-correo-externo",
+"kind": "hu_ac",
+"ref": "HU-147 · Un correo externo no se guarda y el portal sigue con el anterior"
+},
+{
+"item_id": "HU-147-ac3-observador-lectura",
+"kind": "hu_ac",
+"ref": "HU-147 · La observadora ve el contacto vigente en lectura, sin controles"
+},
+{
+"item_id": "HU-147-ac4-observador-forzar",
+"kind": "hu_ac",
+"ref": "HU-147 · La observadora no puede forzar un cambio: 403, sin cambio ni auditoría"
+},
+{
+"item_id": "HU-147-ac5-solo-correo",
+"kind": "hu_ac",
+"ref": "HU-147 · Solo correo: «escribe a People Service: correo», sin nombre vacío ni cargo suelto"
+},
+{
+"item_id": "HU-138-ac1-registro",
+"kind": "hu_ac",
+"ref": "HU-138 · Registro por perfil: campo, antes, después, quién y cuándo; consentimiento y estado igual que el contenido"
+},
+{
+"item_id": "HU-138-ac2-sin-identidad",
+"kind": "hu_ac",
+"ref": "HU-138 · Con la sesión vencida el cambio no se aplica, pide volver a entrar y no queda cambio sin autor"
+},
+{
+"item_id": "HU-138-ac3-importacion",
+"kind": "hu_ac",
+"ref": "HU-138 · Lo que entró por importación se atribuye a ella y a quien la confirmó, con enlace a su lote"
+},
+{
+"item_id": "HU-138-ac4-carga",
+"kind": "hu_ac",
+"ref": "HU-138 · Lo que entró por la carga de Operaciones lleva la carga, quién la disparó y la fecha de corte"
+},
+{
+"item_id": "HU-138-ac5-archivado",
+"kind": "hu_ac",
+"ref": "HU-138 · Un perfil archivado muestra su historial completo y el archivado como un cambio de estado más"
+}
+]

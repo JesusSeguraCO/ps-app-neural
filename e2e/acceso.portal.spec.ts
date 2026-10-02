@@ -8,21 +8,23 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import pg from "pg";
 
+// Mismo número en e2e/marco.panel.spec.ts: serializa los e2e que escriben el contacto de Trycore.
+const CANDADO_CONTACTO = 147_147;
 const INSTALACION =
   process.env.BD_INSTALACION_URL ?? "postgres://ps_instalacion@127.0.0.1:54329/ps";
 const clave = execFileSync("bash", ["scripts/entorno-dev.sh", "portal"], {
   encoding: "utf8",
 }).match(/^export EMAIL_HMAC_KEY=(.*)$/m)![1]!;
 
-async function sembrar(o: { vencido?: boolean; revocado?: boolean; correo: string }) {
+async function sembrar(o: { vencido?: boolean; revocado?: boolean; correo: string; codigos?: string[] }) {
   const bd = new pg.Client({ connectionString: INSTALACION });
   await bd.connect();
   try {
     const e = await bd.query(
       `INSERT INTO identidad.enlaces (cuenta_nombre, proyecto, razon, codigos_perfil, vigente_desde, vigente_hasta, generado_por, estado, revocado_en)
-       VALUES ('Cuenta E2E', 'Proyecto E2E', 'Razón de la selección E2E.', '{PS-0142,PS-0151,PS-0137}', now() - interval '40 days',
+       VALUES ('Cuenta E2E', 'Proyecto E2E', 'Razón de la selección E2E.', $3, now() - interval '40 days',
                now() + ($1::int * interval '1 day'), gen_random_uuid(), $2::text, CASE WHEN $2::text = 'revocado' THEN now() END) RETURNING id`,
-      [o.vencido ? -2 : 20, o.revocado ? "revocado" : "activo"],
+      [o.vencido ? -2 : 20, o.revocado ? "revocado" : "activo", o.codigos ?? ["PS-0142", "PS-0151", "PS-0137"]],
     );
     const i = await bd.query(
       `INSERT INTO identidad.enlace_invitados (enlace_id, correo, correo_hmac) VALUES ($1, $2, $3) RETURNING id`,
@@ -190,6 +192,59 @@ test.describe("cara cliente", () => {
     expect(errores).toEqual([]);
   });
 
+  test("D47 · HU-120: la ficha se abre sobre la lista, se recorre con flechas y teclado, Esc vuelve; axe y pantalla completa en el teléfono", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const { enlaceId, invitadoId } = await sembrar({
+      correo: "ficha@cliente.com",
+      codigos: ["PS-0142", "PS-0151", "PS-0187"],
+    });
+    await abrirSesion(context, baseURL!, enlaceId, invitadoId);
+    const errores: string[] = [];
+    page.on("console", (m) => {
+      if (m.type() === "error" && !m.text().includes("favicon")) errores.push(m.text());
+    });
+    await page.goto("/");
+    // PS-0151 está pausado: su tarjeta no ofrece ficha y el recorrido cuenta solo los dos disponibles.
+    await expect(page.getByRole("link", { name: /^Ver ficha/ })).toHaveCount(2);
+    await page.getByRole("link", { name: "Ver ficha de Laura Méndez" }).click();
+    await expect(page).toHaveURL(/\/\?ficha=PS-0142$/);
+    const ficha = page.getByRole("dialog");
+    await expect(ficha).toBeVisible();
+    await expect(ficha.getByRole("heading", { level: 2 })).toBeVisible();
+    await expect(ficha.getByText("1 de 2")).toBeVisible();
+    await expect(ficha.getByText("Verificado por Trycore")).toBeVisible();
+    await expect(ficha.getByText("Validación técnica")).toBeVisible();
+    await expect(ficha.getByRole("button", { name: "Perfil anterior" })).toBeDisabled();
+    await expect(ficha.getByRole("link", { name: "Cerrar la ficha" })).toBeFocused();
+    // La lista sigue detrás, con la tarjeta abierta marcada.
+    await expect(page.locator(".pp-perfil.fp-abierta")).toContainText("Laura Méndez");
+    await sinIncidenciasGraves(page);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/\?ficha=PS-0187$/);
+    await expect(page.getByRole("dialog").getByText("2 de 2")).toBeVisible();
+    await expect(page.getByRole("dialog").getByRole("button", { name: "Perfil siguiente" })).toBeDisabled();
+    await page.keyboard.press("ArrowLeft");
+    await expect(page).toHaveURL(/\/\?ficha=PS-0142$/);
+    await page.keyboard.press("Escape");
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.locator(".pp-perfil")).toHaveCount(3);
+
+    // Teléfono: la ficha ocupa la pantalla y no hay scroll horizontal.
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto("/?ficha=PS-0187");
+    const caja = await page.getByRole("dialog").boundingBox();
+    expect(caja?.width).toBe(390);
+    expect(caja?.height).toBe(800);
+    expect(await scrollHorizontal(page)).toBe(0);
+    await sinIncidenciasGraves(page);
+    expect(errores).toEqual([]);
+  });
+
   test("HU-144: la revocación corta la sesión abierta en la siguiente petición", async ({
     page,
     context,
@@ -272,5 +327,92 @@ test.describe("topes de renovación e invitaciones", () => {
     const aviso = page.getByText(/Ya pediste varias invitaciones en la última hora\./);
     await expect(aviso).toContainText(/Podrás pedir otra desde las \d{1,2}:\d{2} [ap]\. m\.$/);
     await expect(aviso).not.toContainText("m..");
+  });
+  // HU-147: las pantallas de la puerta que dibuja el navegador (intentos agotados, «Recibimos tu petición» y
+  // el tope de renovación) nombran el contacto de Trycore configurado en el panel. El contacto se pone en
+  // la BD de desarrollo solo durante el test y se retira al terminar (vuelve el buzón por omisión). Las
+  // respuestas de verificar y renovar se fijan en el navegador para llegar a cada estado sin esperar.
+  test("HU-147: la puerta nombra el contacto configurado en intentos agotados, «Recibimos tu petición» y el tope", async ({
+    page,
+  }) => {
+    const EIDA = "Eida Tinjacá, Coordinación de Servicio";
+    // El contacto es una fila única que también escribe el e2e de administración del panel (otro
+    // proyecto, en paralelo): se turnan con el mismo candado y el contacto previo se repone al terminar.
+    const candado = new pg.Client({ connectionString: INSTALACION });
+    await candado.connect();
+    await candado.query(`SELECT pg_advisory_lock($1)`, [CANDADO_CONTACTO]);
+    const previo = (await candado.query(`SELECT * FROM inventario.configuracion_contacto`)).rows[0];
+    await candado.query(`DELETE FROM inventario.configuracion_contacto`);
+    // Quién la cambió: un usuario propio del panel (la BD de CI solo trae los perfiles ficticios).
+    const autor = await candado.query(
+      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ($1, $2, 'administrador')
+       ON CONFLICT (correo_hmac) DO UPDATE SET activo = true RETURNING id`,
+      ["e2e-contacto@trycore.com", createHmac("sha256", clave).update("e2e-contacto@trycore.com").digest()],
+    );
+    await candado.query(
+      `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por)
+       VALUES (true, 'eida.tinjaca@trycore.com', 'Eida Tinjacá', 'Coordinación de Servicio', $1)`,
+      [autor.rows[0].id],
+    );
+    try {
+      const hasta = new Date(Date.now() + 15 * 60_000).toISOString();
+      // Intentos agotados.
+      const v = await sembrar({ correo: `e2e-${randomBytes(3).toString("hex")}@cliente.com` });
+      await page.route(/\/api\/v1\/acceso\/verificar$/, (r) =>
+        r.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ hasta }) }),
+      );
+      await page.goto(`/e/#t=${v.token}`);
+      await page.getByLabel("Correo corporativo").fill("alguien@cliente.com");
+      await page.getByRole("button", { name: "Enviarme el código" }).click();
+      for (let i = 1; i <= 6; i++) await page.getByLabel(`Dígito ${i}`).fill(String(i));
+      await page.getByRole("button", { name: "Entrar" }).click();
+      await expect(
+        page.getByText(`Escribe a quien te compartió el enlace o a ${EIDA}:`),
+      ).toBeVisible();
+      await expect(page.getByText("eida.tinjaca@trycore.com", { exact: true })).toBeVisible();
+      await expect(page.getByText("people.service@trycore.com")).toHaveCount(0);
+
+      // «Recibimos tu petición» (la cuenta la renueva una persona).
+      const s = await sembrar({ vencido: true, correo: `e2e-${randomBytes(3).toString("hex")}@cliente.com` });
+      await page.route(/\/api\/v1\/acceso\/renovar$/, (r) =>
+        r.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({ solicitud: "s1" }) }),
+      );
+      await page.route(/\/api\/v1\/acceso\/renovar\/s1$/, (r) =>
+        r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ estado: "persona" }) }),
+      );
+      await page.goto(`/e/#t=${s.token}`);
+      await page.getByLabel("Tu correo corporativo").fill("alguien@cliente.com");
+      await page.getByRole("button", { name: "Pedir un enlace nuevo" }).click();
+      await expect(page.getByRole("heading", { name: "Recibimos tu petición" })).toBeVisible();
+      await expect(
+        page.getByText(`Si en 2 días hábiles no tienes noticias, escribe a ${EIDA}: eida.tinjaca@trycore.com.`),
+      ).toBeVisible();
+
+      // Tope de renovación: «si es urgente, escribe a …».
+      await page.unroute(/\/api\/v1\/acceso\/renovar$/);
+      await page.route(/\/api\/v1\/acceso\/renovar$/, (r) =>
+        r.fulfill({
+          status: 429,
+          contentType: "application/json",
+          body: JSON.stringify({ motivo: "en_espera", hasta }),
+        }),
+      );
+      await page.goto(`/e/#t=${s.token}`);
+      await page.getByLabel("Tu correo corporativo").fill("alguien@cliente.com");
+      await page.getByRole("button", { name: "Pedir un enlace nuevo" }).click();
+      await expect(
+        page.getByText(`Si es urgente, escribe a ${EIDA}: eida.tinjaca@trycore.com; si no`),
+      ).toBeVisible();
+      await sinIncidenciasGraves(page);
+    } finally {
+      await candado.query(`DELETE FROM inventario.configuracion_contacto`);
+      if (previo)
+        await candado.query(
+          `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por, actualizado_en)
+           VALUES (true, $1, $2, $3, $4, $5)`,
+          [previo.correo, previo.nombre, previo.cargo, previo.actualizado_por, previo.actualizado_en],
+        );
+      await candado.end();
+    }
   });
 });

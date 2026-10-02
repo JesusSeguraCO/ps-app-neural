@@ -9,7 +9,7 @@
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
     de pantalla en archivos propios (bandeja-vigencia--estado.html), no interacciones.
-  Trazabilidad: épica EP-006 · historias HU-136 · registrada en ../manifest.json
+  Trazabilidad: épica EP-006 · historias HU-136, HU-133 · registrada en ../manifest.json
   Pantalla #31 «Bandeja de vigencia» · origen: v2-existe (sección 15 del v2, adaptada a HU-136:
   30 días sin actualizar la disponibilidad en lugar de 90 días de consentimiento).
   Cubre RF-8.8 y se conecta con RF-8.14.4. La fecha de inicio vive en el panel y no sale de él
@@ -17,7 +17,7 @@
   Oficio v2 (DESIGN.md › Oficio): lista densa de filas en lugar de tarjetas-formulario; edición
   en línea que se abre solo en la fila activa (una sola primaria visible); estado = punto + texto;
   confirmación por toast; sin KPI, sin lista de ✓, sin bordes laterales de color.
-  Estado de ESTE archivo: base — 27 sep 2026, 7 de 128 perfiles publicados llevan más de 30 días sin actualizar la disponibilidad. Los 3 que el cliente ya ve como «Disponibilidad por confirmar» encabezan la lista (edge de HU-136); los otros 4 van por antigüedad del último cambio. La fila de Marcela Rincón tiene abierta la edición en línea (actualizar sin abrir la ficha); el toast confirma la actualización recién guardada de Mateo Salazar.
+  Estado de ESTE archivo (bandeja-vigencia): base — 30 sep 2026. La bandeja lista 7 publicados que llevan más de 30 días sin actualizar la disponibilidad y 2 pausados hace más de 30 días (D4). Los 3 que el cliente ya ve como «Disponibilidad por confirmar» encabezan la lista y su fila lo dice (HU-136 edge); los demás publicados van por antigüedad del último cambio, con actualización en dos clics por fila (HU-136 happy path, HU-132); uno sin fecha de última actualización aparece como «dato incompleto», no como al día (HU-136 error); los pausados muestran su motivo y desde qué fecha, con «Reactivar» y «Archivar» (HU-136 happy path «pausado», HU-133 edge).
 -->
 <html lang="es">
 <head>
@@ -233,6 +233,7 @@
     .bv-solo-movil { display: none; }
     /* Edición en línea: solo la fila activa */
     .bv-editor { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 200px) 1fr; gap: var(--tc-sp-4); align-items: end; margin: 0; padding: var(--tc-sp-4) var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    .bv-sin-fecha { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
     .bv-antes { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
     .bv-editor .pp-ayuda { grid-column: 1 / 3; grid-row: 2; }
     .bv-editor__acciones { grid-column: 3; grid-row: 1; display: flex; justify-content: flex-end; gap: var(--tc-sp-2); }
@@ -269,7 +270,7 @@
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
       <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
       <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
       <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
@@ -299,7 +300,7 @@
       <div class="pp-encabezado">
         <div class="pp-encabezado__texto">
           <h1 class="pp-encabezado__titulo">Bandeja de vigencia</h1>
-          <p class="pp-encabezado__meta">7 de 105 publicados llevan más de 30 días sin actualizar · 98 al día este mes, meta 9 de cada 10</p>
+          <p class="pp-encabezado__meta">9 por revisar: 7 publicados sin actualizar en más de 30 días y 2 pausados hace más de 30 días · 98 al día este mes, meta 9 de cada 10</p>
         </div>
         <div class="pp-encabezado__acciones"><a class="pp-btn pp-btn--contorno" href="inventario-perfiles.html">Ver inventario</a></div>
       </div>
@@ -391,16 +392,41 @@
           <div class="bv-perfil">
             <p class="bv-nombre" id="bv-p7"><a href="perfil-editor.html">Valentina Ortiz</a><span class="bv-codigo">PS-0118</span></p>
             <p class="bv-rol">Analista de negocio · Senior</p>
-            <p class="bv-causa">Fecha registrada aún futura: 3 nov</p>
+            <p class="bv-causa">No tiene registrada la fecha de su última actualización: no se da por al día</p>
           </div>
-          <div class="bv-edad"><span class="bv-dias">33 días<span class="bv-solo-movil"> sin actualizar</span></span><time datetime="2026-08-25">desde el 25 ago</time></div>
+          <div class="bv-edad"><span class="pp-estado pp-estado--warn">Dato incompleto</span><span class="bv-sin-fecha">sin fecha registrada</span></div>
           <span class="pp-estado pp-estado--neutro">En 1 a 2 meses</span>
           <div class="bv-acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm" aria-label="Confirmar sin cambios la disponibilidad de Valentina Ortiz">Confirmar sin cambios</button><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-expanded="false" aria-label="Actualizar la disponibilidad de Valentina Ortiz">Actualizar</button></div>
           </div>
         </li>
+        <li class="bv-grupo"><h2 id="bv-g3">Pausados hace más de 30 días</h2><span class="bv-grupo__conteo">2</span><span class="bv-grupo__orden">no se muestran en el portal</span></li>
+        <li class="bv-fila" aria-labelledby="bv-p8">
+          <div class="bv-rejilla">
+          <div class="bv-perfil">
+            <p class="bv-nombre" id="bv-p8"><a href="perfil-editor.html">Natalia Duque</a><span class="bv-codigo">PS-0047</span></p>
+            <p class="bv-rol">Analista funcional · Senior</p>
+            <p class="bv-causa">Pausada · Decisión de Talento Humano</p>
+          </div>
+          <div class="bv-edad"><span class="bv-dias">64 días<span class="bv-solo-movil"> pausada</span></span><time datetime="2026-07-28">desde el 28 jul</time></div>
+          <span class="pp-estado pp-estado--warn">Pausado</span>
+          <div class="bv-acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm" aria-label="Archivar a Natalia Duque">Archivar</button><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-label="Reactivar a Natalia Duque">Reactivar</button></div>
+          </div>
+        </li>
+        <li class="bv-fila" aria-labelledby="bv-p9">
+          <div class="bv-rejilla">
+          <div class="bv-perfil">
+            <p class="bv-nombre" id="bv-p9"><a href="perfil-editor.html">Andrés Castaño</a><span class="bv-codigo">PS-0217</span></p>
+            <p class="bv-rol">Analista QA automatización · Semi senior</p>
+            <p class="bv-causa">Pausado · En licencia o ausencia temporal</p>
+          </div>
+          <div class="bv-edad"><span class="bv-dias">41 días<span class="bv-solo-movil"> pausado</span></span><time datetime="2026-08-20">desde el 20 ago</time></div>
+          <span class="pp-estado pp-estado--warn">Pausado</span>
+          <div class="bv-acciones"><button type="button" class="pp-btn pp-btn--fantasma pp-btn--sm" aria-label="Archivar a Andrés Castaño">Archivar</button><button type="button" class="pp-btn pp-btn--contorno pp-btn--sm" aria-expanded="false" aria-label="Reactivar a Andrés Castaño">Reactivar</button></div>
+          </div>
+        </li>
         </ul>
       </div>
-      <p class="bv-pie">Guardar o confirmar saca el perfil de la bandeja.</p>
+      <p class="bv-pie">Guardar o confirmar saca un publicado de la bandeja; reactivar o archivar saca a un pausado.</p>
       </div>
     </main>
   </div>

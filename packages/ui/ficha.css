@@ -1,0 +1,30 @@
+/* Ficha del perfil (PP:hoja; prototipos ficha-perfil y vista-previa-ficha). La comparten el portal y
+   la vista previa del panel con el componente FichaPerfil. Solo layout y tipografía: todo valor visual
+   es token. Las marcas vp-marca / vp-num solo aparecen en la vista previa (bloque obligatorio que
+   falta); el portal nunca las dibuja. */
+.fp-ficha { font-variant-numeric: tabular-nums; }
+.fp-ficha .pp-hoja__cabecera h2 { overflow-wrap: anywhere; }
+.fp-ficha .pp-hoja__cabecera .fp-persona { margin-top: var(--tc-sp-1); font-size: var(--tc-fs-body); color: var(--tc-text-b); }
+.fp-linea { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-1) var(--tc-sp-4); margin-top: var(--tc-sp-3); }
+.fp-linea .pp-badge { font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+.fp-linea .pp-perfil__meta { margin: 0; }
+.fp-resumen { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-seccion { min-width: 0; }
+.fp-seccion + .fp-seccion { padding-top: var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+.fp-seccion__titulo { display: inline-flex; align-items: center; gap: var(--tc-sp-2); }
+.fp-seccion__titulo--verificado { color: var(--tc-primary-ink); }
+.fp-ficha .pp-bloque--verificado { padding: var(--tc-sp-4); }
+.fp-sello { font-weight: var(--tc-fw-medium); }
+.fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.pp-bloque--verificado .fp-sub { color: var(--tc-primary-surface-ink); }
+.fp-ausente { color: var(--tc-text-m); }
+.fp-trayectoria { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
+.fp-cargo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+
+.vp-marca { position: relative; border-radius: var(--tc-r-sm); outline: 1px solid var(--tc-warn-border); outline-offset: var(--tc-sp-1); }
+.vp-marca--bloquea { outline-color: var(--tc-red); }
+.vp-num { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: var(--tc-r-pill); background: var(--tc-amber-bg); color: var(--tc-warn-ink); font-family: var(--pp-mono); font-size: var(--tc-fs-badge); font-weight: var(--tc-fw-semibold); font-variant-numeric: tabular-nums; }
+.vp-num--bloquea { background: var(--tc-red-bg); color: var(--tc-danger-ink); }
+.vp-marca .vp-num { margin-right: var(--tc-sp-2); vertical-align: text-bottom; }
+a.vp-num { text-decoration: none; }
+.pp-datos__fila.vp-marca + .pp-datos__fila.vp-marca { margin-top: var(--tc-sp-2); }

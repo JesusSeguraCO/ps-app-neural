@@ -8,6 +8,7 @@ import {
   TITULAR_SISTEMA,
   cifrarValor,
   compromisoDeValor,
+  descifrarValor,
   desenvolverClave,
   envolverClave,
   hashDeFila,
@@ -53,10 +54,18 @@ async function claveDeTitular(tx: Consultor, kek: string, titular: string): Prom
   return desenvolverClave(kek, envuelta);
 }
 
+// Proceso que escribió un tramo de la cadena: la importación (o su reversión) o la carga de Operaciones
+// (HU-138). Se guarda con el tramo para que el registro del perfil enlace cada cambio con su origen.
+export interface ReferenciaAuditoria {
+  tipo: "lote" | "reversion" | "carga";
+  id: string;
+}
+
 export async function registrarAuditoria(
   tx: Consultor,
   claves: ClavesAuditoria,
   cambios: CambioAuditado[],
+  referencia?: ReferenciaAuditoria,
 ): Promise<number> {
   if (cambios.length === 0) throw new Error("auditoría: lote vacío");
   const clavesTitular = new Map<string, Buffer>();
@@ -114,7 +123,13 @@ export async function registrarAuditoria(
   const r = await tx.query(`SELECT auditoria.registrar($1::jsonb) AS ultimo`, [
     JSON.stringify(lote),
   ]);
-  return Number(r.rows[0].ultimo);
+  const ultimo = Number(r.rows[0].ultimo);
+  if (referencia)
+    await tx.query(
+      `INSERT INTO inventario.referencias_auditoria (seq_desde, seq_hasta, tipo, ref_id) VALUES ($1, $2, $3, $4)`,
+      [ultimo - lote.length + 1, ultimo, referencia.tipo, referencia.id],
+    );
+  return ultimo;
 }
 
 // Ejecuta `acto` y su auditoría en una sola transacción: o se aplican ambos o ninguno.
@@ -186,4 +201,64 @@ export async function verificarCadena(
     return { ok: false, filas: r.rowCount ?? 0, rotaEnSeq: Number(c.seq) };
   }
   return { ok: true, filas: r.rowCount ?? 0 };
+}
+
+export interface CambioLeido {
+  seq: number;
+  actor: string;
+  campo: string;
+  antes: string | null;
+  despues: string | null;
+  origen: OrigenAuditoria;
+  cuando: string;
+  // La clave del titular se destruyó (supresión, Ley 1581): el valor ya no se puede leer.
+  suprimido: boolean;
+}
+
+// Cambios de una entidad en orden de la cadena, con los valores descifrados en el servidor del panel
+// (HU-138, HU-147). Nunca sale de aquí un valor cifrado ni una clave.
+export async function leerCambios(
+  bd: Consultor,
+  kek: string,
+  entidad: string,
+  entidadId: string,
+): Promise<CambioLeido[]> {
+  const r = await bd.query(
+    `SELECT a.seq, a.actor, a.campo, a.origen, a.cuando, a.titular,
+            v.antes_cifrado, v.despues_cifrado, k.clave_envuelta
+       FROM auditoria.auditoria a
+       LEFT JOIN auditoria.auditoria_valores v ON v.seq = a.seq
+       LEFT JOIN identidad.claves_titular k ON k.titular = a.titular
+      WHERE a.entidad = $1 AND a.entidad_id = $2
+      ORDER BY a.seq`,
+    [entidad, entidadId],
+  );
+  const abrir = descifrador(kek);
+  return r.rows.map((f) => {
+    const { valor, suprimido } = abrir(f.titular, f.clave_envuelta);
+    return {
+      seq: Number(f.seq),
+      actor: f.actor,
+      campo: f.campo,
+      antes: valor(f.antes_cifrado),
+      despues: valor(f.despues_cifrado),
+      origen: f.origen,
+      cuando: f.cuando.toISOString(),
+      suprimido,
+    };
+  });
+}
+
+// Descifra valores de la cadena por titular, desenvolviendo cada clave una sola vez. Sin clave (titular
+// suprimido) el valor no se puede leer y se dice.
+export function descifrador(kek: string) {
+  const claves = new Map<string, Buffer | null>();
+  return (titular: string, envuelta: Buffer | null) => {
+    if (!claves.has(titular)) claves.set(titular, envuelta ? desenvolverClave(kek, envuelta) : null);
+    const clave = claves.get(titular)!;
+    return {
+      suprimido: clave === null,
+      valor: (c: Buffer | null): string | null => (c && clave ? descifrarValor(clave, c) : null),
+    };
+  };
 }

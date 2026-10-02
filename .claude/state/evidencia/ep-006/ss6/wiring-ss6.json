@@ -1,0 +1,19 @@
+[
+ {"item_id": "HU-126-ac1-impacto", "kind": "hu_ac", "ref": "HU-126 · Guardar muestra el impacto (antes/después de cara al cliente; portal con la versión anterior)"},
+ {"item_id": "HU-126-ac2-confirmar", "kind": "hu_ac", "ref": "HU-126 · Confirmar aplica en el portal y registra qué, quién y cuándo"},
+ {"item_id": "HU-126-ac3-pregunta", "kind": "hu_ac", "ref": "HU-126 · Cambio que deja incompleto: pregunta D1 y sigue publicado sin el cambio"},
+ {"item_id": "HU-126-ac4-descartar", "kind": "hu_ac", "ref": "HU-126 · Descartar: valores intactos, nada en la auditoría"},
+ {"item_id": "HU-126-ac5-a-borrador", "kind": "hu_ac", "ref": "HU-126 · Pasar a borrador: guarda, sale del portal, auditado con motivo"},
+ {"item_id": "HU-131-ac1-asociado", "kind": "hu_ac", "ref": "HU-131 · El artefacto queda asociado al perfil (PUT prefirmado + HeadObject)"},
+ {"item_id": "HU-131-ac2-descargar", "kind": "hu_ac", "ref": "HU-131 · Descargar y ver desde el panel (GET prefirmado 5 min, evidencia.descargar)"},
+ {"item_id": "HU-131-ac3-observador", "kind": "hu_ac", "ref": "HU-131 · Observador ve que existe sin enlace; 403 con motivo"},
+ {"item_id": "HU-131-ac4-no-admitido", "kind": "hu_ac", "ref": "HU-131 · Formato o tamaño no admitido sin tocar el perfil"},
+ {"item_id": "HU-131-ac5-nunca-publica", "kind": "hu_ac", "ref": "HU-131 · El artefacto nunca se publica (portal sin ruta ni respuesta)"},
+ {"item_id": "HU-140-ac1-plantilla", "kind": "hu_ac", "ref": "HU-140 · Borrador por plantilla desde la modalidad para confirmar (origen plantilla)"},
+ {"item_id": "HU-140-ac2-sin-modalidad", "kind": "hu_ac", "ref": "HU-140 · Sin modalidad de prueba: remite al selector"},
+ {"item_id": "HU-140-ac3-corrijo-campo", "kind": "hu_ac", "ref": "HU-140 · Corrijo un campo: confirmar con origen persona"},
+ {"item_id": "HU-140-ac4-descarto", "kind": "hu_ac", "ref": "HU-140 · Descarto el borrador sin tocar la ficha"},
+ {"item_id": "I-editar-publicado-api-bd-portal", "kind": "integration", "ref": "Editor → PATCH ?previsualizar/confirmar/resolucion → ServicioPerfiles → auditoría → vistas del portal"},
+ {"item_id": "I-spaces-subida-csp", "kind": "integration", "ref": "Panel → URL prefirmada → Spaces (doble) → HeadObject → artefactos; CSP con el origen del bucket"},
+ {"item_id": "I-borrador-cero-llamadas", "kind": "integration", "ref": "borradorDesdeModalidad determinista: 0 llamadas salientes"}
+]

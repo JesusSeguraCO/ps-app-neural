@@ -9,6 +9,8 @@ import { Migrator, type Migration } from "kysely/migration";
 import pg from "pg";
 import { MIGRACIONES } from "../../migraciones/indice";
 
+export { MIGRACIONES };
+
 export const TABLA_MIGRACIONES_ESQUEMA = "operacion";
 
 export class ErrorMigracion extends Error {

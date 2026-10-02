@@ -10,7 +10,7 @@ export const COOKIE_CSRF = "__Host-csrf";
 export const CABECERA_CSRF = "x-ps-csrf";
 
 export type MotivoSinSesion =
-  "sin_sesion" | "enlace_revocado" | "enlace_vencido" | "sesion_expirada";
+  "sin_sesion" | "enlace_revocado" | "enlace_vencido" | "sesion_expirada" | "rol_cambiado";
 
 export interface FilaSesionPortal {
   enlaceId: string;
@@ -46,6 +46,8 @@ export interface FilaSesionPanel {
   activo: boolean;
   creada: Date;
   ultimaActividad: Date;
+  // Rol con que se abrió la sesión (HU-151, D17); `null` en las abiertas antes de la 0023.
+  rolAlAbrir?: RolPanel | null;
 }
 
 export type ResultadoSesionPanel =
@@ -68,6 +70,10 @@ export function validarSesionPanel(
   ahora: Date,
 ): ResultadoSesionPanel {
   if (!fila || !fila.activo) return { ok: false, motivo: "sin_sesion" };
+  // Bajar de administradora a observadora corta la sesión: vuelve a entrar ya con su rol nuevo. Subir no
+  // corta (gana permisos en la siguiente entrada).
+  if (fila.rolAlAbrir === "administrador" && fila.rol === "observador")
+    return { ok: false, motivo: "rol_cambiado" };
   const t = ahora.getTime();
   if (t - fila.creada.getTime() >= DURACION_PANEL_MS)
     return { ok: false, motivo: "sesion_expirada" };

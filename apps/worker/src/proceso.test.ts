@@ -163,9 +163,14 @@ describe.skipIf(!HAY_BD)("procesos contra una BD real (V8-11)", () => {
     };
     const primera = correr(WORKER, entorno, ["--sembrar-ficticios"]);
     expect(primera.status, primera.stdout + primera.stderr).toBe(0);
-    expect(JSON.parse(primera.stdout.trim().split("\n").at(-1)!)).toMatchObject({ evento: "ficticios_sembrados" });
+    const eventos = (salida: string) => salida.trim().split("\n").map((l) => JSON.parse(l) as Record<string, unknown>);
+    const de = (salida: string, evento: string) => eventos(salida).find((e) => e.evento === evento);
+    expect(de(primera.stdout, "ficticios_sembrados")).toBeDefined();
+    // EP-006: también las modalidades de prueba y las consultas sin coincidencia sintéticas.
+    expect(de(primera.stdout, "lexico_ficticio_sembrado")).toMatchObject({ candidatas: 7 });
     const segunda = correr(WORKER, entorno, ["--sembrar-ficticios"]);
-    expect(JSON.parse(segunda.stdout.trim().split("\n").at(-1)!)).toMatchObject({ creados: 0 });
+    expect(de(segunda.stdout, "ficticios_sembrados")).toMatchObject({ creados: 0 });
+    expect(de(segunda.stdout, "lexico_ficticio_sembrado")).toMatchObject({ modalidades: 0, candidatas: 0 });
   }, 30_000);
 
   it("el worker empaquetado despacha un código por NOTIFY y se apaga limpio con SIGTERM", async () => {

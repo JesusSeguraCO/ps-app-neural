@@ -9,20 +9,19 @@
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes que la HU exige son VARIANTES de pantalla en archivos
     propios (borrador-evidencia--estado.html), no interacciones.
-  Estado de esta variante (borrador-evidencia): base: borrador generado desde un artefacto con texto legible; fecha y resultado reconocidos con su cita y ubicación.
+  Estado de ESTE archivo (borrador-evidencia): base — Karen pidió el borrador de un perfil con modalidad de prueba elegida («Reto de código sustentado») y artefacto adjunto: el enunciado del reto, los entregables esperados y los criterios evaluados llegan precargados desde la plantilla de la modalidad, cada uno marcado «De la modalidad de prueba»; queda para su revisión y nunca se publica sin confirmar (HU-140 happy path). Sin lectura del artefacto ni reconocimiento de fecha o resultado (D11: HU-149 descartada).
   Trazabilidad: épica EP-006 · historias HU-140 · registrada en ../manifest.json
-  Origen: nueva. Plantilla determinista sin IA (RF-8.11.2, T-2): el origen de cada campo lo dice
-  su grupo (texto del artefacto con cita y ubicación, o modalidad de prueba del catálogo) y los
-  campos que el artefacto no sostiene quedan vacíos y marcados en línea; nada sale del servidor
-  (RF-8.11.3, metadato del artefacto); confirma una persona (B.9.3).
-  Oficio v2 (2026-09-27): sin bordes laterales, sin píldoras de origen, sin leyenda, sin
+  Origen: nueva. Plantilla determinista sin IA (RF-8.11.2, T-2): cada campo precargado dice
+  en línea que salió de la modalidad de prueba; el artefacto no se lee (D11, 2026-09-30), así que
+  la fecha y el resultado los escribe Talento Humano en la ficha; confirma una persona (B.9.3).
+  Oficio v2 (2026-09-27): sin bordes laterales, origen como texto en línea (no píldora), sin leyenda, sin
   numeración decorativa; formulario alineado, primaria a la derecha y deshabilitada con motivo.
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Borrador de campos desde el artefacto — prototipo</title>
+  <title>Borrador desde la modalidad de prueba — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
@@ -186,6 +185,11 @@
     .be-grupo__cabecera { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); padding-bottom: var(--tc-sp-3); margin-bottom: var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
     .be-grupo .pp-form-fila:first-child { padding-top: 0; }
     .be-grupo .pp-form-fila:last-child { padding-bottom: 0; }
+    .be-origen { margin-top: var(--tc-sp-1); }
+    .be-origen__marca { color: var(--pp-teal-ink); font-weight: var(--tc-fw-medium); }
+    .be-origen__marca--tuyo { color: var(--tc-text-h); }
+    .be-valor { margin: 0; font-size: var(--tc-fs-body); color: var(--tc-text-h); }
+    .be-aviso { margin-bottom: var(--tc-sp-6); }
     .be-cita { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
     .be-cita__texto { color: var(--tc-text-b); }
     .be-cita__donde { white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -235,7 +239,7 @@
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
       <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
       <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
       <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
@@ -273,43 +277,23 @@
         <div class="pp-con-lateral">
           <div>
             <form class="pp-tarjeta be-form" action="#" aria-label="Borrador de la validación técnica">
-              <section class="be-grupo" aria-labelledby="g-artefacto">
-                <div class="be-grupo__cabecera"><h2 class="pp-seccion__titulo" id="g-artefacto">Fecha y resultado</h2><span class="pp-meta">Reconocidos en el texto del artefacto</span></div>
-                <div class="pp-form pp-form--alineado">
-                <div class="pp-form-fila">
-                  <div class="pp-form-fila__etiqueta"><label class="pp-label" for="f-fecha">Fecha de la validación</label></div>
-                  <div class="pp-form-fila__control">
-                    <input class="pp-input be-fecha" id="f-fecha" type="text" inputmode="numeric" value="12/08/2026" aria-describedby="f-fecha-cita">
-                    <p class="be-cita" id="f-fecha-cita"><span class="be-cita__texto">«La sustentación se realizó el 12 de agosto de 2026 ante…»</span> · <span class="be-cita__donde">p. 1, párr. 2</span></p>
-                  </div>
-                </div>
-                <div class="pp-form-fila">
-                  <div class="pp-form-fila__etiqueta"><label class="pp-label" for="f-resultado">Resultado</label><p class="pp-ayuda">Propuesto. Contrástalo con el registro de evaluación.</p></div>
-                  <div class="pp-form-fila__control">
-                    <div class="pp-select"><select class="pp-input" id="f-resultado" aria-describedby="f-resultado-cita"><option>Elige el resultado</option><option selected>Cumple el estándar</option><option>No cumple el estándar</option></select></div>
-                    <p class="be-cita" id="f-resultado-cita"><span class="be-cita__texto">«Resultado de la evaluación: cumple el estándar.»</span> · <span class="be-cita__donde">p. 3, último párr.</span></p>
-                  </div>
-                </div>
-                </div>
-              </section>
-
               <section class="be-grupo" aria-labelledby="g-modalidad">
-                <div class="be-grupo__cabecera"><h2 class="pp-seccion__titulo" id="g-modalidad">Modalidad de prueba</h2><span class="pp-meta">Texto del catálogo · <a class="pp-enlace" href="catalogos.html">Editar en Catálogos</a></span></div>
+                <div class="be-grupo__cabecera"><h2 class="pp-seccion__titulo" id="g-modalidad">Precargado desde la modalidad de prueba</h2><span class="pp-meta">Plantilla del catálogo · <a class="pp-enlace" href="catalogos--modalidad-en-uso.html">Editar en Catálogos</a></span></div>
                 <div class="pp-form pp-form--alineado">
                   <div class="pp-form-fila">
-                    <div class="pp-form-fila__etiqueta"><label class="pp-label" for="f-modalidad">Modalidad</label></div>
-                    <div class="pp-form-fila__control"><div class="pp-select"><select class="pp-input" id="f-modalidad"><option selected>Reto de código sustentado</option><option>Proyecto bajo presión</option><option>Assessment center</option></select></div></div>
+                    <div class="pp-form-fila__etiqueta"><span class="pp-label">Modalidad elegida</span></div>
+                    <div class="pp-form-fila__control"><p class="be-valor">Reto de código sustentado</p><p class="pp-ayuda">Se elige en el perfil, del catálogo de su familia.</p></div>
                   </div>
                   <div class="pp-form-fila">
                     <div class="pp-form-fila__etiqueta"><label class="pp-label" for="f-enunciado">Enunciado del reto</label></div>
-                    <div class="pp-form-fila__control"><textarea class="pp-input pp-input--area" id="f-enunciado">Construir en 72 horas un servicio REST de conciliación de pagos con persistencia en base de datos, pruebas automatizadas y despliegue en contenedor. La persona sustenta sus decisiones ante un evaluador senior.</textarea></div>
+                    <div class="pp-form-fila__control"><textarea class="pp-input pp-input--area" id="f-enunciado">Construir en 72 horas un servicio REST de conciliación de pagos con persistencia en base de datos, pruebas automatizadas y despliegue en contenedor. La persona sustenta sus decisiones ante un evaluador senior.</textarea><p class="be-cita be-origen"><span class="be-origen__marca">De la modalidad de prueba</span> · <span class="be-cita__donde">Reto de código sustentado</span></p></div>
                   </div>
                   <div class="pp-form-fila">
                     <div class="pp-form-fila__etiqueta"><label class="pp-label" for="f-entregables">Entregables esperados</label></div>
-                    <div class="pp-form-fila__control"><textarea class="pp-input pp-input--area" id="f-entregables">Repositorio con el código y las pruebas · README de despliegue · Grabación de la sustentación (transcrita)</textarea></div>
+                    <div class="pp-form-fila__control"><textarea class="pp-input pp-input--area" id="f-entregables">Repositorio con el código y las pruebas · README de despliegue · Grabación de la sustentación (transcrita)</textarea><p class="be-cita be-origen"><span class="be-origen__marca">De la modalidad de prueba</span> · <span class="be-cita__donde">Reto de código sustentado</span></p></div>
                   </div>
                   <div class="pp-form-fila">
-                    <div class="pp-form-fila__etiqueta"><span class="pp-label" id="f-criterios">Criterios evaluados</span><p class="pp-ayuda">Se cambian en Catálogos.</p></div>
+                    <div class="pp-form-fila__etiqueta"><span class="pp-label" id="f-criterios">Criterios evaluados</span></div>
                     <div class="pp-form-fila__control">
                       <ul class="be-criterios" aria-labelledby="f-criterios">
                         <li>Diseño de la capa de servicios</li>
@@ -317,19 +301,21 @@
                         <li>Cobertura y calidad de las pruebas</li>
                         <li>Claridad al sustentar decisiones técnicas</li>
                       </ul>
+                      <p class="be-cita be-origen"><span class="be-origen__marca">De la modalidad de prueba</span> · <span class="be-cita__donde">Reto de código sustentado</span></p>
                     </div>
                   </div>
                 </div>
               </section>
 
               <div class="be-pie">
+                <p class="pp-ayuda">La fecha y el resultado de la validación los escribes en la ficha del perfil: el sistema no los lee del artefacto.</p>
                 <label class="pp-check"><input type="checkbox"><span class="pp-check__texto">Revisé cada campo contra el artefacto</span></label>
                 <div class="be-acciones">
                   <button type="button" class="pp-btn pp-btn--fantasma be-acciones__descartar">Descartar borrador</button>
                   <button type="button" class="pp-btn pp-btn--contorno">Guardar sin confirmar</button>
                   <button type="submit" class="pp-btn pp-btn--primario" disabled aria-describedby="motivo-confirmar">Confirmar borrador</button>
                 </div>
-                <p class="pp-ayuda be-pie__motivo" id="motivo-confirmar">Marca «Revisé cada campo» para confirmar. Descartar borra solo el borrador; el artefacto sigue adjunto.</p>
+                <p class="pp-ayuda be-pie__motivo" id="motivo-confirmar">Marca «Revisé cada campo» para confirmar. Descartar no toca la ficha ni el artefacto adjunto.</p>
               </div>
             </form>
           </div>
@@ -338,13 +324,14 @@
             <h2 class="pp-seccion__titulo" id="art-titulo">Artefacto</h2>
             <div class="be-archivo">
               <svg class="pp-icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/></svg>
-              <span class="be-archivo__texto"><span class="be-archivo__nombre" title="transcripcion-sustentacion-PS-0142.pdf">transcripcion-sustentacion-PS-0142.pdf</span><span class="pp-meta">PDF · 412 KB · 4 páginas</span></span>
-              <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#contenido">Abrir</a>
+              <span class="be-archivo__texto"><span class="be-archivo__nombre" title="transcripcion-sustentacion-PS-0142.pdf">transcripcion-sustentacion-PS-0142.pdf</span><span class="pp-meta">PDF · 412 KB</span></span>
+              <a class="pp-btn pp-btn--contorno pp-btn--sm" href="#contenido">Ver</a>
             </div>
             <dl class="be-datos">
               <div><dt>Adjuntado</dt><dd>25 sep 2026 · Karen Rodríguez</dd></div>
-              <div><dt>Visible para</dt><dd>Solo Talento Humano</dd></div>
+              <div><dt>Visible para</dt><dd>Solo la administradora de inventario, en el panel</dd></div>
             </dl>
+            <p class="pp-ayuda">Ábrelo para contrastar: la plantilla no lo lee ni lo resume.</p>
           </aside>
         </div>
       </main>

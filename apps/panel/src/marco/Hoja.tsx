@@ -25,7 +25,7 @@ function IconoCerrar() {
 // Hoja lateral modal: Escape y el velo la cierran; el foco entra al abrir y vuelve al botón que la abrió.
 export function Hoja(p: {
   titulo: string;
-  sub: string;
+  sub?: string;
   cerrarEtiqueta: string;
   alCerrar: () => void;
   pie: ReactNode;
@@ -62,7 +62,7 @@ export function Hoja(p: {
       >
         <header className="pp-hoja__cabecera">
           <h2 id="pi-hoja-titulo">{p.titulo}</h2>
-          <p>{p.sub}</p>
+          {p.sub && <p>{p.sub}</p>}
           <button
             type="button"
             className="pp-btn pp-btn--fantasma pp-btn--icono pp-hoja__cerrar"

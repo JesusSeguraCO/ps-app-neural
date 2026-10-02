@@ -1,0 +1,62 @@
+[
+{
+"item_id": "HU-137-ac1-registrar",
+"kind": "hu_ac",
+"ref": "HU-137 · Registrar un colocado: aparece en la pestaña con cuenta, inicio y liberación; disponibilidad = liberación; atribuido a quien lo registró"
+},
+{
+"item_id": "HU-137-ac2-orden-60",
+"kind": "hu_ac",
+"ref": "HU-137 · Pestaña ordenada por vencimiento con los de ≤ 60 días destacados"
+},
+{
+"item_id": "HU-137-ac3-sin-liberacion",
+"kind": "hu_ac",
+"ref": "HU-137 · Sin fecha de liberación no se guarda y el perfil conserva estado y disponibilidad"
+},
+{
+"item_id": "HU-137-ac4-sigue-publicado",
+"kind": "hu_ac",
+"ref": "HU-137 · El colocado sigue publicado con disponibilidad en la liberación y el cliente lo ve con su banda"
+},
+{
+"item_id": "HU-150-ac1-carga",
+"kind": "hu_ac",
+"ref": "HU-150 · Carga JSON o CSV: colocados marcados de Operaciones, corte = momento de la carga, columna ignorada informada"
+},
+{
+"item_id": "HU-150-ac2-filas-error",
+"kind": "hu_ac",
+"ref": "HU-150 · Solo se aplican las filas válidas; cada fila con error con su número y motivo"
+},
+{
+"item_id": "HU-150-ac3-desincronizado",
+"kind": "hu_ac",
+"ref": "HU-150 · «Dato desincronizado» con 8 días y no con 7; los colocados siguen visibles"
+},
+{
+"item_id": "HU-150-ac4-gana-panel",
+"kind": "hu_ac",
+"ref": "HU-150 · Una fila distinta no pisa el colocado del panel; queda como diferencia con los dos valores para decidir"
+},
+{
+"item_id": "HU-150-ac5-formato",
+"kind": "hu_ac",
+"ref": "HU-150 · Otro formato se rechaza entero diciendo que admite JSON o CSV; se conservan colocados y corte"
+},
+{
+"item_id": "HU-124-ac1-consulta",
+"kind": "hu_ac",
+"ref": "HU-124 · El observador ve inventario, enlaces y colocados sin controles de edición, publicación ni importación"
+},
+{
+"item_id": "HU-124-ac2-ruta-directa",
+"kind": "hu_ac",
+"ref": "HU-124 · Por una dirección de edición: rechazo explicado («tu rol es de consulta») y registrado en la auditoría"
+},
+{
+"item_id": "HU-124-ac3-avisar",
+"kind": "hu_ac",
+"ref": "HU-124 · Al intentar editar: explica el rol y ofrece avisar a quien administra el inventario con el perfil identificado"
+}
+]

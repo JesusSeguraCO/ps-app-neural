@@ -1,13 +1,13 @@
 ---
 artefacto: especificacion-consolidada
 proyecto: portal-people-service
-version: 5.5
-fecha: 2026-09-27
-prd_version: 4.14
-epicas_version: 5.5
-backlog_version: 5.5
-historias_activas: 80
-historias_descartadas: 1
+version: 5.6
+fecha: 2026-10-01
+prd_version: 4.17
+epicas_version: 5.6
+backlog_version: 5.6
+historias_activas: 85
+historias_descartadas: 2
 fuente: generado con scripts/generar-especificacion-consolidada.py desde docs/01-prd, docs/03-backlog, docs/04-historias y docs/10-specs
 uso: documento de construcción, organizado por épica
 ---
@@ -25,7 +25,7 @@ uso: documento de construcción, organizado por épica
 5. **Parte V — Decisiones abiertas.** Lo que todavía puede cambiar y a quién hay que preguntarle.
 6. **Parte VI — Orden de construcción.**
 
-> **Artefactos hermanos, fuera de este documento.** El **mapa de historias** (`docs/02-user-story-map/`, v3.4) ordena el alcance por recorrido y release. La **priorización** (`docs/05-priorizacion/`) ordena las historias en una matriz valor/esfuerzo. Los **flujos de navegación** (`docs/06-flows/`, uno por épica, en Mermaid) diagraman cada épica con trazabilidad a sus criterios de aceptación. Las características verificadas del **hosting** viven en `docs/01-prd/requisitos-tecnicos-hosting.md` y el **prototipo** de referencia en `docs/07-prototipo/`.
+> **Artefactos hermanos, fuera de este documento.** El **mapa de historias** (`docs/02-user-story-map/`, v3.5) ordena el alcance por recorrido y release. La **priorización** (`docs/05-priorizacion/`) ordena las historias en una matriz valor/esfuerzo. Los **flujos de navegación** (`docs/06-flows/`, uno por épica, en Mermaid) diagraman cada épica con trazabilidad a sus criterios de aceptación. Las características verificadas del **hosting** viven en `docs/01-prd/requisitos-tecnicos-hosting.md` y el **prototipo** de referencia en `docs/07-prototipo/`.
 
 ---
 
@@ -227,7 +227,7 @@ La v1 corre en **contenedores Docker portables**, con producción en DigitalOcea
 | **Trabajo diferido** | Un **proceso de trabajo diferido** permanente: reintento a HubSpot (RF-9.6.1), escalamiento cada 15 minutos (RF-9.7.3), sincronización diaria de colocados (RF-8.13.1), envío de correo y vencimiento de enlaces | Lo que antes esperaba a una tarea programada cada 5 minutos ahora sale en segundos, incluido el código de acceso |
 | **Persistencia** | **PostgreSQL administrado** | Inventario, enlaces, sesiones, «Mi equipo» de cada invitado (RF-4.1), auditoría, telemetría y cola de trabajo, en una sola base. El Perfil Objetivo no va al servidor (RF-13.4) |
 | **Catálogo para el cliente** | Lo entrega el servidor tras validar la sesión, como proyección de la base de datos con solo los campos publicables | El inventario nunca queda expuesto por una ruta abierta (§8, Seguridad) |
-| **Evidencia** | Almacenamiento privado de objetos, al que solo llega el panel con enlaces temporales tras autorización | Los contenedores no guardan archivos; la evidencia nunca llega a la cara cliente (RF-8.11.1) |
+| **Evidencia** | Almacenamiento privado de objetos, al que solo llega el panel con enlaces temporales tras autorización. *Diferido a una versión futura con HU-131 (D29, v4.17)* | Los contenedores no guardan archivos; la evidencia nunca llega a la cara cliente (RF-8.11.1) |
 | **Secretos** | Variables secretas de la plataforma, solo en el servidor y solo en el proceso que las usa | La llave de HubSpot, la de Gemini (`GEMINI_API_KEY`) y la de Mailgun no llegan nunca al navegador |
 | **Modelo de lenguaje** | Gemini por API REST, llamado desde el servidor, solo en RF-12.2.1 y RF-8.12.1 | La búsqueda no depende de él: el intérprete determinista (RF-2.6) funciona sin conexión al modelo |
 | **Acceso del cliente** | Enlace firmado + **lista nominal de correos invitados** + código al buzón; sesión de 30 días por dispositivo, acotada a la vigencia del enlace (30 días por omisión) | RF-1.2, RF-1.4. Sin proveedor de identidad |
@@ -251,6 +251,7 @@ La v1 corre en **contenedores Docker portables**, con producción en DigitalOcea
 | # | Decisión | Resolución | Fecha |
 |---|---|---|---|
 | **D-24** | Interpretación de la búsqueda y proveedor del modelo | **Algoritmo primero; Gemini acotado.** Con un banco de unas 30 personas, el emparejamiento (RF-13.8) y la interpretación de consultas cortas son deterministas (RF-2.6). **Gemini** entra solo para requerimientos pegados largos (RF-12.2.1) y para proponer equivalencias del léxico con aprobación humana (RF-8.12.1). *Credenciales:* en desarrollo, token personal y **solo datos ficticios** —las condiciones sin facturación permiten a Google usar el contenido—; en producción, llave de negocio con facturación. La llave vive solo del lado del servidor | 2026-09-25 |
+| **D-25** | Sector de experiencia del perfil | **Opcional y con varios valores.** Se comporta como las tecnologías: valores del catálogo para perfilar, con más peso visual en la ficha. Un perfil puede tener uno, varios o ninguno (p. ej. un arquitecto con experiencia transversal); no bloquea la publicación y la tarjeta lo omite si no hay (RF-3.1) | 2026-10-01 |
 | **D-23** | Plataforma de ejecución de la v1 | **Contenedores Docker portables en DigitalOcean**: aplicación en TypeScript con Next.js (páginas y API) más un proceso de trabajo diferido, base de datos PostgreSQL administrada y correo por Mailgun; sin proveedor de identidad (§8.3). *Revisada el 2026-09-25 por decisión del sponsor: la resolución anterior era el hosting compartido de Trycore (estático, PHP 8.3, MariaDB y tareas programadas), abandonado porque sus límites —sin procesos largos ni colas, inodos, ModSecurity, respaldo en el mismo servidor— concentraban la mayoría de los riesgos.* Detalle técnico en `docs/adr/0008`–`0010` | 2026-09-25 |
 | **D-16** | Dónde persiste el **Perfil Objetivo** | **Por dispositivo. Aplica solo al Perfil Objetivo.** La especificación queda en el navegador de quien la escribió: resuelve el caso real —la misma persona que vuelve días después en el mismo equipo— sin guardar en el servidor un borrador de trabajo que viaja igual a la solicitud cuando se envía (RF-17.5). *Acotada el 2026-09-25 por el sponsor (T-1):* «Mi equipo» deja de seguir esta regla y pasa al servidor por invitado (RF-4.1). La razón original —no guardar contra una identidad que el portal no podía verificar y que un enlace reenviado no arrastrara datos ajenos— dejó de aplicar con D-4 revisada, que da identidad verificada por invitado; el Perfil Objetivo se mantiene por dispositivo por decisión, no por imposibilidad. Se reabre si negocio pide continuidad del Perfil Objetivo entre dispositivos | 2026-09-25 (acotada; cerrada el 2026-09-21) |
 | **D-19** | Composiciones de referencia por tipo de proyecto | **Se construyen solo para los tres tipos de proyecto más frecuentes.** Delivery entrega la composición real de esos tres; fuera de ellos el portal calla en vez de aproximar. Acota la recopilación a una sesión de trabajo con Delivery y conserva la regla dura de RF-14.7.1: composición real o ninguna | 2026-09-21 |
@@ -378,7 +379,7 @@ Todo perfil publicado pasó validación técnica, pero **la prueba varía por fa
 
 ### B.8.1 Catálogo de modalidades de prueba
 
-La modalidad **se selecciona de un catálogo cerrado**, agrupado por familia de rol. No es texto libre y no se deriva automáticamente: dentro de una misma familia conviven pruebas distintas, y solo Talento Humano sabe cuál se le aplicó a cada persona.
+La modalidad **se selecciona de un catálogo cerrado**, agrupado por familia de rol. No es texto libre y no se deriva automáticamente: dentro de una misma familia conviven pruebas distintas, y solo Talento Humano sabe cuál se le aplicó a cada persona. **Es obligatoria para publicar** (RF-8.10, enmienda v4.15, D10): el rol solo filtra las opciones de su familia.
 
 Cada opción del catálogo trae **su propio texto de cara al cliente ya redactado** —qué exige, qué evalúa, qué entregable produce—. Seleccionarla completa los niveles 0 y 1 de B.9.2 en un solo acto.
 
@@ -465,11 +466,11 @@ El enunciado del reto, los entregables esperados y los criterios evaluados **son
 | **1** | Enunciado del reto y entregables esperados | Ninguno por perfil: viene con la opción del catálogo | No |
 | **2** | Qué entregó ese perfil en concreto y qué se destacó | Por perfil, asistido (B.9.3) | No |
 
-**Regla:** un perfil que pasó la validación —condición de entrada— puede publicarse con Nivel 0. El resto enriquece.
+**Regla:** un perfil que pasó la validación —condición de entrada— puede publicarse con Nivel 0. El resto enriquece. *Enmienda v4.15 (D10): el Nivel 0 exige la modalidad elegida; sin ella no se publica (RF-8.10). El «No» de la tabla se refiere al detalle, no a la elección de la modalidad.*
 
 ### B.9.3 Carga asistida desde el artefacto
 
-Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: documento, repositorio o transcripción de la llamada. El proyecto no opera con video (RF-8.11.1). El sistema propone un borrador de los campos descriptivos **con una plantilla determinista, sin IA** (RF-8.11.2): precarga desde la modalidad de prueba, fecha y resultado por patrones, y nada sale del servidor. La persona revisa y aprueba. El trabajo pasa de redactar a confirmar.
+Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: documento, repositorio o transcripción de la llamada. El proyecto no opera con video (RF-8.11.1). El sistema propone un borrador de los campos descriptivos **con una plantilla determinista, sin IA** (RF-8.11.2): precarga desde la modalidad de prueba, fecha y resultado por patrones, y nada sale del servidor. La persona revisa y aprueba. *Enmienda v4.15 (D11): sin lectura automática del artefacto; fecha y resultado por patrones se retiran y los escribe Talento Humano.* *Enmienda v4.17 (D29): adjuntar el artefacto se difiere a una versión futura; en esta versión la carga asistida es la precarga desde la modalidad, y Talento Humano contrasta con la evidencia que tiene a mano.* El trabajo pasa de redactar a confirmar.
 
 **Dos candados, porque aquí es donde el humo podría volver a entrar:**
 
@@ -495,6 +496,8 @@ Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: docume
 
 ## EP-001 — Acceso y aterrizaje curado
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 **Resumen.** El cliente llega desde el correo, supera el control de acceso y aterriza frente a los mismos perfiles que le propusimos, presentados como selección con su razón declarada.
 
 **Justificación.** Es el primer contacto con el producto y el punto donde se gana o se pierde la percepción de curaduría. Si el aterrizaje muestra un grid genérico, el correo pierde su valor y el trabajo de selección de Mercadeo se vuelve invisible.
@@ -503,12 +506,15 @@ Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: docume
 **Capabilities:** RF-1 (completo) · RF-2.1 · RF-2.2 · RF-19 (completo) · RF-8.1 en lo que exige la entrada al panel (vía HU-123)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: foundational`
+
+**Alcance asumido en el DoR (2026-09-28, decisión del PO).** Además de sus historias, EP-001 construye el mínimo que estas necesitan: un «Mi equipo» por invitado en el servidor (vacío al entrar, aislado entre invitados, no alterado al volver a la selección; sumar y quitar es de EP-004) ~~y un adaptador de **solo lectura** de HubSpot para la empresa (cuenta activa y propietario, HU-092) con doble en CI y fallo cerrado~~ *(retirado el 2026-09-29 por el sponsor: la renovación de un enlace vencido ya no consulta HubSpot; toda petición de enlace nuevo avisa a Talento Humano por correo y en una bandeja del panel, **HU-146**)*, y un modelo mínimo de perfil publicable (perfil, consentimiento y vista `catalogo_publicable`) con perfiles ficticios, que exige HU-122 (ADR-0008, sub-slice 3).
+
 **Métrica de éxito:** el 100% de los aterrizajes con parámetros muestran el conjunto curado sin pasos intermedios; tasa de rebote en el aterrizaje por debajo del 30%.
 **Riesgo asociado:** enlace firmado que circula fuera de la empresa del cliente (§10.3 del PRD).
 
 **Historias anticipadas:** entrar desde el correo · aterrizar en el conjunto curado con su razón · ampliar la búsqueda sin perder la selección · volver al conjunto curado · enlace vencido · aterrizaje sin parámetros de curaduría.
 
-**HU-123 (entrar al panel con el correo corporativo) pertenece a esta épica desde la v5.5.** Se reasignó desde EP-006 el 2026-09-27 por decisión del sponsor (T-19 del backlog de arquitectura): la caparazón de la aplicación necesita el login del panel para que Talento Humano genere enlaces (HU-122), y sin él EP-001 no se puede construir ni verificar completa. No recorta ni difiere alcance: la historia es la misma, cambia la épica que la construye. El resto de RF-8.1 (lista nominal de acceso, roles y observador) sigue en EP-006.
+**HU-123 (entrar al panel con el correo corporativo) pertenece a esta épica desde la v5.5.** Se reasignó desde EP-006 el 2026-09-27 por decisión del sponsor (T-19 del backlog de arquitectura): la caparazón de la aplicación necesita el login del panel para que Talento Humano genere enlaces (HU-122), y sin él EP-001 no se puede construir ni verificar completa. No recorta ni difiere alcance: la historia es la misma, cambia la épica que la construye. El resto de RF-8.1 (gestión de la lista nominal de acceso y de los roles) sigue en EP-006; la matriz rol × acción y el rol observador como mínimo técnico los construye EP-001, porque V2-3/V8-13 los exigen desde el sub-slice 2 (precisión del 2026-09-28).
 
 ### Requisitos de esta épica
 
@@ -534,7 +540,7 @@ Talento Humano adjunta la evidencia **en el formato en que ya la tiene**: docume
 
 - **RF-2.2** "Ampliar la búsqueda" abre el banco completo sin destruir el conjunto curado; se vuelve a él en un clic.
 
-### Historias de esta épica (10)
+### Historias de esta épica (11)
 
 #### HU-090 — Entrar al portal con mi correo invitado y un código, sin registrarme
 
@@ -629,6 +635,8 @@ Los plazos concretos del código y de la espera tras el bloqueo los calibra Tecn
 
 ##### Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · D-4 revisada · ADR-0002 (UC-1, QA-3) · backlog T-18, CRN-13 · orden de construcción: primera historia de la cara cliente de EP-001; no depende de otra historia (el enlace con invitados se siembra en pruebas sin esperar a HU-122)
 
 ##### INVEST
@@ -683,6 +691,8 @@ Cubre **RF-1.3**, **RF-2.1** y **RF-19.2**. El escenario de error es real: entre
 
 ##### Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002/0003 (UC-3) · depende de HU-090 · orden de construcción: después de HU-090 · se solapa con HU-144 (misma reevaluación al abrir, distinto origen del enlace)
 
 ##### INVEST
@@ -715,7 +725,6 @@ Cubre **RF-1.3**, **RF-2.1** y **RF-19.2**. El escenario de error es real: entre
 
 **Dado** que estoy en la pantalla del enlace vencido
 **Y** que mi correo estaba en la lista de invitados de ese enlace
-**Y** que mi cuenta sigue activa
 **Cuando** pido un enlace nuevo con mi correo
 **Entonces** veo el mensaje «Si tu correo estaba invitado, te enviamos un enlace nuevo a tu buzón»
 **Y** el enlace nuevo llega a mi buzón
@@ -736,14 +745,13 @@ Cubre **RF-1.3**, **RF-2.1** y **RF-19.2**. El escenario de error es real: entre
 **Entonces** veo el mensaje «Si tu correo estaba invitado, te enviamos un enlace nuevo a tu buzón»
 **Y** no se genera ni se envía ningún enlace
 
-###### Edge case — la cuenta ya no está activa
+###### Edge case — vuelvo con la sesión de un enlace vencido
 
-**Dado** que estoy en la pantalla del enlace vencido con un correo que estaba invitado
-**Y** que mi cuenta dejó de tener perfiles contratados
-**Cuando** pido un enlace nuevo
-**Entonces** no se genera ningún enlace automáticamente
-**Y** el propietario de la cuenta en Trycore recibe un correo con la petición
-**Y** veo que alguien de Trycore me contactará
+**Dado** que entré antes desde este dispositivo, mi enlace venció después y no tengo a mano el enlace del correo
+**Cuando** entro al portal directamente
+**Entonces** veo la misma explicación de que el enlace venció, con su fecha
+**Y** veo el campo para pedir un enlace nuevo
+**Y** al pedirlo con mi correo invitado, el enlace nuevo llega a mi buzón sin aparecer en pantalla
 
 ##### Notas
 
@@ -751,18 +759,27 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 
 **Ajustada el 2026-09-27 a D-4 revisada** (acceso nominal; corrección de discovery T-18, CRN-13): pedir un enlace nuevo no puede convertirse en una puerta trasera. Por eso el enlace renovado llega **solo al buzón de un correo invitado** y nunca se muestra en pantalla, y quien no estaba invitado recibe exactamente la misma respuesta que quien sí lo estaba.
 
+**La ventana de espera es neutra** (validación BDD del 2026-09-29): se cuenta por enlace y correo, esté o no invitado; quien repite dentro de la ventana ve «ya va en camino» en ambos casos, así que tampoco delata la invitación.
+
 **Ajuste de forma del 2026-09-27** (validación INVEST/BDD): el happy path se partió en dos escenarios (ver la explicación / pedir el enlace nuevo) para que cada «Cuando» sea una sola acción. La respuesta neutra tiene aquí **texto propio**, sin remitir a HU-090; el texto es negociable, la igualdad entre invitado y no invitado no. La prueba de coherencia con la respuesta neutra de HU-090 (mismo principio, mismo tono) se hace al cerrar la épica.
 
-**Canal del caso de cuenta inactiva.** La petición se avisa por correo al **propietario de la cuenta** en Trycore (el mismo propietario que asigna RF-9.5 y el mismo canal de correo de RF-9.7.1); no se crea una integración nueva. Qué define que una cuenta «ya no está activa» queda como pregunta abierta (abajo).
+**Ajuste del 2026-09-29 (sponsor): la renovación ya no consulta HubSpot.** El enlace está asociado a los correos invitados; si esa persona dejó la empresa o la cuenta dejó de ser cliente, el enlace ya caducó, y la petición de uno nuevo **alerta a Talento Humano** (por correo y en la bandeja del panel, **HU-146**), que puede revocarlo. Por eso todo correo invitado recibe el enlace nuevo en su buzón sin comprobar si la cuenta está activa, y se retira el escenario «no se puede confirmar que la cuenta está activa» y el adaptador de HubSpot de EP-001. Los dos párrafos siguientes quedan como rastro de la resolución anterior.
+
+~~**Fuente de verdad de «cuenta activa» (resuelta el 2026-09-28 por el PO, DoR de EP-001).** Una cuenta está activa cuando **la empresa en HubSpot** lo indica en su propiedad de cuenta activa (nombre exacto de la propiedad a fijar en el adaptador); el propietario al que se avisa es el **propietario de la empresa en HubSpot**. EP-001 incluye por eso un adaptador de **solo lectura** de HubSpot para la empresa (estado activo y propietario), con doble declarado en CI. Si HubSpot no responde, la renovación **no** se concede automáticamente: pedir un enlace nuevo no puede abrirse por una caída.~~ *Sustituido el 2026-09-29.*
+
+~~**Canal del caso de cuenta inactiva.** La petición se avisa por correo al **propietario de la cuenta** en Trycore (el mismo propietario que asigna RF-9.5 y el mismo canal de correo de RF-9.7.1); no se crea una integración nueva. Qué define que una cuenta «ya no está activa» queda como pregunta abierta (abajo).~~ *Sustituido el 2026-09-29.*
 
 **Preguntas abiertas** (no las decide esta corrección; propuestas para §12.3 del PRD):
-- Con acceso nominal, ¿la renovación para una cuenta activa sigue siendo automática, o Talento Humano debe confirmarla como confirma los invitados de un enlace nuevo (RF-1.2.7, RF-19.3)? Los criterios conservan la resolución vigente —automática para cuentas activas—.
+- ~~Con acceso nominal, ¿la renovación para una cuenta activa sigue siendo automática, o Talento Humano debe confirmarla?~~ **Resuelta el 2026-09-29 por el sponsor:** automática para todo correo invitado, con aviso a Talento Humano (HU-146).
 - ¿El enlace renovado conserva la misma selección, o se reevalúa y se ofrece la selección vigente? RF-19.2 garantiza, en cualquier caso, que se ve el estado real de cada perfil al abrir.
-- ¿Cuál es la fuente de verdad de «cuenta activa» —la cuenta en HubSpot con perfiles contratados, o un dato que marca Talento Humano en el panel— y quién la mantiene?
+- ~~¿Cuál es la fuente de verdad de «cuenta activa»?~~ Ya no aplica desde el 2026-09-29: la renovación no consulta si la cuenta está activa.
+- ~~Si HubSpot no responde, ¿a quién llega la petición?~~ Ya no aplica desde el 2026-09-29: toda petición se avisa a Talento Humano (HU-146).
 
 ##### Trazabilidad
 
-Épica madre: **EP-001** · PRD v4.13 · ADR-0002 (UC-1, estados de enlace vencido y revocado) · RF-9.5 / RF-9.7.1 (canal del aviso) · depende de HU-090 · orden de construcción: después de HU-090
+> OpenSpec change: acceso-y-aterrizaje-curado
+
+Épica madre: **EP-001** · PRD v4.13 · ADR-0002 (UC-1, estados de enlace vencido y revocado) · RF-1.4 · el aviso a Talento Humano es HU-146 · depende de HU-090 · orden de construcción: después de HU-090
 
 ##### INVEST
 
@@ -771,9 +788,9 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 | I | Independiente | ✓ con dependencia declarada: es la rama «vencido» de la puerta de HU-090, así que se secuencia después de ella; su respuesta neutra tiene texto propio y se verifica sola con enlaces vencidos sembrados |
 | N | Negociable | ✓ describe el resultado; textos y ventana antirrepetición son negociables |
 | V | Valiosa | ✓ recupera la intención de compra del cliente que vuelve tarde |
-| E | Estimable | ✓ el canal del aviso reutiliza RF-9.5/RF-9.7.1; tres preguntas abiertas no cambian los criterios; falta la cifra del equipo |
+| E | Estimable | ✓ sin dependencia externa desde el 2026-09-29 (no consulta HubSpot); el aviso a Talento Humano va aparte en HU-146; las preguntas abiertas restantes no cambian los criterios; falta la cifra del equipo |
 | S | Pequeña | ✓ S: una pantalla de renovación y una petición |
-| T | Testeable | ✓ enlaces vencidos sembrados, con correo invitado y no invitado y con cuenta activa e inactiva, dan resultados observables |
+| T | Testeable | ✓ cinco escenarios; enlaces vencidos sembrados, con correo invitado y no invitado y con la sesión de un enlace vencido, dan resultados observables (pantalla, buzón, ningún enlace para quien no estaba invitado) |
 
 #### HU-093 — Entrar sin una selección previa y ser encuadrado
 
@@ -809,7 +826,7 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 **Y** que ningún perfil publicado corresponde a una de sus opciones en este momento
 **Cuando** elijo esa opción
 **Entonces** veo que hoy no hay perfiles publicados para esa opción
-**Y** veo las salidas del camino del cero: ampliar la búsqueda y pedir el perfil a medida (RF-14.3)
+**Y** veo la opción de ampliar la búsqueda al banco completo
 
 ###### Edge case — enlace sin contexto de proyecto
 
@@ -819,6 +836,8 @@ Cubre **RF-1.4**. La vigencia del enlace es configurable, con 30 días por omisi
 **Y** no veo ningún nombre de proyecto ni motivo de selección en el encabezado
 
 ##### Notas
+
+**Ajustada el 2026-09-28 (DoR de EP-001, decisión del PO: reformular sin recortar).** La salida «pedir el perfil a medida» (RF-14.3) desde una opción del encuadre sin perfiles es de EP-010, que depende de EP-001; se añade a esta pantalla cuando se construya EP-010 (ver «Criterios recibidos de EP-001» en `docs/03-backlog/epicas.md`). EP-001 garantiza que la opción vacía nunca es un callejón sin salida: siempre ofrece ampliar la búsqueda.
 
 Cubre **RF-1.3**, el recorrido secundario «aterrizaje sin conjunto curado» de §6.3 y, para las opciones del encuadre, las facetas Rol y Categoría de **RF-2.3**.
 
@@ -831,6 +850,8 @@ Cubre **RF-1.3**, el recorrido secundario «aterrizaje sin conjunto curado» de 
 **Pruebas.** Se construye y verifica con una sesión sembrada en un enlace sin selección, sin esperar a HU-090 terminada.
 
 ##### Trazabilidad
+
+> OpenSpec change: acceso-y-aterrizaje-curado
 
 Épica madre: **EP-001** · PRD v4.13 · §6.3 · RF-2.3 · depende de HU-090 · orden de construcción: después de HU-090 · relacionada con HU-065 y HU-066 (EP-009), dueñas de la vía de instrucción
 
@@ -857,10 +878,10 @@ Cubre **RF-1.3**, el recorrido secundario «aterrizaje sin conjunto curado» de 
 
 **Dado** que tengo una sesión válida en un enlace con selección
 **Y** que amplié la búsqueda al banco completo
-**Y** que sumé perfiles a «Mi equipo» mientras exploraba
+**Y** que mi «Mi equipo» tiene perfiles guardados
 **Cuando** toco «Volver a la selección»
 **Entonces** veo los perfiles del enlace con su razón declarada
-**Y** los perfiles que sumé a «Mi equipo» siguen en «Mi equipo»
+**Y** mi «Mi equipo» conserva exactamente los perfiles que tenía antes de volver
 
 ###### Error — perfiles de la selección archivados
 
@@ -869,7 +890,7 @@ Cubre **RF-1.3**, el recorrido secundario «aterrizaje sin conjunto curado» de 
 **Y** que los perfiles de la selección se archivaron mientras exploraba
 **Cuando** toco «Volver a la selección»
 **Entonces** veo cada perfil archivado en la selección con la etiqueta de su estado
-**Y** veo la opción de continuar desde lo que llevo en «Mi equipo»
+**Y** veo la opción de ampliar la búsqueda al banco completo
 
 ###### Edge case — nunca hubo selección
 
@@ -883,11 +904,15 @@ Cubre **RF-2.2**. Es la resolución de la tensión entre curaduría y descubrimi
 
 **Ajustada el 2026-09-27** (corrección de discovery T-18): el caso de error ya no «explica y oculta» la selección; por **RF-19.2** el portal nunca omite un perfil en silencio. «Mi equipo» vive en el servidor por invitado (T-1), así que lo que se conserva al volver también se conserva si la persona cambia de dispositivo; esa continuidad la prueba la historia de «Mi equipo» (EP-004), no esta.
 
+**Ajustada el 2026-09-28 (DoR de EP-001, decisión del PO: reformular sin recortar).** Esta historia afirma solo lo que construye EP-001: volver a la selección no altera el «Mi equipo» del invitado, verificado con un equipo sembrado. Sumar perfiles mientras se explora y «continuar desde lo que llevo en Mi equipo» son comportamiento de «Mi equipo» y pasan a EP-004 (ver «Criterios recibidos de EP-001» en `docs/03-backlog/epicas.md`).
+
 **Dueña única del retorno** (validación INVEST del 2026-09-27): esta es la única historia que tiene el criterio observable de «volver a la selección». HU-144 muestra la opción de ampliar la búsqueda y remite aquí para el retorno.
 
 **Orden de construcción y pruebas:** HU-090 → HU-091 o HU-144 (la que se construya primero; ambas muestran la selección) → HU-094. Para no esperar a que HU-091/HU-144 estén cerradas de punta a punta, HU-094 se construye y verifica con una **sesión y una selección sembradas** en fixtures de prueba.
 
 ##### Trazabilidad
+
+> OpenSpec change: acceso-y-aterrizaje-curado
 
 Épica madre: **EP-001** · PRD v4.13 · §2.5 · T-1 · depende de HU-090 y de HU-091 o HU-144 (la vista de la selección) · orden de construcción: HU-090 → HU-091/HU-144 → HU-094
 
@@ -917,8 +942,8 @@ Cubre **RF-2.2**. Es la resolución de la tensión entre curaduría y descubrimi
 **Y** que mi colega tiene el enlace
 **Cuando** mi colega completa el ingreso con su correo y el código que le llegó
 **Entonces** mi colega ve la misma selección y el mismo contexto de cuenta que yo
-**Y** mi colega tiene su propio «Mi equipo», que empieza vacío y donde puede sumar y quitar perfiles
-**Y** mi colega no ve los perfiles que yo sumé a mi «Mi equipo», ni yo los suyos
+**Y** el «Mi equipo» de mi colega empieza vacío
+**Y** los perfiles guardados en mi «Mi equipo» no aparecen en el de mi colega
 
 ###### Error — el colega abre el enlace sin estar invitado
 
@@ -952,11 +977,15 @@ Cubre **RF-1.2.10** (el lado de quien pide), **RF-1.2.11** y, para el equipo del
 
 **Dividida por actor el 2026-09-27** (validación INVEST: la historia sumaba dos actores y dos superficies). Esta historia es el lado del cliente: pedir, ver la petición pendiente o rechazada y la entrada del colega aprobado. La pantalla del panel donde Talento Humano aprueba o rechaza —con el alta en la lista de invitados y el registro de auditoría— pasa a **HU-145**, con criterios propios. No se recorta nada: el alcance es el mismo, repartido en dos historias que se construyen una detrás de otra dentro de EP-001.
 
+**Ajustada el 2026-09-28 (DoR de EP-001, decisión del PO: reformular sin recortar).** EP-001 garantiza que el colega entra con un «Mi equipo» propio, vacío y aislado del de quien lo invitó (verificado con equipos sembrados). Que el colega pueda sumar y quitar perfiles es comportamiento de «Mi equipo» y pasa a EP-004 (ver «Criterios recibidos de EP-001» en `docs/03-backlog/epicas.md`).
+
 **Pruebas.** Se construye y verifica con sesiones sembradas y peticiones sembradas en estado pendiente, aprobada y rechazada, sin esperar a HU-145; la prueba integrada pedir → aprobar → entrar se hace al cerrar ambas.
 
 **Pregunta abierta** (no bloquea los criterios; se resuelve con negocio): ¿cuánto tiempo puede quedar pendiente una petición antes de avisar a alguien más que a Talento Humano? Hoy el aviso es a Talento Humano (ADR-0006) y no hay plazo de escalamiento definido. La pregunta sobre si al rechazar se muestra el motivo vive en HU-145.
 
 ##### Trazabilidad
+
+> OpenSpec change: acceso-y-aterrizaje-curado
 
 Épica madre: **EP-001** · PRD v4.13 · D-4 revisada · T-1 · ADR-0002 (UC-2) · ADR-0003/0004 (equipo por invitado) · depende de HU-090 · se completa con HU-145 (decisión en el panel) · orden de construcción: HU-090 → HU-095 → HU-145 (HU-145 necesita además HU-123)
 
@@ -1007,23 +1036,25 @@ Cubre **RF-1.2.10** (el lado de quien pide), **RF-1.2.11** y, para el equipo del
 **Entonces** el sistema me indica cuál perfil no está publicado
 **Y** no emite el enlace
 
-###### Edge case — la cuenta tiene contacto en el CRM y sumo otro invitado
+###### Edge case — invito a varios correos de la cuenta
 
 **Dado** que entré al panel como administradora de inventario
-**Y** que la cuenta tiene un contacto en el CRM
-**Cuando** preparo los correos invitados del enlace
-**Entonces** el sistema me propone el correo del contacto
-**Y** me deja añadir otro correo, como el del arquitecto de la cuenta
+**Y** que escribí el correo del contacto de la cuenta
+**Cuando** añado otro correo, como el del arquitecto de la cuenta
+**Entonces** el enlace queda con los dos correos invitados
+**Y** cada uno aparece una sola vez aunque lo escriba con otras mayúsculas
 
 ###### Edge case — ningún correo invitado
 
 **Dado** que entré al panel como administradora de inventario
-**Y** que la cuenta no tiene contacto en el CRM y no añadí ningún correo invitado
+**Y** que no añadí ningún correo invitado
 **Cuando** intento generar el enlace
 **Entonces** el sistema no emite el enlace
 **Y** me indica que el enlace necesita al menos un correo invitado
 
 ##### Notas
+
+**Sin lectura de HubSpot al generar** (decisión del sponsor, 2026-09-28): la cuenta se escribe por su nombre y los correos invitados a mano; el enlace va en el correo que el equipo comercial envía al cliente. La solicitud llega a HubSpot después por formulario y workflow (EP-007), que asocia contacto y empresa por el correo. *Sustituye la degradación por caída de HubSpot del DoR de EP-001.*
 
 **Dividida el 2026-09-22.** La historia original tenía **seis escenarios** y dos happy paths con **actores distintos**: Talento Humano generando el enlace y el cliente abriéndolo. Cuando los happy paths cambian de actor, el corte natural está ahí. Lo que el cliente ve al abrir es ahora **HU-144**.
 
@@ -1040,6 +1071,8 @@ Cubre **RF-1.2.10** (el lado de quien pide), **RF-1.2.11** y, para el equipo del
 Cubre **RF-19.1**, **RF-19.3**, **RF-19.4**, **RF-19.5**, **RF-19.7**, **RF-1.2.7** y la vigencia de **RF-1.4**.
 
 ##### Trazabilidad
+
+> OpenSpec change: acceso-y-aterrizaje-curado
 
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002/0003 (UC-3) · depende de HU-123 · orden de construcción: HU-123 → HU-122 (sub-slices de EP-001 en ADR-0008: el login del panel antes de la generación del enlace) · habilita HU-144 · se relaciona con EP-011 (el correo es un vehículo para estos enlaces)
 
@@ -1108,6 +1141,8 @@ Cubre **RF-8.1**, **RF-8.1.1**, **RF-8.1.3**, **RF-8.1.4**, **RF-8.1.5** y **RF-
 
 ##### Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** (antes EP-006, reasignada por T-19) · PRD v4.13 · D-22 · ADR-0002 (UC-9, QA-4) · ADR-0008 (sub-slice 2 de EP-001) · habilita HU-122 y EP-006
 
 ##### INVEST
@@ -1135,7 +1170,7 @@ Cubre **RF-8.1**, **RF-8.1.1**, **RF-8.1.3**, **RF-8.1.4**, **RF-8.1.5** y **RF-
 **Y** que mi correo está en su lista de invitados y ya superé la puerta con él
 **Cuando** abro el enlace
 **Entonces** veo los perfiles seleccionados con la razón de la selección
-**Y** el panel de especificación aparece vacío, sin un rol deducido
+**Y** no veo ningún rol ni criterio deducido de la selección aplicado como filtro
 **Y** veo la opción de ampliar la búsqueda al banco completo
 
 ###### Error — enlace revocado o alterado
@@ -1199,6 +1234,8 @@ Cubre **RF-19.2**, **RF-19.6**, **RF-19.7**, **RF-1.4** (revocación) y **RF-1.5
 
 ##### Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · ADR-0002 (UC-1, UC-3) · depende de HU-122 y HU-090 · orden de construcción: HU-090 y HU-122 → HU-144
 
 ##### INVEST
@@ -1214,7 +1251,7 @@ Cubre **RF-19.2**, **RF-19.6**, **RF-19.7**, **RF-1.4** (revocación) y **RF-1.5
 
 #### HU-145 — Aprobar o rechazar la invitación de un colega
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario del banco de talento,
 **quiero** ver las peticiones de invitación de cada enlace y aprobarlas o rechazarlas desde el panel,
 **para** que el colega de un cliente pueda dar su segunda opinión sin que el enlace se convierta en una llave que abre a quien lo tenga.
 
@@ -1252,7 +1289,7 @@ Cubre **RF-19.2**, **RF-19.6**, **RF-19.7**, **RF-1.4** (revocación) y **RF-1.5
 **Y** que hay una petición pendiente cuyo correo ya está en la lista de invitados de ese enlace
 **Cuando** abro la petición
 **Entonces** veo que ese correo ya tiene acceso al enlace
-**Y** al cerrarla no se crea un invitado duplicado
+**Y** la lista de invitados del enlace sigue teniendo ese correo una sola vez
 
 ##### Notas
 
@@ -1268,6 +1305,8 @@ Cubre **RF-1.2.10** (el lado de quien decide). **Dividida de HU-095 el 2026-09-2
 
 ##### Trazabilidad
 
+> OpenSpec change: acceso-y-aterrizaje-curado
+
 Épica madre: **EP-001** · PRD v4.13 · D-4 revisada · RF-1.2.10 · ADR-0002 (UC-2) · ADR-0003 (auditoría encadenada) · ADR-0006 (aviso de peticiones pendientes) · depende de HU-123 (login del panel) y HU-095 (la petición) · orden de construcción: HU-123 y HU-095 → HU-145
 
 ##### INVEST
@@ -1280,6 +1319,88 @@ Cubre **RF-1.2.10** (el lado de quien decide). **Dividida de HU-095 el 2026-09-2
 | E | Estimable | ✓ mecanismo, tablas y auditoría decididos en ADR-0002/0003; falta la cifra del equipo |
 | S | Pequeña | ✓ S: un actor (Talento Humano), una superficie (el panel), una lista con dos acciones |
 | T | Testeable | ✓ cada decisión deja un resultado observable en la lista de invitados, en la auditoría y en el portal del cliente |
+
+#### HU-146 — Enterarme de cada enlace nuevo que piden los clientes
+
+**Como** administradora de inventario de Talento Humano,
+**quiero** enterarme por correo y ver en el panel cada vez que alguien pide un enlace nuevo porque el suyo venció,
+**para** saber qué cuentas volvieron a mirar la selección y revocar a tiempo el acceso de quien ya no debería tenerlo.
+
+##### Criterios de aceptación
+
+###### Happy path — un invitado pide un enlace nuevo
+
+**Dado** que entré al panel con mi correo inscrito
+**Y** que una persona invitada a un enlace vencido pidió un enlace nuevo, el sistema se lo envió a su buzón y avisó por correo a Talento Humano
+**Cuando** abro la bandeja de renovaciones
+**Entonces** veo esa petición con la cuenta, el proyecto, el correo de quien la pidió, cuándo la pidió y el enlace vencido
+**Y** la veo marcada «Enlace nuevo enviado», con el código del enlace nuevo
+**Y** el correo que recibió Talento Humano lleva esos mismos datos
+
+###### Error — quien pide no estaba invitado
+
+**Dado** que entré al panel con mi correo inscrito
+**Y** que alguien cuyo correo no está en la lista de invitados pidió un enlace nuevo desde un enlace vencido y el sistema avisó por correo a Talento Humano
+**Cuando** abro la bandeja de renovaciones
+**Entonces** veo esa petición marcada «No estaba invitado · no se envió enlace», con el correo que escribió
+**Y** el correo que recibió Talento Humano dice que no estaba invitado y que no se le envió nada
+
+###### Error — el enlace nuevo no se pudo entregar
+
+**Dado** que entré al panel con mi correo inscrito
+**Y** que el correo con el enlace nuevo de una persona invitada no se pudo entregar
+**Cuando** abro la bandeja de renovaciones
+**Entonces** veo esa petición marcada «No se pudo enviar el enlace nuevo»
+
+###### Edge case — la misma persona pide otra vez durante la espera
+
+**Dado** que entré al panel con mi correo inscrito
+**Y** que una persona invitada pidió un enlace nuevo y volvió a pedirlo con el mismo correo mientras la ventana de espera seguía activa
+**Cuando** abro la bandeja de renovaciones
+**Entonces** veo una sola petición para ese enlace y ese correo
+**Y** Talento Humano recibió un solo correo por ella
+
+###### Edge case — corto el acceso de quien pidió
+
+**Dado** que entré al panel con mi correo inscrito como administradora de inventario
+**Y** que en la bandeja hay una petición con «Enlace nuevo enviado»
+**Cuando** revoco el enlace nuevo desde esa petición, con un motivo opcional
+**Entonces** la petición muestra «Enlace revocado»
+**Y** quien lo tenga abierto pierde el acceso en su siguiente petición
+**Y** queda un registro en la auditoría del panel con quién revocó, cuándo, qué enlace y el motivo
+
+##### Notas
+
+Cubre **RF-1.4** (el lado de Talento Humano). **Nace el 2026-09-29 por decisión del sponsor:** la renovación de un enlace vencido deja de consultar HubSpot para decidir (HU-092) y, a cambio, **toda** petición de enlace nuevo alerta a Talento Humano por correo y queda en una bandeja del panel. El razonamiento del sponsor: el enlace está asociado al correo del cliente; si esa persona ya no trabaja allí o la cuenta dejó de ser cliente, el enlace caducó y su petición de uno nuevo es la alerta.
+
+**Dividida de HU-092 por actor**, como HU-145 de HU-095: HU-092 es lo que ve el cliente (pedir y recibir el enlace, con respuesta neutra); esta es lo que ve Talento Humano.
+
+**También se avisa de quien no estaba invitado** (decisión del sponsor, 2026-09-29): el cliente recibe la misma respuesta neutra de HU-092 y no se le envía nada, pero Talento Humano se entera, porque suele ser un colega al que conviene invitar (HU-095) o un reenvío fuera de la empresa. Esto obliga a **guardar el correo que escribió quien pide, esté invitado o no**. Hasta ahora se guardaba solo su huella (HMAC), precisamente para no retener el correo de alguien que puede no estar invitado. Es un dato personal nuevo (Ley 1581): lo que diga la revisión de seguridad del Release Gate sobre su finalidad y su plazo de conservación queda abierto (abajo).
+
+**Revocar reutiliza la revocación del panel** (tarea 4.4 del change, `POST /api/v1/enlaces/{codigo}/revocar`, auditada según ADR-0002/0003): la bandeja no abre una superficie nueva; la acción vive en la fila (validación INVEST del 2026-09-29).
+
+**Canal:** el correo sale por el mismo canal de avisos a Talento Humano (`notificar`, ADR-0006/0009) hacia el buzón de Talento Humano; la bandeja lee las peticiones registradas, no una tabla nueva de avisos.
+
+**Preguntas abiertas** (no bloquean los criterios):
+- ¿Cuánto tiempo se conservan las peticiones de quien no estaba invitado? Propuesta: el mismo plazo de purga de los códigos de acceso (ADR-0002); se decide en la revisión de seguridad de la release.
+- ¿Se quiere además un aviso al propietario comercial de la cuenta? Hoy no: la cuenta no está enlazada con HubSpot (ver E-6/E-7 del backlog de arquitectura).
+
+##### Trazabilidad
+
+> OpenSpec change: acceso-y-aterrizaje-curado
+
+Épica madre: **EP-001** · PRD v4.13 · RF-1.4 · ADR-0002 (renovación y respuesta neutra) · ADR-0006/0009 (`notificar` a Talento Humano) · depende de HU-123 (login del panel) y HU-092 (la petición) · orden de construcción: HU-092 → HU-146
+
+##### INVEST
+
+| | Criterio | Estado |
+|---|---|---|
+| I | Independiente | ✓ con dependencia declarada: se secuencia después del login del panel (HU-123) y de la petición (HU-092); revocar reutiliza la acción del panel ya construida (tarea 4.4); se verifica sola con una sesión de panel y peticiones sembradas |
+| N | Negociable | ✓ fija qué se sabe y dónde (correo y bandeja con cuenta, correo de quien pide, cuándo y resultado); textos, columnas y orden son negociables |
+| V | Valiosa | ✓ sin el aviso, quitar la consulta a HubSpot dejaría la renovación sin control humano; además da la señal comercial de qué cuentas volvieron |
+| E | Estimable | ✓ la petición, la ventana de espera, el canal de avisos y la revocación auditada ya existen; faltan el correo guardado, el resultado de entrega y la pantalla |
+| S | Pequeña | ✓ S: un actor (Talento Humano), una lista, un correo y una acción (revocar) que reutiliza la revocación ya construida del panel |
+| T | Testeable | ✓ cada escenario deja un resultado observable en la bandeja y en el buzón de Talento Humano (doble de correo en CI) |
 
 ---
 
@@ -1295,6 +1416,7 @@ Cubre **RF-1.2.10** (el lado de quien decide). **Dividida de HU-095 el 2026-09-2
 **Capabilities:** RF-2.3 a RF-2.8 · RF-10 y RF-11 (sondeo y espacio no-perfil en el grid)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** resultados filtrados en menos de 1 segundo; al menos el 50% de las sesiones aplican un filtro propio más allá del conjunto curado.
 
 **Historias anticipadas:** filtrar por rol y categoría · filtrar por stack · filtrar por disponibilidad · combinar y limpiar filtros · buscar por texto libre · ordenar resultados · compartir el estado por URL · estado sin resultados con salida activa · ver y responder el sondeo de equipos híbridos · descartarlo de forma persistente.
@@ -1458,6 +1580,7 @@ Cubre RF-13.12.
 **Capabilities:** RF-3 (completo) · RF-6 (completo)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** al menos el 60% de las sesiones abren como mínimo una ficha; ninguna revisión de marca detecta lenguaje de inventario aplicado a personas.
 **Decisión abierta que la condiciona:** D-5, grado de detalle de la trayectoria — crítica desde el cierre de D-1.
 
@@ -1676,6 +1799,15 @@ Cubre RF-13.11.
 **Capabilities:** RF-4 (completo)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
+
+**Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Para que EP-001 no construya «Mi equipo», estas afirmaciones salieron de sus historias y **son alcance de esta épica**; se redactan con las historias pendientes de sumar, quitar y recuperar «Mi equipo» (deuda de mapa):
+- Sumar perfiles a «Mi equipo» mientras se explora el banco completo y conservarlos al volver a la selección (antes en HU-094, happy path).
+- Ante perfiles de la selección archivados, ofrecer continuar desde lo que se lleva en «Mi equipo» (antes en HU-094, error).
+- El colega invitado puede sumar y quitar perfiles en su propio «Mi equipo» (antes en HU-095, happy path).
+
+EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» por invitado en el servidor, vacío al entrar y aislado entre invitados, que no se altera al volver a la selección.
+
 **Métrica de éxito:** promedio de 1,8 perfiles o más por solicitud enviada.
 
 **Historias anticipadas:** sumar un perfil al equipo · quitarlo · ver el contador desde cualquier pantalla · revisar el equipo como conjunto con fecha de inicio más temprana · comparar hasta tres perfiles · recuperar el equipo al volver.
@@ -1819,6 +1951,7 @@ Cubre RF-14.7. Es el primer peldaño verificable de la venta de células (V2-4).
 **Capabilities:** RF-5 (completo) · RF-17.3 · RF-17.4
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** al menos el 85% de las solicitudes llegan con sector, fecha de inicio y duración diligenciados; ninguna pieza del flujo comunica reserva o contratación.
 
 **Historias anticipadas:** declarar el contexto del proyecto · identificarse cuando no se es el contacto del correo · revisar el resumen antes de enviar · enviar la solicitud · recibir la confirmación con el paso siguiente · agendar la alineación · intentar enviar con el equipo vacío.
@@ -2142,9 +2275,15 @@ Cubre RF-17 completo. Cierra el hueco entre «se envió la solicitud» y «algui
 **Fase:** Low-Fi (CRUD simulado) + MVP
 **Capa:** `layer: foundational`
 **Métrica de éxito:** 90% o más de los perfiles publicados con disponibilidad actualizada en los últimos 30 días; cero perfiles publicados sin consentimiento registrado.
-**Decisión abierta que la condiciona:** D-8, alcance del panel en v1.
+**Decisión que la condiciona:** D-8, alcance del panel en v1 — **cerrada** el 2026-09-18 en CRUD completo (PRD v4.6).
 
 **HU-123 ya no está en esta épica.** Desde la v5.5 (2026-09-27, T-19) la construye EP-001, porque la caparazón necesita el login del panel para generar enlaces (HU-122). EP-006 conserva la lista nominal de acceso, los roles y el resto del panel.
+
+**HU-147 (2026-09-30):** el contacto de Trycore que ve el cliente (nombre, cargo y correo) se configura desde la sección Administración del panel; hasta entonces EP-001 lo fija en `people.service@trycore.com`.
+
+**HU-150 y HU-151 (2026-09-30, tras el DoR, D12 y D13 del sponsor):** **HU-150** «Cargar la información de colocados de Operaciones» sale de HU-137 (partición, no recorte): archivo JSON o CSV, fecha de corte visible y aviso «dato desincronizado» si pasan más de 7 días sin carga nueva; HU-137 queda con el registro en el panel. **HU-151** «Administrar quién entra al panel y con qué rol» da historia a RF-8.1.5: alta, cambio de rol y baja de correos `@trycore.com`, auditadas, sin quedarse nunca sin administrador. En la misma revisión: la modalidad de prueba es obligatoria para publicar (D10, HU-128), **HU-149 se descarta** por decisión del sponsor (D11: sin lectura automática del artefacto; HU-131 permite descargarlo y verlo en el panel; diferida a v2 por D29, ver abajo) y HU-124 se limita a inventario, enlaces y colocados hasta EP-010 (D14).
+
+**HU-131 sale de EP-006 en esta versión (2026-10-01, D29 del sponsor).** Adjuntar, descargar y ver el artefacto de evidencia se difiere a una versión futura (línea **v2** del mapa): «hacerlo nos va a costar más en producción». Es diferir con acuerdo del sponsor, no descartar: la historia y sus cinco escenarios se conservan y la retoma esta épica. En esta versión la evidencia técnica es el reporte de validación que Talento Humano registra a mano —evaluador, fecha, resultado, enunciado, entregables y criterios— (HU-130 y HU-140); HU-140 no depende del artefacto (D11). RF-8.11 y RF-8.11.1 enmendados en el PRD v4.17. EP-006 construye en esta versión todas sus historias activas salvo HU-131.
 
 **Historias anticipadas:** crear un perfil · registrar consentimiento antes de publicar · actualizar disponibilidad en dos clics · pausar un perfil asignado · archivar un perfil que salió del banco · previsualizar la ficha · revisar la bandeja de vigencia · cargar perfiles masivamente · consultar el registro de auditoría.
 
@@ -2165,16 +2304,16 @@ Cubre RF-17 completo. Cierra el hueco entre «se envió la solicitud» y «algui
 - **RF-8.7** Vista previa exacta de la ficha antes de publicar.
 - **RF-8.8** Bandeja de vigencia: perfiles sin actualización en más de 30 días, marcados para revisión.
 - **RF-8.9** Registro de auditoría: qué cambió, quién y cuándo.
-- **RF-8.10** **La publicación de un perfil nunca se bloquea por falta del reporte detallado de validación.** Basta el Nivel 0 (Anexo B.9), que se deriva del rol sin intervención. El detalle enriquece la ficha cuando existe.
-- **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4).
-  - **RF-8.11.2 · El borrador sale de una plantilla determinista, sin IA** (decisión del sponsor, 2026-09-25, T-2). Se **precarga desde la modalidad de prueba** del perfil (su texto de catálogo, B.9.1); la **fecha y el resultado se extraen por patrones** del texto de la evidencia; lo que la plantilla no encuentra queda vacío, nunca se completa por analogía (B.9.3).
+- **RF-8.10** **La publicación de un perfil nunca se bloquea por falta del reporte detallado de validación.** Basta el Nivel 0 (Anexo B.9). El detalle enriquece la ficha cuando existe. *Enmienda PRD v4.15 (D10): la modalidad de prueba se elige del catálogo cerrado de su familia y es obligatoria para publicar; el rol solo filtra las modalidades ofrecidas.*
+- **RF-8.11** Talento Humano puede **adjuntar el artefacto de evidencia tal como lo tenga** —documento, repositorio o transcripción— y el sistema propone un borrador de los campos descriptivos para su revisión. El artefacto se almacena internamente y nunca se expone en el portal (B.8.4). *Enmienda v4.17 (D29, 2026-10-01): adjuntar, guardar y descargar el artefacto se difiere a una versión futura (HU-131); en esta versión no se sube ningún archivo y la evidencia es el reporte de validación que registra Talento Humano, con el borrador precargado desde la modalidad (RF-8.11.2).*
+  - **RF-8.11.2 · El borrador sale de una plantilla determinista, sin IA** (decisión del sponsor, 2026-09-25, T-2). Se **precarga desde la modalidad de prueba** del perfil (su texto de catálogo, B.9.1); la **fecha y el resultado se extraen por patrones** del texto de la evidencia; lo que la plantilla no encuentra queda vacío, nunca se completa por analogía (B.9.3). *Enmienda v4.15 (D11): no hay lectura automática del artefacto; fecha y resultado los escribe Talento Humano, y la evidencia se descarga y se ve solo en el panel (HU-149 descartada).*
   - **RF-8.11.3 · Nada sale del servidor.** Ni el artefacto ni su texto viajan a Gemini ni a ningún servicio externo. Es coherente con RF-16.2: el modelo nunca ve datos de perfiles.
   - **RF-8.11.4 · Confirma una persona.** El borrador no se publica solo: Talento Humano lo revisa, lo corrige y lo aprueba (B.9.3, candado 2).
-  - **RF-8.11.1 · Formatos y límites (§8.3).** **El proyecto no opera con video.** La evidencia es un documento, una transcripción en texto o el enlace a un repositorio. El archivo se guarda en **almacenamiento privado**, al que solo se llega desde el panel con autorización y nunca desde la cara cliente, con un máximo de 64 MB por archivo, y el borrador se genera a partir de ese texto con la plantilla de RF-8.11.2.
+  - **RF-8.11.1 · Formatos y límites (§8.3).** *Diferido con HU-131 a una versión futura (D29, 2026-10-01).* **El proyecto no opera con video.** La evidencia es un documento, una transcripción en texto o el enlace a un repositorio. El archivo se guarda en **almacenamiento privado**, al que solo se llega desde el panel con autorización y nunca desde la cara cliente, con un máximo de 64 MB por archivo, y el borrador se genera a partir de ese texto con la plantilla de RF-8.11.2. *Enmienda v4.15 (D11): el borrador sale solo de la modalidad de prueba.*
 - **RF-8.12** **El léxico de búsqueda se administra desde el panel.** Términos del cliente, sinónimos y su equivalencia en rol, tecnología o sector. Si vive en el código, en seis meses está desactualizado. Las consultas sin coincidencia se ofrecen como candidatas a incorporar al léxico o a la agenda de reclutamiento.
   - **RF-8.12.1 · El modelo propone, Talento Humano aprueba (D-24).** Periódicamente, Gemini revisa las consultas sin coincidencia (RF-2.6.3) y **propone** equivalencias nuevas para el léxico —«pagos en tiempo real» → Kafka, sector Banca—. Nada entra al léxico sin aprobación humana. Así el intérprete determinista mejora con el uso sin que cada búsqueda dependa del modelo. Al modelo solo viaja el texto de la consulta y la taxonomía, nunca datos de perfiles (RF-16.2).
 - **RF-8.13** **Pestaña de perfiles colocados**, con la cuenta, la fecha de inicio y la de vencimiento, ordenada por proximidad del vencimiento y destacando los que vencen dentro de 60 días.
-  - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. **La sincronización es periódica, nunca en tiempo real** —tarea programada diaria o importación del archivo que el sistema de asignación exporte—: no hay conexión permanente con sistemas internos de Trycore (§8.3).
+  - **RF-8.13.1** Es **espejo de solo lectura**. La fuente de verdad vive en el sistema de asignación; el panel muestra la fecha de corte del último sincronizado y lo marca como tal. Duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. **La sincronización es periódica, nunca en tiempo real** —tarea programada diaria o importación del archivo que el sistema de asignación exporte—: no hay conexión permanente con sistemas internos de Trycore (§8.3). *Enmienda v4.15 (D8, D12, D15, D16): deja de ser espejo de solo lectura; el panel es la fuente (HU-137) y Operaciones carga JSON o CSV con fecha de corte al cargar, aviso a más de 7 días y el panel gana ante diferencias (HU-150).*
   - **RF-8.13.2** **Un perfil colocado no se oculta: se ofrece para cuando queda libre.** Permanece *publicado* con su disponibilidad igual a la fecha de fin de la asignación. Ocultarlo esconde inventario que sí es vendible —un perfil que arranca en un mes es información útil para un cliente que planea el trimestre siguiente, y así se lo muestra el portal según RF-3.13— y con un banco de decenas, ocultar cuatro perfiles es caro. *Corrige la redacción anterior de este requisito, que forzaba el estado pausado.*
   - **RF-8.13.3** Esta pestaña es el disparador operativo de la renovación anticipada (V2-2): convierte un dato administrativo en una lista de conversaciones comerciales con fecha.
 - **RF-8.14 · Coherencia entre estado y disponibilidad.** Son **dos ejes distintos** y el panel no debe permitir que se contradigan.
@@ -2203,11 +2342,11 @@ Cubre RF-17 completo. Cierra el hueco entre «se envió la solicitud» y «algui
   - **RF-8.16.7 · La relación entre rol y tecnologías no se declara.** Emerge de los perfiles reales y el panel de ajuste del cliente la calcula (RF-13.7). Declararla a mano sería trabajo doble que se desactualiza. Para un rol recién creado sin perfiles, se ofrece el catálogo completo.
   - **RF-8.16.8** Agregar una modalidad de prueba **exige redactar su texto de cara al cliente en ese momento**. Sin texto no hay opción.
 
-### Historias de esta épica (24)
+### Historias de esta épica (28)
 
 #### HU-086 — Pegar mi hoja de cálculo y ver qué va a pasar
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** pegar mi hoja de cálculo y ver exactamente qué cambiaría antes de confirmar,
 **para** revisar decenas de perfiles de una vez sin miedo a romper algo.
 
@@ -2215,34 +2354,42 @@ Cubre RF-17 completo. Cierra el hueco entre «se envió la solicitud» y «algui
 
 ###### Happy path — pegar desde la hoja de cálculo
 
-**Dado** que copié un bloque de celdas de Excel con una columna de código y otra de disponibilidad,
+**Dado** que copié de Excel un bloque de celdas con una columna de código y otra de disponibilidad,
 **cuando** lo pego en el asistente,
 **Entonces** el sistema reconoce que es un formato tabular sin que yo se lo diga
-**Y** empareja las columnas con los campos del perfil y me deja corregir el emparejamiento
-**Y** puedo guardar ese emparejamiento como plantilla para la próxima vez
+**Y** propone el emparejamiento de cada columna con un campo del perfil, o «no importar», y me deja corregirlo
 
-###### Happy path — vista previa antes de tocar nada
+###### Happy path — la vista previa al terminar de procesar
 
-**Dado** que el archivo se procesó,
-**cuando** llego a la vista previa,
+**Dado** que pegué la exportación del banco (HU-088) con la disponibilidad de dos perfiles cambiada y el resto sin tocar,
+**cuando** el sistema termina de procesarla,
 **Entonces** veo cada fila como tarjeta colapsada agrupada en nuevos, actualizados, archivados, sin cambios, omitidos y con error, con su conteo
-**Y** al abrir un actualizado veo **solo los campos que cambian**, con valor anterior y nuevo
+**Y** los dos perfiles editados aparecen en actualizados y todos los demás en «sin cambios»
 **Y** puedo desmarcar cualquier tarjeta para excluirla
 **Y** nada se ha modificado todavía en el banco
 
+###### Happy path — abrir un perfil actualizado
+
+**Dado** que la vista previa muestra un perfil en el grupo de actualizados,
+**cuando** abro su tarjeta,
+**Entonces** veo **solo los campos que cambian**, con valor anterior y nuevo enfrentados
+**Y** los campos que no cambian no aparecen
+
 ###### Error — dos filas con el mismo código
 
-**Dado** que mi archivo repite un código en dos filas,
-**cuando** el sistema lo procesa,
-**Entonces** ambas filas se marcan como error
-**Y** no se aplica ninguna regla de precedencia por su cuenta
+**Dado** que mi hoja repite un código en dos filas,
+**cuando** el sistema termina de procesarla,
+**Entonces** ambas filas aparecen en el grupo con error, con el código duplicado como motivo
+**Y** ninguna de las dos se aplica
+**Y** la importación no procede hasta que resuelva el duplicado
 
 ###### Edge case — valores que no existen en el banco
 
-**Dado** que una fila trae una tecnología o un rol que hoy no existe,
-**cuando** reviso la vista previa,
-**Entonces** ese valor aparece destacado como nuevo en la taxonomía
-**Y** puedo detectar de un vistazo si fue un error de digitación
+**Dado** que una fila trae una tecnología o un rol que hoy no existe en el banco,
+**cuando** el sistema termina de procesar la hoja,
+**Entonces** ese valor aparece destacado en la vista previa como nuevo en la taxonomía
+**Y** veo el valor exacto y cuántas veces se repite en la hoja
+**Y** la vista previa no se bloquea por ello
 
 ##### Notas
 
@@ -2252,26 +2399,30 @@ Cubre RF-17 completo. Cierra el hueco entre «se envió la solicitud» y «algui
 
 **Nada se modifica aquí.** Esta historia termina en la vista previa. Confirmar es HU-141, y esa separación es justamente lo que hace verificable la promesa de RF-8.15.5.
 
-Cubre **RF-8.15.1**, **RF-8.15.5** y **RF-8.15.6**. Especificación completa en `docs/10-specs/importacion-masiva.md`.
+**Consume el formato que fija HU-088** (D2, sponsor 2026-09-30: exportar primero). Por eso la prueba de ida y vuelta —pegar la exportación y que lo no tocado caiga en «sin cambios»— vive en el segundo escenario de esta historia: es aquí donde existe el importador que la ejecuta.
+
+Cubre **RF-8.15.1**, **RF-8.15.2**, **RF-8.15.5** y **RF-8.15.6**. Especificación completa en `docs/10-specs/importacion-masiva.md`.
+
+**Revisión INVEST 2026-09-30:** rol unificado; «guardar el emparejamiento como plantilla» sale a **HU-148** (D2, partición, no recorte); vista previa separada en «termina de procesar» y «abro la tarjeta»; el duplicado ya no se aplica ni deja proceder; el valor nuevo muestra valor exacto y repeticiones; la ida y vuelta con la exportación pasa aquí desde HU-088; `depende_de: [HU-088]` y tabla INVEST razonada.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-088 · habilita HU-141
+Épica madre: **EP-006** · PRD v4.8 · depende de HU-088 (formato de la hoja, D2) · habilita HU-141 y HU-148
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
-| V | Valiosa | ✓ la vista previa vale aunque se confirme después |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ tras la división |
-| T | Testeable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: consume el formato de columnas que fija HU-088 y se construye después de ella (D2). No necesita HU-141: termina en la vista previa, sin escribir |
+| N | Negociable | ✓ fija qué se ve y que nada se modifica; cómo se detecta el formato y se propone el emparejamiento queda abierto al diseño |
+| V | Valiosa | ✓ la administradora ve el impacto de una hoja completa sin riesgo, aunque confirmar llegue en HU-141 |
+| E | Estimable | ✓ M: lectura del pegado tabular (celdas separadas por tabulador) y de JSON, emparejamiento por nombre contra el formato de HU-088 y diferencia campo a campo contra `inventario.perfiles` (tabla existente desde la migración 0005), todo en lectura. Sin servicio externo; la spec §6 pasos 1–3 detalla el comportamiento |
+| S | Pequeña | ✓ cinco escenarios de una sola capacidad (pegar y previsualizar); plantillas de emparejamiento en HU-148, confirmar en HU-141, corregir fallos en HU-142 |
+| T | Testeable | ✓ cada Entonces es observable; «nada se modifica» se comprueba comparando el banco antes y después, y la ida y vuelta da un resultado exacto (solo los dos perfiles editados en actualizados) |
 
 #### HU-087 — Deshacer una importación que salió mal
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** revertir por completo la última importación,
 **para** que un archivo equivocado no me obligue a reconstruir decenas de perfiles a mano.
 
@@ -2295,7 +2446,7 @@ Cubre **RF-8.15.1**, **RF-8.15.5** y **RF-8.15.6**. Especificación completa en 
 ###### Edge case — un perfil cambiado a mano después de la importación
 
 **Dado** que edité manualmente un perfil que la importación había tocado,
-**cuando** reverto la importación,
+**cuando** revierto la importación,
 **Entonces** el sistema me advierte cuáles perfiles cambiaron después
 **Y** me deja elegir si los incluyo en la reversión o los dejo como están
 
@@ -2307,123 +2458,138 @@ Cubre **RF-8.15.1**, **RF-8.15.5** y **RF-8.15.6**. Especificación completa en 
 
 Cubre RF-8.15.8.
 
+**Revisión INVEST 2026-09-30:** rol unificado; «reverto» → «revierto»; la dependencia pasa de HU-086 a **HU-141**, porque la importación que se revierte la aplica HU-141 (HU-086 termina en la vista previa y no modifica nada); tabla INVEST razonada.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v3.5 · Depende de HU-086
+Épica madre: **EP-006** · PRD v3.5 · depende de HU-141 (que depende de HU-086)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-086 |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: sin una importación confirmada (HU-141) no hay nada que revertir; se construye después de ella |
+| N | Negociable | ✓ fija el resultado (estado anterior exacto, creados archivados, evento propio); dónde vive la opción de deshacer queda abierto |
 | V | Valiosa | ✓ es la red de seguridad de la funcionalidad más destructiva del panel |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M, con una condición concreta: HU-141 debe guardar al confirmar el estado anterior de cada perfil tocado; con esa foto, revertir es reponerla, archivar los creados y escribir un evento en la cadena de auditoría ya existente (`packages/dominio/src/auditoria`). Si HU-141 no la guarda, el trabajo crece y hay que estimarlo junto |
+| S | Pequeña | ✓ tres escenarios de una sola capacidad |
+| T | Testeable | ✓ el estado de cada perfil antes de importar y después de revertir se compara campo a campo |
 
 #### HU-088 — Descargar una plantilla o el banco para editarlo y devolverlo
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** descargar los perfiles actuales en el mismo formato que acepta la importación,
 **para** editarlos donde me resulta cómodo y devolverlos sin pelear con el formato.
 
 ##### Criterios de aceptación
 
-###### Happy path — exportar y reimportar sin cambios
+###### Happy path — exportar el banco en el formato de importación
 
-**Dado** que exporto el banco,
-**cuando** vuelvo a importar el archivo sin tocarlo,
-**Entonces** todas las filas caen en «sin cambios»
-**Y** no se crea ni se modifica ningún perfil
+**Dado** que el banco tiene perfiles cargados,
+**cuando** exporto el banco en hoja de cálculo,
+**Entonces** obtengo una fila por perfil y una columna por campo del modelo, con los mismos encabezados que la plantilla de muestra
+**Y** las listas vienen en una sola celda separadas por punto y coma
 
 ###### Happy path — plantilla de muestra
 
 **Dado** que nunca he importado y no conozco el formato,
 **cuando** descargo la plantilla de muestra,
 **Entonces** obtengo un archivo con las columnas y **tres ejemplos**: actualizar un campo, crear un perfil nuevo y archivar uno
-**Y** puedo editarla y pegarla sin haber leído ninguna documentación
+**Y** cada columna trae un encabezado autoexplicativo y un valor de ejemplo
+
+###### Happy path — el mismo banco en JSON
+
+**Dado** que el banco tiene perfiles cargados,
+**cuando** exporto el banco en JSON,
+**Entonces** obtengo los mismos perfiles y campos que en la hoja de cálculo
+**Y** el archivo tiene la estructura que acepta la importación, sin conversión
 
 ###### Error — el navegador bloquea la descarga
 
-**Dado** que estoy en una vista donde la descarga está bloqueada,
-**cuando** pido la plantilla o el banco,
-**Entonces** el contenido se muestra para copiarlo
+**Dado** que estoy en una vista incrustada donde el navegador bloquea las descargas,
+**cuando** descargo la plantilla de muestra,
+**Entonces** el contenido se muestra en un área de texto para copiarlo
 **Y** puedo continuar sin que la descarga haya funcionado
-
-###### Happy path — dos formatos
-
-**Dado** que voy a exportar,
-**cuando** elijo el formato,
-**Entonces** puedo descargar en hoja de cálculo o en JSON
-**Y** ambos se pueden volver a importar sin conversión
 
 ###### Edge case — campos internos
 
 **Dado** que el banco tiene campos que no se publican, como el motivo de pausa o la fecha exacta de disponibilidad,
-**cuando** exporto,
+**cuando** exporto el banco,
 **Entonces** esos campos vienen incluidos y marcados como internos
-**Y** al reimportarlos siguen sin publicarse
+**Y** el archivo no incluye el registro de consentimiento
 
 ##### Notas
 
 **Por qué esta historia importa más de lo que parece.** La forma más confiable de obtener el formato correcto no es leer una documentación: es sacar lo que ya existe, editarlo y devolverlo. Sin exportación, la importación obliga a construir el archivo desde cero y a adivinar nombres de campos.
 
-La prueba de ida y vuelta del primer criterio es además el mejor control de calidad de todo el mecanismo: si exportar e importar no es neutro, hay un error de formato en alguna parte.
+**Esta historia fija el formato; HU-086 lo consume** (D2, sponsor 2026-09-30: exportar primero). Por eso se construye antes que la importación. La prueba de ida y vuelta —exportar, reimportar sin tocar y que todo caiga en «sin cambios»— es el mejor control de calidad de todo el mecanismo, y vive en el segundo escenario de **HU-086**, que es donde existe el importador que la ejecuta.
 
-Cubre RF-8.15.9.
+**El respaldo del área de texto vale para los dos botones** (spec §6, paso 1: la funcionalidad no depende de que la descarga funcione). El escenario de error se ilustra con la plantilla; la exportación del banco se comporta igual.
+
+**La exportación no es un respaldo del banco** (PRD §10.3): no lleva consentimientos, y la importación no puede concederlos (RF-8.15.7). Los campos internos siguen sin publicarse al volver porque la importación no publica.
+
+Cubre RF-8.15.9 y el paso 1 de la spec (plantilla de muestra y exportación).
+
+**Revisión INVEST 2026-09-30:** rol unificado; el escenario de error ya no dice «la plantilla o el banco» (una acción por escenario); el Entonces de la plantilla pasa a observable (encabezado autoexplicativo y valor de ejemplo); «dos formatos» se reescribe como exportar en JSON con estado en el Dado; la ida y vuelta pasa a HU-086 para que esta historia no dependa del importador (D2); el borde de campos internos deja de depender de reimportar; tabla INVEST razonada.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v3.5 · Habilita HU-086
+Épica madre: **EP-006** · PRD v3.5 · habilita HU-086 (fija el formato que HU-086 consume, D2)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ tiene valor por sí sola como respaldo del inventario |
-| N | Negociable | ✓ |
-| V | Valiosa | ✓ |
-| E | Estimable | ✓ |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ la prueba de ida y vuelta es objetiva |
+| I | Independiente | ✓ no depende de ninguna otra historia de la épica; se construye primero porque fija el formato (D2), y tiene valor por sí sola como forma de sacar el inventario a una hoja |
+| N | Negociable | ✓ fija qué columnas y ejemplos trae; el diseño de los botones y del área de texto queda abierto |
+| V | Valiosa | ✓ quita la necesidad de adivinar nombres de campos y deja el formato de la importación definido antes de construirla |
+| E | Estimable | ✓ S: serializar `inventario.perfiles` y sus relaciones de rol, tecnología y sector (tablas existentes desde la migración 0005) a CSV y JSON, una plantilla fija de tres filas y el área de texto de respaldo. Sin servicio externo |
+| S | Pequeña | ✓ cinco escenarios de una sola capacidad (sacar el formato en dos versiones) |
+| T | Testeable | ✓ encabezados, ejemplos y campos internos se comprueban leyendo el archivo; el bloqueo de descarga se simula en una vista incrustada |
 
 #### HU-089 — Crear valores de catálogo sin duplicar los que ya existen
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** crear roles, tecnologías y sectores desde un catálogo que me avise si ya existe algo parecido,
 **para** que el banco crezca sin llenarse de duplicados que rompan los filtros del cliente.
 
 ##### Criterios de aceptación
 
-###### Happy path — rol nuevo con su familia
+###### Happy path — rol nuevo en una familia con modalidades de prueba
 
-**Dado** que necesito publicar un Diseñador UX/UI Banking y ese rol no existe,
-**cuando** lo creo en el catálogo,
-**Entonces** el sistema me exige elegir una familia
-**Y** si la familia no tiene modalidades de prueba, me advierte que ningún perfil de esa familia se podrá publicar hasta definirla
-**Y** el rol queda disponible en el editor de perfiles
+**Dado** que necesito publicar un Diseñador UX/UI Banking, ese rol no existe y su familia tiene modalidades de prueba registradas,
+**cuando** creo el rol en el catálogo eligiendo esa familia,
+**Entonces** el rol queda disponible en el editor de perfiles
+**Y** el formulario de rol tiene la familia como campo obligatorio
 
 ###### Happy path — seleccionar en vez de escribir
 
-**Dado** que estoy editando un perfil,
-**cuando** voy a poner sus tecnologías,
-**Entonces** las selecciono del catálogo, nunca las escribo libremente
-**Y** si escribo algo que no existe, se me ofrece crearlo como una acción aparte
+**Dado** que estoy editando las tecnologías de un perfil,
+**cuando** escribo «Fig» en el campo,
+**Entonces** el panel me ofrece para elegir los valores del catálogo que coinciden, como «Figma»
+**Y** el campo no acepta guardar texto libre
+**Y** crear un valor nuevo aparece como una acción aparte de las coincidencias
 
 ###### Error — valor parecido a uno existente
 
-**Dado** que el catálogo ya tiene «Figma» y yo escribo «Fgima»,
-**cuando** voy a crearlo,
-**Entonces** el sistema me muestra el parecido y me deja usarlo en un toque
-**Y** si aun así lo creo, es una decisión mía y no un accidente
+**Dado** que el catálogo ya tiene «Figma»,
+**cuando** intento crear la tecnología «Fgima»,
+**Entonces** el panel me muestra «Figma» como valor parecido y me deja usarlo en un toque
+**Y** crear «Fgima» exige que confirme que es un valor distinto
 
 ###### Error — valor idéntico salvo mayúsculas
 
-**Dado** que el catálogo ya tiene «Figma» y escribo «figma»,
-**cuando** intento crearlo,
-**Entonces** el sistema lo impide
-**Y** me indica que ya existe
+**Dado** que el catálogo ya tiene «Figma»,
+**cuando** intento crear «figma»,
+**Entonces** el panel impide crearlo
+**Y** me indica que ya existe como «Figma»
+
+###### Edge case — rol nuevo en una familia sin modalidades de prueba
+
+**Dado** que la familia que elijo para un rol nuevo no tiene modalidades de prueba registradas,
+**cuando** creo el rol,
+**Entonces** el rol queda creado
+**Y** el panel me advierte que ningún perfil de esa familia se podrá publicar hasta registrar una modalidad
 
 ##### Notas
 
@@ -2437,6 +2603,8 @@ Cubre RF-8.15.9.
 
 Cubre **RF-8.16.2**, **RF-8.16.3**, **RF-8.16.4** y **RF-8.16.8**.
 
+**Revisión INVEST 2026-09-30:** rol unificado; reorganizada en cinco escenarios sin Entonces condicionales: rol en familia con modalidades (happy), selección del catálogo (happy), parecido «Fgima» (error), idéntico salvo mayúsculas (error) y familia sin modalidades (edge, antes escondido como «si…» dentro del happy); tabla INVEST razonada.
+
 ##### Trazabilidad
 
 Épica madre: **EP-006** · PRD v4.8 · consumida por HU-125 · habilita HU-143
@@ -2445,17 +2613,17 @@ Cubre **RF-8.16.2**, **RF-8.16.3**, **RF-8.16.4** y **RF-8.16.8**.
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ no depende de otra historia de la épica: los catálogos existen como tablas y esta historia les pone la administración encima. HU-125 y HU-143 dependen de ella, no al revés |
+| N | Negociable | ✓ fija que no hay texto libre y que el parecido se avisa; el umbral de parecido y la forma del aviso quedan abiertos |
 | V | Valiosa | ✓ protege la calidad de los filtros, que es lo que el cliente usa |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ tras la división |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: las tablas de catálogo (familias, roles, tecnologías, sectores, modalidades) existen desde la migración 0005; falta la pantalla de alta, la normalización de mayúsculas y acentos y la distancia de edición, deterministas y sobre catálogos de decenas de valores |
+| S | Pequeña | ✓ cinco escenarios de una capacidad (crear sin duplicar); retirar y fusionar están en HU-143 |
+| T | Testeable | ✓ cada caso tiene un valor de entrada concreto («Fig», «Fgima», «figma») y un resultado observable |
 
 #### HU-124 — Consultar el banco sin poder modificarlo
 
 **Como** analista de Mercadeo con rol observador,
-**quiero** consultar el inventario, los enlaces, los colocados y la demanda sin poder escribir nada,
+**quiero** consultar el inventario, los enlaces de acceso y los colocados sin poder escribir nada,
 **para** armar la curaduría de una cuenta sin riesgo de alterar el banco por accidente.
 
 ##### Criterios de aceptación
@@ -2464,7 +2632,7 @@ Cubre **RF-8.16.2**, **RF-8.16.3**, **RF-8.16.4** y **RF-8.16.8**.
 
 **Dado** que tengo rol observador,
 **cuando** entro al panel,
-**Entonces** veo inventario, enlaces generados, perfiles colocados, registro de demanda y cobertura
+**Entonces** veo el inventario, los enlaces de acceso generados y los perfiles colocados
 **Y** no veo ningún control de edición, publicación ni importación
 
 ###### Error — intento de escritura por ruta directa
@@ -2476,10 +2644,10 @@ Cubre **RF-8.16.2**, **RF-8.16.3**, **RF-8.16.4** y **RF-8.16.8**.
 
 ###### Edge case — necesito un cambio que no puedo hacer
 
-**Dado** que veo un dato desactualizado,
-**cuando** quiero corregirlo,
-**Entonces** el panel me ofrece avisar a quien administra el inventario
-**Y** no me deja en un callejón sin salida
+**Dado** que tengo rol observador y veo un dato desactualizado en un perfil,
+**cuando** intento editarlo,
+**Entonces** el panel me explica que mi rol es de consulta
+**Y** me ofrece un botón para avisar a quien administra el inventario, con el perfil ya identificado en el aviso
 
 ##### Notas
 
@@ -2487,20 +2655,26 @@ Cubre **RF-8.1.2**, rol *observador*. Es el rol de Mercadeo y Comercial.
 
 **Por qué el observador no es un lujo.** Mercadeo arma la selección de perfiles de cada cuenta (HU-113) y necesita ver disponibilidad real. Darle permiso de escritura para que pueda mirar sería el camino corto y el error: quien arma correos no debería poder despublicar un perfil.
 
+**Lo que ya existe.** HU-123 (entrar al panel) está construida en EP-001, junto con la matriz rol × acción y el rol observador como mínimo técnico. Esta historia extiende esa matriz a las acciones de EP-006 y añade el aviso.
+
+**Revisión DoR 2026-09-30: aplicada D14** (sponsor; bloqueo B6 del DoR). El happy path se limita a los destinos que existen en EP-006: inventario, enlaces de acceso y colocados. **El registro de demanda y la cobertura se añaden a la consulta del observador cuando llegue EP-010**, que es donde se construyen; RF-8.1.2 los sigue listando como alcance del rol y no se recortan. Con esto I y T se cumplen dentro de EP-006.
+
+**Revisión INVEST 2026-09-30:** el borde pasa de «quiero corregirlo» a una acción («intento editarlo») con resultado observable (botón para avisar con el perfil identificado); `depende_de: [HU-123]`, ya satisfecha; tabla INVEST razonada. El actor sigue siendo el observador: el rol unificado de la épica aplica a la administradora.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · D-22 · relacionada con HU-113
+Épica madre: **EP-006** · PRD v4.15 · RF-8.1.2 · D-22 · D14 (sponsor, 2026-09-30) · depende de HU-123 (construida en EP-001) · relacionada con HU-113
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-123 — el rol necesita identidad |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ su única dependencia, HU-123, ya está construida en EP-001; tras D14 no exige pantallas de EP-010 (demanda y cobertura) |
+| N | Negociable | ✓ fija que el observador no escribe y que no queda sin salida; el canal del aviso queda abierto |
 | V | Valiosa | ✓ habilita a Mercadeo sin exponer el banco a escritura |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ S: la matriz rol × acción ya existe (`packages/dominio/src/acceso/permisos.ts`) y rechaza por rol; el trabajo es registrar ahí cada acción nueva de EP-006, ocultar sus controles, auditar el rechazo y el botón de aviso. Queda por decidir en el diseño si el aviso sale por correo (Mailgun, ya usado en EP-001) o como aviso dentro del panel; ninguna de las dos opciones cambia el tamaño |
+| S | Pequeña | ✓ tres escenarios de una capacidad |
+| T | Testeable | ✓ los tres destinos de EP-006 se comprueban con sesión de observador; recorrer las rutas de escritura con sesión de observador da un rechazo y un evento de auditoría por cada una |
 
 #### HU-125 — Crear un perfil eligiendo del catálogo
 
@@ -2512,30 +2686,30 @@ Cubre **RF-8.1.2**, rol *observador*. Es el rol de Mercadeo y Comercial.
 
 ###### Happy path — perfil nuevo en borrador
 
-**Dado** que tengo rol de administradora,
-**cuando** creo un perfil con sus atributos del modelo de datos,
+**Dado** que estoy creando un perfil nuevo en el panel con rol de administradora,
+**cuando** lo guardo con sus atributos del modelo de datos,
 **Entonces** el perfil queda en estado *borrador*
-**Y** rol, tecnologías y sector se eligieron del catálogo, no se escribieron libres
+**Y** rol, tecnologías y sector quedan como valores del catálogo, no como texto libre
 **Y** el perfil no es visible en el portal
 
 ###### Error — familia sin modalidades de prueba
 
-**Dado** que elijo un rol cuya familia no tiene modalidades de prueba registradas,
-**cuando** lo selecciono,
+**Dado** que el rol que necesito pertenece a una familia sin modalidades de prueba registradas,
+**cuando** lo selecciono en el editor del perfil,
 **Entonces** el panel me advierte en ese momento que ningún perfil de esa familia podrá publicarse
 **Y** me ofrece ir a registrar la modalidad antes de seguir
 
 ###### Error — campos obligatorios incompletos
 
-**Dado** que dejo sin llenar un atributo obligatorio del modelo,
-**cuando** intento guardar,
+**Dado** que dejé sin llenar un atributo obligatorio del modelo,
+**cuando** guardo el perfil,
 **Entonces** el perfil se guarda igual como borrador
 **Y** el panel señala qué falta para poder publicarlo
 
 ###### Edge case — el valor que necesito no está en el catálogo
 
-**Dado** que el rol que necesito no existe,
-**cuando** lo escribo,
+**Dado** que el rol que necesito no existe en el catálogo,
+**cuando** lo escribo en el campo de rol,
 **Entonces** el panel me muestra los valores parecidos antes de dejarme crear uno nuevo
 **Y** crear queda disponible después de haber visto la alternativa
 
@@ -2547,20 +2721,24 @@ Cubre **RF-8.2**, **RF-8.16.2**, **RF-8.16.3** y **RF-8.16.4**.
 
 **La detección de parecidos vive en HU-089** (catálogos). Aquí solo se consume desde el editor: por eso el edge case describe el comportamiento y no la mecánica.
 
+**Revisión DoR 2026-09-30: aplicada D10** (sponsor; CRN-14). En el editor, la modalidad de prueba se elige del catálogo cerrado de la familia del rol (Anexo B.8.1): el rol solo filtra qué modalidades se ofrecen, no la deriva. Es un atributo obligatorio para publicar; si queda sin elegir, el perfil se guarda como borrador y el panel la señala entre lo que falta (escenario «campos obligatorios incompletos»). El bloqueo al publicar sin modalidad vive en HU-128.
+
+**Revisión INVEST 2026-09-30:** el error de familia deja de repetir la acción en Dado y Cuando (Dado = el rol pertenece a una familia sin modalidades; Cuando = lo selecciono); Dado y Cuando de los demás escenarios pasan a estado y acción únicos; `depende_de: [HU-089]`; tabla INVEST razonada.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · relacionada con HU-089
+Épica madre: **EP-006** · PRD v4.15 · RF-8.10 (D10) · Anexo B.8.1 · depende de HU-089 · habilita HU-127 y HU-128
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | consume el catálogo de HU-089, no lo construye |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: consume el catálogo y la detección de parecidos de HU-089, no los construye; se construye después de ella |
+| N | Negociable | ✓ fija que todo nace en borrador y que no hay texto libre; la disposición del editor queda abierta |
 | V | Valiosa | ✓ es la puerta de entrada del inventario |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: `inventario.perfiles` y sus relaciones con rol, tecnología y sector existen desde la migración 0005; falta el editor del panel con selectores sobre los catálogos y la lista de faltantes para publicar, que sale del modelo de datos del Anexo B del PRD |
+| S | Pequeña | ✓ cuatro escenarios de una capacidad (crear en borrador) |
+| T | Testeable | ✓ estado resultante, valores del catálogo y ausencia en el portal se comprueban tras guardar |
 
 #### HU-126 — Editar un perfil publicado sin sorpresas
 
@@ -2570,27 +2748,40 @@ Cubre **RF-8.2**, **RF-8.16.2**, **RF-8.16.3** y **RF-8.16.4**.
 
 ##### Criterios de aceptación
 
-###### Happy path — edición con efecto declarado
+###### Happy path — guardar muestra el impacto
 
-**Dado** que edito un perfil en estado *publicado*,
+**Dado** que edité un campo visible de un perfil en estado *publicado*,
 **cuando** guardo el cambio,
-**Entonces** el panel me dice qué campos cambian de cara al cliente antes de confirmar
-**Y** al confirmar el cambio queda visible en el portal
+**Entonces** el panel me muestra qué campos cambian de cara al cliente, con su valor anterior y el nuevo
+**Y** el portal sigue mostrando la versión anterior mientras no confirme
+
+###### Happy path — confirmar aplica y deja registro
+
+**Dado** que el panel me mostró el impacto de mi cambio en un perfil publicado,
+**cuando** confirmo,
+**Entonces** el cambio queda visible en el portal
 **Y** queda registrado qué cambió, quién y cuándo
 
-###### Error — el cambio deja el perfil sin requisitos de publicación
+###### Error — el cambio deja el perfil sin un dato que la publicación exige
 
-**Dado** que edito un perfil publicado y quito un dato que la publicación exige,
+**Dado** que en un perfil publicado quité un dato que la publicación exige,
 **cuando** guardo,
-**Entonces** el panel bloquea el guardado o me ofrece pasar el perfil a borrador
-**Y** nunca deja publicado un perfil que dejó de cumplir sus condiciones
+**Entonces** el panel me pregunta: «Este cambio deja el perfil incompleto: ¿descarto el cambio o paso el perfil a borrador?»
+**Y** mientras no responda, el perfil sigue publicado sin el cambio
 
-###### Edge case — edición de un perfil colocado
+###### Error — elijo descartar el cambio
 
-**Dado** que el perfil está colocado en una cuenta,
-**cuando** lo edito,
-**Entonces** puedo cambiar sus atributos con normalidad
-**Y** el panel me recuerda que sigue publicado con su disponibilidad en la fecha de fin de la asignación
+**Dado** que el panel me preguntó si descarto el cambio o paso el perfil a borrador,
+**cuando** elijo descartar,
+**Entonces** el cambio no se aplica y el perfil conserva exactamente los valores que tenía antes de mi edición
+**Y** no queda en la auditoría ningún cambio que nunca se aplicó
+
+###### Edge case — elijo pasar el perfil a borrador
+
+**Dado** que el panel me preguntó si descarto el cambio o paso el perfil a borrador,
+**cuando** elijo pasarlo a borrador,
+**Entonces** el cambio se guarda y el perfil queda en *borrador*, fuera del portal
+**Y** queda registrado que salió de publicado por esta edición, quién y cuándo
 
 ##### Notas
 
@@ -2598,20 +2789,28 @@ Cubre **RF-8.2** y se apoya en **RF-8.7** (vista previa, HU-129) y **RF-8.9** (a
 
 **Editar publicado no es lo mismo que editar borrador.** Un borrador no lo ve nadie; un publicado puede estar abierto en la pantalla de un cliente ahora mismo. Por eso el happy path exige declarar el efecto antes de confirmar y no después.
 
+**El panel pregunta; nunca decide solo** (D1, sponsor 2026-09-30). Un perfil que dejó de cumplir sus condiciones no queda publicado, pero tampoco se bloquea el guardado en silencio ni se despublica sin avisar: la administradora elige entre descartar el cambio o pasar el perfil a borrador; cada respuesta tiene su escenario.
+
+**Perfil colocado:** editarlo sigue el mismo camino de impacto y confirmación que cualquier publicado, y el panel recuerda que sigue publicado con su disponibilidad en la fecha de fin de la asignación (RF-8.13.2). No es un escenario aparte: no introduce comportamiento observable nuevo.
+
+**El antes y después por campo es de esta historia** (D3): HU-129 muestra la ficha completa como la verá el cliente, sin comparación; la comparación campo a campo aparece aquí, al guardar.
+
+**Revisión INVEST 2026-09-30:** aplicada D1 en el escenario de error (el panel pregunta descartar o pasar a borrador) y un escenario para la elección «pasar a borrador»; separados guardar (muestra el impacto) y confirmar (aplica y audita); revalidación: añadido el escenario «descartar» para cubrir las dos respuestas de D1 (el colocado pasa a Notas); `depende_de: [HU-128]`; tabla INVEST razonada. Cinco escenarios, el tope.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8
+Épica madre: **EP-006** · PRD v4.8 · D1 · D3 · depende de HU-128 (cadena HU-125 → HU-127 → HU-128 → HU-126) · relacionada con HU-129 y HU-138
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: necesita perfiles que puedan estar publicados, y eso llega con la cadena de consentimiento y bloqueo (HU-127, HU-128); se construye después |
+| N | Negociable | ✓ fija el orden guardar → ver impacto → confirmar y la pregunta de D1; la presentación del impacto queda abierta |
 | V | Valiosa | ✓ evita cambios en vivo no advertidos |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: la edición en dos tiempos pide guardar el cambio pendiente aparte de la versión publicada hasta confirmar; la lista de datos que la publicación exige es la misma que usa HU-125, y el registro se escribe en la cadena de auditoría existente (`packages/dominio/src/auditoria`) |
+| S | Pequeña | ✓ cinco escenarios de una capacidad (editar un publicado sin sorpresas) |
+| T | Testeable | ✓ el portal se consulta antes y después de confirmar, y el estado del perfil tras cada una de las dos respuestas a la pregunta de D1 (descartar / pasar a borrador) es comprobable |
 
 #### HU-127 — Registrar el consentimiento nominal del profesional
 
@@ -2630,22 +2829,22 @@ Cubre **RF-8.2** y se apoya en **RF-8.7** (vista previa, HU-129) y **RF-8.9** (a
 
 ###### Error — consentimiento anterior para publicación anonimizada
 
-**Dado** que el profesional consintió cuando el banco se publicaba sin nombres,
-**cuando** intento usar ese consentimiento para el perfil nominal,
+**Dado** que el único consentimiento del profesional es de cuando el banco se publicaba sin nombres,
+**cuando** intento registrarlo como consentimiento nominal,
 **Entonces** el panel lo rechaza y explica que ese consentimiento no cubre este uso
-**Y** exige recogerlo de nuevo
+**Y** me indica que hay que recogerlo de nuevo
 
 ###### Error — consentimiento revocado
 
-**Dado** que un profesional revoca su consentimiento,
-**cuando** lo registro,
+**Dado** que el perfil está publicado y el profesional comunicó que revoca su consentimiento,
+**cuando** registro la revocación,
 **Entonces** el perfil sale de *publicado* de inmediato
-**Y** el portal deja de mostrarlo sin dejar un hueco sin explicar
+**Y** un enlace curado que lo incluía, al abrirse, muestra que el perfil dejó de estar disponible en lugar de omitirlo (RF-19.2)
 
 ###### Edge case — consentimiento parcial
 
 **Dado** que el profesional autoriza su trayectoria pero no que se nombren sus clientes,
-**cuando** lo registro,
+**cuando** registro ese consentimiento,
 **Entonces** el perfil puede publicarse con la experiencia despersonalizada
 **Y** los clientes nombrados no aparecen en su ficha
 
@@ -2655,26 +2854,30 @@ Cubre **RF-8.4**. Es consecuencia directa de la **reversión de D-1** (2026-09-1
 
 **El consentimiento recogido antes no sirve.** El PRD es explícito: el consentimiento para una publicación anonimizada no cubre la publicación nominal. Esto significa trabajo real de Talento Humano sobre el banco existente antes de salir a producción, y se cruza con **D-3** — 25 perfiles publicados como umbral, cada uno con consentimiento nominal recogido de nuevo.
 
+**Nota operativa (D-3):** antes de producción, Talento Humano vuelve a recoger el consentimiento nominal de cada perfil del banco existente. Es trabajo fuera del software, pero sin él no hay perfiles publicables el día de salida.
+
+**Revisión INVEST 2026-09-30:** el revocado se ancla a RF-19.2 (el enlace curado explica que el perfil dejó de estar disponible) y su Dado pasa a estado; el error anonimizado pasa a una acción concreta; añadida la nota operativa de D-3; `depende_de: [HU-125]`; tabla INVEST razonada.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · D-1 revertida · condiciona D-3
+Épica madre: **EP-006** · PRD v4.8 · D-1 revertida · condiciona D-3 · depende de HU-125 · habilita HU-128 · RF-19.2
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
+| I | Independiente | ✓ con dependencia declarada: el consentimiento se registra sobre un perfil que ya existe (HU-125); se construye después |
 | N | Negociable | ✓ describe el registro, no el medio de recolección |
 | V | Valiosa | ✓ es el respaldo legal de todo el producto |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: la tabla `inventario.consentimientos` existe desde la migración 0005; falta el registro en el panel con alcance (nominal, parcial, revocado), el efecto sobre el estado del perfil y la ficha sin clientes nombrados. La reevaluación del enlace al abrirse (RF-19.2) ya la construyó HU-144 en EP-001 (`packages/dominio/src/enlaces/seleccion.ts`); aquí solo se verifica que la respeta |
+| S | Pequeña | ✓ cuatro escenarios de una capacidad; el bloqueo de publicar sin consentimiento está en HU-128 |
+| T | Testeable | ✓ el estado del perfil, la ficha y el enlace abierto tras cada registro son observables |
 
-#### HU-128 — Ser bloqueada si intento publicar sin consentimiento
+#### HU-128 — Ser bloqueada si intento publicar sin consentimiento o sin modalidad de prueba
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** que el panel me impida publicar un perfil sin consentimiento registrado,
-**para** que un descuido mío no ponga el nombre de un profesional frente a un cliente sin su autorización.
+**quiero** que el panel me impida publicar un perfil sin consentimiento registrado o sin modalidad de prueba elegida,
+**para** que un descuido mío no ponga el nombre de un profesional frente a un cliente sin su autorización ni sin decir cómo se validó.
 
 ##### Criterios de aceptación
 
@@ -2692,35 +2895,46 @@ Cubre **RF-8.4**. Es consecuencia directa de la **reversión de D-1** (2026-09-1
 **Entonces** el consentimiento no se concede y el perfil llega a borrador
 **Y** el bloqueo se mantiene
 
+###### Error — perfil sin modalidad de prueba elegida
+
+**Dado** que un perfil tiene consentimiento nominal registrado pero ninguna modalidad de prueba elegida del catálogo de su familia,
+**cuando** intento publicarlo,
+**Entonces** el panel lo impide y me dice que falta elegir la modalidad de prueba
+**Y** me ofrece elegirla entre las modalidades de la familia de su rol
+
 ###### Edge case — publicación masiva
 
-**Dado** que selecciono varios perfiles para publicar a la vez,
-**cuando** alguno no tiene consentimiento,
+**Dado** que seleccioné varios perfiles para publicar a la vez y alguno no tiene consentimiento registrado o modalidad de prueba elegida,
+**cuando** confirmo la publicación masiva,
 **Entonces** se publican los que sí lo tienen
 **Y** los demás quedan señalados con su motivo, sin abortar la operación completa
 
 ##### Notas
 
-Cubre **RF-8.4** desde el lado del bloqueo y **RF-8.15.7** desde el lado de la importación.
+Cubre **RF-8.4** desde el lado del bloqueo, **RF-8.10** (enmienda v4.15, modalidad obligatoria para publicar) y **RF-8.15.7** desde el lado de la importación.
 
 **Por qué es historia aparte de HU-127.** Registrar el consentimiento es un acto administrativo; el bloqueo es una garantía del sistema. Separarlas permite verificar la garantía sin depender de cómo se recoja el consentimiento, y deja el bloqueo como criterio de aceptación propio — que es lo que se va a auditar.
 
+**Revisión DoR 2026-09-30: aplicada D10** (sponsor; CRN-14 y T-12 del backlog arquitectónico, R-39). La modalidad de prueba no se deriva del rol: se elige del catálogo cerrado de su familia (Anexo B.8.1) y es obligatoria para publicar, igual que el consentimiento. El rol solo filtra qué modalidades se ofrecen. Se añade el escenario de error «perfil sin modalidad de prueba elegida» y el lote masivo señala también ese motivo. La elección de la modalidad ocurre en el editor de HU-125, que entra en `depende_de`. Si la familia no tiene ninguna modalidad registrada, el caso es de HU-130 (RF-8.16.4).
+
 **El bloqueo es de los que RF-8.16.1 deja fuera de los catálogos paramétricos**: no es administrable, es lógica de producto.
+
+**Revisión INVEST 2026-09-30:** se reconcilió la tabla INVEST con los AC: la dependencia de HU-127 existe solo para el destino de «ir a registrarlo» y para tener perfiles con consentimiento en el caso masivo, y el escenario de importación necesita el importador de HU-086; ambas quedan en `depende_de`. En el edge, la condición pasa al Dado y el Cuando queda en una sola acción («confirmo la publicación masiva»).
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-127
+Épica madre: **EP-006** · PRD v4.15 · RF-8.4 · RF-8.10 (D10) · RF-8.15.7 · Anexo B.8.1 · depende de HU-127 (registro del consentimiento), HU-086 (importación) y HU-125 (elección de la modalidad en el editor)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-127 para tener qué verificar |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencias declaradas: el bloqueo se verifica solo con un perfil sin consentimiento o sin modalidad; HU-127 aporta el destino de «ir a registrarlo» y los perfiles con consentimiento del caso masivo, HU-086 el importador del escenario de error y HU-125 el selector de modalidad al que remite el nuevo error |
+| N | Negociable | ✓ las garantías son fijas (RF-8.4; RF-8.10 enmendado por D10); el texto del motivo y cómo se presenta el resultado del lote son negociables |
 | V | Valiosa | ✓ es la garantía que protege al profesional y a Trycore |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ dos condiciones (consentimiento y modalidad elegida) en una misma guarda de la transición a *publicado* de la máquina de estados del dominio (ADR-0003, única vía de escritura), reutilizada por la publicación individual, la masiva y la importación |
+| S | Pequeña | ✓ S: una guarda con dos condiciones aplicada en tres puntos de entrada, en cuatro escenarios |
+| T | Testeable | ✓ cada escenario deja un estado observable: perfil en borrador con el motivo (consentimiento o modalidad), consentimiento sin conceder, lote con resultado y motivo por perfil |
 
 #### HU-129 — Previsualizar la ficha exactamente como la verá el cliente
 
@@ -2738,54 +2952,67 @@ Cubre **RF-8.4** desde el lado del bloqueo y **RF-8.15.7** desde el lado de la i
 **Y** veo la disponibilidad como banda de arranque, no como fecha
 **Y** veo el país, y la ciudad solo si la necesidad fuera presencial o híbrida
 
-###### Error — campos que no alcanzan a llenar su bloque
+###### Error — falta un dato que la publicación exige
 
-**Dado** que un bloque de la ficha no tiene datos suficientes,
-**cuando** previsualizo,
-**Entonces** veo cómo se comporta ese bloque vacío en la ficha real
-**Y** el panel me dice si eso impide publicar o solo empobrece la ficha
+**Dado** que al perfil le falta un atributo obligatorio del modelo,
+**cuando** abro la vista previa,
+**Entonces** el bloque que depende de ese atributo aparece marcado como incompleto y nombra el dato que falta
+**Y** el panel me dice que el perfil no puede publicarse hasta completarlo
+
+###### Edge case — bloque opcional sin datos
+
+**Dado** que un bloque opcional de la ficha no tiene datos, por ejemplo el reporte detallado de validación,
+**cuando** abro la vista previa,
+**Entonces** la ficha se muestra sin ese bloque, sin título ni hueco vacío, igual que la publicará el portal
+**Y** el panel me indica que ese bloque es opcional y que su ausencia no impide publicar
 
 ###### Edge case — previsualizar un perfil ya publicado
 
-**Dado** que edité un perfil publicado,
-**cuando** previsualizo,
-**Entonces** veo el resultado del cambio antes de confirmarlo
-**Y** puedo compararlo con lo que el cliente ve ahora
+**Dado** que tengo cambios sin guardar sobre un perfil publicado,
+**cuando** abro la vista previa,
+**Entonces** veo la ficha con el cambio aplicado, tal como la verá el cliente si lo guardo
+**Y** el portal sigue mostrando la versión vigente hasta que guarde
 
 ##### Notas
 
 Cubre **RF-8.7**. Se apoya en **RF-3.13** (banda de disponibilidad) y en la revisión de **D-18** (ciudad condicionada a la modalidad).
 
-**La fidelidad es el requisito, no el detalle.** Una vista previa aproximada es peor que ninguna: crea confianza en algo que no se verificó. Por eso los tres escenarios verifican equivalencia con lo que el portal publica, incluidas las reglas de presentación que no viven en el dato — la banda y la ciudad condicionada.
+**La fidelidad es el requisito, no el detalle.** Una vista previa aproximada es peor que ninguna: crea confianza en algo que no se verificó. Por eso los escenarios verifican equivalencia con lo que el portal publica, incluidas las reglas de presentación que no viven en el dato — la banda y la ciudad condicionada.
+
+**Solo vista previa fiel, sin comparación** (decisión del sponsor D3, 2026-09-30). La vista previa muestra la ficha con el cambio aplicado; no hay vista lado a lado del borrador frente a lo publicado. El antes/después por campo lo da **HU-126** al guardar.
+
+**El bloque opcional vacío no se dibuja.** Es la misma regla que HU-130 fija para el Nivel 0: la ficha no muestra un bloque vacío ni promete un detalle que no existe.
+
+**Revisión INVEST 2026-09-30:** se aplica D3 (se quita la promesa de comparar con lo que el cliente ve ahora); el escenario del bloque vacío, que no decía qué se veía, se parte en dos con resultado concreto: el atributo obligatorio que falta se marca en su bloque e impide publicar, y el bloque opcional vacío no se muestra y no impide publicar.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · RF-3.13 · D-18 revisada
+Épica madre: **EP-006** · PRD v4.8 · RF-8.7 · RF-3.13 · D-18 revisada · D3 del sponsor (2026-09-30) · relacionada con HU-126 (antes/después al guardar), HU-125 (atributos obligatorios) y HU-130 (Nivel 0)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ usa la ficha que ya dibuja el portal y los atributos obligatorios del modelo; no espera a otra historia de la épica |
+| N | Negociable | ✓ la fidelidad es fija; dónde se abre la vista previa y cómo se marca el bloque incompleto son negociables |
 | V | Valiosa | ✓ evita publicar fichas rotas |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ la equivalencia con la ficha publicada es verificable |
+| E | Estimable | ✓ reutiliza el componente de ficha del portal alimentado con el perfil en edición, más la marca de obligatorio/opcional por bloque; sin comparación que construir tras D3 |
+| S | Pequeña | ✓ S: una vista con cuatro comportamientos definidos |
+| T | Testeable | ✓ la equivalencia con la ficha publicada es verificable por captura, y cada escenario dice qué se ve y si bloquea |
 
 #### HU-130 — Publicar un perfil sin esperar el reporte detallado de validación
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** publicar un perfil con el enunciado que se deriva de su rol, sin esperar a redactar el reporte completo,
+**quiero** publicar un perfil con el enunciado de Nivel 0 que trae la modalidad de prueba elegida, sin esperar a redactar el reporte completo,
 **para** que el banco no se quede vacío mientras alguien encuentra tiempo de escribir evidencia.
 
 ##### Criterios de aceptación
 
 ###### Happy path — publicación con Nivel 0
 
-**Dado** que un perfil cumple sus condiciones de publicación y no tiene reporte detallado de validación,
+**Dado** que un perfil tiene consentimiento registrado y modalidad de prueba elegida, y no tiene reporte detallado de validación,
 **cuando** lo publico,
-**Entonces** se publica con el enunciado de Nivel 0, derivado de su familia de rol sin intervención mía
+**Entonces** se publica con el enunciado de Nivel 0 que trae la modalidad de prueba elegida, sin que yo redacte nada
 **Y** la ficha no muestra un bloque vacío ni promete un detalle que no existe
 
 ###### Error — la familia no tiene modalidades de prueba registradas
@@ -2797,8 +3024,8 @@ Cubre **RF-8.7**. Se apoya en **RF-3.13** (banda de disponibilidad) y en la revi
 
 ###### Edge case — el detalle llega después
 
-**Dado** que publiqué con Nivel 0 y más tarde registro el reporte detallado,
-**cuando** lo guardo,
+**Dado** que un perfil está publicado con Nivel 0,
+**cuando** registro y guardo su reporte detallado de validación,
 **Entonces** la ficha se enriquece sin republicar el perfil
 **Y** el cliente que la abra ve la evidencia por criterio
 
@@ -2806,22 +3033,30 @@ Cubre **RF-8.7**. Se apoya en **RF-3.13** (banda de disponibilidad) y en la revi
 
 Cubre **RF-8.10** y los **tres niveles progresivos del Anexo B.9**.
 
-**Este requisito existe para proteger a O5 de sí mismo.** Si publicar exigiera el reporte completo de las tres validaciones, el cuello de botella de la redacción se convertiría en cuello de botella del inventario, y un banco vacío no sostiene ningún objetivo. La publicación nunca se bloquea por falta de detalle; se bloquea por falta de consentimiento (HU-128) y por falta de modalidad en la familia (RF-8.16.4).
+**Este requisito existe para proteger a O5 de sí mismo.** Si publicar exigiera el reporte completo de las tres validaciones, el cuello de botella de la redacción se convertiría en cuello de botella del inventario, y un banco vacío no sostiene ningún objetivo. La publicación nunca se bloquea por falta de detalle; se bloquea por falta de consentimiento o de modalidad elegida (HU-128) y por falta de modalidades en la familia (RF-8.16.4).
+
+**En qué se apoya el edge case.** El reporte detallado llega a un perfil publicado por la edición de **HU-126** (que declara el efecto de cara al cliente al guardar), a partir del borrador que propone **HU-140** (plantilla de la modalidad), que Talento Humano completa y confirma con evaluador, fecha y resultado. *(2026-10-01, D29: la evidencia adjunta de **HU-131** se difiere a una versión futura; en esta versión el reporte se registra a mano y no hay archivo adjunto.)* Esta historia fija solo que ese enriquecimiento no exige republicar.
+
+**Revisión INVEST 2026-09-30:** el registro del reporte pasa del Dado al Cuando (el Dado queda como estado: perfil publicado con Nivel 0) y se declara el apoyo en HU-126 y HU-131/HU-140 para el edge case.
+
+**Revisión DoR 2026-09-30: aplicadas D10 y D11** (sponsor). D10 (CRN-14): el Nivel 0 ya no «se deriva del rol»; sale de la modalidad de prueba elegida del catálogo cerrado de su familia (Anexo B.8.1), que es obligatoria para publicar (RF-8.10 enmendado en la v4.15). El rol solo filtra las modalidades ofrecidas. Se reescriben el «quiero», el Dado y el Entonces del happy path; el bloqueo por modalidad sin elegir vive en HU-128. D11: HU-149 se descarta (sin lectura automática del artefacto) y sale del apoyo del edge case.
+
+**Revisión 2026-10-01: aplicada D29** (sponsor). HU-131 (adjuntar el artefacto) se difiere a una versión futura: el edge case se apoya en HU-126 y HU-140; los criterios no cambian.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · Anexo B.9
+Épica madre: **EP-006** · PRD v4.15 · RF-8.10 (D10) · RF-8.16.4 · Anexo B.8.1 y B.9 · se apoya en HU-126 (editar publicado) y HU-140 (origen del reporte detallado; HU-131 diferida a v2 por D29)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ el happy path y el error se construyen solos sobre el catálogo de familias y modalidades; el edge case se apoya en la edición de HU-126 y en el borrador de HU-140 (HU-131 diferida a v2 por D29), que no bloquean los otros dos escenarios |
+| N | Negociable | ✓ el principio es fijo (RF-8.10, enmendado por D10); el texto del enunciado de Nivel 0 sale de la modalidad del catálogo y es administrable |
 | V | Valiosa | ✓ desbloquea el llenado del banco, que es la condición de D-3 |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ la ficha elige el nivel según existan datos; la guarda de modalidad es una comprobación sobre la dependencia familia → modalidades del catálogo (RF-8.16.4) |
+| S | Pequeña | ✓ S: una regla de presentación y una guarda de publicación |
+| T | Testeable | ✓ enunciado de Nivel 0 visible, publicación impedida con motivo, y ficha enriquecida sin cambio de estado |
 
 #### HU-131 — Adjuntar el artefacto de evidencia tal como lo tengo
 
@@ -2838,42 +3073,65 @@ Cubre **RF-8.10** y los **tres niveles progresivos del Anexo B.9**.
 **Entonces** queda almacenado internamente y asociado a esa validación
 **Y** puedo recuperarlo después desde el panel
 
+###### Happy path — descargar y ver el artefacto desde el panel
+
+**Dado** que un perfil tiene un artefacto adjunto y tengo sesión en el panel como administradora de inventario,
+**cuando** abro el artefacto desde el perfil en el panel,
+**Entonces** lo descargo y lo veo tal como se adjuntó, en su formato original
+**Y** el panel no lo resume, no lo interpreta ni extrae datos de él
+
+###### Error — el observador ve que existe pero no lo descarga
+
+**Dado** que un perfil tiene un artefacto adjunto y tengo sesión en el panel con rol observador,
+**cuando** intento descargar el artefacto,
+**Entonces** el panel no me lo entrega y me dice que solo la administradora de inventario puede descargarlo
+**Y** en el perfil veo que el artefacto existe, sin enlace de descarga
+
 ###### Error — formato o tamaño no admitido
 
-**Dado** que adjunto un archivo que el sistema no admite,
-**cuando** intento guardarlo,
-**Entonces** el panel me dice qué admite y por qué
-**Y** no pierdo lo demás que ya había registrado del perfil
+**Dado** que tengo abierto un perfil con datos ya registrados y un archivo de video o de más de 64 MB,
+**cuando** lo adjunto,
+**Entonces** el panel lo rechaza y me dice que admite un documento, una transcripción en texto o el enlace a un repositorio, de hasta 64 MB por archivo, y que el proyecto no opera con video
+**Y** lo demás que ya había registrado del perfil sigue intacto
 
 ###### Edge case — el artefacto nunca se publica
 
-**Dado** que el perfil tiene un artefacto adjunto,
+**Dado** que un perfil publicado tiene un artefacto adjunto,
 **cuando** el cliente abre la ficha,
 **Entonces** ve el reporte estructurado y nunca el artefacto crudo
-**Y** no hay ninguna ruta desde el portal que lo alcance
+**Y** la ficha no incluye enlace ni referencia al artefacto
+**Y** la dirección de descarga del artefacto no responde desde una sesión del portal
 
 ##### Notas
 
-Cubre la primera mitad de **RF-8.11** y la prohibición de **B.8.4**.
+Cubre la primera mitad de **RF-8.11**, sus límites de **RF-8.11.1** y la prohibición de **B.8.4**.
 
-**El artefacto crudo no se publica, y es regla dura.** B.8.4 lo fija: a la ficha llega el reporte estructurado, no el documento de la prueba. Publicar el crudo expondría material que el profesional no consintió y que ninguna cuenta necesita.
+**El artefacto crudo no se publica, y es regla dura.** B.8.4 lo fija: a la ficha llega el reporte estructurado, no el documento de la prueba. Publicar el crudo expondría material que el profesional no consintió y que ninguna cuenta necesita. El archivo vive en almacenamiento privado, al que solo se llega desde el panel con autorización (RF-8.11.1).
 
-**Esta historia vale sola.** Aunque nunca se construya la derivación asistida (HU-140), tener la evidencia guardada y asociada al perfil resuelve el problema de que hoy vive dispersa. Por eso se separó.
+**Esta historia vale sola.** Aunque nunca se construya la precarga desde la modalidad (HU-140), tener la evidencia guardada y asociada al perfil resuelve el problema de que hoy vive dispersa. Por eso se separó.
+
+**Revisión DoR 2026-09-30: aplicada D11** (sponsor). No hay lectura automática del artefacto: la evidencia se sube y quien la necesita en el panel la descarga y la ve; nunca desde el portal. Se añade el escenario de descarga y visualización en el panel y el edge gana un Entonces que comprueba que el portal no sirve el archivo. HU-149 (reconocer fecha y resultado por patrones) se descarta, así que esta historia no necesita ninguna librería para leer PDF o Word. RF-8.11 enmendado en la v4.15.
+
+**Revisión DoR 2026-09-30: aplicada D18** (sponsor, mismo día; Ley 1581). **Solo la administradora de inventario descarga y ve el artefacto**; el observador ve que existe y no lo descarga. Se añade ese escenario de error (5 en total).
+
+**Revisión INVEST 2026-09-30:** en el error, la acción sale del Dado (que queda como estado) y los límites concretos —formatos admitidos, 64 MB, sin video— pasan al Entonces; el edge case se vuelve falsable: «la ficha no incluye enlace ni referencia al artefacto» en lugar de «no hay ninguna ruta que lo alcance».
+
+**Revisión 2026-10-01: diferida a una versión futura por D29** (sponsor Jesús Segura, en sesión). Motivo del sponsor: «hacerlo nos va a costar más en producción» (almacenamiento de objetos privado, descarga prefirmada, CSP del panel con el bucket y un almacenamiento S3 compatible en CI). **Es diferir con acuerdo del sponsor, no descartar:** la historia, sus cinco escenarios y su INVEST se conservan intactos para cuando se retome, y sigue perteneciendo a EP-006 como capacidad de la épica, pero **sale del alcance de EP-006 en esta versión** y pasa a la línea **v2** del mapa de historias. En esta versión la evidencia de la parte técnica es la que Talento Humano registra a mano en el reporte de validación —evaluador, fecha, resultado, enunciado, entregables y criterios— (HU-130 «el detalle llega después» y HU-140); ningún archivo se sube al panel. HU-140 no depende de esta historia (D11, D19). RF-8.11 y RF-8.11.1 se enmiendan en la v4.17 del PRD; la enmienda de ADR-0010 (Spaces y almacenamiento S3 de CI) queda registrada en el backlog arquitectónico para cuando se retome.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · Anexo B.8.4 · dividida de la HU-131 original el 2026-09-22
+Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (D11) · RF-8.11.1 · Anexo B.8.4 · D11 y D18 (sponsor, 2026-09-30) · dividida de la HU-131 original el 2026-09-22 · **diferida a v2 por D29 (sponsor, 2026-10-01)**
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ no depende de HU-140 |
-| N | Negociable | ✓ |
+| N | Negociable | ✓ los límites vienen del PRD; cómo se presenta el adjunto y su recuperación en el panel son negociables |
 | V | Valiosa | ✓ centraliza la evidencia dispersa |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ tras la división |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ subida a almacenamiento privado de objetos con enlace temporal tras autorización (§8.3), validación de tipo y tamaño en servidor, una tabla que asocia el archivo a la validación y la descarga desde el panel; sin lectura del contenido (D11) |
+| S | Pequeña | ✓ M tras la división: adjuntar, descargar y ver solo como administradora, rechazar, y no exponer; cinco escenarios sin derivación de campos |
+| T | Testeable | ✓ archivo descargable desde el panel idéntico al adjuntado, descarga negada al observador con el artefacto visible como existente, rechazo con mensaje y datos intactos, ficha del portal sin enlace ni referencia y descarga rechazada desde una sesión del portal |
 
 #### HU-132 — Actualizar la disponibilidad en dos clics
 
@@ -2891,42 +3149,46 @@ Cubre la primera mitad de **RF-8.11** y la prohibición de **B.8.4**.
 **Y** el portal refleja la nueva banda de arranque de inmediato
 **Y** queda registrado quién lo cambió y cuándo
 
-###### Error — fecha que contradice el estado
+###### Error — un observador intenta cambiar la disponibilidad
 
-**Dado** que el perfil está *pausado*,
-**cuando** le pongo una fecha de disponibilidad,
-**Entonces** el panel señala la incoherencia en la fila
-**Y** me ofrece la acción que la corrige en un clic
+**Dado** que entré al panel con rol observador,
+**cuando** intento cambiar la disponibilidad de un perfil desde el listado,
+**Entonces** el panel no me lo permite
+**Y** la disponibilidad del perfil no cambia y no queda ningún cambio registrado
 
 ###### Edge case — varios perfiles a la vez
 
-**Dado** que varios perfiles quedan libres el mismo día,
-**cuando** los selecciono y actualizo juntos,
+**Dado** que seleccioné en el listado varios perfiles que quedan libres el mismo día,
+**cuando** actualizo su disponibilidad en bloque,
 **Entonces** el cambio se aplica a todos
 **Y** veo el resultado por perfil, no un mensaje global
 
 ##### Notas
 
-Cubre **RF-8.5** y se apoya en **RF-8.14.1** y **RF-8.14.3**.
+Cubre **RF-8.5** y se apoya en **RF-8.14.1** y **RF-8.14.3**. Los roles del panel (administrador de inventario escribe, observador consulta) son los de **D-22** y **HU-123**.
 
 **Esta es la historia de la que depende O5.** El objetivo habilitante mide el porcentaje de perfiles publicados con disponibilidad actualizada en los últimos 30 días. Si actualizar cuesta abrir una ficha, navegar y guardar, no se hace; y cuando no se hace, el portal empieza a afirmar disponibilidades que nadie sostiene. Dos clics no es una comodidad: es la condición de que el objetivo se cumpla.
 
 **La fecha se captura aquí; el cliente ve una banda.** RF-3.13 traduce en el momento de mostrar, así que la banda se recalcula sola y no envejece.
 
+**Qué pasa si la fecha contradice el estado.** El caso «perfil *pausado* al que le ponen fecha» es de **HU-134** (decisión del sponsor D6, 2026-09-30): allí se señala la incoherencia en la fila y se ofrece la corrección. Esta historia solo guarda la fecha.
+
+**Revisión INVEST 2026-09-30:** se aplica D6: sale el caso pausado + fecha (pasa a HU-134) y el error propio pasa a ser el observador que intenta cambiar la disponibilidad; en el edge, la selección queda en el Dado y el Cuando es una sola acción («actualizo su disponibilidad en bloque»). Se declara la dependencia de HU-123 por los roles.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · O5 · RF-3.13
+Épica madre: **EP-006** · PRD v4.8 · RF-8.5 · O5 · RF-3.13 · D-22 · D6 del sponsor (2026-09-30) · depende de HU-123 (roles del panel) · relacionada con HU-134
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
+| I | Independiente | ✓ con dependencia declarada: necesita los roles del panel de HU-123, ya construida; la señal de incoherencia es de HU-134 y no bloquea esta |
 | N | Negociable | ✓ «dos clics» es la intención, no la implementación |
 | V | Valiosa | ✓ es la condición operativa de O5 |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ un control de fecha en la fila, una acción en bloque sobre la selección y la escritura por la vía única del dominio con auditoría y control de versión (ADR-0003) |
+| S | Pequeña | ✓ S: un campo editable en el listado, individual y en bloque |
+| T | Testeable | ✓ banda nueva en el portal, auditoría con autor y hora, rechazo al observador sin escritura, y resultado por perfil en el bloque |
 
 #### HU-133 — Pausar un perfil declarando el motivo
 
@@ -2938,7 +3200,7 @@ Cubre **RF-8.5** y se apoya en **RF-8.14.1** y **RF-8.14.3**.
 
 ###### Happy path — pausa con motivo
 
-**Dado** que necesito retirar temporalmente un perfil del portal,
+**Dado** que un perfil está publicado en el portal,
 **cuando** lo pauso,
 **Entonces** el panel me exige elegir el motivo de una lista corta
 **Y** el perfil deja de mostrarse en el portal
@@ -2946,17 +3208,23 @@ Cubre **RF-8.5** y se apoya en **RF-8.14.1** y **RF-8.14.3**.
 
 ###### Error — el motivo es en realidad una fecha
 
-**Dado** que quiero pausar un perfil porque está ocupado hasta cierta fecha,
-**cuando** busco el motivo,
+**Dado** que un perfil está publicado y tiene una fecha de disponibilidad futura conocida,
+**cuando** busco en la lista de motivos de pausa uno que exprese esa fecha,
 **Entonces** el panel me indica que eso no es una pausa sino disponibilidad
 **Y** me lleva a dejar el perfil publicado con la fecha correcta
 
-###### Edge case — la pausa se prolonga
+###### Edge case — la pausa se prolonga más de 30 días
 
-**Dado** que un perfil lleva pausado más tiempo del razonable,
-**cuando** reviso la bandeja de vigencia,
-**Entonces** aparece marcado para revisión
-**Y** puedo reactivarlo o archivarlo
+**Dado** que un perfil lleva pausado más de 30 días,
+**cuando** abro la bandeja de vigencia,
+**Entonces** el perfil aparece marcado para revisión, con su motivo de pausa y los días que lleva pausado
+**Y** puedo reactivarlo o archivarlo desde ahí
+
+###### Edge case — pausa todavía dentro del umbral
+
+**Dado** que un perfil lleva pausado 30 días o menos,
+**cuando** abro la bandeja de vigencia,
+**Entonces** el perfil no aparece marcado por su pausa
 
 ##### Notas
 
@@ -2966,20 +3234,24 @@ Cubre **RF-8.14.2** y se apoya en **RF-8.8**.
 
 **Los motivos de pausa son catálogo paramétrico** (RF-8.16), administrable desde HU-089.
 
+**El umbral es de 30 días** (decisión del sponsor D4, 2026-09-30): un perfil pausado hace más de 30 días se marca para revisión y aparece en la bandeja de vigencia, que HU-136 amplía para incluirlo. Es el mismo horizonte de 30 días que O5 usa para la disponibilidad.
+
+**Revisión INVEST 2026-09-30:** se aplica D4: «más tiempo del razonable» pasa a «más de 30 días», el Entonces dice qué muestra la bandeja y se añade el escenario de frontera (30 días o menos no marca). Se declara la dependencia de HU-136, que pinta la bandeja y ofrece reactivar o archivar.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · relacionada con HU-089 y HU-136
+Épica madre: **EP-006** · PRD v4.8 · RF-8.14.2 · RF-8.8 · D4 del sponsor (2026-09-30) · depende de HU-136 (bandeja de vigencia) · relacionada con HU-089
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: la pausa con motivo y el desvío a disponibilidad se construyen solos; los dos edge cases se observan en la bandeja de HU-136 |
+| N | Negociable | ✓ la regla y el umbral están fijados (RF-8.14.2, D4); la redacción de los motivos es catálogo administrable |
 | V | Valiosa | ✓ protege inventario vendible de desaparecer por mal uso del estado |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ una transición a *pausado* con motivo obligatorio del catálogo, fecha de inicio de pausa guardada, y un criterio de la bandeja (pausado desde hace más de 30 días) |
+| S | Pequeña | ✓ S: una acción con selector de motivo y una regla de fechas |
+| T | Testeable | ✓ motivo y autor en la auditoría, perfil fuera del portal, y frontera de 30 días comprobable con fechas fijadas |
 
 #### HU-134 — Corregir incoherencias entre estado y disponibilidad
 
@@ -2991,54 +3263,85 @@ Cubre **RF-8.14.2** y se apoya en **RF-8.8**.
 
 ###### Happy path — incoherencia señalada y corregible
 
-**Dado** que un perfil tiene estado y disponibilidad que se contradicen,
-**cuando** miro el listado,
-**Entonces** la incoherencia aparece señalada en su propia fila
-**Y** la acción que la corrige está a un clic
+**Dado** que un perfil está *pausado*,
+**cuando** le pongo una fecha de disponibilidad,
+**Entonces** la incoherencia aparece señalada en su propia fila, en rojo y con la contradicción nombrada
+**Y** la acción que la corrige está disponible sin salir del listado
 
 ###### Error — incoherencia de severidad alta
 
-**Dado** que la incoherencia es de severidad alta,
-**cuando** intento publicar ese perfil,
-**Entonces** el panel lo impide hasta que se resuelva
+**Dado** que un perfil está en una de estas combinaciones de severidad alta:
+
+| Estado | Disponibilidad | Severidad |
+|---|---|---|
+| pausado | «Disponible ahora» | ALTA |
+| pausado | con fecha | ALTA |
+| colocado | «Disponible ahora» | ALTA |
+| archivado | «Disponible ahora» | ALTA |
+| archivado | con fecha | ALTA |
+| publicado | sin ninguna disponibilidad | ALTA |
+
+**cuando** intento publicarlo,
+**Entonces** el panel lo impide hasta que se resuelva, con un aviso en rojo
 **Y** me dice cuál es la contradicción
 
 ###### Edge case — incoherencia de severidad media
 
-**Dado** que la incoherencia es de severidad media,
-**cuando** publico,
-**Entonces** el panel me advierte sin bloquear
-**Y** la advertencia queda visible en la fila hasta que se resuelva
+**Dado** que un perfil publicado está en una de estas combinaciones de severidad media:
+
+| Estado | Disponibilidad | Severidad |
+|---|---|---|
+| publicado | fecha de disponibilidad ya pasada | MEDIA |
+| publicado | sin actualizar hace más de 30 días | MEDIA |
+
+**cuando** abro el listado,
+**Entonces** la fila muestra una advertencia de severidad media, no en rojo, que nombra la contradicción
+**Y** el perfil sigue publicado y visible en el portal hasta que se resuelva
 
 ###### Edge case — disponibilidad vencida y sin tocar
 
-**Dado** que la fecha de disponibilidad ya pasó y el perfil lleva más de 30 días sin actualizarse,
-**cuando** el cliente lo ve en el portal,
-**Entonces** aparece como «Disponibilidad por confirmar» y no como disponible ahora
+**Dado** que la fecha de disponibilidad de un perfil publicado ya pasó y el perfil lleva más de 30 días sin actualizarse,
+**cuando** abro el listado,
+**Entonces** la fila indica que el portal lo está mostrando como «Disponibilidad por confirmar» y no como disponible ahora
 **Y** el perfil aparece en mi bandeja de vigencia
+
+###### Edge case — fecha vencida pero actualizada hace poco
+
+**Dado** que la fecha de disponibilidad de un perfil publicado ya pasó y el perfil se actualizó hace 30 días o menos,
+**cuando** abro el listado,
+**Entonces** la fila muestra la advertencia media de fecha vencida
+**Y** no indica «Disponibilidad por confirmar» ni lo lleva a la bandeja de vigencia por esa causa
 
 ##### Notas
 
 Cubre **RF-8.14.3** y **RF-8.14.4**.
 
-**La regla del último edge case es la que protege la credibilidad.** Afirmar disponibilidad con base en un dato que nadie sostiene es, según el PRD, «la forma más silenciosa de perder credibilidad con una cuenta activa». Por eso una fecha vencida no produce «Inmediato» (RF-3.13.3): produce «Por confirmar».
+**La matriz de severidades es la de la decisión del sponsor D5 (2026-09-30).** ALTA bloquea publicar y avisa en rojo; MEDIA advierte sin bloquear. Las dos tablas de los escenarios son la matriz completa: cualquier otra combinación no es incoherencia.
+
+**Esta historia es dueña del caso «pausado al que le ponen fecha»** (decisión del sponsor D6, 2026-09-30). HU-132 guarda la fecha desde el listado; la señal y la corrección viven aquí, sea cual sea la pantalla desde la que se puso la fecha.
+
+**La regla del edge case de la fecha vencida es la que protege la credibilidad.** Afirmar disponibilidad con base en un dato que nadie sostiene es, según el PRD, «la forma más silenciosa de perder credibilidad con una cuenta activa». Por eso una fecha vencida no produce «Inmediato» (RF-3.13.3): produce «Por confirmar». Aquí se verifica del lado del panel; lo que ve el cliente lo cubren RF-3.13 y HU-096.
 
 **La severidad separa lo que bloquea de lo que advierte.** Es una distinción de producto, no un parámetro administrable: queda fuera de los catálogos de RF-8.16.1.
 
+**Colocado (sponsor, 2026-09-30, corrige D5):** un colocado siempre lleva su fecha de liberación como disponibilidad (RF-8.13.2), así que «colocado con fecha» es coherente; solo es ALTA «colocado con «Disponible ahora»».
+
+**Revisión INVEST 2026-09-30:** se aplica D5: la matriz ALTA/MEDIA entra como tablas de ejemplos por severidad dentro de los AC y se añade un edge real (fecha vencida actualizada hace 30 días o menos: advierte, pero no «por confirmar»). El escenario que se observaba en el portal pasa a observar la señal en el panel. Se aplica D6 (esta historia es dueña del caso pausado + fecha, ahora happy path). «A un clic» pasa a «sin salir del listado». Se declara la dependencia de HU-136 por la bandeja de vigencia.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · RF-3.13.3 · relacionada con HU-132 y HU-136
+Épica madre: **EP-006** · PRD v4.8 · RF-8.14.3 · RF-8.14.4 · RF-3.13.3 · D5 y D6 del sponsor (2026-09-30) · depende de HU-136 (bandeja de vigencia) · relacionada con HU-132 · la cara cliente de «Disponibilidad por confirmar» la cubren **RF-3.13** y **HU-096**
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: la señal en la fila y el bloqueo se construyen solos; la aparición en la bandeja la pinta HU-136 |
+| N | Negociable | ✓ la matriz está fijada (D5); la acción de corrección que se ofrece en cada fila y el diseño del aviso son negociables |
 | V | Valiosa | ✓ sostiene la credibilidad del inventario publicado |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ la matriz es cerrada (seis combinaciones altas y dos medias), así que es una función determinista estado × disponibilidad × fechas, más su uso en la guarda de publicación y en la fila |
+| S | Pequeña | ✓ M: una regla determinista con dos consumidores (fila y guarda de publicación) |
+| T | Testeable | ✓ cada fila de las tablas es un caso de prueba, y la frontera de 30 días se prueba con fechas fijadas |
 
 #### HU-135 — Archivar un perfil sin perder su rastro
 
@@ -3056,12 +3359,19 @@ Cubre **RF-8.14.3** y **RF-8.14.4**.
 **Y** deja de mostrarse en el portal
 **Y** sigue disponible para explicar solicitudes pasadas
 
-###### Error — no existe el borrado físico
+###### Error — archivar sin permiso de escritura
 
-**Dado** que quiero eliminar definitivamente un perfil,
-**cuando** busco esa acción,
-**Entonces** no existe en el panel
-**Y** el panel explica que archivar conserva la trazabilidad de lo que se mostró
+**Dado** que entré al panel con rol observador,
+**cuando** intento archivar un perfil,
+**Entonces** el panel no me lo permite
+**Y** el perfil conserva su estado y no queda ningún cambio registrado
+
+###### Edge case — archivar un perfil ya archivado
+
+**Dado** que un perfil ya está *archivado*,
+**cuando** intento archivarlo de nuevo,
+**Entonces** el panel me indica que ya está archivado
+**Y** su fecha de archivo y su historial no cambian
 
 ###### Edge case — perfil archivado que estaba en una selección curada
 
@@ -3072,53 +3382,69 @@ Cubre **RF-8.14.3** y **RF-8.14.4**.
 
 ##### Notas
 
-Cubre **RF-8.3**. El edge case se apoya en **RF-19.2** (reevaluación al abrir, HU-122).
+Cubre **RF-8.3**. El último edge case se apoya en **RF-19.2** (reevaluación al abrir, HU-122). Los roles del panel son los de **D-22**.
 
-**El borrado físico no existe a propósito.** Una solicitud enviada en julio tiene que poder explicarse en octubre con los perfiles que el cliente vio. Borrar un perfil destruye esa explicación y con ella la capacidad de responder cuando una cuenta dice «ustedes me mostraron a Fulano».
+**El borrado físico no existe a propósito.** El panel no ofrece ninguna acción de borrado definitivo: «eliminar» archiva (RF-8.3), y lo explica al usarse. Una solicitud enviada en julio tiene que poder explicarse en octubre con los perfiles que el cliente vio. Borrar un perfil destruye esa explicación y con ella la capacidad de responder cuando una cuenta dice «ustedes me mostraron a Fulano».
+
+**Revisión INVEST 2026-09-30:** el escenario «no existe el borrado físico» no era ejecutable (el Cuando era buscar una acción ausente) y pasa a Notas; en su lugar entran un error real (el observador intenta archivar y el panel no lo deja) y un edge (archivar uno ya archivado no altera su historial). Se declara la dependencia de HU-122, ya construida, por el enlace curado.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · relacionada con HU-122
+Épica madre: **EP-006** · PRD v4.8 · RF-8.3 · RF-19.2 · D-22 · depende de HU-122 (enlace curado con reevaluación al abrir)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ con dependencia declarada: el enlace curado y los roles del panel ya existen (HU-122 y HU-123, construidas); el archivo en sí no espera a otra historia |
+| N | Negociable | ✓ la regla es fija (RF-8.3); el texto que explica que eliminar archiva es negociable |
 | V | Valiosa | ✓ conserva la trazabilidad de lo mostrado |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ una transición a *archivado* en la máquina de estados del dominio (ADR-0003), idempotente, con la guarda de rol que ya existe; el portal ya reevalúa el estado real al abrir el enlace |
+| S | Pequeña | ✓ S: una acción, una guarda y un caso de idempotencia |
+| T | Testeable | ✓ estado *archivado* en BD con el perfil presente, rechazo al observador sin escritura, historial sin cambios, y estado real visible en el enlace |
 
 #### HU-136 — Revisar la bandeja de vigencia
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** una bandeja con los perfiles que llevan más de 30 días sin actualizarse,
-**para** que mantener el banco vivo sea una lista de trabajo y no un acto de memoria.
+**quiero** una bandeja con los perfiles publicados que llevan más de 30 días sin actualizarse y los pausados hace más de 30 días,
+**para** que ningún cliente vea como disponible a alguien que ya no lo está ni se quede sin ver a alguien que volvió a estarlo.
 
 ##### Criterios de aceptación
 
-###### Happy path — bandeja con trabajo concreto
+###### Happy path — publicados sin actualizar, con trabajo concreto
 
-**Dado** que hay perfiles publicados sin actualización en más de 30 días,
+**Dado** que hay perfiles publicados cuya disponibilidad no se actualiza hace más de 30 días,
 **cuando** abro la bandeja de vigencia,
 **Entonces** los veo marcados para revisión, ordenados por antigüedad del último cambio
-**Y** desde ahí puedo actualizar la disponibilidad sin abrir cada ficha
+**Y** desde cada fila puedo actualizar la disponibilidad en dos clics sin abrir la ficha
 
-###### Error — bandeja vacía
+###### Happy path — pausado hace más de 30 días
 
-**Dado** que ningún perfil lleva más de 30 días sin tocarse,
-**cuando** abro la bandeja,
-**Entonces** el panel lo declara explícitamente
+**Dado** que un perfil lleva más de 30 días en estado *pausado*,
+**cuando** abro la bandeja de vigencia,
+**Entonces** aparece marcado para revisión junto a los publicados vencidos
+**Y** la fila indica que está pausado, su motivo de pausa y desde qué fecha
+
+###### Error — perfil sin fecha de última actualización
+
+**Dado** que un perfil publicado no tiene registrada la fecha de su última actualización de disponibilidad,
+**cuando** abro la bandeja de vigencia,
+**Entonces** el perfil aparece en la bandeja marcado como «dato incompleto»
+**Y** no se omite de la lista ni se trata como si estuviera al día
+
+###### Edge case — bandeja vacía
+
+**Dado** que ningún perfil publicado lleva más de 30 días sin actualizarse y ninguno lleva más de 30 días pausado,
+**cuando** abro la bandeja de vigencia,
+**Entonces** el panel declara explícitamente que no hay perfiles pendientes de revisión
 **Y** no muestra una lista vacía sin explicación
 
 ###### Edge case — perfil vencido que ya se muestra como «por confirmar»
 
 **Dado** que un perfil vencido ya aparece en el portal como «Disponibilidad por confirmar»,
-**cuando** lo veo en la bandeja,
-**Entonces** el panel me indica que el cliente ya está viendo esa advertencia
-**Y** eso lo pone al principio de la lista
+**cuando** abro la bandeja de vigencia,
+**Entonces** ese perfil aparece al principio de la lista
+**Y** su fila indica que el cliente ya está viendo esa advertencia
 
 ##### Notas
 
@@ -3128,75 +3454,93 @@ Cubre **RF-8.8** y se conecta con **RF-8.14.4**.
 
 **El edge case ordena por daño, no por antigüedad.** Un perfil que ya está mostrando «por confirmar» a los clientes cuesta credibilidad ahora; uno que lleva 31 días pero con fecha futura vigente, todavía no.
 
+**Pausados en la bandeja (D4, sponsor, 2026-09-30).** Un perfil pausado hace más de 30 días se marca para revisión y aparece aquí, igual que un publicado sin actualizar. La pausa sin revisar es inventario que se pierde en silencio; la regla que lo marca vive en HU-133 y la lista que lo muestra, aquí.
+
+**Un dato ausente no es un dato al día.** Si falta la fecha de última actualización, omitir el perfil lo haría invisible justo al instrumento que debe detectarlo; por eso se muestra como «dato incompleto» (PRD, Anexo B.3: cada perfil registra cuándo se actualizó por última vez su disponibilidad).
+
+**Revisión INVEST 2026-09-30:** «para» reorientado al efecto sobre el cliente; el antiguo «Error — bandeja vacía» pasa a edge y se añade el error real (fecha de última actualización ausente → «dato incompleto»); alcance ampliado a pausados > 30 días por D4 con su escenario propio; se declara `depende_de: [HU-132]` porque la actualización en dos clics dentro de la bandeja es la de esa historia; el When del edge «por confirmar» pasa a ser una acción («abro la bandeja»).
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · O5 · relacionada con HU-132 y HU-134
+Épica madre: **EP-006** · PRD v4.8 · RF-8.8 · O5 · D4 (sponsor, 2026-09-30) · depende de HU-132 · relacionada con HU-133 y HU-134
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ los 30 días vienen del PRD, el orden de la lista es negociable |
-| V | Valiosa | ✓ convierte O5 en trabajo accionable |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| I | Independiente | depende de HU-132 (declarada): la actualización en dos clics desde la fila es la de esa historia; la bandeja como lista puede construirse antes, pero no cierra su happy path sin ella |
+| N | Negociable | ✓ los 30 días vienen del PRD y de D4; el orden secundario, la forma de la fila y el texto de «dato incompleto» son negociables |
+| V | Valiosa | ✓ convierte O5 en lista de trabajo y evita que un cliente vea disponibilidades vencidas o pierda perfiles pausados olvidados |
+| E | Estimable | ✓ una consulta con dos condiciones (publicado > 30 días sin actualizar, pausado > 30 días) más la marca de dato incompleto y un orden; falta la cifra del equipo |
+| S | Pequeña | ✓ S: una vista de lista que reutiliza la acción de HU-132 y la regla de pausa de HU-133 |
+| T | Testeable | ✓ cinco escenarios con datos fijables por fecha (31 días publicado, 31 días pausado, fecha nula, ninguno vencido, vencido con «por confirmar») y resultado observable en la lista |
 
 #### HU-137 — Ver los perfiles colocados y sus vencimientos
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** una pestaña con los perfiles colocados, su cuenta y cuándo vence cada asignación,
+**quiero** registrar en el panel cada perfil colocado con su cuenta y su fecha de liberación, y verlos todos en una pestaña ordenada por vencimiento,
 **para** saber qué inventario vuelve a estar libre antes de que el cliente me lo pregunte.
 
 ##### Criterios de aceptación
 
+###### Happy path — registrar un colocado en el panel
+
+**Dado** que un perfil publicado acaba de ser asignado a una cuenta,
+**cuando** lo marco como colocado registrando el cliente y la fecha de liberación,
+**Entonces** el perfil aparece en la pestaña de colocados con la cuenta, la fecha de inicio y la de liberación
+**Y** su disponibilidad pasa a ser la fecha de liberación
+**Y** el registro queda atribuido a mí como fuente del dato
+
 ###### Happy path — colocados ordenados por vencimiento
 
 **Dado** que hay perfiles colocados en cuentas,
-**cuando** abro la pestaña,
-**Entonces** veo cuenta, fecha de inicio y fecha de vencimiento de cada uno
+**cuando** abro la pestaña de colocados,
+**Entonces** veo cuenta, fecha de inicio y fecha de liberación de cada uno
 **Y** están ordenados por proximidad del vencimiento
 **Y** los que vencen dentro de 60 días están destacados
 
-###### Error — el dato viene de otro sistema y puede estar desactualizado
+###### Error — colocado sin fecha de liberación
 
-**Dado** que la fuente de verdad de las asignaciones vive en el sistema de asignación,
-**cuando** abro la pestaña,
-**Entonces** veo la fecha de corte del último sincronizado, declarada
-**Y** no puedo editar desde aquí, porque es espejo de solo lectura
+**Dado** que estoy marcando un perfil publicado como colocado,
+**cuando** guardo el registro con el cliente pero sin fecha de liberación,
+**Entonces** el panel no guarda el registro y me dice que un colocado siempre lleva su fecha de liberación
+**Y** el perfil conserva el estado y la disponibilidad que tenía
 
 ###### Edge case — un colocado sigue publicado
 
 **Dado** que un perfil está colocado hasta cierta fecha,
-**cuando** lo veo en el inventario,
-**Entonces** sigue en estado *publicado* con su disponibilidad en la fecha de fin de la asignación
+**cuando** lo busco en el inventario,
+**Entonces** sigue en estado *publicado* con su disponibilidad en la fecha de liberación
 **Y** el cliente lo ve en el portal con su banda de arranque, no oculto
 
 ##### Notas
 
-Cubre **RF-8.13**, **RF-8.13.1** y **RF-8.13.2**.
+Cubre **RF-8.13**, **RF-8.13.1** (en su parte de registro en el panel) y **RF-8.13.2**. La carga de la información de Operaciones, su fecha de corte y el aviso «dato desincronizado» viven en **HU-150**.
 
-**Declarar que es espejo no es un detalle técnico.** RF-8.13.1 lo dice sin rodeos: duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. Por eso la fecha de corte es criterio de aceptación y no una nota al pie.
+**De dónde sale el dato (D8, sponsor, 2026-09-30).** Talento Humano lleva el control de los colocados en el propio panel —al marcar «colocado» registra cliente y fecha de liberación— y **el panel es la fuente**. Sin integración automática en v1. D8 revisa la lectura de RF-8.13.1 como «espejo de solo lectura» (enmienda de RF-8.13.1 en la v4.15).
 
-**Un colocado no se oculta.** Es la corrección que trajo el PRD v3.4 a RF-8.13.2: con un banco de decenas, ocultar cuatro perfiles vendibles es caro, y «arranca en un mes» es información útil para quien planea el trimestre siguiente.
+**Un colocado no se oculta.** Es la corrección que trajo el PRD v3.4 a RF-8.13.2: con un banco de decenas, ocultar cuatro perfiles vendibles es caro, y «arranca en un mes» es información útil para quien planea el trimestre siguiente. «Colocado» no es un estado: el perfil sigue *publicado* y la asignación se expresa en la disponibilidad (RF-8.14.1). Por eso un colocado siempre lleva su fecha de liberación (RF-8.13.2, D5): sin ella no hay disponibilidad que mostrar.
 
 **Esta pestaña es el disparador de la renovación anticipada** (V2-2): convierte un dato administrativo en una lista de conversaciones comerciales con fecha.
 
+**Revisión INVEST 2026-09-30:** aplicada D8 (registro del colocado en el panel como fuente, sin integración automática); When del último edge convertido en acción.
+
+**Revisión DoR 2026-09-30: aplicada D12** (sponsor; bloqueo B5 del DoR, partición, no recorte). La carga de la información de colocados de Operaciones sale a **HU-150** («Cargar la información de colocados de Operaciones», JSON o CSV, fecha de corte visible, aviso «dato desincronizado» a los más de 7 días sin carga nueva). HU-137 queda con el registro en el panel y su vista ordenada por vencimiento. Salen de aquí el edge de la carga de Operaciones y el error de «dato desincronizado»; entra como error el registro sin fecha de liberación (RF-8.13.2). Se retira `depende_de: [HU-141]`, que solo existía por la carga. Con eso la E pasa a ✓: ya no depende del formato de la hoja de Operaciones.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · RF-3.13 · disparador de V2-2
+Épica madre: **EP-006** · PRD v4.15 · RF-8.13 · RF-8.13.1 · RF-8.13.2 · RF-3.13 · D8 y D12 (sponsor, 2026-09-30) · la carga de Operaciones en HU-150 · disparador de V2-2
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de la integración con el sistema de asignación |
-| N | Negociable | ✓ |
+| I | Independiente | ✓ tras D12 el registro en el panel y la pestaña no dependen de ningún sistema externo ni de la importación; HU-150 se apoya en esta, no al revés |
+| N | Negociable | ✓ la fuente (el panel) la fija D8 y el umbral de 60 días viene de RF-8.13; la forma de registrar el colocado en la ficha y cómo se destaca el vencimiento son negociables |
 | V | Valiosa | ✓ anticipa inventario que vuelve y abre conversaciones de renovación |
-| E | Estimable | por confirmar con Tecnología — depende del sistema de asignación |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ M: un registro de colocado en la ficha (cliente, fecha de inicio y de liberación) que fija la disponibilidad, y una lista ordenada con destacado; ya no depende del formato de la hoja de Operaciones (D12) |
+| S | Pequeña | ✓ M: una capacidad (registrar y ver colocados) en cuatro escenarios |
+| T | Testeable | ✓ fechas fijables (vencimiento a 59 y 61 días), rechazo sin fecha de liberación con el perfil intacto, y estado y banda observables en la pestaña y en el portal |
 
 #### HU-138 — Consultar quién cambió qué y cuándo
 
@@ -3213,42 +3557,60 @@ Cubre **RF-8.13**, **RF-8.13.1** y **RF-8.13.2**.
 **Entonces** veo qué campo cambió, su valor anterior y el nuevo, quién lo hizo y cuándo
 **Y** los cambios de consentimiento y de estado aparecen igual que los de contenido
 
-###### Error — cambio sin autor identificable
+###### Error — cambio sin identidad verificada
 
-**Dado** que un cambio entró por importación masiva o por sincronización,
-**cuando** lo veo en el registro,
-**Entonces** aparece atribuido al proceso y a quien lo disparó
-**Y** nunca queda un cambio sin autor
+**Dado** que mi sesión del panel venció,
+**cuando** intento guardar un cambio en un perfil,
+**Entonces** el panel no aplica el cambio y me pide volver a entrar
+**Y** el registro del perfil no contiene ningún cambio sin autor
+
+###### Edge case — cambio que entró por importación masiva
+
+**Dado** que un campo del perfil cambió por una importación masiva,
+**cuando** abro su registro de auditoría,
+**Entonces** el cambio aparece atribuido a la importación y a la persona que la confirmó, con su fecha
+**Y** puedo llegar desde ahí al registro de esa importación
+
+###### Edge case — cambio que entró por la carga del sistema de asignación
+
+**Dado** que la disponibilidad del perfil cambió por una carga de Operaciones desde el sistema de asignación,
+**cuando** abro su registro de auditoría,
+**Entonces** el cambio aparece atribuido a esa carga y a la persona que la disparó
+**Y** se muestra la fecha de corte de la hoja cargada
 
 ###### Edge case — perfil archivado
 
 **Dado** que un perfil está archivado,
-**cuando** consulto su registro,
-**Entonces** sigo viendo su historia completa
-**Y** puedo explicar qué se mostró al cliente en una solicitud pasada
+**cuando** consulto su registro de auditoría,
+**Entonces** veo su historial completo, con la fecha y el autor de cada cambio
+**Y** el archivado aparece como un cambio de estado más
 
 ##### Notas
 
 Cubre **RF-8.9**.
 
-**Esta historia no existe sin HU-123.** RF-8.1.3 lo declara: el «quién» del registro solo existe si hay identidad. Construir auditoría sobre un panel sin autenticación produce un registro que no responde la única pregunta que importa.
+**Esta historia no existe sin HU-123.** RF-8.1.3 lo declara: el «quién» del registro solo existe si hay identidad. Construir auditoría sobre un panel sin autenticación produce un registro que no responde la única pregunta que importa. Por eso el error propio es la sesión vencida: sin identidad verificada el cambio no entra (RF-8.1.6, sesión de una jornada).
 
 **El caso de uso real es defensivo.** Cuando una cuenta diga «ustedes me mostraron a Fulano con experiencia en banca», alguien tiene que poder verificarlo. Es la misma razón por la que los perfiles se archivan y no se borran (HU-135) y por la que cada enlace curado lleva registro (HU-122).
 
+**Los procesos también tienen autor.** La importación masiva registra quién, cuándo, origen, modo y estado anterior de cada perfil tocado (`docs/10-specs/importacion-masiva.md`); la carga de Operaciones de HU-137 (D8) se atribuye igual. Ningún cambio queda como «sistema» sin una persona detrás.
+
+**Revisión INVEST 2026-09-30:** el antiguo «Error — sin autor» se separa en dos edges (importación masiva y carga del sistema de asignación) y se añade como error real el intento de guardar sin identidad verificada; el Then no observable del archivado («puedo explicar qué se mostró») se reemplaza por «veo su historial completo con fecha y autor»; I pasa a ✓ porque HU-123 ya está construida (EP-001 integrada); se declara `depende_de: [HU-123]`.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-123 · relacionada con HU-135
+Épica madre: **EP-006** · PRD v4.8 · RF-8.9 · RF-8.1.3 · depende de HU-123 (construida en EP-001) · relacionada con HU-135, HU-137 y HU-141
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-123 — sin identidad no hay autor |
-| N | Negociable | ✓ |
-| V | Valiosa | ✓ sostiene la capacidad de responder ante una cuenta |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| I | Independiente | ✓ su única dependencia, HU-123 (identidad del panel), ya está construida e integrada en EP-001 |
+| N | Negociable | ✓ qué se registra lo fija RF-8.9; la presentación del registro, los filtros y la navegación a la importación son negociables |
+| V | Valiosa | ✓ sostiene la capacidad de responder ante una cuenta con evidencia |
+| E | Estimable | ✓ un registro por cambio de campo con autor y fecha, escrito por la edición, la importación y la carga; falta la cifra del equipo |
+| S | Pequeña | ✓ M: una vista de lectura sobre un registro que los flujos de escritura ya alimentan |
+| T | Testeable | ✓ cinco escenarios con cambios fijables (edición, sesión vencida, importación, carga, archivado) y un registro observable |
 
 #### HU-139 — Administrar el léxico de búsqueda
 
@@ -3265,12 +3627,26 @@ Cubre **RF-8.9**.
 **Entonces** las búsquedas siguientes lo reconocen
 **Y** el cambio no exige despliegue
 
+###### Happy path — apruebo una propuesta del modelo (tal cual o editándola)
+
+**Dado** que Gemini propuso una equivalencia nueva a partir de las consultas sin coincidencia del período,
+**cuando** apruebo la propuesta, con o sin editarla antes de confirmar,
+**Entonces** la equivalencia, tal como quedó, entra al léxico
+**Y** las búsquedas siguientes la reconocen
+
+###### Edge case — rechazo una propuesta del modelo
+
+**Dado** que Gemini propuso una equivalencia nueva a partir de las consultas sin coincidencia del período,
+**cuando** la rechazo,
+**Entonces** no entra al léxico y deja de ofrecerse como propuesta
+**Y** ninguna propuesta pendiente afecta a las búsquedas mientras no la confirme
+
 ###### Error — equivalencia a un valor que no existe en el catálogo
 
-**Dado** que intento equiparar un término a un valor inexistente,
-**cuando** guardo,
-**Entonces** el panel lo rechaza y me ofrece los valores del catálogo
-**Y** el léxico no puede apuntar al vacío
+**Dado** que intento equiparar un término a un valor inexistente en el catálogo,
+**cuando** guardo la equivalencia,
+**Entonces** el panel la rechaza y me ofrece los valores del catálogo
+**Y** el léxico no queda apuntando a un valor vacío
 
 ###### Edge case — consultas sin coincidencia como candidatas
 
@@ -3281,100 +3657,108 @@ Cubre **RF-8.9**.
 
 ##### Notas
 
-Cubre **RF-8.12**.
+Cubre **RF-8.12** y **RF-8.12.1**.
 
 **La razón de que sea administrable está en el propio requisito:** si el léxico vive en el código, en seis meses está desactualizado. La búsqueda semántica del cliente degrada al léxico cuando el servicio de interpretación falla (HU-072), así que un léxico pobre no es un lujo perdido: es la red de seguridad de la entrada por instrucción.
 
+**El modelo propone, Talento Humano aprueba (RF-8.12.1, D-24).** Gemini revisa periódicamente las consultas sin coincidencia y propone equivalencias; nada entra al léxico sin aprobación humana. Al modelo solo viaja el texto de la consulta y la taxonomía, nunca datos de perfiles (RF-16.2). En desarrollo se usa token personal y solo datos ficticios.
+
 **El edge case conecta con el registro de demanda.** Una consulta sin coincidencia puede significar dos cosas distintas —que no sabemos cómo lo llaman, o que no tenemos el perfil— y la decisión de a cuál de las dos pertenece la toma una persona, no el sistema. Por eso las dos salidas están en el mismo lugar.
+
+**Validación con datos sintéticos.** El registro de consultas sin coincidencia (RF-2.6.3) que alimenta el edge case y las propuestas de Gemini llega con HU-078 (EP-010), que se construye después de EP-006 y sobre EP-009. Hasta entonces, el edge case y el escenario de propuestas se validan con consultas sin coincidencia sintéticas; la conexión con el registro real se comprueba cuando EP-009 y EP-010 estén construidas.
+
+**Revisión INVEST 2026-09-30:** añadido el escenario de RF-8.12.1 (propuestas de Gemini: aprobar, editar o rechazar; nada entra sin confirmación); declarado que el edge de consultas sin coincidencia se valida con datos sintéticos hasta EP-009/EP-010; When del error concretado («guardo la equivalencia»). No se declara `depende_de` en el frontmatter porque la dependencia con HU-078 se resuelve con datos sintéticos y no bloquea construir la historia.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · relacionada con HU-072 y HU-078
+Épica madre: **EP-006** · PRD v4.8 · RF-8.12 · RF-8.12.1 · D-24 · relacionada con HU-072 y HU-078 (EP-010)
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ |
-| N | Negociable | ✓ |
-| V | Valiosa | ✓ sostiene la búsqueda sin intervención de Tecnología |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| I | Independiente | ✓ con reserva declarada: la fuente real de consultas sin coincidencia (HU-078, EP-010) llega después; se sustituye por datos sintéticos hasta EP-009/EP-010 |
+| N | Negociable | ✓ la aprobación humana obligatoria la fija RF-8.12.1; la periodicidad de las propuestas y la presentación de candidatas son negociables |
+| V | Valiosa | ✓ sostiene la búsqueda sin intervención de Tecnología y la mejora con el uso |
+| E | Estimable | ✓ un CRUD de equivalencias validado contra el catálogo, una bandeja de propuestas con tres decisiones y una lista de candidatas; la llamada a Gemini es la de la frontera ya declarada; falta la cifra del equipo |
+| S | Pequeña | ✓ M: cinco escenarios sobre una sola pantalla de léxico |
+| T | Testeable | ✓ con un catálogo fijo, propuestas sintéticas y consultas sin coincidencia sintéticas, cada escenario tiene un resultado observable en el léxico y en la búsqueda |
 
-#### HU-140 — Obtener un borrador de los campos desde el artefacto
+#### HU-140 — Precargar el borrador desde la modalidad de prueba
 
 **Como** administradora de inventario de Talento Humano,
-**quiero** que el sistema me proponga los campos descriptivos de la validación a partir de la modalidad de prueba y del artefacto que ya adjunté,
-**para** no transcribir a mano la evidencia de cada perfil del banco.
+**quiero** que el sistema me proponga el enunciado del reto, los entregables esperados y los criterios evaluados a partir de la modalidad de prueba del perfil,
+**para** no transcribir a mano, perfil por perfil, un texto que ya vive en el catálogo.
 
 ##### Criterios de aceptación
 
 ###### Happy path — borrador por plantilla para mi confirmación
 
-**Dado** que un perfil tiene la modalidad de prueba elegida del catálogo y un artefacto adjunto con texto legible,
+**Dado** que un perfil tiene la modalidad de prueba elegida del catálogo,
 **cuando** pido el borrador,
 **Entonces** el sistema precarga desde la modalidad de prueba el enunciado del reto, los entregables esperados y los criterios evaluados
-**Y** propone la fecha de la validación y el resultado cuando aparecen escritos en el artefacto, indicando para cada campo de dónde salió
-**Y** el contenido del artefacto no se envía a ningún servicio fuera del servidor del portal
+**Y** indica en cada uno de esos campos que salió de la modalidad de prueba
 **Y** el borrador queda para mi revisión y nunca se publica sin que yo lo confirme
 
-###### Error — artefacto sin texto aprovechable
+###### Error — el perfil no tiene modalidad de prueba elegida
 
-**Dado** que el artefacto está vacío, es ilegible o no contiene texto que el sistema pueda leer,
+**Dado** que un perfil en borrador todavía no tiene modalidad de prueba elegida,
 **cuando** pido el borrador,
-**Entonces** el sistema me lo dice sin borrar el adjunto
-**Y** precarga igualmente lo que viene de la modalidad de prueba
-**Y** deja la fecha y el resultado vacíos para que los complete a mano
+**Entonces** el panel no precarga nada y me explica que el borrador sale de la modalidad de prueba
+**Y** me lleva al selector de modalidad del perfil (HU-125)
 
-###### Edge case — fecha o resultado ambiguos
+###### Edge case — corrijo un campo que el artefacto no sostiene
 
-**Dado** que el artefacto menciona varias fechas, o ninguna frase que corresponda a un resultado,
-**cuando** el sistema arma el borrador,
-**Entonces** deja ese campo vacío y marcado para que yo lo complete
-**Y** nunca lo rellena por analogía con otro perfil ni con un valor por defecto
+**Dado** que reviso un borrador precargado y uno de sus campos describe algo que no está en el artefacto,
+**cuando** corrijo ese campo,
+**Entonces** la ficha guarda el valor que yo escribí, no el que traía la plantilla
 
-###### Edge case — el borrador afirma algo que el artefacto no sostiene
+###### Edge case — descarto un borrador que el artefacto no sostiene
 
-**Dado** que reviso un borrador propuesto,
-**cuando** encuentro un dato que no está en el artefacto,
-**Entonces** puedo corregirlo o descartar el borrador completo
-**Y** nada llega a la ficha sin haber pasado por mi confirmación
+**Dado** que reviso un borrador precargado y uno de sus campos describe algo que no está en el artefacto,
+**cuando** descarto el borrador,
+**Entonces** la ficha no recibe ningún campo de ese borrador
 
 ##### Notas
 
-Cubre la segunda mitad de **RF-8.11** y **B.9.3** (carga asistida desde el artefacto), con los dos candados de B.9.3.
+**Revisión DoR 2026-09-30 (sponsor):** sin modalidad elegida no hay borrador: el panel lo impide y remite al selector (HU-125). El borrador **no necesita artefacto adjunto**: tras D11 la precarga solo usa la modalidad de prueba, y la evidencia se puede adjuntar antes o después (HU-131). En los dos edge, quien compara el campo con el artefacto es la administradora, no el sistema.
 
-**Ajustada el 2026-09-27 a T-2** (aprobado por el sponsor; backlog de arquitectura T-2, T-13): el borrador se arma con una **plantilla determinista, sin IA**. Lo que se precarga sale de la modalidad de prueba (B.9.1: el texto vive en el catálogo, no en el perfil); la fecha y el resultado se reconocen por patrones en el texto del artefacto; **nada sale del servidor** y **confirma siempre una persona**. Ningún modelo de lenguaje interviene, así que tampoco aplica la frontera de D-24 ni el riesgo de que un modelo redacte sobre una persona real (RF-16.1, RF-16.2).
+Cubre la segunda mitad de **RF-8.11** en su parte de plantilla (**RF-8.11.2**, precarga desde la modalidad; **RF-8.11.4**, confirma una persona) y **B.9.3** (carga asistida), con los dos candados de B.9.3. La fecha y el resultado no se leen del artefacto (D11): los escribe Talento Humano.
+
+**Ajustada el 2026-09-27 a T-2** (aprobado por el sponsor; backlog de arquitectura T-2, T-13): el borrador se arma con una **plantilla determinista, sin IA**. Lo que se precarga sale de la modalidad de prueba (B.9.1: el texto vive en el catálogo, no en el perfil); **nada sale del servidor** y **confirma siempre una persona**. Ningún modelo de lenguaje interviene, así que tampoco aplica la frontera de D-24 ni el riesgo de que un modelo redacte sobre una persona real (RF-16.1, RF-16.2). Esta historia no lee el contenido del artefacto: por eso la precarga funciona aunque el artefacto no tenga texto legible.
 
 **Por qué es historia aparte desde el 2026-09-22.** La HU-131 original juntaba adjuntar y derivar en una sola historia de complejidad L con valor medio. Guardar un archivo y derivar campos descriptivos de un documento son trabajos de orden distinto; dividirlas deja la mitad útil (HU-131) construible por una fracción del costo.
 
-**El borrador se revisa, siempre.** El sistema no afirma cosas sobre una persona real por la que Trycore responde contractualmente. El filtro es humano y explícito; por eso los dos casos límite son los que más pesan.
+**El borrador se revisa, siempre.** El sistema no afirma cosas sobre una persona real por la que Trycore responde contractualmente. El filtro es humano y explícito; por eso el caso límite es el que más pesa.
 
-**Complejidad.** Se conserva la **L** del corte original. La plantilla determinista sin IA probablemente la abarata; re-estimarla es tarea de Tecnología, no de esta corrección.
+**Sobre el mapa de historias.** En el mapa v1.0 esta capacidad vivía en v2. La marca «candidata a v2» **no es un recorte**: el alcance acordado se construye entero (regla de producto completo) y moverla de release es una decisión del equipo, nunca del modelo. Esta historia sigue en EP-006.
 
-**Sobre el mapa de historias.** En el mapa v1.0 esta capacidad vivía en v2. Moverla de release es una decisión del equipo, nunca del modelo (regla de producto completo); esta corrección no la cambia de lugar.
+**Revisión INVEST 2026-09-30:** aplicada D7 (resultado como sugerencia «sin confirmar», nunca en la ficha sin confirmación; hoy vive en HU-149) y resuelta con ella la pregunta abierta de §12.3; When del último edge a «corrijo el campo o descarto el borrador»; la marca «candidata a v2» del mapa no se toma como recorte; se declara `depende_de: [HU-131]`.
 
-**Pregunta abierta** (se lleva a §12.3 del PRD): B.9.3 dice que «el veredicto nunca lo genera el sistema; *Cumple el estándar* proviene del registro de evaluación interna, cargado por una persona». T-2 pide proponer el **resultado** por patrones. ¿Basta con que el resultado propuesto sea solo una sugerencia que la persona confirma, o el resultado debe quedar fuera de la precarga y llegar siempre del registro de evaluación? Mientras no se decida, los criterios exigen que ningún resultado llegue a la ficha sin confirmación humana, que cumple ambas lecturas.
+**Revisión INVEST 2026-09-30: partida por D9 (partición, no recorte).** HU-140 queda con la precarga desde la plantilla de la modalidad (talla S); el reconocimiento de fecha y resultado por patrones en el artefacto, con la sugerencia «sin confirmar» de D7 y los casos de ambigüedad, pasa a **HU-149**. Las dos se construyen en EP-006.
+
+**Revisión DoR 2026-09-30: aplicada D11** (sponsor). No hay lectura automática del artefacto y HU-149 se descarta (no se construye). HU-140 se mantiene tal cual: nunca leyó el contenido del artefacto, así que no necesita librería de PDF o Word. La fecha y el resultado de la validación los escribe Talento Humano en la ficha; ya no hay sugerencia «sin confirmar» que venga del artefacto.
+
+**Revisión 2026-10-01: aplicada D29** (sponsor). HU-131 (adjuntar el artefacto) se difiere a una versión futura, así que se retira de `depende_de`: el borrador nunca necesitó artefacto adjunto (D11, D19) y sale solo de la modalidad de prueba. Los criterios no cambian: en los dos edge, «el artefacto» es la evidencia que la administradora tiene a mano fuera del panel (el documento, la transcripción o el repositorio de la prueba); es ella quien contrasta el campo contra esa evidencia, no el sistema, y en esta versión no hay artefacto guardado en el panel.
 
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.13 · Anexo B.9.1 y B.9.3 · T-2 · ADR-0003 · depende de HU-131
+Épica madre: **EP-006** · PRD v4.15 · RF-8.11 (RF-8.11.2, RF-8.11.4) · Anexo B.9.1 y B.9.3 · T-2 · D9, D11 y D19 (sponsor, 2026-09-30) · ADR-0003 · D29 (sponsor, 2026-10-01): sin dependencia de HU-131, diferida a v2
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-131: sin artefacto adjunto no hay de qué derivar |
-| N | Negociable | ✓ fija el resultado (precarga por plantilla, confirmación humana, nada sale del servidor); qué patrones y qué formatos de fecha se reconocen es negociable |
-| V | Valiosa | ✓ Talento Humano pasa de redactar a confirmar en cada perfil |
-| E | Estimable | ✓ sin IA el alcance es acotado: plantilla de la modalidad más reconocimiento de fecha y resultado; falta la cifra del equipo |
-| S | Pequeña | ✗ **L** — se acepta como tal y aislada a propósito; candidata a re-estimarse tras T-2 |
-| T | Testeable | ✓ artefactos de prueba con y sin fecha, con fechas ambiguas y vacíos dan resultados observables |
+| I | Independiente | ✓ no depende de HU-131 (diferida a v2 por D29; el borrador no exige artefacto, D19); necesita la modalidad elegida en HU-125; ninguna otra historia depende de esta tras el descarte de HU-149 (D11) |
+| N | Negociable | ✓ fija el resultado (precarga por plantilla, origen visible, confirmación humana, nada sale del servidor); cómo se presenta el borrador en el panel es negociable |
+| V | Valiosa | ✓ Talento Humano deja de transcribir en cada perfil el enunciado, los entregables y los criterios que ya viven en el catálogo |
+| E | Estimable | ✓ copiar tres textos del catálogo de la modalidad a un borrador con estado (generado → revisado) y confirmarlo o descartarlo; sin IA ni lectura del artefacto |
+| S | Pequeña | ✓ **S** tras la partición de D9: una capacidad (precargar y confirmar la plantilla) en cuatro escenarios |
+| T | Testeable | ✓ una modalidad con textos conocidos da un borrador comparable campo a campo; sin modalidad elegida el panel lo impide y remite al selector; lo descartado o corregido se verifica en la ficha |
 
 #### HU-141 — Confirmar la importación sabiendo qué campos toca
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** declarar si la importación crea, actualiza o ambas, y que solo toque los campos que traje,
 **para** que un código mal escrito no cree perfiles fantasma ni una celda vacía borre un dato que no quería perder.
 
@@ -3383,29 +3767,29 @@ Cubre la segunda mitad de **RF-8.11** y **B.9.3** (carga asistida desde el artef
 ###### Happy path — el código manda
 
 **Dado** que una fila trae un código que ya existe y otra un código que no,
-**cuando** confirmo en modo crear y actualizar,
+**cuando** confirmo la importación en modo crear y actualizar,
 **Entonces** la primera actualiza el perfil existente
 **Y** la segunda crea un perfil nuevo **en borrador**
 
 ###### Error — el archivo intenta conceder consentimiento o publicar
 
 **Dado** que alguna fila trae el consentimiento en verdadero o el estado en publicado,
-**cuando** la proceso,
+**cuando** confirmo la importación,
 **Entonces** esos campos se rechazan y se avisa en la tarjeta
 **Y** el resto de la fila se importa con normalidad
 **Y** ningún perfil queda publicado por efecto de la importación
 
-###### Edge case — campo ausente frente a campo que quiero borrar
+###### Edge case — campo ausente frente a nulo explícito
 
-**Dado** que mi hoja tiene celdas vacías en columnas que no quiero cambiar,
-**cuando** confirmo,
-**Entonces** esos campos quedan intactos
-**Y** solo se vacían los que marqué explícitamente con un nulo
+**Dado** que en la fila de un perfil existente falta la columna de un campo, otra columna trae la celda vacía y una tercera trae el nulo explícito (`[vaciar]`),
+**cuando** confirmo la importación,
+**Entonces** el campo de la columna ausente y el de la celda vacía quedan intactos
+**Y** solo el campo marcado con el nulo explícito queda vacío
 
 ###### Edge case — modo solo actualizar con un código inexistente
 
 **Dado** que elegí modo solo actualizar y una fila trae un código que no existe,
-**cuando** confirmo,
+**cuando** confirmo la importación,
 **Entonces** esa fila se omite en lugar de crear un perfil
 **Y** queda contada entre las omitidas con su motivo
 
@@ -3415,30 +3799,32 @@ Cubre la segunda mitad de **RF-8.11** y **B.9.3** (carga asistida desde el artef
 
 **El control que evita el daño más común:** el modo de importación explícito. Sin él, un archivo destinado a actualizar disponibilidad crea perfiles fantasma por un código mal escrito.
 
-**La regla que evita el bug clásico:** campo ausente y celda vacía no tocan nada; solo un nulo explícito vacía un campo. Sin esa distinción nadie puede vaciar un campo a propósito ni evitar vaciarlo por accidente.
+**La regla que evita el bug clásico:** campo ausente y celda vacía no tocan nada; solo un nulo explícito vacía un campo (spec §5.1). Sin esa distinción nadie puede vaciar un campo a propósito ni evitar vaciarlo por accidente. El edge case pone los tres casos en la misma fila para que el contraste sea verificable en una sola corrida.
 
 **La prohibición de publicar no es administrable.** RF-8.16.1 la deja fuera de los catálogos paramétricos: si el consentimiento se pudiera otorgar pegando un archivo, el bloqueo de RF-8.4 se saltaría con un pegado.
 
 Cubre **RF-8.15.2**, **RF-8.15.3**, **RF-8.15.4** y **RF-8.15.7**.
 
+**Revisión INVEST 2026-09-30:** rol unificado («administradora de inventario de Talento Humano»); verbo del When alineado a «confirmo la importación» en los cuatro escenarios; el edge ausente/vacío frente a nulo se reescribe para que los tres casos (ausente, vacío, nulo) convivan en el mismo Given y el nulo quede declarado como estado, no en el Then; se declara `depende_de: [HU-086]`.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-086 · habilita HU-087 y HU-142
+Épica madre: **EP-006** · PRD v4.8 · spec `docs/10-specs/importacion-masiva.md` §4.2 y §5.1 · depende de HU-086 · habilita HU-087, HU-137 y HU-142
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-086 — sin vista previa no hay qué confirmar |
-| N | Negociable | ✓ |
+| I | Independiente | depende de HU-086 (declarada): sin vista previa no hay qué confirmar |
+| N | Negociable | ✓ los modos y la semántica ausente/vacío/nulo los fija la spec; los textos de aviso y la forma de la tarjeta son negociables |
 | V | Valiosa | ✓ es donde el banco cambia, y donde están las garantías |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ tras la división |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ la spec define la tabla de modos (§4.2) y la semántica de fusión (§5.1) sin ambigüedad; falta la cifra del equipo |
+| S | Pequeña | ✓ M tras la división de HU-086: solo el paso de confirmar |
+| T | Testeable | ✓ un archivo de prueba con códigos existentes e inexistentes, consentimiento en verdadero, celda vacía y `[vaciar]` da un resultado por fila observable |
 
 #### HU-142 — Corregir solo las filas que fallaron
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** descargar únicamente las filas con error, con su motivo y en el formato en que las mandé,
 **para** corregir tres filas sin tener que reprocesar las cincuenta y siete que ya estaban bien.
 
@@ -3446,10 +3832,10 @@ Cubre **RF-8.15.2**, **RF-8.15.3**, **RF-8.15.4** y **RF-8.15.7**.
 
 ###### Happy path — descargar solo lo que falló
 
-**Dado** que tres de sesenta filas tienen error,
-**cuando** estoy en el resultado de la importación,
-**Entonces** puedo descargar solo esas tres con su motivo, en el formato en que llegaron
-**Y** las cincuenta y siete buenas quedaron aplicadas
+**Dado** que tres de sesenta filas tienen error y las cincuenta y siete buenas quedaron aplicadas,
+**cuando** descargo el archivo de errores desde el resultado de la importación,
+**Entonces** recibo solo esas tres filas con su motivo, en el formato en que llegaron
+**Y** el archivo no incluye ninguna de las cincuenta y siete aplicadas
 
 ###### Error — el archivo completo falló
 
@@ -3461,7 +3847,7 @@ Cubre **RF-8.15.2**, **RF-8.15.3**, **RF-8.15.4** y **RF-8.15.7**.
 ###### Edge case — reimportar las corregidas
 
 **Dado** que corregí las tres filas y las vuelvo a pegar,
-**cuando** confirmo,
+**cuando** confirmo la importación,
 **Entonces** actualizan los perfiles que corresponden por código
 **Y** no se duplica nada de lo que ya había entrado en la primera importación
 
@@ -3473,24 +3859,26 @@ Cubre **RF-8.15.2**, **RF-8.15.3**, **RF-8.15.4** y **RF-8.15.7**.
 
 Cubre **RF-8.15.10**.
 
+**Revisión INVEST 2026-09-30:** rol unificado («administradora de inventario de Talento Humano»); el When del happy pasa de un estado («estoy en el resultado») a una acción («descargo el archivo de errores») y lo aplicado pasa al Given; When del edge alineado a «confirmo la importación»; se declara `depende_de: [HU-141]`.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-141
+Épica madre: **EP-006** · PRD v4.8 · spec `docs/10-specs/importacion-masiva.md` · depende de HU-141
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-141 |
-| N | Negociable | ✓ |
+| I | Independiente | depende de HU-141 (declarada): sin confirmación no hay resultado del que descargar errores |
+| N | Negociable | ✓ el formato de origen lo fija RF-8.15.10; cómo se presenta el motivo por fila es negociable |
 | V | Valiosa | ✓ evita rehacer archivos completos por errores puntuales |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ filtra las filas con error ya calculadas por la confirmación y las serializa en el formato de entrada; la idempotencia la da la spec (§4.4); falta la cifra del equipo |
+| S | Pequeña | ✓ S: una descarga y una reimportación que reutiliza HU-141 |
+| T | Testeable | ✓ un archivo de sesenta filas con tres errores y uno totalmente inválido dan descargas comparables fila a fila; la reimportación se verifica contando perfiles antes y después |
 
 #### HU-143 — Retirar y fusionar valores sin romper los perfiles que los usan
 
-**Como** administradora del banco de talento,
+**Como** administradora de inventario de Talento Humano,
 **quiero** sacar de circulación un valor obsoleto y unir los duplicados que ya entraron,
 **para** limpiar la taxonomía sin dejar fichas sin el dato que explicaba cómo se validó un perfil.
 
@@ -3498,33 +3886,40 @@ Cubre **RF-8.15.10**.
 
 ###### Happy path — desactivar un valor en uso
 
-**Dado** que una tecnología la usan varios perfiles y ya no queremos ofrecerla,
+**Dado** que una modalidad de prueba aparece en las fichas de varios perfiles publicados y ya no queremos ofrecerla,
 **cuando** la desactivo,
-**Entonces** deja de poder elegirse en perfiles nuevos
-**Y** los perfiles que ya la tienen la conservan
+**Entonces** el panel me advierte cuántas fichas dependen de ella
+**Y** deja de poder elegirse en perfiles nuevos
+**Y** las fichas que ya la tienen conservan su texto
 **Y** no existe ninguna opción de borrarla
 
-###### Happy path — fusionar duplicados que ya entraron
+###### Happy path — ver el impacto de una fusión antes de confirmarla
 
 **Dado** que el catálogo tiene «Figma» y «Fgima» y ambos están en uso,
-**cuando** los fusiono,
-**Entonces** todos los perfiles que usaban el duplicado pasan al valor destino
-**Y** veo cuántos perfiles se van a ver afectados antes de confirmar
-**Y** el duplicado desaparece del catálogo
+**cuando** elijo fusionar «Fgima» en «Figma»,
+**Entonces** veo cuántos perfiles pasarán al valor destino
+**Y** nada cambia en los perfiles ni en el catálogo hasta que confirme
 
-###### Error — fusionar dos valores que no son el mismo
+###### Happy path — confirmar la fusión
 
-**Dado** que selecciono dos valores que representan cosas distintas,
-**cuando** voy a fusionarlos,
-**Entonces** el panel me muestra el impacto en perfiles antes de nada
-**Y** la fusión es reversible mientras no la confirme
+**Dado** que estoy viendo el impacto de fusionar «Fgima» en «Figma»,
+**cuando** confirmo la fusión,
+**Entonces** todos los perfiles que usaban «Fgima» pasan a «Figma»
+**Y** «Fgima» desaparece del catálogo
 
-###### Edge case — desactivar una modalidad que sostiene fichas publicadas
+###### Error — fusión imposible
 
-**Dado** que una modalidad de prueba aparece en las fichas de varios perfiles publicados,
-**cuando** la desactivo,
-**Entonces** esas fichas conservan su texto
-**Y** el panel me advierte cuántas dependen de ella
+**Dado** que elijo como origen y destino el mismo valor, o dos valores de catálogos distintos,
+**cuando** intento fusionarlos,
+**Entonces** el panel rechaza la fusión y me dice el motivo
+**Y** ningún perfil ni catálogo cambia
+
+###### Edge case — dos valores que no son el mismo
+
+**Dado** que estoy viendo el impacto de fusionar dos valores y noto que representan cosas distintas,
+**cuando** cancelo la fusión,
+**Entonces** ambos valores siguen en el catálogo
+**Y** ningún perfil cambia
 
 ##### Notas
 
@@ -3536,20 +3931,314 @@ Cubre **RF-8.15.10**.
 
 Cubre **RF-8.16.5** y **RF-8.16.6**.
 
+**Revisión INVEST 2026-09-30:** rol unificado («administradora de inventario de Talento Humano»); la fusión se separa en «veo el impacto antes» y «confirmo»; el antiguo «Error — no son el mismo» pasa a edge (cancelar desde la vista de impacto); se añade el error real (origen igual a destino o catálogos distintos → rechazo con motivo); el antiguo edge de la modalidad publicada se integra en el happy de desactivar para mantener cinco escenarios sin perder su Then (fichas conservan el texto y advertencia de cuántas dependen); se declara `depende_de: [HU-089]`.
+
 ##### Trazabilidad
 
-Épica madre: **EP-006** · PRD v4.8 · depende de HU-089
+Épica madre: **EP-006** · PRD v4.8 · RF-8.16.5 · RF-8.16.6 · depende de HU-089
 
 ##### INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | depende de HU-089 — sin catálogo no hay qué limpiar |
-| N | Negociable | ✓ |
+| I | Independiente | depende de HU-089 (declarada): sin catálogo no hay qué limpiar |
+| N | Negociable | ✓ la prohibición de borrar la fija RF-8.16.5; cómo se presenta el impacto y el texto de los motivos es negociable |
 | V | Valiosa | ✓ es la única forma de revertir un error de tecleo en la taxonomía |
-| E | Estimable | por confirmar con Tecnología |
-| S | Pequeña | ✓ |
-| T | Testeable | ✓ |
+| E | Estimable | ✓ desactivar es una marca sobre el valor; fusionar es un conteo previo y una reasignación en bloque dentro de un catálogo; falta la cifra del equipo |
+| S | Pequeña | ✓ M: dos operaciones de catálogo sobre la misma pantalla |
+| T | Testeable | ✓ con un catálogo sembrado («Figma»/«Fgima», una modalidad usada por perfiles publicados) cada escenario da un conteo y un estado del catálogo observables |
+
+#### HU-147 — Configurar el contacto de Trycore que ve el cliente
+
+**Como** administradora de inventario de Talento Humano,
+**quiero** definir desde el panel a quién escribe el cliente cuando tiene dudas (nombre, cargo y correo),
+**para** que el portal nombre siempre a la persona o al buzón correcto sin esperar un cambio de código cuando cambia quien atiende.
+
+##### Criterios de aceptación
+
+Pantallas del portal que hoy ofrecen a quién escribir (todas con el buzón fijo `people.service@trycore.com`): **invitación rechazada** (Invitar a un colega), **enlace revocado**, **«Abre tu enlace»** (sin enlace o sesión terminada), **intentos agotados** de la puerta de acceso y **«Recibimos tu petición»** (seguimiento de un enlace nuevo pedido). En adelante, «las pantallas de contacto».
+
+###### Happy path — cambio el contacto y el portal lo muestra
+
+**Dado** que entré al panel con mi correo inscrito como administradora de inventario
+**Y** que el contacto vigente es el buzón `people.service@trycore.com` sin nombre ni cargo
+**Cuando** guardo como contacto a «Eida Tinjacá», cargo «Coordinación de Servicio», correo `eida.tinjaca@trycore.com`
+**Entonces** las pantallas de contacto del portal muestran «Eida Tinjacá, Coordinación de Servicio: eida.tinjaca@trycore.com» en su siguiente carga
+**Y** queda un registro en la auditoría del panel con quién cambió el contacto, cuándo, y el valor anterior y el nuevo
+
+###### Error — correo que no es de Trycore
+
+**Dado** que entré al panel con mi correo inscrito como administradora de inventario
+**Cuando** intento guardar como correo de contacto `eida.tinjaca@gmail.com`
+**Entonces** el panel no lo guarda y me dice que el correo de contacto debe ser `@trycore.com`
+**Y** el portal sigue mostrando el contacto anterior
+
+###### Error — quien observa ve el contacto sin poder editarlo
+
+**Dado** que entré al panel con mi correo inscrito como observadora
+**Cuando** abro la configuración del contacto
+**Entonces** veo el contacto vigente en modo lectura, sin controles para editarlo
+
+###### Error — quien observa no puede forzar un cambio
+
+**Dado** que tengo una sesión del panel con rol observadora
+**Cuando** envío un cambio del contacto saltándome la pantalla (petición directa con mi sesión)
+**Entonces** el panel la rechaza
+**Y** el contacto vigente no cambia y no queda ningún cambio en la auditoría
+
+###### Edge case — se guardó solo un correo, sin nombre ni cargo
+
+**Dado** que el contacto guardado tiene correo `servicio.clientes@trycore.com` y no tiene nombre ni cargo
+**Cuando** una persona invitada abre en el portal una pantalla de contacto
+**Entonces** ve «escribe a People Service: servicio.clientes@trycore.com»
+**Y** nunca ve un nombre vacío, un cargo suelto ni un error
+
+##### Notas
+
+**Nace el 2026-09-30 por decisión del sponsor** en la revisión de fidelidad de EP-001: el prototipo `invitar-colega--rechazada` nombra a Eida Tinjacá y la app muestra el buzón genérico; el sponsor pide que el contacto sea **paramétrico desde el panel de administración, no un dato fijo en el código**. Hasta que se construya, EP-001 usa `people.service@trycore.com` como valor fijo (desviación temporal registrada en el `design.md` del change `acceso-y-aterrizaje-curado`).
+
+**Valor inicial sembrado:** al instalar, el contacto es el buzón `people.service@trycore.com` sin nombre ni cargo (el estado de partida del happy path); nunca existe un portal «sin contacto».
+
+**Un solo contacto para todo el portal**, no uno por enlace ni por cuenta: es lo que el prototipo y las pantallas de EP-001 piden. Un contacto por cuenta (p. ej. el ejecutivo comercial) sería otra historia y dependería del enlace con HubSpot (EP-007).
+
+**Correo `@trycore.com` obligatorio** para que un error de digitación no mande a los clientes a un buzón externo. El nombre y el correo del contacto son datos personales de una persona empleada (Ley 1581): se muestran a clientes invitados por decisión explícita de quien los configura.
+
+**Superficie:** la sección «Administración» del panel (hoy solo el pie con la sesión); el menú del panel ya reserva ese destino.
+
+**Revisión INVEST (2026-09-30):** sin ✗; se dividieron los escenarios de observadora y de valor por omisión (un estado y una acción por escenario) y se corrigió la lista de pantallas: «si no te llega el código» de la puerta no ofrece contacto de Trycore (remite a quien compartió el enlace) y queda fuera.
+
+**Preguntas abiertas** (no bloquean los criterios):
+- ¿Los correos que envía el sistema a clientes (código de acceso, enlace renovado) también firman con este contacto? Hoy firman «People Service · Trycore».
+
+##### Trazabilidad
+
+Épica madre: **EP-006** · PRD v4.14 · RF-1.4 (pantalla de renovación «con contacto») · HU-095 y HU-145 («el contacto de Trycore a quien consultar») · RF-8.1.2 (roles: solo el administrador de inventario escribe) · RF-8.9 (auditoría) · depende de HU-123 (login del panel)
+
+##### INVEST
+
+| | Criterio | Estado |
+|---|---|---|
+| I | Independiente | ✓ con dependencia declarada: solo necesita el login y los roles del panel (HU-123); las pantallas del portal ya existen con el valor fijo y se cambian a leerlo |
+| N | Negociable | ✓ fija qué se configura (nombre, cargo, correo) y dónde se ve; la ubicación exacta en el panel y los textos son negociables |
+| V | Valiosa | ✓ quien atiende a los clientes cambia sin pasar por un despliegue, y el cliente ve a una persona concreta si Talento Humano lo decide |
+| E | Estimable | ✓ un registro de configuración, una pantalla, auditoría y roles que ya existen, y las cinco pantallas de contacto del portal que ya muestran el valor fijo (`Pantallas.tsx`: `EnlaceRevocado`, `AbreTuEnlace`; `PuertaCliente.tsx`: casos `espera` y `renovacion_persona`; `invitar/page.tsx`) |
+| S | Pequeña | ✓ S: un dato, un formulario, una validación y su lectura en el portal |
+| T | Testeable | ✓ cada escenario deja un resultado observable en el portal, en el panel o en la auditoría |
+
+#### HU-148 — Reutilizar un emparejamiento de columnas guardado
+
+**Como** administradora de inventario de Talento Humano,
+**quiero** guardar cómo emparejé las columnas de mi hoja y reutilizarlo en la próxima importación,
+**para** no volver a emparejar a mano la misma hoja que importo todos los meses.
+
+##### Criterios de aceptación
+
+###### Happy path — guardar el emparejamiento
+
+**Dado** que en el asistente corregí el emparejamiento de las columnas de mi hoja con los campos del perfil,
+**cuando** lo guardo como plantilla con un nombre,
+**Entonces** la plantilla aparece en la lista de emparejamientos guardados
+**Y** conserva qué columna va a qué campo y cuáles quedaron en «no importar»
+
+###### Happy path — reutilizar el emparejamiento en la hoja del mes siguiente
+
+**Dado** que tengo guardada la plantilla «Disponibilidad mensual» y pegué una hoja con los mismos encabezados,
+**cuando** elijo esa plantilla en el paso de emparejamiento,
+**Entonces** cada columna queda emparejada como la guardé
+**Y** puedo corregir cualquier emparejamiento antes de pasar a la vista previa
+
+###### Error — a la hoja le falta una columna de la plantilla
+
+**Dado** que la plantilla empareja una columna «Disponibilidad» que la hoja pegada no trae,
+**cuando** aplico la plantilla,
+**Entonces** el asistente me dice qué columnas de la plantilla faltan en la hoja
+**Y** los campos que esas columnas alimentaban no se tocan en ningún perfil
+
+###### Edge case — la hoja trae una columna que la plantilla no conoce
+
+**Dado** que la hoja pegada trae una columna nueva que no estaba cuando guardé la plantilla,
+**cuando** aplico la plantilla,
+**Entonces** las columnas conocidas se emparejan como la guardé
+**Y** la columna nueva queda sin emparejar, se ignora y el asistente me lo informa
+
+##### Notas
+
+**Nace el 2026-09-30 por D2** (sponsor): «guardar el emparejamiento de columnas como plantilla» salía como un Y dentro del primer escenario de HU-086, pero es otra capacidad —guardar, listar y aplicar plantillas— y hacía que HU-086 no fuera pequeña. Es una **partición, no un recorte**: el alcance sigue entero en EP-006.
+
+**Por qué importa:** la misma persona importa el mismo formato todos los meses (spec §6, paso 2). Sin plantilla, cada mes repite el emparejamiento a mano, y un emparejamiento mal repetido es un campo equivocado en decenas de perfiles.
+
+**Una columna sin emparejar no bloquea** (spec §6, paso 2): se ignora y se informa. Un campo sin columna tampoco se toca (RF-8.15.4: campo ausente no modifica nada).
+
+Cubre el paso 2 de `docs/10-specs/importacion-masiva.md` (plantillas de mapeo) dentro de **RF-8.15**.
+
+**Revisión INVEST 2026-09-30:** historia creada por partición de HU-086 (D2), con `depende_de: [HU-086]` y tabla INVEST razonada.
+
+##### Trazabilidad
+
+Épica madre: **EP-006** · PRD v4.14 · D2 · sale de HU-086 · depende de HU-086
+
+##### INVEST
+
+| | Criterio | Estado |
+|---|---|---|
+| I | Independiente | ✓ con dependencia declarada: guarda y aplica el emparejamiento que construye HU-086; se construye después de ella y no la bloquea |
+| N | Negociable | ✓ fija que se guarda, se elige y se puede corregir; cómo se nombran y se listan las plantillas queda abierto |
+| V | Valiosa | ✓ ahorra el emparejamiento manual en cada importación recurrente y evita repetirlo mal |
+| E | Estimable | ✓ S: una tabla de plantillas (nombre y pares columna → campo) y aplicarla sobre el emparejamiento de HU-086 comparando encabezados. Sin servicio externo |
+| S | Pequeña | ✓ cuatro escenarios de una capacidad (guardar y reutilizar un emparejamiento) |
+| T | Testeable | ✓ cada escenario tiene una hoja y una plantilla concretas y un emparejamiento resultante que se compara columna a columna |
+
+#### HU-150 — Cargar la información de colocados de Operaciones
+
+**Como** administradora de inventario de Talento Humano,
+**quiero** cargar en la pestaña de colocados el archivo JSON o CSV con la información de colocados que me entrega Operaciones,
+**para** que la pestaña refleje también las asignaciones que no registré en el panel y sepa desde qué fecha es ese dato.
+
+##### Criterios de aceptación
+
+###### Happy path — carga de un archivo de Operaciones
+
+**Dado** que Operaciones me entregó un archivo JSON o CSV con código del perfil (PS-XXXX), cliente, fecha de inicio y fecha de liberación de colocados que no están registrados en el panel, y una columna adicional de observaciones,
+**cuando** lo cargo en la pestaña de colocados,
+**Entonces** esos colocados aparecen en la pestaña marcados como procedentes de la carga de Operaciones
+**Y** la pestaña muestra como fecha de corte el momento de esa carga
+**Y** el panel me informa que la columna de observaciones se ignoró
+
+###### Error — filas con errores de formato
+
+**Dado** que tengo un archivo de Operaciones con filas válidas y filas con errores de formato,
+**cuando** lo cargo,
+**Entonces** se aplican solo las filas válidas
+**Y** cada fila con error se muestra con su número y el motivo, sin aplicarse
+
+###### Error — la carga de Operaciones está desincronizada
+
+**Dado** que la última carga de Operaciones se hizo hace *N* días y no ha habido otra,
+**cuando** abro la pestaña de colocados,
+**Entonces** el aviso «dato desincronizado» junto a la fecha de corte aparece según la tabla
+**Y** los colocados de esa carga siguen visibles, sin ocultarse, con o sin aviso
+
+| Días desde la última carga (*N*) | Aviso «dato desincronizado» |
+|---|---|
+| 7 | no aparece |
+| 8 | aparece |
+
+###### Edge case — una fila difiere de un colocado registrado en el panel
+
+**Dado** que un perfil está registrado en el panel como colocado con una fecha de liberación y el archivo de Operaciones trae para ese mismo código otra fecha de liberación,
+**cuando** cargo el archivo,
+**Entonces** el colocado del panel conserva sus datos y la fila no lo pisa
+**Y** la fila queda señalada como «diferencia con Operaciones», con los dos valores a la vista, para que yo decida si la acepto
+
+###### Edge case — el archivo no es JSON ni CSV
+
+**Dado** que tengo un archivo de Operaciones que no es JSON ni CSV,
+**cuando** lo cargo,
+**Entonces** el panel lo rechaza entero y me dice que admite JSON o CSV
+**Y** la pestaña conserva los colocados y la fecha de corte de la carga anterior
+
+##### Notas
+
+Cubre **RF-8.13.1** en su parte de carga de Operaciones (enmienda v4.15: D8 y D12) y las decisiones **D12, D15 y D16** del sponsor.
+
+**Nace el 2026-09-30 por D12** (sponsor, tras el DoR de EP-006; bloqueo B5): la carga de Operaciones sale de HU-137 a esta historia. **Partición, no recorte**: las dos se construyen en EP-006. HU-137 conserva el registro en el panel, que sigue siendo la fuente (D8).
+
+**Declarar la antigüedad del dato no es un detalle técnico.** RF-8.13.1 lo dice sin rodeos: duplicar una fuente de verdad sin declararlo es cómo un dato desactualizado termina sosteniendo una decisión. Por eso la fecha de corte y el aviso «dato desincronizado» son criterio de aceptación y no una nota al pie. El umbral es de D12: **más de 7 días** sin una carga nueva; con exactamente 7 días el aviso todavía no aparece; los dos lados del límite (7 y 8 días) están en la tabla del escenario de desincronizado.
+
+**Sin integración automática en v1** (D8): la carga es un acto de Talento Humano con el archivo que entrega Operaciones; no hay conexión con el sistema de asignación (§8.3).
+
+**Revisión DoR 2026-09-30: aplicadas D15 y D16** (sponsor, mismo día). D16: la fecha de corte es **el momento de la carga**, no una fecha escrita en el archivo; las columnas mínimas son código del perfil (PS-XXXX), cliente, fecha de inicio y fecha de liberación, y cualquier otra columna se ignora y se informa (happy path). D15: si una fila difiere de un colocado ya registrado en el panel, **gana el panel**; la fila no lo pisa y queda señalada como «diferencia con Operaciones» para que Talento Humano decida si la acepta (nuevo edge). El límite de 7 días se prueba con una tabla de ejemplos (7 → sin aviso, 8 → aviso) dentro del escenario de desincronizado, sin pasar de cinco escenarios.
+
+##### Trazabilidad
+
+Épica madre: **EP-006** · PRD v4.15 · RF-8.13.1 · D8, D12, D15 y D16 (sponsor, 2026-09-30) · sale de HU-137 · depende de HU-137
+
+##### INVEST
+
+| | Criterio | Estado |
+|---|---|---|
+| I | Independiente | ✓ con dependencia declarada: la carga llena la pestaña de colocados que construye HU-137; no depende de la importación masiva de perfiles ni de ningún sistema externo |
+| N | Negociable | ✓ fija formatos (JSON o CSV), columnas mínimas, fecha de corte en el momento de la carga, umbral de 7 días, filas malas sin aplicar y que gana el panel; la presentación del aviso y de la diferencia son negociables |
+| V | Valiosa | ✓ la pestaña deja de depender de que Talento Humano registre a mano lo que Operaciones ya sabe, declara la edad de ese dato y señala las diferencias sin perder el registro del panel |
+| E | Estimable | ✓ M: leer dos formatos con cuatro columnas fijas, validar por fila, marcar el origen, fechar la carga, calcular el aviso a los 7 días y señalar las diferencias con el panel; D15 y D16 cierran las dudas de columnas, corte y conflicto |
+| S | Pequeña | ✓ M: una capacidad (cargar la información de Operaciones con su frescura) en cinco escenarios |
+| T | Testeable | ✓ archivos de prueba JSON y CSV con filas buenas y malas, una columna de más, una fila que difiere del panel y un archivo de otro formato, y cargas fijadas a 7 y 8 días, dan resultados observables en la pestaña |
+
+#### HU-151 — Administrar quién entra al panel y con qué rol
+
+**Como** administradora de inventario de Talento Humano,
+**quiero** inscribir, cambiar de rol y dar de baja desde el panel los correos @trycore.com que pueden entrar,
+**para** dar o quitar acceso a una persona del equipo el mismo día, sin pedir un cambio en la configuración del servidor.
+
+##### Criterios de aceptación
+
+###### Happy path — inscribo un correo con su rol
+
+**Dado** que entré al panel como administradora de inventario y el correo `analista.mercadeo@trycore.com` no está inscrito,
+**cuando** lo inscribo con el rol observador,
+**Entonces** el correo aparece en la lista de acceso con el rol observador
+**Y** al pedir entrar al panel con ese correo le llega un código de un uso
+**Y** el alta queda en el registro de auditoría con quién la hizo y cuándo
+
+###### Happy path — paso a observador a otra administradora
+
+**Dado** que entré al panel como administradora de inventario y otra administradora activa tiene una sesión abierta,
+**cuando** le cambio el rol a observador,
+**Entonces** la lista de acceso muestra el correo con su nuevo rol
+**Y** en su siguiente petición al panel su sesión se corta y tiene que volver a entrar
+**Y** el cambio queda en el registro de auditoría con quién lo hizo, cuándo, el rol anterior y el nuevo
+
+###### Happy path — doy de baja un correo inscrito
+
+**Dado** que entré al panel como administradora de inventario y hay un correo inscrito que ya no debe entrar y tiene una sesión abierta,
+**cuando** lo doy de baja,
+**Entonces** el correo deja de aparecer entre los inscritos activos
+**Y** en su siguiente petición al panel su sesión se corta
+**Y** al pedir entrar con ese correo ya no le llega código y el panel responde igual que a un correo no inscrito
+**Y** la baja queda en el registro de auditoría con quién la hizo y cuándo
+
+###### Error — correo que no es @trycore.com
+
+**Dado** que entré al panel como administradora de inventario,
+**cuando** intento inscribir el correo `eida.tinjaca@gmail.com`,
+**Entonces** el panel no lo inscribe y me dice que solo admite correos `@trycore.com`
+**Y** la lista de acceso queda igual
+
+###### Edge case — el panel nunca se queda sin administrador
+
+**Dado** que soy la única administradora de inventario activa de la lista,
+**cuando** intento cambiarme el rol a observador,
+**Entonces** el panel lo impide y me explica que el panel no puede quedarse sin ningún administrador activo
+**Y** sigo inscrita con el rol de administradora de inventario
+
+##### Notas
+
+**Última administradora (revalidación 2026-09-30):** la misma guarda bloquea la baja: si siendo la única administradora activa intento darme de baja, el panel aplica el mismo bloqueo y el mismo mensaje. No se repite como escenario aparte para no pasar de cinco.
+
+Cubre **RF-8.1.5** (lista nominal de acceso mantenida desde el panel) y **RF-8.1.2** (dos roles: administrador de inventario y observador). El «quién» de la auditoría es el correo verificado con el código (RF-8.1.3).
+
+**Nace el 2026-09-30 por D13** (sponsor, tras el DoR de EP-006; bloqueo B4: RF-8.1.5 no tenía historia). HU-123 (construida en EP-001) siembra el primer administrador en la configuración del servidor y aplica la lista al entrar; esta historia da a los administradores la forma de mantenerla desde el panel.
+
+**Quien no es administrador no puede.** Solo el rol administrador de inventario inscribe, cambia de rol o da de baja (RF-8.1.2: el observador no escribe nada). Un observador no ve los controles de la lista de acceso y, si envía el cambio por una dirección directa, el panel lo rechaza y deja el intento en la auditoría: es el mismo comportamiento que HU-124 fija para toda acción de escritura del panel (escenario «intento de escritura por ruta directa»), y esta acción se registra en esa misma matriz rol × acción. No se repite aquí como escenario para no pasar de cinco.
+
+**No revela quién está en la lista.** A un correo dado de baja se le responde igual que a uno nunca inscrito —«si tu correo tiene acceso, te llegó un código»— (RF-8.1.5).
+
+**Revisión DoR 2026-09-30: aplicada D17** (sponsor, mismo día). Dar de baja o bajar a observador **corta la sesión en la siguiente petición**: no se espera a que caduque la jornada (RF-8.1.6). El escenario de cambio de rol pasa a ser el de administradora → observador, que es el que corta la sesión; el paso de observador a administrador es el mismo cambio en sentido contrario y queda igual de auditado. La regla del observador se mantiene en esta nota, apoyada en HU-124 (opción (a) del sponsor).
+
+##### Trazabilidad
+
+Épica madre: **EP-006** · PRD v4.15 · RF-8.1.5 · RF-8.1.2 · RF-8.1.3 · D-22 · D13 y D17 (sponsor, 2026-09-30) · depende de HU-123 (construida en EP-001) · relacionada con HU-124 y HU-138
+
+##### INVEST
+
+| | Criterio | Estado |
+|---|---|---|
+| I | Independiente | ✓ con dependencia declarada: se apoya en la lista de acceso y la matriz rol × acción que HU-123 ya dejó construidas en EP-001; no bloquea a ninguna otra historia de la épica |
+| N | Negociable | ✓ fija las reglas (solo @trycore.com, dos roles, todo auditado, nunca sin administrador, respuesta que no revela la lista); la pantalla de la lista y el texto de los mensajes son negociables |
+| V | Valiosa | ✓ Talento Humano da o quita acceso el mismo día, sin depender de quien administra el servidor; la regla del último administrador evita dejar el panel sin nadie que lo gobierne |
+| E | Estimable | ✓ M: alta, cambio de rol y baja sobre la lista que ya existe, con validación de dominio, guarda del último administrador, corte de la sesión en la siguiente petición (D17) y evento de auditoría por cada acción |
+| S | Pequeña | ✓ M: una capacidad (mantener la lista de acceso) en cinco escenarios |
+| T | Testeable | ✓ cada escenario deja un estado observable: la lista, la sesión cortada en la siguiente petición, la llegada o no del código al pedir entrar, el rechazo del correo externo, la guarda del último administrador y la auditoría |
 
 ---
 
@@ -3563,6 +4252,7 @@ Cubre **RF-8.16.5** y **RF-8.16.6**.
 **Capabilities:** RF-9 (completo) · RF-17.1 · RF-17.2 · RF-17.5
 **Fase:** MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** el 100% de las solicitudes enviadas tienen su oportunidad correspondiente en el CRM; cero registros duplicados de empresa; tiempo de solicitud a alineación agendada de 3 días hábiles o menos.
 **Desbloqueada el 2026-09-15.** D-6 cerrada: negocio en el pipeline propio de la línea, con propiedad de origen. D-7 cerrada: negocio nuevo asociado como relacionado al existente.
 
@@ -3890,6 +4580,7 @@ Cubre RF-9.1.3 y RF-17.4. **Sin esta historia, O3 no se puede medir.** Al usar l
 **Capabilities:** RF-7 (completo)
 **Fase:** MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** el tablero mensual reporta conversión, acierto de la curaduría y el top 10 de búsquedas sin resultados sin intervención manual.
 
 **Historias anticipadas:** registrar la entrada atribuida al correo · registrar filtros aplicados · distinguir curaduría de descubrimiento · registrar el embudo hasta el envío · reportar búsquedas sin resultados · reportar filtros más usados.
@@ -4159,6 +4850,10 @@ Cubre RF-7.3. Sin esto, el informe de EP-011 no puede existir.
 **Capabilities:** RF-12 (completo) · RF-13 (completo) · RF-16 (completo) · RF-2.6
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
+
+**Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Con una selección curada de familias distintas, el panel de especificación (Perfil Objetivo) aparece vacío, sin un rol deducido (antes en HU-144, happy path). Se incorpora a la historia de EP-009 que muestre el panel al aterrizar desde un enlace curado. EP-001 garantiza lo previo: no se deduce ni se aplica ningún rol o criterio de la selección.
+
 **Métrica de éxito:** tiempo hasta el primer perfil abierto igual o menor que con facetas, con tasa de solicitud igual o mayor.
 **Prueba que la falsea:** si el tiempo sube y la tasa de solicitud no se mueve, el patrón está mal aplicado. Es condición de permanencia, no de lanzamiento.
 **Sin bloqueos.** D-16 se cerró el 2026-09-21 en persistencia por dispositivo y el 2026-09-25 quedó acotada al Perfil Objetivo (T-1): «Mi equipo» va al servidor por invitado (EP-004, RF-4.1); el Perfil Objetivo sigue en el dispositivo de quien lo especificó.
@@ -4960,6 +5655,10 @@ Cubre RF-13.9.
 **Capabilities:** RF-14.3 · RF-14.4 · RF-15
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006 · EP-009 (el camino del cero existe porque hay un Perfil Objetivo que mostrar)
+
+**Criterios recibidos de EP-001 (2026-09-28, DoR de EP-001, decisión del PO).** Cuando una opción de la pregunta de encuadre no tiene perfiles publicados, la pantalla ofrece además **pedir el perfil a medida (RF-14.3)** (antes en HU-093, error). Se incorpora a HU-077 o a la historia de EP-010 que construya esa salida. EP-001 garantiza que la opción vacía siempre ofrece ampliar la búsqueda.
+
 **Métrica de éxito:** proporción de pantallas de cero que terminan en solicitud dirigida en lugar de abandono.
 **Riesgo propio:** mostrar "lo más cercano" cuando no se parece daña más que no mostrar nada.
 **Bloqueada por:** D-14 (umbral de similitud) y D-13 (dueño del registro de demanda).
@@ -5198,6 +5897,7 @@ Cubre RF-15.1 y RF-7.2. El último escenario es la defensa contra el sesgo que e
 **Capabilities:** RF-18 (completo) · RF-1.6 · RF-7.3
 **Fase:** MVP
 **Capa:** `layer: business`
+**Depende de:** EP-001 · EP-006
 **Métrica de éxito:** 40% o más de las cuentas contactadas entran al portal, y ninguna cuenta acumula tres envíos con salida registrada sin entrar sin que alguien lo sepa.
 **Riesgo propio:** una selección armada en una hoja aparte se degrada entre que se arma y que el cliente abre el correo. Por eso RF-18.3 y RF-18.4 exigen construirla desde el panel, contra el inventario del momento, y marcar el bloque como desactualizado si un perfil cambia. Segundo riesgo, nuevo con la decisión: si nadie registra la salida, el portal no puede contar envíos ni vigilar la cadencia (RF-18.5).
 
@@ -6020,3 +6720,4 @@ Historias: **HU-086** (importar), **HU-087** (revertir), **HU-088** (exportar el
 Se conservan con su razón: la decisión de descartar es más útil que su ausencia.
 
 - **HU-079** — Reconocer de un vistazo qué ha logrado un perfil (EP-003)
+- **HU-149** — Reconocer fecha y resultado por patrones en el artefacto (EP-006)

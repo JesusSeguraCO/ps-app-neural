@@ -7,9 +7,19 @@
     ".": "./src/index.ts",
     "./tokens.css": "./tokens.css",
     "./tailwind.preset": "./tailwind.preset.ts",
-    "./patrones.css": "./patrones.css"
+    "./patrones.css": "./patrones.css",
+    "./ficha.css": "./ficha.css",
+    "./FichaPerfil": "./src/FichaPerfil.tsx",
+    "./ContactoTrycore": "./src/ContactoTrycore.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@ps/contratos": "*",
+    "@ps/dominio": "*"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0"
   }
 }

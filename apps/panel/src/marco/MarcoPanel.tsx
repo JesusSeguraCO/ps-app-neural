@@ -1,14 +1,18 @@
 // Marco del panel (prototipo admin-shell, patrón PP:panel): barra lateral navy con el menú canónico,
 // barra superior con migas, correo de la sesión (identidad de auditoría) y «Cerrar sesión», y el pie
 // con rol y fin de la jornada. Sin enlace al portal del cliente (HU-123, edge case). Los destinos con
-// trabajo pendiente llevan su conteo (hoy: peticiones de invitación sin decidir).
+// trabajo pendiente llevan su conteo: peticiones de invitación sin decidir y perfiles por revisar en la
+// bandeja de vigencia (HU-136). El pie lleva a Administración (contacto de Trycore y accesos, HU-147 y
+// HU-151; prototipo admin-contacto); en móvil es un destino más de la barra horizontal. La observadora
+// ve solo sus destinos de consulta (D43, `menuDelRol`).
 import type { ReactNode } from "react";
 import { horaCortaDeColombia } from "@ps/dominio/fecha/colombia";
+import { listarVigencia } from "@ps/infra/postgres/estado-perfil";
 import { contarPeticionesPendientes } from "@ps/infra/postgres/invitaciones-panel";
 import { poolDe } from "@ps/infra/postgres/pool";
 import type { SesionVerificada } from "../sesion/exigirSesion";
 import { BotonSalir } from "./BotonSalir";
-import { MENU_PANEL, ROL_ETIQUETA, iniciales } from "./menu";
+import { ROL_ETIQUETA, iniciales, menuDelRol } from "./menu";
 
 function Icono({ d }: { d: string }) {
   return (
@@ -29,7 +33,12 @@ export async function MarcoPanel({
   migas: Array<string | { texto: string; href: string }>;
   children: ReactNode;
 }) {
-  const conteos: Record<string, number> = { peticiones: await contarPeticionesPendientes(poolDe("panel")) };
+  const bd = poolDe("panel");
+  const [peticiones, vigencia] = await Promise.all([contarPeticionesPendientes(bd), listarVigencia(bd)]);
+  const conteos: Record<string, number> = {
+    peticiones,
+    vigencia: vigencia.porConfirmar.length + vigencia.porRevisar.length + vigencia.pausados.length,
+  };
   return (
     <div className="pp-panel">
       <nav className="pp-sidebar" aria-label="Panel de People Service">
@@ -45,7 +54,7 @@ export async function MarcoPanel({
             <span className="pp-sidebar__sub">Talento Humano</span>
           </span>
         </div>
-        {MENU_PANEL.map((seccion) => (
+        {menuDelRol(sesion.rol).map((seccion) => (
           <div key={seccion.titulo} className="mp-seccion">
             <p className="pp-sidebar__seccion">{seccion.titulo}</p>
             {seccion.destinos.map((d) =>
@@ -75,7 +84,12 @@ export async function MarcoPanel({
             )}
           </div>
         ))}
-        <div className="pp-sidebar__pie">
+        <a
+          className="pp-sidebar__pie pp-sidebar__pie--enlace"
+          href="/administracion"
+          aria-current={activo === "administracion" ? "page" : undefined}
+          aria-label={`Administración · ${ROL_ETIQUETA[sesion.rol]} · sesión hasta las ${horaCortaDeColombia(sesion.hasta)}`}
+        >
           <span className="pp-avatar" aria-hidden="true">
             {iniciales(sesion.correo)}
           </span>
@@ -83,7 +97,7 @@ export async function MarcoPanel({
             <span className="pp-persona__nombre">{ROL_ETIQUETA[sesion.rol]}</span>
             <span className="pp-persona__area">{`Sesión hasta las ${horaCortaDeColombia(sesion.hasta)}`}</span>
           </span>
-        </div>
+        </a>
       </nav>
       <div className="pp-panel__cuerpo">
         <header className="pp-panel__topbar">

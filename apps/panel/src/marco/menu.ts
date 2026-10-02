@@ -18,29 +18,29 @@ export const MENU_PANEL: SeccionMenu[] = [
   {
     titulo: "Banco de perfiles",
     destinos: [
-      { clave: "inventario", etiqueta: "Inventario", ruta: null, icono: "M4 6h16M4 12h16M4 18h10" },
+      { clave: "inventario", etiqueta: "Inventario", ruta: "/inventario", icono: "M4 6h16M4 12h16M4 18h10" },
       {
         clave: "importar",
         etiqueta: "Importar",
-        ruta: null,
+        ruta: "/importar",
         icono: "M12 4v11M7 10l5 5 5-5M5 20h14",
       },
       {
         clave: "vigencia",
         etiqueta: "Vigencia",
-        ruta: null,
+        ruta: "/vigencia",
         icono: "M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z",
       },
       {
         clave: "catalogos",
         etiqueta: "Catálogos",
-        ruta: null,
+        ruta: "/catalogos",
         icono: "M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z",
       },
       {
         clave: "lexico",
         etiqueta: "Léxico",
-        ruta: null,
+        ruta: "/lexico",
         icono: "M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6",
       },
     ],
@@ -62,7 +62,7 @@ export const MENU_PANEL: SeccionMenu[] = [
         icono:
           "M13.5 8a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0zM3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6",
       },
-      { clave: "colocados", etiqueta: "Colocados", ruta: null, icono: "M5 12l5 5L20 7" },
+      { clave: "colocados", etiqueta: "Colocados", ruta: "/colocados", icono: "M5 12l5 5L20 7" },
       {
         clave: "demanda",
         etiqueta: "Demanda",
@@ -91,6 +91,19 @@ export const MENU_PANEL: SeccionMenu[] = [
     ],
   },
 ];
+
+// D43 (prototipo inventario-perfiles--observador y D14): la observadora solo ve sus destinos de
+// consulta. Las demás páginas siguen abiertas para ella en solo lectura por su dirección; solo cambia
+// el menú. Las secciones que quedan sin destinos no se pintan.
+const DESTINOS_OBSERVADOR = new Set(["inventario", "enlaces", "colocados"]);
+
+export function menuDelRol(rol: keyof typeof ROL_ETIQUETA): SeccionMenu[] {
+  if (rol === "administrador") return MENU_PANEL;
+  return MENU_PANEL.map((s) => ({
+    ...s,
+    destinos: s.destinos.filter((d) => DESTINOS_OBSERVADOR.has(d.clave)),
+  })).filter((s) => s.destinos.length > 0);
+}
 
 export const ROL_ETIQUETA = {
   administrador: "Administración",

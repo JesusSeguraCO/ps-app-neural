@@ -12,6 +12,8 @@ import { mensajeCodigo } from "@ps/dominio/acceso/mensajes";
 import {
   ESQUEMAS_PAYLOAD,
   type PayloadEnviarCodigo,
+  type PayloadAplicarImportacion,
+  type PayloadRevertirImportacion,
   type PayloadNotificar,
   type PayloadRenovarEnlace,
   type TipoConManejador,
@@ -23,8 +25,11 @@ import {
   mensajeAvisoRenovacion,
   mensajeEnlaceRenovado,
 } from "@ps/dominio/enlaces/renovacion";
+import { mensajeDatoDesactualizado } from "@ps/dominio/inventario/observador";
 import type { EnviadorCorreo } from "@ps/infra/mailgun/index";
+import { abortarLote, aplicarLote, type OpcionesAplicar } from "@ps/infra/postgres/aplicar-importacion";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
+import { liberarReversion, revertirLote } from "@ps/infra/postgres/revertir-importacion";
 
 // Dependencias de la renovación del enlace vencido (HU-092, HU-146); sin ellas el worker no la reclama.
 export interface ContextoRenovacion {
@@ -40,6 +45,8 @@ export interface ContextoDespacho {
   reclamo: string;
   registrar: (evento: Record<string, unknown>) => void;
   renovacion?: ContextoRenovacion;
+  // Aplicar importaciones (HU-141, I-2); sin ellas el worker no las reclama.
+  importacion?: { auditoria: ClavesAuditoria; opciones?: Partial<OpcionesAplicar> };
 }
 
 interface Trabajo {
@@ -51,8 +58,11 @@ interface Trabajo {
   caduca_en: Date | null;
 }
 
-const tiposDe = (ctx: ContextoDespacho): TipoConManejador[] =>
-  ctx.renovacion ? ["enviar_codigo", "renovar_enlace", "notificar"] : ["enviar_codigo"];
+const tiposDe = (ctx: ContextoDespacho): TipoConManejador[] => [
+  "enviar_codigo",
+  ...(ctx.renovacion ? (["renovar_enlace", "notificar"] as const) : []),
+  ...(ctx.importacion ? (["aplicar_importacion", "revertir_importacion"] as const) : []),
+];
 
 const SQL_RECLAMAR = `
 UPDATE operacion.trabajos SET estado = 'en_curso', locked_by = $1, locked_until = now() + interval '10 minutes',
@@ -74,6 +84,8 @@ async function cerrar(
     error?: string | null;
     enSegundos?: number;
     sumarIntento?: boolean;
+    // El intento que se anotó al empezar no cuenta (candado de la importación tomado, I-2).
+    devolverIntento?: boolean;
     nunca?: boolean;
   },
 ): Promise<void> {
@@ -90,7 +102,7 @@ async function cerrar(
       ctx.reclamo,
       cambio.estado,
       cambio.error ?? null,
-      cambio.sumarIntento ? 1 : 0,
+      cambio.sumarIntento ? 1 : cambio.devolverIntento ? -1 : 0,
       cambio.enSegundos ?? null,
       cambio.nunca ?? false,
     ],
@@ -268,9 +280,34 @@ async function renovarEnlace(ctx: ContextoDespacho, t: Trabajo, p: PayloadRenova
   await cerrar(ctx, t.id, { estado: "hecho", sumarIntento: true });
 }
 
-// Aviso a Talento Humano de una petición de invitación nueva (HU-095, `notificar` de ADR-0006/0009).
+// Aviso a Talento Humano (`notificar` de ADR-0006/0009): una petición de invitación nueva (HU-095) o un
+// dato desactualizado que vio el observador (HU-124), con el perfil identificado.
 async function notificar(ctx: ContextoDespacho, t: Trabajo, p: PayloadNotificar): Promise<void> {
   const deps = ctx.renovacion!;
+  if (p.motivo === "dato_desactualizado") {
+    const f = (
+      await ctx.bd.query(
+        `SELECT coalesce(nullif(concat_ws(' ', p.nombre, p.primer_apellido), ''), p.codigo) AS nombre, u.correo
+           FROM inventario.perfiles p, identidad_panel.usuarios_panel u
+          WHERE p.codigo = $1 AND u.id = $2`,
+        [p.codigo, p.usuario],
+      )
+    ).rows[0];
+    if (!f) {
+      await cerrar(ctx, t.id, { estado: "hecho" });
+      return;
+    }
+    const m = mensajeDatoDesactualizado({
+      avisa: f.correo,
+      nombre: f.nombre,
+      codigo: p.codigo,
+      nota: p.nota,
+      enlace: `Inventario › ${p.codigo}`,
+    });
+    const { resultado } = await ctx.correo.enviar({ para: deps.correoTalentoHumano, asunto: m.asunto, texto: m.texto, html: m.html });
+    await cerrarSegunResultado(ctx, t, resultado);
+    return;
+  }
   const r = await ctx.bd.query(
     `SELECT s.correo_propuesto, s.nombre_propuesto, s.para_que, s.estado, i.correo AS pide, e.codigo, e.cuenta_nombre, e.proyecto
        FROM identidad.invitaciones_solicitadas s
@@ -293,6 +330,88 @@ async function notificar(ctx: ContextoDespacho, t: Trabajo, p: PayloadNotificar)
   });
   const { resultado } = await ctx.correo.enviar({ para: deps.correoTalentoHumano, asunto: m.asunto, texto: m.texto, html: m.html });
   await cerrarSegunResultado(ctx, t, resultado);
+}
+
+// Aplicar un lote confirmado (HU-141; contrato I-2 de ADR-0003). Un solo intento, sin reintento
+// automático: el intento se anota antes de empezar, así un reclamo que lo retome tras un arrendamiento
+// vencido sabe que el proceso anterior murió y no reaplica (si el lote ya quedó `aplicado`, cierra
+// `hecho`; si no, lo deja `abortado`). Candado tomado → vuelve a la cola en 1 min sin gastar el intento.
+// Abortado → el trabajo queda `fallando` sin próximo intento: reintentar es un acto de la persona.
+async function aplicarImportacion(
+  ctx: ContextoDespacho,
+  t: Trabajo,
+  p: PayloadAplicarImportacion,
+): Promise<void> {
+  const deps = ctx.importacion!;
+  const anotado = await ctx.bd.query(
+    `UPDATE operacion.trabajos SET intentos = intentos + 1 WHERE id = $1 AND locked_by = $2 RETURNING intentos`,
+    [t.id, ctx.reclamo],
+  );
+  if (!anotado.rows[0]) return;
+  if (anotado.rows[0].intentos > 1) {
+    const l = await ctx.bd.query(`SELECT estado FROM inventario.lotes_importacion WHERE id = $1`, [p.lote]);
+    if (l.rows[0]?.estado === "aplicado") {
+      await cerrar(ctx, t.id, { estado: "hecho" });
+      return;
+    }
+    await abortarLote(ctx.bd, p.lote, "interrumpido");
+    ctx.registrar({ evento: "importacion_abortada", lote: p.lote, motivo: "interrumpido" });
+    await cerrar(ctx, t.id, { estado: "fallando", error: "interrumpido", nunca: true });
+    return;
+  }
+  const r = await aplicarLote(ctx.bd, deps.auditoria, p.lote, {
+    hoy: new Date(Date.now() - 5 * 3_600_000).toISOString().slice(0, 10),
+    ...deps.opciones,
+  });
+  if (r.tipo === "ocupado") {
+    await cerrar(ctx, t.id, { estado: "pendiente", devolverIntento: true, enSegundos: 60 });
+    return;
+  }
+  if (r.tipo === "abortado") {
+    ctx.registrar({ evento: "importacion_abortada", lote: p.lote, motivo: r.motivo });
+    await cerrar(ctx, t.id, { estado: "fallando", error: r.motivo, nunca: true });
+    return;
+  }
+  ctx.registrar({ evento: "importacion_aplicada", lote: p.lote, ...r });
+  await cerrar(ctx, t.id, { estado: "hecho" });
+}
+
+// Revertir la última importación (HU-087): mismo contrato I-2 que aplicar. Si no se pudo (otra
+// importación después, una regla de la BD, el proceso murió), el lote sigue aplicado con el motivo y
+// la persona puede volver a confirmarla.
+async function revertirImportacion(
+  ctx: ContextoDespacho,
+  t: Trabajo,
+  p: PayloadRevertirImportacion,
+): Promise<void> {
+  const deps = ctx.importacion!;
+  const anotado = await ctx.bd.query(
+    `UPDATE operacion.trabajos SET intentos = intentos + 1 WHERE id = $1 AND locked_by = $2 RETURNING intentos`,
+    [t.id, ctx.reclamo],
+  );
+  if (!anotado.rows[0]) return;
+  const fallar = async (motivo: string) => {
+    await liberarReversion(ctx.bd, p.lote, motivo);
+    ctx.registrar({ evento: "reversion_fallida", lote: p.lote, motivo });
+    await cerrar(ctx, t.id, { estado: "fallando", error: motivo, nunca: true });
+  };
+  if (anotado.rows[0].intentos > 1) {
+    const l = await ctx.bd.query(`SELECT estado FROM inventario.lotes_importacion WHERE id = $1`, [p.lote]);
+    if (l.rows[0]?.estado === "revertido") await cerrar(ctx, t.id, { estado: "hecho" });
+    else await fallar("interrumpido");
+    return;
+  }
+  const r = await revertirLote(ctx.bd, deps.auditoria, p.lote, p.incluir);
+  if (r.tipo === "ocupado") {
+    await cerrar(ctx, t.id, { estado: "pendiente", devolverIntento: true, enSegundos: 60 });
+    return;
+  }
+  if (r.tipo === "rechazado") {
+    await fallar(r.motivo);
+    return;
+  }
+  ctx.registrar({ evento: "importacion_revertida", lote: p.lote, ...r });
+  await cerrar(ctx, t.id, { estado: "hecho" });
 }
 
 async function cerrarSegunResultado(
@@ -349,7 +468,11 @@ async function ejecutar(ctx: ContextoDespacho, t: Trabajo): Promise<void> {
     await cerrar(ctx, t.id, { estado: "caducado", error: "vencido_en_cola" });
     return;
   }
-  if (t.tipo === "renovar_enlace") await renovarEnlace(ctx, t, payload.data as PayloadRenovarEnlace);
+  if (t.tipo === "revertir_importacion")
+    await revertirImportacion(ctx, t, payload.data as PayloadRevertirImportacion);
+  else if (t.tipo === "aplicar_importacion")
+    await aplicarImportacion(ctx, t, payload.data as PayloadAplicarImportacion);
+  else if (t.tipo === "renovar_enlace") await renovarEnlace(ctx, t, payload.data as PayloadRenovarEnlace);
   else if (t.tipo === "notificar") await notificar(ctx, t, payload.data as PayloadNotificar);
   else await enviarCodigo(ctx, t, payload.data as PayloadEnviarCodigo);
 }

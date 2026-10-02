@@ -5,13 +5,17 @@
 // el enlace trae selección. El buscador de texto es de EP-002.
 import { aplicarFiltro, filtroDeConsulta } from "@ps/dominio/catalogo/encuadre";
 import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
-import { datosDelBanco, datosDelEnlace } from "../../src/banco/datos";
+import { conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
+import { datosDelBanco, datosDelEnlace, fichaDe } from "../../src/banco/datos";
 import { Encuadre } from "../../src/banco/Encuadre";
+import { PanelFicha } from "../../src/ficha/PanelFicha";
 import { MarcoPortal } from "../../src/marco/MarcoPortal";
 import { TarjetaPerfil } from "../../src/seleccion/TarjetaPerfil";
 import { exigirSesion } from "../../src/sesion/exigirSesion";
 import "../aterrizaje.css";
 import "../banco.css";
+import "@ps/ui/ficha.css";
+import "../ficha.css";
 
 export default async function Banco({
   searchParams,
@@ -47,7 +51,15 @@ export default async function Banco({
   }
 
   const familias = banco.taxonomia.filter((c) => c.n > 0);
-  return (
+  // La ficha abierta (HU-120): solo de un perfil de esta lista filtrada, recorrida en su orden.
+  const href = (c: string | null) => conFicha("/banco", consulta, c);
+  const pedida = typeof consulta.ficha === "string" ? consulta.ficha : undefined;
+  const paso = recorrido(
+    perfiles.map((x) => x.codigo),
+    pedida,
+  );
+  const ficha = paso ? await fichaDe(sesion, pedida!) : null;
+  const pagina = (
     <MarcoPortal {...marco}>
       <header className="as-cabecera">
         <div className="as-cabecera__texto">
@@ -89,7 +101,10 @@ export default async function Banco({
           <ul className="pp-rejilla-perfiles pp-lista" aria-label="Perfiles publicados">
             {perfiles.map((perfil) => (
               <li key={perfil.codigo}>
-                <TarjetaPerfil item={{ codigo: perfil.codigo, tipo: "disponible", perfil }} />
+                <TarjetaPerfil
+                  item={{ codigo: perfil.codigo, tipo: "disponible", perfil }}
+                  ficha={{ href: href(perfil.codigo), abierta: Boolean(ficha) && perfil.codigo === pedida }}
+                />
               </li>
             ))}
           </ul>
@@ -113,5 +128,13 @@ export default async function Banco({
         </aside>
       </div>
     </MarcoPortal>
+  );
+  if (!paso || !ficha) return pagina;
+  const lista = filtro.tipo === "todo" ? "banco de perfiles" : `banco · ${filtro.tipo === "contexto" ? "tu selección" : filtro.valor}`;
+  return (
+    <>
+      <div inert>{pagina}</div>
+      <PanelFicha ficha={ficha} recorrido={paso} lista={lista} href={href} />
+    </>
   );
 }

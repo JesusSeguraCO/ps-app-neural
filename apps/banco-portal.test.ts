@@ -107,9 +107,10 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))(
           `/banco?rol=${encodeURIComponent("Analista QA automatización")}`,
           cookies[0]!,
         );
-        expect(codigos(porRol)).toEqual(["PS-0201"]);
+        // PS-0137 está colocado: sigue publicado y el banco lo muestra con su banda (HU-137 edge).
+        expect(codigos(porRol).sort()).toEqual(["PS-0137", "PS-0201"]);
         const porCategoria = await html(`/banco?categoria=Calidad`, cookies[0]!);
-        expect(codigos(porCategoria).sort()).toEqual(["PS-0201", "PS-0238"]);
+        expect(codigos(porCategoria).sort()).toEqual(["PS-0137", "PS-0201", "PS-0238"]);
         expect(porCategoria).toContain("Calidad");
       });
 

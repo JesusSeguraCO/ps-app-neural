@@ -9,6 +9,20 @@ export const MatrizPermisos = {
   "enlaces.revocar": ["administrador"],
   "invitaciones.decidir": ["administrador"],
   "accesos.desbloquear": ["administrador"],
+  // EP-006 (diseño §9): escribir el inventario es solo de la administradora.
+  "catalogo.escribir": ["administrador"],
+  "lexico.escribir": ["administrador"],
+  "perfil.escribir": ["administrador"],
+  "consentimiento.registrar": ["administrador"],
+  // Importación masiva (spec §8): exportar, plantillas, emparejar y calcular el plan.
+  "importacion.ejecutar": ["administrador"],
+  // Colocados (HU-137, HU-150): registrar en el panel y cargar la información de Operaciones.
+  "colocados.escribir": ["administrador"],
+  // HU-124: «Avisar a Talento Humano» de un dato desactualizado; es la salida del observador.
+  "perfil.avisar": ["administrador", "observador"],
+  // Administración (HU-151, HU-147): la lista de acceso y el contacto de Trycore.
+  "accesos.administrar": ["administrador"],
+  "contacto.escribir": ["administrador"],
 } as const satisfies Record<string, readonly RolPanel[]>;
 
 export type AccionPanel = keyof typeof MatrizPermisos;

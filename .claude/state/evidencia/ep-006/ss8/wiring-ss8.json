@@ -1,0 +1,11 @@
+[
+ {"item_id": "HU-134-ac1-senalada", "kind": "hu_ac", "ref": "HU-134 · Pausado al que le ponen fecha: señal roja en su fila con la contradicción y la acción que la corrige"},
+ {"item_id": "HU-134-ac2-alta-bloquea", "kind": "hu_ac", "ref": "HU-134 · Las seis combinaciones ALTA impiden publicar con aviso rojo que nombra la contradicción"},
+ {"item_id": "HU-134-ac3-media", "kind": "hu_ac", "ref": "HU-134 · MEDIA (vencida, > 30 días): advertencia sin rojo, sigue publicado y visible"},
+ {"item_id": "HU-134-ac4-por-confirmar", "kind": "hu_ac", "ref": "HU-134 · Vencida y sin tocar: la fila dice «por confirmar» y está en la bandeja"},
+ {"item_id": "HU-134-ac5-vencida-reciente", "kind": "hu_ac", "ref": "HU-134 · Vencida pero actualizada hace ≤ 30 días: MEDIA de fecha vencida, sin «por confirmar» ni bandeja"},
+ {"item_id": "HU-135-ac1-archivar", "kind": "hu_ac", "ref": "HU-135 · Eliminar archiva: no se borra, sale del portal, sigue para explicar solicitudes"},
+ {"item_id": "HU-135-ac2-observador", "kind": "hu_ac", "ref": "HU-135 · Observador no archiva: conserva estado y no queda cambio"},
+ {"item_id": "HU-135-ac3-ya-archivado", "kind": "hu_ac", "ref": "HU-135 · Ya archivado: lo indica y no cambian fecha de archivo ni historial"},
+ {"item_id": "HU-135-ac4-enlace-curado", "kind": "hu_ac", "ref": "HU-135 · Archivado en un enlace curado: fuera del banco, los demás normales"}
+]

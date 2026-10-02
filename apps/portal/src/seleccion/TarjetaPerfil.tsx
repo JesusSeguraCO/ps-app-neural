@@ -8,10 +8,20 @@ import { DISPONIBILIDAD_CLIENTE, ETIQUETA_ESTADO, notaEstado } from "@ps/dominio
 const idDe = (codigo: string) => `p-${codigo.slice(3)}`;
 const lista = (xs: string[]) => xs.join(", ").toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
-function Disponible({ perfil }: { perfil: PerfilCatalogo }) {
+// La ficha se abre en panel lateral sobre esta misma lista (HU-120, D47).
+export interface EnlaceFicha {
+  href: string;
+  abierta: boolean;
+}
+
+function Disponible({ perfil, ficha }: { perfil: PerfilCatalogo; ficha?: EnlaceFicha }) {
   const id = idDe(perfil.codigo);
   return (
-    <article className="pp-perfil" aria-labelledby={id}>
+    <article
+      className={`pp-perfil${ficha?.abierta ? " fp-abierta" : ""}`}
+      aria-labelledby={id}
+      aria-current={ficha?.abierta ? "true" : undefined}
+    >
       <h3 className="pp-perfil__rol" id={id}>
         {perfil.roles[0] ?? perfil.familia ?? "Perfil"}
       </h3>
@@ -33,6 +43,14 @@ function Disponible({ perfil }: { perfil: PerfilCatalogo }) {
         {perfil.modalidad && <li>{perfil.modalidad}</li>}
       </ul>
       <div className="pp-perfil__pie">
+        {ficha &&
+          (ficha.abierta ? (
+            <span className="pp-meta">Ficha abierta</span>
+          ) : (
+            <a className="pp-enlace pp-enlace--sutil fp-ver" href={ficha.href}>
+              Ver ficha<span className="pp-sr">{` de ${perfil.nombre} ${perfil.primerApellido}`}</span>
+            </a>
+          ))}
         <span className="pp-codigo-perfil">{perfil.codigo}</span>
       </div>
     </article>
@@ -71,6 +89,7 @@ function Cambio({ item }: { item: Extract<ItemSeleccion<PerfilCatalogo>, { tipo:
   );
 }
 
-export function TarjetaPerfil({ item }: { item: ItemSeleccion<PerfilCatalogo> }) {
-  return item.tipo === "disponible" ? <Disponible perfil={item.perfil} /> : <Cambio item={item} />;
+// Solo un perfil disponible tiene ficha: el que cambió de estado no está publicado para el cliente.
+export function TarjetaPerfil({ item, ficha }: { item: ItemSeleccion<PerfilCatalogo>; ficha?: EnlaceFicha }) {
+  return item.tipo === "disponible" ? <Disponible perfil={item.perfil} ficha={ficha} /> : <Cambio item={item} />;
 }
