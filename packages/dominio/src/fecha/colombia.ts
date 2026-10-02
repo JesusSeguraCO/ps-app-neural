@@ -1,5 +1,22 @@
 // Fechas en hora de Colombia (America/Bogota, UTC-5 sin horario de verano) con el formato del prototipo.
 
+const DIA_MS = 86_400_000;
+const BOGOTA_MS = -5 * 3_600_000;
+
+// Fecha civil de Bogotá (AAAA-MM-DD) de un instante: el «hoy» de todas las reglas por día.
+export const diaCivilDeColombia = (d: Date) =>
+  new Date(d.getTime() + BOGOTA_MS).toISOString().slice(0, 10);
+
+// Días civiles de Bogotá entre dos instantes. Toda regla de «N días» (vigencia, banda, coherencia,
+// «hace N días» en el panel) cuenta así, para que dos vistas nunca den números distintos.
+export function diasCivilesDesde(desde: Date, ahora: Date): number {
+  return Math.round(
+    (Date.parse(`${diaCivilDeColombia(ahora)}T00:00:00Z`) -
+      Date.parse(`${diaCivilDeColombia(desde)}T00:00:00Z`)) /
+      DIA_MS,
+  );
+}
+
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
 // «27 sep 2026, 8:05 a. m.» en America/Bogota (UTC-5 todo el año, sin horario de verano).

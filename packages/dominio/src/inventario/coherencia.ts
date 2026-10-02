@@ -9,7 +9,7 @@
 // se guarda como la fecha de ese día y no vence (D32). La fecha de liberación de un colocado que ya
 // pasó es una fecha vencida, no un «Disponible ahora» elegido.
 // Cualquier otra combinación no es incoherencia.
-import { bandaDeDisponibilidad } from "../catalogo/banda";
+import { bandaDeDisponibilidad, DIAS_SIN_TOCAR } from "../catalogo/banda";
 import { fechaCivil } from "../fecha/colombia";
 import type { EstadoAlmacenado } from "./estados";
 import { ETIQUETA_BANDA_PANEL } from "./perfil";
@@ -46,8 +46,6 @@ export function clasificarDisponibilidad(fecha: string | null, ahora: Date): Cla
   if (!fecha) return "ninguna";
   return fecha <= diaCivilDeColombia(ahora) ? "ahora" : "con_fecha";
 }
-
-const UMBRAL_DIAS = 30;
 
 export function evaluarCoherencia(p: EntradaCoherencia, ahora: Date): Incoherencia | null {
   if (p.estado === "borrador") return null;
@@ -106,7 +104,7 @@ export function evaluarCoherencia(p: EntradaCoherencia, ahora: Date): Incoherenc
         ? "No tiene registrada la fecha de su última actualización: el portal lo muestra como «Disponibilidad por confirmar». Sigue publicado."
         : `${vencida ? "La fecha en que quedaba libre ya pasó y lleva" : "Lleva"} ${dias} días sin actualizar: el portal lo muestra como «Disponibilidad por confirmar». Sigue publicado.`,
     );
-  if (dias !== null && dias > UMBRAL_DIAS)
+  if (dias !== null && dias > DIAS_SIN_TOCAR)
     return media(
       "sin_actualizar",
       `Lleva ${dias} días sin actualizar la disponibilidad. Sigue publicado.`,

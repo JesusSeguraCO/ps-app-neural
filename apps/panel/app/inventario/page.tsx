@@ -10,6 +10,7 @@ import { Fragment } from "react";
 import { puede } from "@ps/dominio/acceso/permisos";
 import { bandaDeDisponibilidad } from "@ps/dominio/catalogo/banda";
 import { normalizar } from "@ps/dominio/catalogo/parecidos";
+import { diasCivilesDesde } from "@ps/dominio/fecha/colombia";
 import { momentoDeColombia } from "@ps/dominio/fecha/colombia";
 import { ETIQUETA_ESTADO, type EstadoAlmacenado } from "@ps/dominio/inventario/estados";
 import { ETIQUETA_BANDA_PANEL } from "@ps/dominio/inventario/perfil";
@@ -65,7 +66,7 @@ const nombreDe = (f: FilaInventario) =>
 function detalleEstado(f: FilaInventario, ahora: Date): string | null {
   if (f.estado === "pausado") {
     const dias = f.pausa?.desde
-      ? Math.max(0, Math.round((ahora.getTime() - Date.parse(f.pausa.desde)) / 86_400_000))
+      ? Math.max(0, diasCivilesDesde(new Date(f.pausa.desde), ahora))
       : null;
     return [
       f.pausa?.motivo ?? "Sin motivo registrado",
