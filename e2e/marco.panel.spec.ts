@@ -259,6 +259,21 @@ test.describe("vista previa de la ficha (HU-129)", () => {
     await expect(page.getByRole("heading", { name: "Vista previa de la ficha" })).toHaveCount(0);
     expect(errores).toEqual([]);
   });
+
+  test("HU-129 · falta un dato que la publicación exige: el bloque sale marcado, nombra el dato e impide publicar", async ({ page }) => {
+    await page.goto("/inventario/nuevo");
+    await page.getByLabel("Nombre", { exact: true }).fill(`E2E incompleta ${randomBytes(2).toString("hex")}`);
+    await page.getByRole("button", { name: "Guardar borrador" }).click();
+    await expect(page).toHaveURL(/\/inventario\/PS-\d{4}$/);
+    await page.getByRole("button", { name: "Vista previa" }).click();
+    await expect(page.getByRole("heading", { name: "Vista previa de la ficha" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bloques incompletos" })).toBeVisible();
+    await expect(page.locator(".vp-grupo").filter({ hasText: "Impide publicar" })).toBeVisible();
+    // En la ficha, el bloque de la persona va marcado y nombra lo que falta.
+    const marcas = page.locator(".fp-ficha .vp-marca");
+    expect(await marcas.count()).toBeGreaterThan(0);
+    await expect(page.locator(".fp-ficha .fp-persona.vp-marca")).toContainText(/Falta: .*primer apellido/);
+  });
 });
 
 // Editor de perfiles en un navegador real (EP-006 · sub-slice 2): lo tecleado solo encuentra valores
@@ -526,6 +541,25 @@ test.describe("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-136)", () =>
     await lote.getByLabel("Disponibilidad").selectOption({ label: "En 2 semanas" });
     await lote.getByRole("button", { name: "Aplicar a los 2" }).click();
     await expect(page.getByText("Disponibilidad actualizada en 2 de 2")).toBeVisible();
+
+    // HU-133 · el motivo es en realidad una fecha: la hoja de pausa ofrece el desvío, no pausa y lleva
+    // a la fecha de su fila.
+    await page.getByRole("button", { name: `Más acciones para ${marca} Dos` }).click();
+    await page.getByRole("menuitem", { name: `Pausar a ${marca} Dos` }).click();
+    const desvio = page.getByRole("dialog", { name: `Pausar a ${marca} Dos` });
+    await expect(desvio.getByText("¿Está ocupada hasta una fecha?")).toBeVisible();
+    await expect(desvio.getByText(/Eso no es una pausa, es disponibilidad/)).toBeVisible();
+    await desvio.getByRole("button", { name: "Poner la fecha en que queda libre" }).click();
+    await expect(desvio).toBeHidden();
+    await expect(page.locator(":focus")).toHaveAttribute("type", "date");
+    const sigue = new pg.Client({ connectionString: INSTALACION });
+    await sigue.connect();
+    try {
+      const e = await sigue.query(`SELECT estado, motivo_pausa_id FROM inventario.perfiles WHERE codigo = $1`, [dos]);
+      expect(e.rows[0]).toEqual({ estado: "publicado", motivo_pausa_id: null });
+    } finally {
+      await sigue.end();
+    }
 
     await page.getByRole("button", { name: `Más acciones para ${marca} Uno` }).click();
     await page.getByRole("menuitem", { name: `Pausar a ${marca} Uno` }).click();

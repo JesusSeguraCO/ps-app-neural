@@ -163,7 +163,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       expect(await fechaPortal(a.codigo)).toBe("2026-12-24");
     });
 
-    it("pausar con motivo: sale del portal; el listado lo muestra con su motivo y la hoja trae el desvío", async () => {
+    it("pausar con motivo: sale del portal; el listado lo muestra con su motivo (el desvío «es una fecha» lo recorre el e2e)", async () => {
       const p = await publicado();
       const html = await pagina("/inventario");
       expect(html).toContain("Más acciones para Lorena Salcedo");
