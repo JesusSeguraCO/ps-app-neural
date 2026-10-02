@@ -123,7 +123,7 @@ prd_version_alineada: 4.13
 
 **Historias anticipadas:** leer la tarjeta y entender la capacidad · abrir la ficha completa · consultar las 4 dimensiones Neural-Grid · ver condiciones operativas y SLA · citar el perfil por su código · leer el encuadre del estándar antes del primer resultado.
 
-**Historias escritas (2026-10-02):** *sub-slice inicial de panel* HU-177 · HU-176 · HU-178 · HU-191 · HU-194 — *cara cliente* HU-153 · HU-081 · HU-154 · HU-155 · HU-156 · HU-157 · HU-158 · HU-159 · HU-119 · HU-120 · HU-175.
+**Historias escritas (2026-10-02):** *sub-slice inicial de panel* HU-177 · HU-176 · HU-178 · HU-191 · HU-194 — *cara cliente* HU-153 · HU-081 · HU-154 · HU-155 · HU-156 · HU-157 · HU-158 · HU-159 · HU-119 · HU-120.
 
 **Discovery 2026-10-02** (decisiones en `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`):
 - **Sub-slice inicial de panel (D60):** SARO (alcance y fecha) y DISC (fecha) se capturan en un sub-slice inicial de esta épica (panel + migración: HU-177, HU-176, HU-178, HU-191, HU-194); **EP-006 sigue cerrada**, no se reabre. SARO y DISC son **obligatorios para publicar** y el alcance SARO es catálogo cerrado administrable (D61). Los perfiles ya publicados sin ellos **siguen visibles** con marca «incompleto» y la ficha omite el dato ausente (D62). Las **tres validaciones de entrada** son obligatorias para publicar; el **Sello Personal sigue opcional** (D63). Columnas SARO/DISC en la importación masiva y su plantilla (D81, HU-191).
