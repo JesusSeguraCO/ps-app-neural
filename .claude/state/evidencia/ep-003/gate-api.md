@@ -58,3 +58,18 @@ impacto en meses, y en el portal: sin claves B.4/internas, sin «Incompleto», s
   compartido «Antecedentes judiciales, disciplinarios y fiscales» y se reactivó (queda en la auditoría).
 - **Restos en `ps_ep003`**: perfiles archivados con apellido `Newman<RUN>` y sus consentimientos/auditoría (solo inserción),
   usuarios del panel de baja, y el alcance «Alcance n3-explora1», que otra corrida empezó a usar en sus perfiles (no se borró).
+
+## Re-anclaje a HEAD (9c041678cedf67de80f857d2c06289750d515abb, 2026-10-02T23:32:29Z)
+Corrida nueva de `tests/postman/correr-ep-003.sh` en HEAD (incluye la importación por lotes con SARO/DISC del commit
+3a8b2af y el refactor d751aa1 de la importación), portal :3210 / panel :3211 standalone recién compilados por el runner,
+BD `ps_ep003`:
+```
+│              iterations │                  1 │                 0 │
+│                requests │                 82 │                 0 │
+│            test-scripts │                 82 │                 0 │
+│              assertions │                211 │                 0 │
+newman rc=0
+quedan (archivados) perfiles=4 no archivados=0 alcances=0 usuarios activos=0 claves huérfanas=0
+```
+82 peticiones, 211 aserciones, 0 fallidas. La limitación anterior («importación por lotes no está en Newman») queda
+cerrada. Log: `newman-ep-003-head.log`; export JSON: `newman-ep-003.json`. Veredicto: PASS.

@@ -1,5 +1,7 @@
 # EP-003 · gate fidelity (tarea 8.3)
 
+- Re-anclado a HEAD 9c041678cedf67de80f857d2c06289750d515abb (2026-10-02T23:32:29Z): desde 227a06f solo cambiaron e2e/, tests/postman/ y la importación del dominio (plan.ts, sin UI); ninguna pantalla cambió. La corrida e2e VERDE del runner en este sha (gate-journey-smoke.md) recorre las mismas pantallas.
+
 - sha HEAD: 227a06fc87d72d6b81214e24decc26aad87badf6 · rama: feature/ep-003-evidencia-del-perfil · hora: 2026-10-02T22:46:56Z
 - Método: capturas reales con MCP chrome-devtools (contexto aislado «ep003») de la app de este worktree contra la
   BD aislada `ps_ep003` (D125), comparadas con el prototipo v2 (`docs/07-prototipo/`) y `docs/05-prototipo/pantallas/`.

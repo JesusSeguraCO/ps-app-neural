@@ -74,3 +74,9 @@ No cerrar `wiring_verified` ni `dod` (verificador independiente).
 por lotes con SARO/DISC no está en Newman (sí plantilla y exportación). Incidente ya corregido: una primera limpieza
 borró perfiles y provocó códigos PS repetidos (500) en `ps_ep003` entre ~22:46 y 22:48 UTC; se insertaron 7
 marcadores archivados y la limpieza ahora archiva.
+
+## Estado tras la reanudación (2026-10-02T23:33:11Z, sha 9c04167)
+Registrados: `journey_smoke`, `fidelity`, `api`, `data` (con `tdd` y `dor`/`coherence_link` ya en true). Runner VERDE
+(1554 tests, 71 e2e); Newman en HEAD 82/211/0; refactor d751aa1 con mutaciones M18–M21. Los avisos `phase_advanced`
+quedaron encolados en el runtime («se entregan al reconectar»). Siguiente: `wiring_verified` con el verificador
+independiente (contexto virgen) y después `dod`.

@@ -53,3 +53,23 @@ B) mismo entorno, `REQUIERE_BD=1 npx vitest run` sobre:
 - Observación invariante 1 (lista paralela en importación) arriba.
 
 ## Veredicto global: PASS (5/5 CUMPLE) → proponer `gates.data: true`
+
+## Re-anclaje a HEAD (9c041678cedf67de80f857d2c06289750d515abb, 2026-10-02T23:32:29Z) y observación de la regla única resuelta
+- La observación del invariante 1 (`faltasDePublicado` con lista propia) se corrigió en d751aa1: la importación traduce
+  la fila con `datosParaPublicarDeFila` y pregunta a `evaluarPublicacion` (packages/dominio/src/importacion/plan.ts:661-703),
+  con tests de equivalencia y del publicado heredado sin SARO en `plan.test.ts`.
+- Mutaciones del refactor (código restaurado tras cada una; `npx vitest run packages/dominio/src/importacion/ packages/infra/src/postgres/importacion*`):
+```
+M18 la importación no mira SARO (saro → true): 1 failed | 79 passed | 12 skipped (92)
+M19 la importación no mira DISC (disc → true): 1 failed | 79 passed | 12 skipped (92)
+M20 faltas sin condiciones (solo faltanDatos): 2 failed | 78 passed | 12 skipped (92)
+M21 modalidad de prueba siempre activa: 2 failed | 78 passed | 12 skipped (92)
+```
+- Tests de los 5 invariantes re-ejecutados en HEAD (REQUIERE_BD=1, BD efímera; portal y panel standalone del runner):
+  `apps/estandar-portal apps/ficha-ss6-portal apps/importacion-saro-panel worker/aplicar-importacion contratos/importacion contratos/importacion-saro dominio/plan dominio/plan-saro dominio/validaciones-entrada infra/aplicar-importacion infra/importacion infra/importacion-saro infra/incompletos infra/migracion-0027 infra/migracion-0028 infra/migracion-0029`
+```
+ Test Files  16 passed (16)
+      Tests  177 passed (177)
+rc 0
+```
+Veredicto en HEAD: PASS. Los 5 invariantes CUMPLE y ya no hay una segunda lista de publicación.
