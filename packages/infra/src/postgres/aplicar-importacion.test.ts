@@ -175,6 +175,59 @@ describe.skipIf(!HAY_BD)("aplicar un lote de importación (HU-141, I-2)", () => 
     expect(p.consentimiento).toBeNull();
   });
 
+  it("una fila que deja incompleto a un publicado va a error y el perfil sigue completo en el portal (D1, D10; gate data H1)", async () => {
+    // Tres publicados completos del banco ficticio y un rol de otra familia que la del tercero.
+    const publicados = (
+      await bd.instalacion.query(
+        `SELECT p.codigo, p.familia_id FROM inventario.perfiles p
+           JOIN operacion.catalogo_publicable c ON c.codigo = p.codigo
+          WHERE p.modalidad_prueba_id IS NOT NULL ORDER BY p.codigo LIMIT 3`,
+      )
+    ).rows as Array<{ codigo: string; familia_id: string }>;
+    expect(publicados).toHaveLength(3);
+    const [a, b, c] = publicados as [(typeof publicados)[0], (typeof publicados)[0], (typeof publicados)[0]];
+    const otroRol = (
+      await bd.instalacion.query(
+        `SELECT nombre FROM inventario.catalogo_roles WHERE familia_id <> $1 AND activo ORDER BY nombre LIMIT 1`,
+        [c.familia_id],
+      )
+    ).rows[0].nombre as string;
+    const antes = await Promise.all(publicados.map((x) => leerPerfil(panel, x.codigo)));
+
+    const { id, plan } = await confirmado(
+      [
+        "Código\tModalidad de prueba\tTecnologías\tAños de experiencia\tRol\tAnclaje",
+        `${a.codigo}\t[vaciar]\t\t\t\t`,
+        `${b.codigo}\t\t[vaciar]\t[vaciar]\t\t`,
+        `${c.codigo}\t\t\t\t${otroRol}\t`,
+        "PS-0160\t\t\t\t\tAnclaje que sí se aplica",
+      ].join("\n"),
+    );
+    expect(plan.filas.map((f) => f.grupo)).toEqual([
+      "con_error",
+      "con_error",
+      "con_error",
+      "actualizado",
+    ]);
+    expect(plan.filas[0]!.errores.map((e) => e.campo)).toEqual(["modalidadPrueba"]);
+    expect(plan.filas[1]!.errores.map((e) => e.campo).sort()).toEqual([
+      "aniosExperiencia",
+      "tecnologias",
+    ]);
+    expect(plan.filas[2]!.errores.map((e) => e.campo)).toEqual(["modalidadPrueba"]);
+    expect(plan.filas[0]!.errores[0]!.mensaje).toMatch(/publicado/);
+
+    expect((await aplicar(id)).tipo).toBe("aplicado");
+    const despues = await Promise.all(publicados.map((x) => leerPerfil(panel, x.codigo)));
+    expect(despues).toEqual(antes);
+    const visibles = await bd.instalacion.query(
+      `SELECT codigo FROM operacion.catalogo_publicable WHERE codigo = ANY($1) ORDER BY codigo`,
+      [publicados.map((x) => x.codigo)],
+    );
+    expect(visibles.rows.map((r) => r.codigo)).toEqual(publicados.map((x) => x.codigo));
+    expect((await leerPerfil(panel, "PS-0160"))!.anclaje).toBe("Anclaje que sí se aplica");
+  });
+
   it("campo ausente y celda vacía no tocan; solo [vaciar] vacía", async () => {
     const primero = await confirmado(
       "Código\tFormación\tIdiomas\nPS-0160\tTecnóloga en sistemas\tInglés B1; Francés A2",

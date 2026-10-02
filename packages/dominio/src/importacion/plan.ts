@@ -478,6 +478,19 @@ function evaluarFila(
       }))
     : [];
 
+  // Un publicado que sigue publicado no puede quedar sin lo que la publicación exige (D1, D10,
+  // RF-8.4): la importación no pregunta como el editor, así que la fila va a error y no se aplica. Solo
+  // cuenta lo que la fila deja incompleto; un hueco que el perfil ya tenía no la bloquea.
+  if (actual?.estado === "publicado" && resultante.estado === "publicado" && !ctx.errores.length) {
+    const previas = new Set(faltasDePublicado(actual, catalogos));
+    for (const campo of faltasDePublicado(resultante, catalogos))
+      if (!previas.has(campo))
+        ctx.errores.push({
+          campo,
+          mensaje: `Dejaría incompleto un perfil publicado (${ETIQUETA_FALTA[campo]}). Corrígelo o pásalo a borrador en la misma fila`,
+        });
+  }
+
   // Contradicción ALTA que la fila crearía entre estado y disponibilidad (HU-134, D5): se marca en su
   // tarjeta sin bloquear (la importación hace lo que dice el archivo). Solo si la fila los toca.
   if (
@@ -518,6 +531,37 @@ function evaluarFila(
   if (leidos.estado === "archivado" && actual.estado !== "archivado")
     return { ...base, grupo: "archivado" };
   return { ...base, grupo: cambios.length ? "actualizado" : "sin_cambios" };
+}
+
+// Lo que la publicación exige de la ficha y la importación puede quitar (evaluarPublicacion; el
+// consentimiento no viaja en el archivo). La modalidad de prueba vale si existe, activa, en la familia
+// del rol.
+const ETIQUETA_FALTA = {
+  rol: "sin rol",
+  seniority: "sin seniority",
+  aniosExperiencia: "sin años de experiencia",
+  tecnologias: "sin tecnologías",
+  ciudad: "sin ciudad",
+  modalidad: "sin modalidad de trabajo",
+  disponibilidad: "sin disponibilidad",
+  experiencias: "sin trayectoria",
+  modalidadPrueba: "sin modalidad de prueba de la familia de su rol",
+} as const satisfies Partial<Record<ClaveCampo, string>>;
+type CampoExigido = keyof typeof ETIQUETA_FALTA;
+
+function faltasDePublicado(f: FilaBanco, catalogos: Catalogos): CampoExigido[] {
+  const vacio = (v: Valor | undefined) =>
+    v === null ||
+    v === undefined ||
+    (typeof v === "string" && !v.trim()) ||
+    (Array.isArray(v) && !v.length);
+  const faltas = (Object.keys(ETIQUETA_FALTA) as CampoExigido[]).filter(
+    (c) => c !== "modalidadPrueba" && vacio(f[c]),
+  );
+  const familia = typeof f.familia === "string" ? normalizar(f.familia) : null;
+  const prueba = catalogos.modalidadesPrueba.find((m) => m.nombre === f.modalidadPrueba);
+  if (!prueba || !familia || normalizar(prueba.familia) !== familia) faltas.push("modalidadPrueba");
+  return faltas;
 }
 
 // ─── el plan ─────────────────────────────────────────────────────────────────────────────────

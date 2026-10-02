@@ -107,7 +107,7 @@ Al terminar de procesar, el asistente SHALL mostrar cada fila como tarjeta colap
 - **AND** la vista previa no se bloquea por ello
 
 ### Requirement: Confirmar por modo, con fusión y sin publicar
-La importación SHALL exigir elegir el modo antes de procesar —crear y actualizar (por omisión), solo actualizar o solo crear—; el código es la llave: existente actualiza, nuevo crea en borrador, y la fila excluida por el modo SHALL omitirse y contarse con su motivo. Solo SHALL modificarse lo que viene en la fila: campo ausente y celda vacía no tocan nada y solo el nulo explícito (`null` o `[vaciar]`) vacía un campo. Una fila que trae consentimiento en verdadero o estado publicado SHALL ver esos campos rechazados con aviso en su tarjeta e importarse en lo demás; ninguna importación SHALL publicar, conceder consentimiento ni borrar perfiles. La aplicación SHALL ser todo o nada, una sola a la vez, idempotente, y cada cambio SHALL quedar atribuido a la importación y a quien la confirmó. Solo el rol administrador de inventario SHALL ejecutarla.
+La importación SHALL exigir elegir el modo antes de procesar —crear y actualizar (por omisión), solo actualizar o solo crear—; el código es la llave: existente actualiza, nuevo crea en borrador, y la fila excluida por el modo SHALL omitirse y contarse con su motivo. Solo SHALL modificarse lo que viene en la fila: campo ausente y celda vacía no tocan nada y solo el nulo explícito (`null` o `[vaciar]`) vacía un campo. Una fila que trae consentimiento en verdadero o estado publicado SHALL ver esos campos rechazados con aviso en su tarjeta e importarse en lo demás; ninguna importación SHALL publicar, conceder consentimiento ni borrar perfiles; la fila que dejaría a un publicado sin algo que la publicación exige (rol, seniority, años de experiencia, tecnologías, ciudad, modalidad de trabajo, disponibilidad, trayectoria o modalidad de prueba de la familia de su rol) SHALL ir a error con el motivo y no aplicarse, salvo que la misma fila lo pase a borrador (D44). La aplicación SHALL ser todo o nada, una sola a la vez, idempotente, y cada cambio SHALL quedar atribuido a la importación y a quien la confirmó. Solo el rol administrador de inventario SHALL ejecutarla.
 
 #### Scenario: HU-141 · El código manda
 - **GIVEN** una fila con un código que ya existe y otra con un código que no
@@ -121,6 +121,12 @@ La importación SHALL exigir elegir el modo antes de procesar —crear y actuali
 - **THEN** esos campos se rechazan y se avisa en la tarjeta
 - **AND** el resto de la fila se importa con normalidad
 - **AND** ningún perfil queda publicado por efecto de la importación
+
+#### Scenario: HU-141 · La fila dejaría incompleto a un publicado (D44)
+- **GIVEN** un perfil publicado y completo, y una fila que vacía su modalidad de prueba, sus tecnologías o le pone un rol de otra familia sin la modalidad de prueba de esa familia
+- **WHEN** la administradora ve la vista previa y confirma la importación
+- **THEN** esa fila queda con error nombrando lo que faltaría y no se aplica
+- **AND** el perfil sigue publicado y completo en el portal, y las demás filas se importan
 
 #### Scenario: HU-141 · Campo ausente frente a nulo explícito
 - **GIVEN** la fila de un perfil existente a la que le falta la columna de un campo, con otra columna con la celda vacía y una tercera con el nulo explícito `[vaciar]`

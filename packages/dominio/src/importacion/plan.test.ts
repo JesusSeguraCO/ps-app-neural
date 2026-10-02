@@ -323,9 +323,10 @@ describe("estado: no publica, archiva (spec §3, HU-141)", () => {
     ]);
     expect(alta(0)[0]!.campo).toBe("disponibilidad");
     expect(alta(1)).toHaveLength(1);
-    expect(alta(2).map((x) => x.mensaje)).toEqual([
-      "Contradicción alta: Publicado sin ninguna disponibilidad: el cliente no puede saber cuándo arranca.",
-    ]);
+    // Un publicado sin disponibilidad ya no es aviso: la fila va a error y no se aplica (gate data H1).
+    expect(p.filas[2]!.grupo).toBe("con_error");
+    expect(p.filas[2]!.errores.map((x) => x.campo)).toEqual(["disponibilidad"]);
+    expect(alta(2)).toEqual([]);
     expect(alta(3)).toEqual([]);
   });
 
@@ -530,9 +531,10 @@ describe("valores nuevos en la taxonomía (HU-086 · valores que no existen)", (
 
   it("un rol nuevo exige una familia que exista; con ella es valor nuevo", () => {
     const p = plan([
-      fila(2, { codigo: "PS-0142", rol: "Arquitecta de datos", familia: "Datos" }),
+      // Sobre un pausado: en un publicado, cambiar de familia exige además su modalidad de prueba.
+      fila(2, { codigo: "PS-0144", rol: "Arquitecta de datos", familia: "Datos" }),
       fila(3, { codigo: "PS-0143", rol: "Arquitecta de datos" }),
-      fila(4, { codigo: "PS-0144", rol: "Arquitecta de datos", familia: "Inventada" }),
+      fila(4, { codigo: "PS-0142", rol: "Arquitecta de datos", familia: "Inventada" }),
     ]);
     expect(p.filas.map((f) => f.grupo)).toEqual(["actualizado", "con_error", "con_error"]);
     expect(p.valoresNuevos).toEqual([
@@ -651,5 +653,58 @@ describe("mapearFilas: de la tabla y el emparejamiento a celdas por campo", () =
     ]).filas[0]!;
     expect(f.grupo).toBe("actualizado");
     expect(f.avisos).toEqual([{ campo: null, mensaje: "Columna «Consentimiento» rechazada: x" }]);
+  });
+});
+
+describe("un publicado no queda incompleto por importación (D1, D10, RF-8.4; gate data H1)", () => {
+  const errorDe = (p: ReturnType<typeof plan>) => p.filas[0]!.errores.map((e) => e.campo);
+
+  it("vaciar la modalidad de prueba de un publicado es error de la fila y no se aplica", () => {
+    const p = plan([fila(2, { codigo: "PS-0142", modalidadPrueba: VACIAR })]);
+    expect(p.filas[0]!.grupo).toBe("con_error");
+    expect(errorDe(p)).toContain("modalidadPrueba");
+    expect(p.filas[0]!.errores[0]!.mensaje).toMatch(/publicado/);
+  });
+
+  it("vaciar tecnologías y experiencia de un publicado es error y nombra los dos campos", () => {
+    const p = plan([
+      fila(2, { codigo: "PS-0142", tecnologias: VACIAR, aniosExperiencia: VACIAR }),
+    ]);
+    expect(p.filas[0]!.grupo).toBe("con_error");
+    expect(errorDe(p)).toEqual(expect.arrayContaining(["tecnologias", "aniosExperiencia"]));
+  });
+
+  it("un rol de otra familia deja sin modalidad de prueba válida: error si no trae una de la familia nueva", () => {
+    const p = plan([fila(2, { codigo: "PS-0142", rol: "Analista QA" })]);
+    expect(p.filas[0]!.grupo).toBe("con_error");
+    expect(errorDe(p)).toContain("modalidadPrueba");
+  });
+
+  it("el mismo cambio de rol con la modalidad de la familia nueva se aplica", () => {
+    const p = plan([
+      fila(2, {
+        codigo: "PS-0142",
+        rol: "Analista QA",
+        modalidadPrueba: "Caso de pruebas sobre una app real",
+      }),
+    ]);
+    expect(p.filas[0]!.grupo).toBe("actualizado");
+  });
+
+  it("si la misma fila lo pasa a borrador, vaciar es válido (sale del portal)", () => {
+    const p = plan([fila(2, { codigo: "PS-0142", estado: "borrador", modalidadPrueba: VACIAR })]);
+    expect(p.filas[0]!.grupo).toBe("actualizado");
+  });
+
+  it("un hueco que el publicado ya tenía no convierte en error una fila que no lo toca", () => {
+    // Mario ya está publicado sin trayectoria (dato heredado): actualizar su ciudad sigue valiendo.
+    const p = plan([fila(2, { codigo: "PS-0143", ciudad: "Cali" })]);
+    expect(p.filas[0]!.grupo).toBe("actualizado");
+  });
+
+  it("vaciar la disponibilidad de un publicado es error (publicado sin disponibilidad, D5 ALTA)", () => {
+    const p = plan([fila(2, { codigo: "PS-0142", disponibilidad: VACIAR })]);
+    expect(p.filas[0]!.grupo).toBe("con_error");
+    expect(errorDe(p)).toContain("disponibilidad");
   });
 });

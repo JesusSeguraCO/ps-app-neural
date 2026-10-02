@@ -6,7 +6,8 @@
 //  - modalidad de prueba elegida, activa y de la familia de su rol (D10). Una familia sin modalidades
 //    no tiene ninguna que elegir, así que también queda cubierta (RF-8.16.4).
 // Actúa al ENTRAR en publicado (alta o cambio de estado), igual que la 0005: editar un publicado es de
-// HU-126 (sub-slice 6), que pregunta antes de dejarlo incompleto.
+// HU-126 (sub-slice 6), que pregunta antes de dejarlo incompleto. La importación sobre un publicado
+// tampoco pasa por aquí: el plan manda a error la fila que lo dejaría incompleto (D44).
 // Además, `operacion.ficha_publicable`: lo que la ficha del portal añade al catálogo (HU-129, HU-130).
 // Sin DML de nivel superior (V3-7).
 import { sql, type Kysely } from "kysely";
