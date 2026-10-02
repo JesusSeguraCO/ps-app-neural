@@ -36,6 +36,9 @@
 - `otp-mail/send-access-code` — `no_credentials` (heredado de EP-001): la entrada por código al panel en esta épica se probó con el doble.
 - Gemini (`llm-interpreter/suggest-lexicon-entries`): evidencia viva anclada en `e772614` (el módulo no cambió desde entonces); en este entorno no hay llave para repetirla.
 
+## Defecto del hub declarado (D49)
+- `design_source_applies=false` en el hub aunque el proyecto tiene UI y la fuente está confirmada: ni la consola ni la superficie de agente permiten corregirlo. La fidelidad sí se verificó con captura MCP (66 pantallas + ficha del portal) y el gate `fidelity` está en true. Anotado en el informe de defectos del arnés.
+
 ## Diferido al Release Gate
 - Revisión independiente del cierre de la pasada 2 de cableado (M1 con mutación verificada; B2, B3 y B6 con tests), sin tercera pasada (condición de parada de `dod.md`).
 - B1: las descargas de reporte y de filas con error son enlaces nativos; con la sesión vencida el navegador guarda el JSON del 401 en vez de volver a la puerta.
