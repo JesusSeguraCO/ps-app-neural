@@ -126,6 +126,10 @@ export function FichaPerfil({
               className="pp-seccion__titulo fp-seccion__titulo fp-seccion__titulo--verificado"
               id="fp-verificado"
             >
+              <svg className="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
               Verificado por Trycore
             </h3>
           </div>

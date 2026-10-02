@@ -73,6 +73,26 @@ Si el cambio sobre un perfil publicado quita un dato que la publicación exige, 
 - **THEN** el cambio se guarda y el perfil queda en borrador, fuera del portal
 - **AND** queda registrado que salió de publicado por esta edición, quién y cuándo
 
+### Requirement: Ficha del perfil en el portal (D47)
+El portal SHALL abrir la ficha de un perfil disponible en un panel lateral sobre la lista que el cliente tiene delante —la selección del correo o el banco con su filtro—, dibujada con el mismo componente que la vista previa del panel. SHALL recorrerse en el orden de esa lista con anterior y siguiente, con la flecha del extremo deshabilitada, y cerrarse volviendo a la misma lista; en el teléfono SHALL ocupar la pantalla. El cliente nombrado de cada experiencia SHALL mostrarse solo si el consentimiento lo incluye, y la validación técnica SHALL mostrarse por niveles (enunciado de Nivel 0 o reporte de Nivel 1). Ningún perfil fuera de la lista ni sin publicar SHALL abrir ficha.
+
+#### Scenario: HU-120 · Recorrer fichas sin perder la lista (D47)
+- **GIVEN** un cliente con su selección abierta
+- **WHEN** abre la ficha de un perfil y pasa al siguiente
+- **THEN** la ficha se abre como panel lateral sobre la lista y dice su posición en ella
+- **AND** en el último perfil la flecha siguiente está deshabilitada y al cerrar vuelve a la misma lista
+
+#### Scenario: HU-127 · Experiencia sin cliente nombrado en la ficha (D47)
+- **GIVEN** un perfil publicado cuyo consentimiento no incluye a los clientes
+- **WHEN** el cliente abre su ficha
+- **THEN** ve cada experiencia con su cargo, su periodo y su descripción
+- **AND** no ve el nombre del cliente de ninguna experiencia
+
+#### Scenario: HU-130 · El cliente ve la validación por niveles (D47)
+- **GIVEN** un perfil publicado con el reporte de validación confirmado
+- **WHEN** el cliente abre su ficha
+- **THEN** ve la modalidad, el resultado, el evaluador, la fecha y lo que se evaluó
+
 ### Requirement: Vista previa fiel de la ficha
 La vista previa SHALL mostrar la ficha exactamente como la publicará el portal, con las mismas reglas de presentación: disponibilidad como banda de arranque y no como fecha, país siempre y ciudad solo si la necesidad fuera presencial o híbrida, bloques opcionales sin datos omitidos sin título ni hueco. Un bloque que depende de un atributo obligatorio ausente SHALL aparecer marcado como incompleto nombrando el dato. Sobre un publicado con cambios sin guardar, SHALL mostrar la ficha con el cambio aplicado mientras el portal sigue con la versión vigente. No SHALL existir comparación lado a lado (D3).
 

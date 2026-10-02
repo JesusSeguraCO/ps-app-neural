@@ -187,6 +187,13 @@ Las 66 pantallas de EP-006 aprobadas en `docs/05-prototipo/manifest.json` (33f67
 
 **Aprobación de las desviaciones de los sub-slices 1–4:** el sponsor aprobó las de ss2 (D22) y las de ss2–ss4 en bloque (D25, 2026-10-01). Las del sub-slice 1 las aprobó el sponsor el 2026-10-01 (D42).
 
+**Cierre (11.4; D44–D47):**
+- D44 (gate data H1): la fila de importación que dejaría a un publicado sin algo que la publicación exige va a error y no se aplica, salvo que la misma fila lo pase a borrador. Corrige la nota del sub-slice 8 para ese caso: «publicado sin disponibilidad» por importación deja de ser aviso ALTA y es error de fila.
+- D45 (cableado H2): sin `importacion.ejecutar`, el resultado de una importación no ofrece descargas ni «Pegar filas».
+- D46 (cableado H3, sponsor): el consumidor del léxico es la búsqueda de EP-009 (RF-2.6); entra en su DoR.
+- D47 (cableado H4, sponsor; revoca la parte de D28 que difería la ficha a EP-003): la ficha del perfil se abre en el portal en panel lateral sobre la selección o el banco (prototipo `ficha-perfil--sin-criterios`), con el componente de `packages/ui` de la vista previa, recorrido ← → en el orden de la lista y Esc para cerrar; en el teléfono ocupa la pantalla. Quedan en EP-003: el bloque «Frente a tu búsqueda» (HU-119, necesita los criterios de EP-009), «Sumar al equipo» desde la ficha (HU-120 · sumar, necesita el equipo) y las competencias en la tarjeta (HU-081). Un publicado que incumple el contrato de la ficha (dato heredado) no la abre y deja `ficha_fuera_de_contrato` en el registro del servidor.
+- Toda petición del panel con 401 (sesión vencida, rol bajado, baja) vuelve a la puerta con la causa (HU-138, HU-151).
+
 ## Sub-slices (orden del DoR, `dor-pass.md`)
 
 Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `journey_smoke` verde y checkpoint en el hub.
@@ -203,6 +210,7 @@ Uno por vez; cada uno cierra con su parte del `wiring_checklist` en `passing`, `
 | 8 | HU-134, HU-135 | Matriz D5 en fila, al publicar y en importación; archivar | `archivado_en`; tabla de verdad de coherencia |
 | 9 | HU-137, HU-150, HU-124 | Colocados en el panel, carga de Operaciones, consulta del observador | `colocaciones`, `cargas_operaciones`, `diferencias_operaciones`; contract del estado `colocado` y vistas; matriz completa del observador |
 | 10 | HU-151, HU-147, HU-138 | Accesos con corte de sesión; contacto de Trycore; consulta de auditoría | `usuarios_panel` ampliada, `rol_al_abrir`; `configuracion_contacto`; vista de auditoría descifrada |
+| 11 | cierre (HU-127, HU-129, HU-130 lado cliente; D47) | Ficha del perfil en el portal sobre la lista; arreglos de la verificación adversarial | `packages/dominio/catalogo/recorrido`; `PanelFicha` del portal; trayectoria de los ficticios |
 
 HU-138 va al final porque consulta lo que todas las anteriores escriben, pero la **escritura** auditada existe desde el sub-slice 1 (cada sub-slice verifica que sus escrituras dejan fila y autor).
 
