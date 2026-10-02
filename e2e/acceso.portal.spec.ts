@@ -343,11 +343,16 @@ test.describe("topes de renovación e invitaciones", () => {
     await candado.query(`SELECT pg_advisory_lock($1)`, [CANDADO_CONTACTO]);
     const previo = (await candado.query(`SELECT * FROM inventario.configuracion_contacto`)).rows[0];
     await candado.query(`DELETE FROM inventario.configuracion_contacto`);
-    await consulta(
+    // Quién la cambió: un usuario propio del panel (la BD de CI solo trae los perfiles ficticios).
+    const autor = await candado.query(
+      `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ($1, $2, 'administrador')
+       ON CONFLICT (correo_hmac) DO UPDATE SET activo = true RETURNING id`,
+      ["e2e-contacto@trycore.com", createHmac("sha256", clave).update("e2e-contacto@trycore.com").digest()],
+    );
+    await candado.query(
       `INSERT INTO inventario.configuracion_contacto (unica, correo, nombre, cargo, actualizado_por)
-       SELECT true, 'eida.tinjaca@trycore.com', 'Eida Tinjacá', 'Coordinación de Servicio', id
-         FROM identidad_panel.usuarios_panel ORDER BY creado_en LIMIT 1`,
-      [],
+       VALUES (true, 'eida.tinjaca@trycore.com', 'Eida Tinjacá', 'Coordinación de Servicio', $1)`,
+      [autor.rows[0].id],
     );
     try {
       const hasta = new Date(Date.now() + 15 * 60_000).toISOString();
