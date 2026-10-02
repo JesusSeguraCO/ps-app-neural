@@ -6,59 +6,67 @@ prioridad: alta
 complejidad: S
 estado: draft
 fase: fase-2-rediseno
-prd_version: 2.1
+prd_version: 4.17
 reemplaza_a: HU-079
+depende_de: [HU-153]
 ---
 
 # HU-081 — Distinguir un perfil de otro por sus competencias verificadas
 
-**Como** líder de área comparando varios perfiles en la lista de resultados,
-**quiero** ver en cada tarjeta las tres competencias que Trycore verificó de esa persona,
+**Como** líder de área que recorre varias tarjetas de perfiles para su proyecto,
+**quiero** ver en cada tarjeta las tres competencias del Sello Personal que Trycore verificó de esa persona,
 **para** distinguir un perfil de otro por cómo trabaja y no solo por su cargo y su lista de tecnologías.
 
 ## Criterios de aceptación
 
 ### Happy path — competencias como elemento diferenciador
 
-**Dado** que estoy viendo los resultados de una búsqueda,
-**cuando** miro cualquier tarjeta,
-**Entonces** veo las tres competencias del Sello Personal de ese perfil
-**Y** veo que están marcadas como verificadas por Trycore
-**Y** veo que difieren entre un perfil y otro de la lista
+**Dado** que la lista que tengo delante incluye dos perfiles publicados con Sello Personal distinto,
+**cuando** recorro sus tarjetas,
+**Entonces** cada tarjeta muestra las tres competencias del Sello Personal de su perfil
+**Y** las competencias aparecen marcadas como verificadas por Trycore
+**Y** ninguna tarjeta muestra una insignia, un estado ni un puntaje por dimensión Neural-Grid
 
-### Error — perfil sin Sello Personal registrado
+### Error — perfil publicado sin Sello Personal cargado
 
-**Dado** que un perfil no tiene sus tres competencias cargadas,
-**cuando** Talento Humano intenta publicarlo,
-**Entonces** el panel impide la publicación
-**Y** indica que el Sello Personal es obligatorio por ser condición de entrada del banco
+**Dado** que un perfil publicado no tiene ninguna competencia del Sello Personal registrada,
+**cuando** aparece su tarjeta en la lista,
+**Entonces** la tarjeta se muestra sin el bloque de competencias, sin título ni hueco vacío
+**Y** no aparece ningún texto de relleno ni ninguna competencia que no esté registrada
 
 ### Edge case — dos perfiles con las mismas tres competencias
 
-**Dado** que dos perfiles comparten exactamente las mismas competencias,
-**cuando** aparecen juntos en los resultados,
-**Entonces** la tarjeta se apoya en los demás elementos diferenciadores —seniority, sector, stack y disponibilidad—
-**Y** no se muestra ninguna señal que sugiera que son perfiles equivalentes
+**Dado** que dos perfiles publicados comparten exactamente las mismas tres competencias,
+**cuando** aparecen juntos en la lista,
+**Entonces** cada tarjeta muestra sus competencias igual que cualquier otra
+**Y** ninguna tarjeta muestra una señal que sugiera que los dos perfiles son equivalentes o intercambiables
 
 ## Notas
 
-Reemplaza a **HU-079**, descartada al cerrarse D-15. El logro cuantificado no existe en el banco entregado por Talento Humano, su extracción tiene costo operativo recurrente y es autoreportado por naturaleza.
+Cubre **RF-14.1** (la tarjeta lidera con identidad y capacidad, y diferencia con las tres competencias), **RF-14.0** (origen del dato: el portal solo muestra lo que Talento Humano produce), la regla 4 de **B.6** y, en la tarjeta, la prohibición de **RF-3.8** (sin insignia ni indicador por dimensión).
 
-Las competencias del Sello Personal cumplen lo que el logro prometía sin ninguno de sus problemas: existen para el 100% de los perfiles porque el DISC es condición de entrada, las produce Trycore y no el candidato, no añaden mantenimiento, y son lo único de las tres validaciones que varía entre perfiles.
+Reemplaza a **HU-079**, descartada al cerrarse D-15. El logro cuantificado no existe en el banco entregado por Talento Humano, su extracción tiene costo operativo recurrente y es autoreportado por naturaleza. Las competencias del Sello Personal cumplen lo que el logro prometía sin esos problemas: las produce Trycore, no el candidato, y son lo único de las tres validaciones que varía entre perfiles.
 
-Cubre RF-14.0 y RF-14.1.
+**Refinada el 2026-10-02 (discovery de EP-003).** Cambios:
+- El escenario de error decía que el panel impide publicar un perfil sin Sello Personal. Eso es una regla del panel (EP-006), y EP-006 ya se construyó con el Sello Personal **opcional** (columna `sello_personal` de hasta tres valores; la ficha lo omite si no hay: `opcionalesVacios`). Bajo la regla de no inventar decisiones, el error pasa al lado del cliente con la opción más conservadora: la tarjeta omite el bloque sin hueco, igual que el diagrama de `docs/06-flows/EP-003`. Que publicar exija el Sello Personal queda como **pregunta abierta** (ver abajo).
+- El happy path ya no dice «difieren entre un perfil y otro», porque eso depende de los datos y no del portal. Ahora el «Dado» fija dos perfiles con sellos distintos.
+- La prohibición de RF-3.8 (sin insignia por dimensión) entra como resultado observable.
+
+**Ya construido:** la ficha muestra el Sello Personal en el bloque «Verificado por Trycore» (`packages/ui/src/FichaPerfil.tsx`, D47 de EP-006). Falta la **tarjeta**, que hoy no lo muestra (`apps/portal/src/seleccion/TarjetaPerfil.tsx`). El contrato del catálogo (`@ps/contratos/catalogo`) tendrá que exponer el sello a la tarjeta.
+
+**Pregunta abierta para el sponsor:** B.6 dice que Neural Fit es condición de entrada y que las tres competencias existen para el 100 % de los perfiles. EP-006 permite publicar sin ellas. ¿Debe el panel exigir las tres competencias para publicar, igual que el consentimiento y la modalidad de prueba? Si la respuesta es sí, sería un cambio de EP-006 (RF-8.10 / HU-128) y este escenario de error pasaría a tratar solo los datos heredados.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v2.1 · Reemplaza HU-079
+Épica madre: **EP-003** · PRD v4.17 · RF-14.0 · RF-14.1 · RF-3.8 · B.6 · reemplaza a HU-079 · depende de HU-153 (la tarjeta en la que vive el bloque) · relacionada con HU-119 y HU-118 (compiten por la misma atención en la tarjeta, RF-3.8)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ no depende de otra historia de la Fase 2 |
-| N | Negociable | ✓ describe el resultado, no la implementación |
-| V | Valiosa | ✓ el beneficio es externo y visible |
-| E | Estimable | ✓ usa un campo que ya existe en el modelo de datos |
-| S | Pequeña | ✓ cabe en un incremento |
-| T | Testeable | ✓ los criterios describen resultados observables |
+| I | Independiente | ✓ con dependencia declarada: el bloque vive en la tarjeta de HU-153 y usa un dato que ya existe en el modelo (`sello_personal`); no depende de la búsqueda de EP-009 |
+| N | Negociable | ✓ son fijos el contenido (las tres competencias, como verificadas) y la ausencia de insignias; la posición en la tarjeta y la forma visual se pueden negociar |
+| V | Valiosa | ✓ es el único discriminador verificado del banco: sin él, las tarjetas solo se diferencian por lo que declara la persona |
+| E | Estimable | ✓ S: exponer un campo existente en el contrato del catálogo y dibujarlo en la tarjeta, con la regla de omitir el bloque vacío que ya usa la ficha |
+| S | Pequeña | ✓ S: un bloque de la tarjeta con tres comportamientos |
+| T | Testeable | ✓ con perfiles sembrados (sellos distintos, sello vacío y sellos iguales) se observa en pantalla qué muestra cada tarjeta |
