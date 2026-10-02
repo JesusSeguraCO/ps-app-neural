@@ -52,3 +52,11 @@ export function leerExperiencia(t: string): ExperienciaTexto | null {
     descripcion,
   };
 }
+
+// Inyección de fórmulas: una celda que empieza por = + - @ (o tabulador/retorno) Excel la ejecuta al
+// abrir la hoja. Al exportar se antepone un apóstrofo, que Excel muestra como texto; al volver a
+// importar se quita, así la ida y vuelta exportar → pegar sigue dando «sin cambios».
+const FORMULA = /^[=+\-@\t\r]/;
+export const neutralizar = (c: string) => (FORMULA.test(c) ? `'${c}` : c);
+export const sinNeutralizar = (c: string) =>
+  c.startsWith("'") && FORMULA.test(c.slice(1)) ? c.slice(1) : c;

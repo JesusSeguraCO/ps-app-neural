@@ -11,7 +11,7 @@ import { evaluarCoherencia } from "../inventario/coherencia";
 import type { EstadoAlmacenado } from "../inventario/estados";
 import { OPCIONES_DISPONIBILIDAD, clienteEnDescripcion } from "../inventario/perfil";
 import { CAMPOS_LISTA, CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
-import { VACIAR, formatearExperiencia, leerExperiencia, partirLista } from "./celdas";
+import { VACIAR, formatearExperiencia, leerExperiencia, partirLista, sinNeutralizar } from "./celdas";
 import type { ColumnaEmparejada } from "./emparejar";
 
 export type Valor = string | string[] | number | null;
@@ -114,7 +114,7 @@ export function mapearFilas(
     const celdas: Partial<Record<ClaveCampo, string>> = {};
     const rechazadas: Array<{ columna: string; detalle: string }> = [];
     for (const c of emparejamiento) {
-      const v = (f.celdas[c.indice] ?? "").trim();
+      const v = sinNeutralizar((f.celdas[c.indice] ?? "").trim());
       if (!v) continue;
       if (c.destino.tipo === "campo") celdas[c.destino.clave] = v;
       else if (c.destino.motivo === "rechazada")
