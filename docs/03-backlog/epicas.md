@@ -3,7 +3,7 @@ artefacto: epicas
 proyecto: portal-people-service
 prd_origen: docs/01-prd/portal-people-service.md
 prd_version: 4.13
-version: 5.7
+version: 5.8
 fecha: 2026-10-02
 total_epicas: 11
 prd_version_alineada: 4.13
@@ -164,7 +164,7 @@ prd_version_alineada: 4.13
 **Justificación.** Es la traducción del wishlist de Airbnb y del contenedor de proyectos de LinkedIn Recruiter. Convierte una intención vaga en un requerimiento con forma, y es lo que eleva el promedio de perfiles por solicitud —la palanca directa sobre el valor de cada oportunidad.
 
 **Objetivos del PRD que cubre:** O2 · O4
-**Capabilities:** RF-4 (completo)
+**Capabilities:** RF-4 (completo; RF-4.5 con la enmienda v4.18 de D113) · RF-14.6 · RF-19.2 aplicado al equipo
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
@@ -180,9 +180,11 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** sumar un perfil al equipo · quitarlo · ver el contador desde cualquier pantalla · revisar el equipo como conjunto con fecha de inicio más temprana · comparar hasta tres perfiles · recuperar el equipo al volver.
 
-**Historias escritas:** HU-080 · HU-084 · **HU-192** (2026-10-02).
+**Historias escritas:** HU-192 · HU-175 · HU-203 · HU-204 · HU-205 · HU-206 · HU-080 (9 historias; HU-084 pasa a EP-009 y HU-207 nace en EP-008).
 
-**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): **D88** redacta ya **HU-192** «Sumar y quitar perfiles de Mi equipo» (RF-4.1, RF-4.2, con su indicador), que absorbe los criterios recibidos de EP-001 (HU-094 y HU-095, happy path) y de la que depende HU-175 (EP-003). Siguen sin historia el resumen del conjunto (RF-4.3), el comparador de tres (RF-4.4) y la recuperación al volver (RF-4.5).
+**Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): **D88** redacta ya **HU-192** «Sumar y quitar perfiles de Mi equipo» (RF-4.1, RF-4.2, con su indicador), que absorbe los criterios recibidos de EP-001 (HU-094 y HU-095, happy path) y de la que depende HU-175 (EP-003). Siguen sin historia el resumen del conjunto (RF-4.3), el comparador de tres (RF-4.4) y la recuperación al volver (RF-4.5) *(pagado en la cuarta ronda, abajo)*.
+
+**Discovery 2026-10-02 — cuarta ronda (D108–D115).** Nacen **HU-203** (ver mi equipo como conjunto, RF-4.3), **HU-204** (comparar hasta tres, RF-4.4), **HU-205** (recuperar el equipo al volver, en otro dispositivo o al renovar, RF-4.1.2/RF-4.5) y **HU-206** (perfiles del equipo que dejaron de estar disponibles, RF-19.2; absorbe el criterio recibido de HU-094 error). Con ellas los tres criterios recibidos de EP-001 quedan pagados (HU-192 y HU-206). Decisiones: **D108** HU-084 → EP-009 (depende de HU-083); **D109** HU-207 (registrar composiciones de Delivery) → EP-008; **D110** el arranque del conjunto es la banda del perfil más tardío, «por confirmar» si alguno lo está; **D111** HU-096 (EP-005) reutiliza la vista de HU-203; **D112** comparador desde «Mi equipo» y desde la acción en grupo de la tabla, con filas fijas; **D113** al renovar un enlace vencido se ofrece copiar el equipo anterior (enmienda RF-4.5); **D114** un pausado o archivado sigue en el contador y no cuenta en roles ni arranque; **D115** reglas de vacío fijas en código validadas por Delivery, sin viajar a HubSpot en v1 (HU-080 pasa a S). Insumo de DoR: el conjunto de reglas de vacío lo entrega Coordinación de Servicio. Estado: **9 de 9 en lista**.
 
 ### Requisitos de esta épica
 
@@ -196,6 +198,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 - **RF-4.4** Comparador de hasta 3 perfiles con los mismos criterios en paralelo.
 - **RF-4.5** La selección sobrevive al cierre del navegador y al cambio de dispositivo **dentro de la vigencia del enlace**. Como está ligada al enlace, un enlace nuevo para la misma cuenta abre un equipo nuevo.
 - **Recibe HU-175 (D101, 2026-10-02)**: sumar o quitar desde la ficha, que depende de HU-192.
+- **RF-4.5 · enmienda v4.18 (D113):** al entrar por un enlace renovado tras vencer, el portal ofrece copiar el equipo del enlace vencido, con los no disponibles en su estado real; un enlace nuevo que no es renovación sigue abriendo un equipo nuevo.
+- **RF-14.6** «Mi equipo» lee vacíos de composición en tono informativo, nunca sugerente (HU-080, D115).
 
 ---
 
@@ -206,7 +210,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Justificación.** Es el evento de conversión que hoy no existe en ninguna parte de la línea, y el punto donde se resuelve la tensión estratégica del §2.4: aquí el portal abre la venta mejor especificada en lugar de cerrarla como un checkout.
 
 **Objetivos del PRD que cubre:** O1 · O2 · O3 · O4
-**Capabilities:** RF-5 (completo) · RF-17.3 · RF-17.4
+**Capabilities:** RF-5 (completo) · RF-4.1.3 · RF-17.1 · RF-17.2 · RF-17.3 · RF-17.4 · RF-17.5 · RF-7.1 (eventos de la solicitud) · RF-9.2 (D-7, lado del portal)
 **Fase:** Low-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
@@ -214,9 +218,11 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** declarar el contexto del proyecto · identificarse cuando no se es el contacto del correo · revisar el resumen antes de enviar · enviar la solicitud · recibir la confirmación con el paso siguiente · agendar la alineación · intentar enviar con el equipo vacío.
 
-**Historias escritas:** HU-096 · HU-097 · HU-098 · HU-099 · HU-100 · HU-101.
+**Historias escritas:** HU-197 · HU-097 · HU-096 · HU-198 · HU-098 · HU-199 · HU-099 · HU-100 · HU-101 · HU-200 · HU-201 (11 historias).
 
 **Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): el envío **impide el doble clic** —botón bloqueado y clave única por envío en la base de datos: una sola solicitud, un solo trabajo en cola— como parte del híbrido API + workflow de EP-007 (D76). El aviso a Coordinación de Servicio **lo envía el portal** por Mailgun tras crear el negocio, con enlace directo a él (D78, HU-101).
+
+**Discovery 2026-10-02 — cuarta ronda (D116–D123).** Nacen **HU-197** (declarar el contexto, RF-5.1), **HU-198** (enviar exactamente el equipo revisado, RF-4.1.3; dispara EP-007), **HU-199** (pedir no reserva a nadie, RF-5.5), **HU-200** (eventos «solicitud iniciada/enviada» contra el contrato de HU-167) y **HU-201** (añadir contexto a una solicitud en curso, lado del portal de D-7). Decisiones: **D116** HU-099 entra en EP-005 con enlace de reuniones de equipo con rotación de HubSpot; **D117** las tres preguntas (inicio, duración y tipo de iniciativa) obligatorias, sector y nota opcionales; **D118** un perfil no publicado al enviar no viaja y aparece solo por código y estado, el colocado sí viaja; **D119** «misma especificación» = misma cuenta + mismo conjunto de perfiles, cualquier invitado; **D120** dentro de 7 días no hay solicitud nueva, solo añadir contexto o volver; **D121** sin solicitud sin perfiles (el camino es «a medida», HU-077, EP-010); **D122** «Mi equipo» se conserva igual tras enviar; **D123** sin acuse por correo al cliente en v1. HU-096 queda como resumen antes de enviar y reutiliza la vista de HU-203 (D111). Estado: **11 de 11 en lista**.
 
 ### Requisitos de esta épica
 
@@ -372,7 +378,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** registrar la entrada atribuida al correo · registrar filtros aplicados · distinguir curaduría de descubrimiento · registrar el embudo hasta el envío · reportar búsquedas sin resultados · reportar filtros más usados.
 
-**Historias escritas:** *base* HU-167 · HU-168 · HU-169 · HU-187 · HU-193 · HU-188 · HU-190 — *atribución y lecturas* HU-112 · HU-109 · HU-110 · HU-108 · HU-111 · HU-171 · HU-196 · HU-172 · HU-170 · HU-184 · HU-185 · HU-195 · HU-173 · HU-186 · HU-189.
+**Historias escritas:** *base* HU-167 · HU-168 · HU-169 · HU-187 · HU-193 · HU-188 · HU-190 — *atribución y lecturas* HU-112 · HU-109 · HU-110 · HU-108 · HU-111 · HU-171 · HU-196 · HU-172 · HU-170 · HU-184 · HU-185 · HU-195 · HU-173 · HU-186 · HU-189 · **HU-207** (D109).
 
 **Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`):
 - **Tablero mensual en el MVP (D66)**, no en v1.1: HU-171, HU-108 y HU-111 entran con la épica. Conversión = cuentas con solicitud / cuentas que entraron, por mes de envío (D70); atribución heredada del último correo curado a 90 días (D69, HU-112 pasa de S a M).
@@ -388,6 +394,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 - **RF-7.3** Atribución de cada sesión a la cuenta, al contacto y al envío de correo que la originó.
 - **RF-7.4** Distinguir interacción con el conjunto curado frente a interacción por descubrimiento. Mide si la curaduría acierta.
 - **D103 (2026-10-02): HU-189 pasa a EP-010 y HU-196 a EP-007**, donde nacen sus datos. EP-008 abre con 20 historias. **D102:** las pantallas de Medición se prototipan con /build:prototype y las aprueba el sponsor antes de construir su UI.
+- **D109 (2026-10-02, cuarta ronda): HU-207 «Registrar las composiciones de referencia que entrega Delivery» entra en EP-008**, junto a HU-195, en el destino «Composiciones» del panel (D106), con el permiso «Validar composiciones». Nace en el discovery de EP-004 porque ninguna historia cargaba el dato que muestra HU-084 (EP-009). EP-008 abre con 21 historias.
 
 ---
 
@@ -398,7 +405,7 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Justificación.** Es el cambio de fondo de la Fase 2. El usuario objetivo busca un perfil dos o tres veces al año y no conoce nuestra taxonomía: obligarlo a traducir su necesidad a nuestras facetas es cobrarle el trabajo de aprender nuestro vocabulario. El Perfil Objetivo, además, convierte el cero resultados de callejón en objeto accionable — que es lo que habilita EP-010.
 
 **Objetivos del PRD que cubre:** O2 · O4
-**Capabilities:** RF-12 (completo) · RF-13 (completo) · RF-16 (completo) · RF-2.6
+**Capabilities:** RF-12 (completo) · RF-13 (completo) · RF-16 (completo) · RF-2.6 · RF-14.7 (HU-084, D108)
 **Fase:** Mid-Fi + MVP
 **Capa:** `layer: business`
 **Depende de:** EP-001 · EP-006
@@ -412,6 +419,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 **Historias anticipadas:** escribir una instrucción en lenguaje natural · partir de una sugerencia precargada · pegar un requerimiento y obtener chips editables · ver cómo se interpretó la consulta · corregir la interpretación · revisar y editar el Perfil Objetivo · responder una pregunta de perfilamiento sin perder los resultados · recuperar el Perfil Objetivo al volver · seguir buscando si el modelo no responde.
 
 **Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`): **HU-174** «Ver la evidencia de cada perfil calculada por el mismo motor que decide los resultados» **se mueve a esta épica (D87)**, junto al motor único de criterios (RF-13.8) y HU-118. No es recorte: cambia de épica. Depende de HU-118 y de HU-119 (presentación, EP-003).
+
+**Discovery 2026-10-02 — cuarta ronda (D108):** **HU-084** «Ver la forma típica del trabajo que estoy por emprender» (RF-14.7) **se mueve a esta épica**, junto a HU-083 (reto declarado), de la que depende. No es recorte: cambia de épica. Se dibuja en la vista «Mi equipo» de HU-203 (EP-004) y lee las composiciones que registra HU-207 (EP-008, D109). Queda en **draft** hasta que el refinamiento de HU-083 fije cómo se asigna el reto declarado a uno de los tres tipos de proyecto. RF-14.7 se suma a las capabilities de esta épica.
 
 ### Requisitos de esta épica
 

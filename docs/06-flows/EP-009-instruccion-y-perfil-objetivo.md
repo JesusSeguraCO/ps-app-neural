@@ -1,7 +1,7 @@
 ---
 id: flow-009-instruccion-y-perfil-objetivo
 epica: EP-009
-historias_cubiertas: [HU-065, HU-066, HU-067, HU-068, HU-069, HU-070, HU-071, HU-072, HU-073, HU-082, HU-083, HU-085, HU-118, HU-174]
+historias_cubiertas: [HU-065, HU-066, HU-067, HU-068, HU-069, HU-070, HU-071, HU-072, HU-073, HU-082, HU-083, HU-084, HU-085, HU-118, HU-174]
 ---
 
 # Flow 009 — Entrada por instrucción y Perfil Objetivo
@@ -102,6 +102,23 @@ sequenceDiagram
   alt Reto vacío
     %% HU-083
     P-->>C: Continúa sin reto, no bloquea la búsqueda
+  end
+
+  %% HU-084
+  C->>P: Abre «Mi equipo» con un reto declarado
+  %% HU-084
+  P-->>C: Muestra la forma típica del trabajo con las capacidades cubiertas y no cubiertas, sin proponer perfiles
+
+  %% HU-084
+  alt Tipo de proyecto sin composición registrada
+    %% HU-084
+    P-->>C: No muestra ninguna composición, ni genérica ni aproximada
+  end
+
+  %% HU-084
+  alt Descarta la referencia
+    %% HU-084
+    P-->>C: La retira y no vuelve a aparecer para ese invitado y ese enlace
   end
 
   %% HU-082
@@ -208,6 +225,9 @@ sequenceDiagram
 | Opción fuera del banco | HU-174 | AC-3 (edge) |
 | Quitar un criterio | HU-174 | AC-4 (edge) |
 | El reto | HU-083 | AC-1 y AC-2 (happy) · AC-3 (error) |
+| Forma típica del trabajo | HU-084 | AC-1 (happy) |
+| Tipo sin composición | HU-084 | AC-2 (error) |
+| Referencia descartada | HU-084 | AC-3 (edge) |
 | Ubicación de la necesidad | HU-082 | AC-1 (happy) · AC-2 (error) |
 | Ciudad visible en presencial e híbrido | HU-082 | AC-4 (edge) |
 | Solo país en remoto | HU-082 | AC-3 y AC-5 (edge) |
@@ -221,6 +241,8 @@ sequenceDiagram
 
 ## Notas
 
+**Cuarta ronda (D108, 2026-10-02): HU-084 entra en EP-009**, junto a HU-083. Se dibuja en la vista «Mi equipo» de EP-004 (HU-203) y lee las composiciones que registra HU-207 (EP-008). Sigue en draft hasta que HU-083 fije cómo el reto se asigna a uno de los tres tipos de proyecto.
+
 **Esta es la apuesta de producto y tiene su prueba de falsación escrita.** La Fase 2 invirtió la jerarquía: la instrucción es la entrada y las facetas el refinamiento. §14.7 del PRD fija la regla asimétrica que puede tumbarla, fijada **antes** de observar: solo se reduce el alcance si los tres participantes completan la tarea con la lista y al menos dos lo hacen con menos fricción visible. Cualquier otro resultado es evidencia insuficiente, no un voto a favor de la lista.
 
 **HU-072 es la historia que protege a todas las demás.** Si la interpretación falla y el portal muere con ella, la sesión con clientes mide frustración en vez de medir la hipótesis. Por eso está entre las quick wins del orden de construcción.
@@ -231,4 +253,4 @@ sequenceDiagram
 
 **HU-067 está condicionada** a la prueba previa de RF-12.2. Sale del MVP por eso, no por falta de valor.
 
-**AC no diagramados:** HU-065 AC-2 y AC-3 (los cubre HU-072 como degradación), HU-067 AC-2, HU-068 AC-3, HU-069 AC-3 (lo cubre HU-075 en EP-010), HU-070 AC-3, HU-071 AC-3, HU-072 AC-3, HU-073 AC-3, HU-082 AC-4, HU-083 AC-4, HU-085 AC-4, HU-118 AC-2 y AC-4.
+**AC no diagramados:** HU-065 AC-2 y AC-3 (los cubre HU-072 como degradación), HU-067 AC-2, HU-068 AC-3, HU-069 AC-3 (lo cubre HU-075 en EP-010), HU-070 AC-3, HU-071 AC-3, HU-072 AC-3, HU-073 AC-3, HU-082 AC-4, HU-083 AC-4, HU-084 AC-4 y AC-5 (selección completa; sin repetir la observación de vacío de HU-080), HU-085 AC-4, HU-118 AC-2 y AC-4.

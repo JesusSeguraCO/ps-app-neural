@@ -1,7 +1,7 @@
 ---
 id: flow-008-telemetria-y-medicion
 epica: EP-008
-historias_cubiertas: [HU-108, HU-109, HU-110, HU-111, HU-112, HU-167, HU-168, HU-169, HU-170, HU-171, HU-172, HU-173, HU-184, HU-185, HU-186, HU-187, HU-188, HU-189, HU-190, HU-193, HU-195, HU-196]
+historias_cubiertas: [HU-108, HU-109, HU-110, HU-111, HU-112, HU-167, HU-168, HU-169, HU-170, HU-171, HU-172, HU-173, HU-184, HU-185, HU-186, HU-187, HU-188, HU-189, HU-190, HU-193, HU-195, HU-196, HU-207]
 ---
 
 # Flow 008 — Telemetría y medición
@@ -171,6 +171,13 @@ flowchart TD
   %% HU-185
   DelOK --> Disparador
 
+  %% HU-207
+  CoordComp[Coordinación de Servicio, en el destino «Composiciones», registra un tipo con sus roles del catálogo y sus proyectos entregados] --> CompOK[Composición registrada con autor, fecha y auditoría; el portal recibe tipo, roles y número de proyectos]
+  %% HU-207
+  CoordComp --> CompRech[Con 0 proyectos, un cuarto tipo o sin el permiso: no se guarda y se explica]
+  %% HU-207
+  CompOK --> CoordDel
+
   %% HU-186
   AdminAB[Administrador enciende o apaga el A/B] --> AB[Asignación por cuenta 50/50]
   %% HU-186
@@ -279,6 +286,9 @@ flowchart TD
 | Sin el permiso «Validar composiciones» | HU-195 | AC-2 (error) |
 | Menos de tres composiciones respaldadas | HU-195 | AC-3 (edge) |
 | Renovar una validación | HU-195 | AC-4 (edge) |
+| Registrar una composición de referencia | HU-207 | AC-1 (happy) |
+| Composición sin proyectos o sin permiso | HU-207 | AC-2 y AC-3 (error) |
+| Cuarto tipo de proyecto | HU-207 | AC-4 (edge) |
 | Comparación con y sin Perfil Objetivo | HU-186 | AC-1 (happy) |
 | Administrador enciende el A/B | HU-186 | AC-2 (happy) |
 | Sin experimento y sin rol de administrador | HU-186 | AC-3 (error) |
@@ -286,6 +296,8 @@ flowchart TD
 | Visita sin perfil abierto | HU-186 | AC-5 (edge) |
 
 ## Notas
+
+**Cuarta ronda (D109, 2026-10-02): HU-207 entra en EP-008.** Coordinación de Servicio registra las composiciones de referencia en el destino «Composiciones» (D106), con el permiso «Validar composiciones»; son el dato que muestra HU-084 (EP-009) y la base de la validación de HU-195. AC no diagramado: HU-207 AC-5 (corregir una composición con la versión anterior en la auditoría).
 
 **Alineación del 2026-10-02 con las decisiones del sponsor (D65–D73).** El flow cubría solo HU-108 a HU-112; ahora cubre las historias de EP-008 (veintidós tras HU-189, HU-190, HU-193, HU-195 y HU-196), incluidas las nuevas HU-187 (aviso de privacidad, D65) y HU-188 (casilla «demo», D68).
 
