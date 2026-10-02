@@ -596,7 +596,7 @@ ADR-0010 §3.3 (variables) y alertas.
   1. `contacto`: **upsert por `email`** (el verificado, D-4) con los campos que el portal conoce
      (`firstname`, `lastname`, `jobtitle`) y `message` (mensaje libre, D54) si lo hay. Ante conflicto,
      reutiliza el existente. **No** escribe `company` ni llama a la API de empresas.
-  2. `negocio`: crea el negocio en el pipeline «Comercial (People y Tecnología)» (D85) (etapa de entrada) asociado al contacto,
+  2. `negocio`: crea el negocio en el pipeline «Comercial (People y Tecnología)» (D85) con `soluciones_ofrecidas` = «People Service» y `dealtype` = «Existing Business» (etapa de entrada a definir con Comercial), asociado al contacto,
      con **«Id solicitud People Service»** (propiedad de **valor único**) y **«Solicitudes People
      Service»** (el párrafo determinista de D54, ahora en el negocio). **Son las 2 propiedades nuevas de
      D76.** Ante el rechazo por valor duplicado (respuesta perdida tras un tiempo agotado) **lee el
@@ -613,15 +613,16 @@ ADR-0010 §3.3 (variables) y alertas.
   negocio, con el enlace directo (`https://app.hubspot.com/contacts/{HUBSPOT_PORTAL_ID}/record/0-3/{id}`,
   forma a confirmar en D84); `clave_idempotencia` = la solicitud, un solo correo (HU-101).
 - **Workflow de HubSpot** (Mercadeo/RevOps), disparado por la creación del negocio en el pipeline
-  People Service: asocia la **empresa por dominio** y **la crea si no existe** (D53, D79; HU-104),
+  «Comercial (People y Tecnología)» con `soluciones_ofrecidas` = «People Service» (D85): asocia la **empresa por dominio** y **la crea si no existe** (D53, D79; HU-104),
   asocia el negocio **relacionado** al abierto de la cuenta (D-7, HU-102), asigna el propietario y hace
   los **avisos comerciales** (HU-103), el **escalamiento 4 h / 24 h hábiles** y la marca de primera
   atención (D55; HU-162, HU-163) y la marca «Agendada el» (D57, HU-107).
 - **D77.** Calendario hábil **T-4 con jornadas de 10 h** (L–V 8:00–18:00 `America/Bogota`, festivos de
   Colombia); 24 h hábiles ≈ 2,4 jornadas. Corrige la frase «3 jornadas de 8 h» de D56.
 - **D75 · Excepción de lectura.** Una tarea diaria **`sincronizar_alineacion`** (nombre propuesto) lee
-  «Agendada el» de los negocios People Service con «Id solicitud People Service» y la guarda en
-  `solicitudes.agendada_el`; O3 se calcula en el portal en días hábiles T-4 (HU-107, HU-171). Una lectura
+  «Agendada el» de los negocios del pipeline «Comercial (People y Tecnología)» (D85) con «Id solicitud People Service» y la guarda en
+  `solicitudes.agendada_el`; O3 se calcula en el portal en días hábiles T-4. La tarea vive en HU-107;
+  el tablero de HU-171 solo muestra el dato. Una lectura
   fallida conserva lo que había y muestra la hora de la última lectura completa.
 
 **Qué cambia respecto de la enmienda D52.**

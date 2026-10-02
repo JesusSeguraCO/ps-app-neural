@@ -28,14 +28,14 @@ depende_de: [HU-161]
 
 ### Edge case [portal] — la solicitud en curso ya no es reciente
 
-**Dado** que un cliente envía una solicitud con la misma especificación que otra suya anterior, según la tabla,
-**cuando** el portal decide cómo tratarla,
-**Entonces** se trata como contexto añadido o como solicitud nueva, según la tabla
+**Dado** que un cliente prepara una solicitud con la misma especificación que otra suya anterior registrada hace los días de la tabla,
+**cuando** la envía,
+**Entonces** el portal le ofrece o no añadir contexto a la anterior, según la tabla
 
-| Días desde la solicitud anterior | Trato |
+| Días desde la solicitud anterior | Qué ve el cliente |
 |---|---|
-| 7 | contexto añadido a la anterior, sin solicitud ni negocio nuevos |
-| 8 | solicitud nueva, con su propio identificador y su propio negocio |
+| 7 | se le ofrece añadir contexto a la anterior en lugar de enviar otra; si lo elige, sigue el happy path, sin solicitud ni negocio nuevos |
+| 8 | no se le ofrece añadir contexto: la solicitud se envía como nueva, con su propio identificador y su propio negocio |
 
 ### Edge case [portal] — la solicitud original aún no llegó a HubSpot
 
@@ -44,7 +44,7 @@ depende_de: [HU-161]
 **Entonces** crea primero el negocio de la solicitud original y después la nota del contexto
 **Y** el contexto nunca se procesa antes que la solicitud a la que pertenece
 
-### Edge case [portal] — la respuesta de la nota de contexto se perdió
+### Error [portal] — la respuesta de la nota de contexto se perdió
 
 **Dado** que HubSpot creó la nota de un contexto añadido y su respuesta no llegó al worker,
 **cuando** el worker reintenta ese contexto,
@@ -56,6 +56,8 @@ depende_de: [HU-161]
 Cubre la excepción de **D-7** (RF-9.2): «si ya existe una solicitud del portal con la misma especificación en días recientes, no se duplica: se añade contexto a la existente», con el mecanismo de la **enmienda v4.18 del PRD** corregida por **D76**.
 
 **Revisión 2026-10-02 (D73; segunda ronda D76).** **D73**: «reciente» son **7 días** (tabla de límite 7 y 8). **D76**: el contexto ya no es un segundo envío de formulario que el workflow tenga que reconocer: el worker lo escribe como **nota por la API**, asociada al negocio que ya conoce (el enlace guardado al registrar la solicitud, HU-102) y a su contacto, con el marcador `[ps:<SOL>:contexto:<n>]`. Desaparecen la E ✗ por «cómo anota el workflow el contexto en el negocio» y el duplicado aceptado en la línea de tiempo. El escenario [HubSpot] anterior pasa a [portal]: lo que se ve en HubSpot es la nota que el worker crea.
+
+**Revisión de validación 2026-10-02.** Faltaba un escenario de error: el de la **respuesta perdida** (tiempo agotado tras crear la nota) es un fallo de la integración y pasa a etiquetarse como **error**. La tabla de 7 y 8 días se reescribe como lo que ve el cliente (**se le ofrece / no se le ofrece** añadir contexto), coherente con el happy path, donde el cliente *elige* añadir contexto: el portal no convierte en silencio una solicitud en contexto.
 
 **Por verificar en el HubSpot real (D84):** lo mismo que HU-161, que crear y leer notas funcione con los scopes mínimos; si exige uno más, lo aprueba el sponsor.
 
@@ -74,8 +76,8 @@ Cubre la excepción de **D-7** (RF-9.2): «si ya existe una solicitud del portal
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: reutiliza el negocio y el subpaso de nota de HU-161; se prueba con un contexto sembrado sin las pantallas de EP-005 ni EP-010 |
-| N | Negociable | ✓ fija que el contexto va a la solicitud existente, que nunca crea un negocio, la ventana de 7 días, el orden en la cola y que no se duplica; la redacción de la nota se negocia |
+| N | Negociable | ✓ fija que el contexto va a la solicitud existente, que nunca crea un negocio, que el cliente lo elige, la ventana de 7 días para ofrecerlo, el orden en la cola y que no se duplica; la redacción de la nota se negocia |
 | V | Valiosa | ✓ quien conduce la sesión ve lo último que dijo el cliente junto a la misma solicitud y el CRM no se llena de negocios repetidos |
 | E | Estimable | ✓ S: una nota más con marcador, el orden en la cola y la regla de 7 días; con el mismo riesgo de scopes de notas que HU-161 hasta D84 |
-| S | Pequeña | ✓ S: una capacidad (llevar el contexto añadido) en cuatro escenarios |
-| T | Testeable | ✓ el doble de la API muestra la nota de contexto en el negocio existente, el orden tras una original pendiente, el límite de 7 y 8 días y el reintento que no la duplica |
+| S | Pequeña | ✓ S: una capacidad (llevar el contexto añadido) en cuatro escenarios: happy, error (respuesta perdida) y dos edges |
+| T | Testeable | ✓ el doble de la API muestra la nota de contexto en el negocio existente, el orden tras una original pendiente y el reintento tras una respuesta perdida que no la duplica; con reloj simulado, a 7 días se ofrece añadir contexto y a 8 no |

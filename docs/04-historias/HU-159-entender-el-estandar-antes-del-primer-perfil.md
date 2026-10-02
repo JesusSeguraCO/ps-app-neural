@@ -24,7 +24,7 @@ depende_de: [HU-178]
 **Dado** que tengo una sesión válida y entro a <pantalla>
 **Cuando** carga la página
 **Entonces** antes de <primer_contenido> veo un encabezado breve que explica el estándar Neural-Grid en cuatro dimensiones: tres condiciones de entrada y Neural Speed como garantía del servicio
-**Y** veo, una sola vez, que el estándar exige a cada perfil verificación de identidad bajo SARO, prueba técnica en vivo y evaluación DISC
+**Y** veo, una sola vez, que el estándar exige a cada perfil verificación de identidad bajo SARO, prueba técnica revisada por Trycore y evaluación DISC
 **Y** nada de lo que sigue en la página repite esa declaración, y ninguna tarjeta lleva una insignia del estándar
 
 **Ejemplos:**
@@ -51,7 +51,7 @@ depende_de: [HU-178]
 
 | Publicados incompletos | El encabezado |
 |---|---|
-| 0 | afirma que ningún perfil llega al portal sin verificación de identidad bajo SARO, prueba técnica en vivo y evaluación DISC |
+| 0 | afirma que ningún perfil llega al portal sin verificación de identidad bajo SARO, prueba técnica revisada por Trycore y evaluación DISC |
 | 1 | describe lo que el estándar exige a cada perfil, sin la palabra «ningún» ni otra afirmación de que todos lo cumplen |
 
 ### Edge case — el encuadre no bloquea la exploración en el teléfono
@@ -76,18 +76,20 @@ Cubre **RF-6.1** (encabezado breve antes del primer resultado, sin bloquear la e
 
 **Riesgo de D62 cerrado por D80** (sponsor, 2026-10-02, segunda ronda). Los perfiles publicados antes de que SARO y DISC fueran obligatorios siguen visibles sin esos datos (HU-178), y para ellos la afirmación «ningún perfil llega al portal sin SARO, prueba técnica y DISC» no tenía dato que la respaldara. D80: **la afirmación solo aparece cuando hay 0 publicados incompletos**; mientras quede alguno, el encabezado **describe el estándar sin afirmar «ninguno»** (edge nuevo, con tabla 0 / 1). El happy path pasa a la redacción que vale siempre (qué exige el estándar). El conteo de incompletos es el mismo cálculo de HU-178 (la guarda de publicación), en la capa determinista: el portal no lo muestra, solo elige la frase. Completar los incompletos de golpe es HU-191 (D81). Las dos frases se redactan con Mercadeo y quedan **marcadas para revisión de copy** (D73).
 
+**Validación 2026-10-02 (validador independiente): «prueba técnica en vivo» → «prueba técnica revisada por Trycore».** La validación técnica admite modalidades que no son en vivo (por ejemplo «Reto de código con entrega funcional», HU-155; D59), así que «en vivo» afirmaba de todos los perfiles algo que no todos cumplen. Se usa una redacción que vale para todas las modalidades, **marcada para revisión de copy** con Mercadeo (D73); el mismo cambio se hizo en HU-178.
+
 **Revisión INVEST 2026-10-02 (D80).** Se añade el cuarto escenario y `depende_de: [HU-178]`: la frase depende de la marca «incompleto». La historia sigue en M.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-6.1 · RF-6.2 · RF-6.3 · RF-6.4 · RF-3.8 · B.6 · D64 · D73 · D80 · depende de HU-178 (conteo de publicados incompletos) · pantallas compartidas con EP-001 (HU-091, HU-093, HU-144, banco ampliado), EP-002 y EP-009 · relacionada con HU-158 (SLA y recordatorio del estándar en la ficha) y HU-153 (tarjeta sin insignia)
+Épica madre: **EP-003** · PRD v4.17 · RF-6.1 · RF-6.2 · RF-6.3 · RF-6.4 · RF-3.8 · B.6 · D59 · D64 · D73 · D80 · validación 2026-10-02 (copy de la prueba técnica) · depende de HU-178 (conteo de publicados incompletos) · pantallas compartidas con EP-001 (HU-091, HU-093, HU-144, banco ampliado), EP-002 y EP-009 · relacionada con HU-158 (SLA y recordatorio del estándar en la ficha) y HU-153 (tarjeta sin insignia)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: se añade sobre pantallas ya construidas de EP-001 y lee la marca «incompleto» de HU-178 (sub-slice inicial de la misma épica, que se construye antes); no espera a EP-002 ni a EP-009 |
-| N | Negociable | ✓ son fijos el contenido mínimo (estándar en cuatro dimensiones, condición de entrada con SARO, prueba en vivo y DISC, respaldo y SLA), que se diga una vez, en tres pantallas, que no bloquee y que «ninguno» solo se afirme con 0 incompletos (D80); la forma (cabecera ilustrada o texto) y el copy se pueden negociar |
+| N | Negociable | ✓ son fijos el contenido mínimo (estándar en cuatro dimensiones, condición de entrada con SARO, prueba técnica revisada por Trycore y DISC, respaldo y SLA), que se diga una vez, en tres pantallas, que no bloquee y que «ninguno» solo se afirme con 0 incompletos (D80); la forma (cabecera ilustrada o texto) y el copy se pueden negociar |
 | V | Valiosa | ✓ declarar una vez lo que todos cumplen libera la tarjeta para lo que sí diferencia, y le da autoridad al conjunto antes del primer perfil |
 | E | Estimable | ✓ M: un encabezado en tres pantallas existentes (selección, banco y encuadre) con dos frases según el conteo de incompletos que ya calcula HU-178, y un bloque de respaldo, con comportamiento adaptable; el copy pendiente no cambia la mecánica |
 | S | Pequeña | ✓ M: cuatro escenarios de presentación; el encuadre suma una fila al esquema y D80 una regla de redacción con tabla, no una capacidad |

@@ -29,30 +29,35 @@ depende_de: [HU-176, HU-177, HU-086, HU-088, HU-141]
 **Y** la ficha de cada uno muestra en el portal la verificación SARO con ese alcance y su mes, y la evaluación DISC con su mes
 **Y** el historial de cada perfil registra el cambio como hecho por importación, con quién la confirmó
 
-### Happy path — la plantilla y la exportación traen las tres columnas
+### Happy path — la exportación trae las tres columnas y vuelve sin cambios
 
 **Dado** que el banco tiene un perfil con la verificación SARO y la fecha DISC registradas,
 **cuando** exporto el banco en hoja de cálculo,
 **Entonces** la exportación trae las columnas de alcance SARO, fecha SARO y fecha DISC, con el alcance escrito tal como está en el catálogo
-**Y** la plantilla de muestra trae esas tres columnas con un encabezado autoexplicativo y un valor de ejemplo
 **Y** al pegar esa exportación sin tocarla, la vista previa pone el perfil en «sin cambios»
 
-### Error — un alcance que no está en el catálogo
+### Happy path — la plantilla de muestra trae las tres columnas
 
-**Dado** que pegué una hoja en la que una fila trae como alcance SARO «Antecedentes penales», que no existe en el catálogo,
-**cuando** el sistema termina de procesar la hoja,
-**Entonces** esa fila aparece en el grupo con error, con el motivo «el alcance SARO no está en el catálogo» y el valor exacto
-**Y** no se ofrece como valor nuevo en la taxonomía
+**Dado** que el catálogo de alcances SARO tiene al menos un alcance activo,
+**cuando** descargo la plantilla de muestra de la importación,
+**Entonces** la plantilla trae las columnas de alcance SARO, fecha SARO y fecha DISC, cada una con un encabezado autoexplicativo y un valor de ejemplo
+**Y** el valor de ejemplo del alcance es uno activo del catálogo, escrito tal como está registrado
+**Y** al pegar la fila de ejemplo de la plantilla, la vista previa no la marca con error en esas tres columnas
+
+### Error — un valor de SARO o DISC fuera de regla
+
+**Esquema del escenario:** la fila con un valor inválido va al grupo con error y no se aplica
+**Dado** que hoy es 2 de octubre de 2026 y pegué una hoja en la que una fila trae <valor>
+**Cuando** el sistema termina de procesar la hoja
+**Entonces** esa fila aparece en el grupo con error, con el motivo «<motivo>» y el valor exacto, sin aplicarse
+**Y** ese valor no se ofrece como valor nuevo en la taxonomía
 **Y** las demás filas válidas siguen en la vista previa
 
-### Error — una fecha futura o ilegible
+**Ejemplos:**
 
-**Dado** que hoy es 2 de octubre de 2026 y pegué una hoja con la fila de la tabla,
-**cuando** el sistema termina de procesar la hoja,
-**Entonces** esa fila aparece en el grupo con error con el motivo de la tabla, sin aplicarse
-
-| Valor en la fila | Motivo |
+| valor | motivo |
 |---|---|
+| alcance SARO «Antecedentes penales», que no existe en el catálogo | el alcance SARO no está en el catálogo |
 | fecha SARO 15/11/2026 | la fecha de una verificación no puede ser posterior a hoy |
 | fecha DISC «abril» | la fecha DISC no se reconoce como fecha |
 
@@ -78,9 +83,11 @@ Cubre **RF-8.15** (importación masiva: RF-8.15.1, RF-8.15.5 vista previa, RF-8.
 
 **La regla de fecha no futura** es la misma de HU-176 (propuesta del modelo, negociable). El formato de fecha aceptado es el de la spec para las demás fechas del perfil.
 
+**Validación 2026-10-02 (validador independiente).** Reordenación sin cambio de alcance: la plantilla de muestra sale a **su propio escenario** (antes compartía uno con la exportación) y los dos errores (alcance fuera del catálogo; fecha futura o ilegible) se **funden en un esquema** de tres filas. Siguen cinco escenarios. El escenario de la plantilla añade que su valor de ejemplo del alcance sea uno activo del catálogo, para que la fila de ejemplo no nazca con error.
+
 ## Trazabilidad
 
-Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.18 · RF-8.15 (8.15.1, 8.15.5, 8.15.7, 8.15.9) · B.6 · B.7 · D60 · D61 · D62 · D81 (sponsor, 2026-10-02) · spec `docs/10-specs/importacion-masiva.md` · toca la importación, la plantilla y la exportación de **EP-006, que sigue cerrada** · depende de HU-176 (los tres campos y su guarda), HU-177 (catálogo de alcances), HU-086 y HU-141 (vista previa y confirmación) y HU-088 (plantilla y exportación) · relacionada con HU-178 (la marca «incompleto» se retira) y HU-159 (encabezado del estándar, D80)
+Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.18 · RF-8.15 (8.15.1, 8.15.5, 8.15.7, 8.15.9) · B.6 · B.7 · D60 · D61 · D62 · D81 (sponsor, 2026-10-02) · validación 2026-10-02 · spec `docs/10-specs/importacion-masiva.md` · toca la importación, la plantilla y la exportación de **EP-006, que sigue cerrada** · depende de HU-176 (los tres campos y su guarda), HU-177 (catálogo de alcances), HU-086 y HU-141 (vista previa y confirmación) y HU-088 (plantilla y exportación) · relacionada con HU-178 (la marca «incompleto» se retira) y HU-159 (encabezado del estándar, D80)
 
 ## INVEST
 
@@ -90,5 +97,5 @@ Cubre **RF-8.15** (importación masiva: RF-8.15.1, RF-8.15.5 vista previa, RF-8.
 | N | Negociable | ✓ son fijos las tres columnas, que el alcance se valide contra el catálogo (D81) y que la importación no publique; vaciar como error, la fecha no futura y los textos de motivo son negociables |
 | V | Valiosa | ✓ convierte en una hoja el trabajo de completar todos los publicados incompletos, que es lo que permite que el encabezado del estándar vuelva a afirmar «ninguno» (D80) |
 | E | Estimable | ✓ M: tres columnas en el modelo de importación, validación contra el catálogo y de fecha, regla de no vaciar en publicados, y su paso a la plantilla, la exportación y la ida y vuelta |
-| S | Pequeña | ✓ M: una capacidad (traer y llevar SARO y DISC por hoja) en cinco escenarios, uno con tabla |
-| T | Testeable | ✓ hojas fijadas con alcances del catálogo y fuera de él, fechas futuras e ilegibles, `[vaciar]` en un publicado y la exportación reimportada dan vista previa, errores por fila, marcas y fichas observables |
+| S | Pequeña | ✓ M: una capacidad (traer y llevar SARO y DISC por hoja) en cinco escenarios: importar, exportar, plantilla, un esquema de errores con tres filas y vaciar |
+| T | Testeable | ✓ hojas fijadas con alcances del catálogo y fuera de él, fechas futuras e ilegibles, `[vaciar]` en un publicado, la exportación reimportada y la plantilla descargada dan vista previa, errores por fila, marcas y fichas observables |

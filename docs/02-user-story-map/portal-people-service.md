@@ -99,11 +99,13 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 | HU-122 Generar un enlace con los perfiles que elegí | HU-103 Enterarme de una solicitud sin tener que vigilar el pipeline | HU-109 Ver si la curaduría acierta |
 | HU-115 Copiar el contenido curado para enviarlo desde Gmail o HubSpot | HU-104 Que no se me duplique la empresa en el CRM | HU-078 Saber qué están pidiendo las cuentas y no tenemos |
 | | HU-105 Recuperar una solicitud cuya integración falló | HU-110 Ver qué pidieron las cuentas y no teníamos ⚠ *duplicada de HU-078* |
-| | HU-106 Distinguir lo que entra por el portal de lo que entra por gestión | |
-| | HU-107 Registrar cuándo se agendó la alineación | |
+| | HU-106 Distinguir lo que entra por el portal de lo que entra por gestión | HU-171 Ver el tablero mensual de medición *(D66)* |
+| | HU-107 Registrar cuándo se agendó la alineación | HU-108 Ver el embudo de cada cuenta *(D66)* |
+| | | HU-111 Comparar la ruta de instrucción con la de filtros *(D66)* |
 | **━━━━━━━━━━ v1.1 ━━━━━━━━━━** | | |
-| HU-117 Reaccionar a una cuenta que no entra | | HU-108 Ver el embudo de cada cuenta |
-| | | HU-111 Comparar la ruta de instrucción con la de filtros |
+| HU-117 Reaccionar a una cuenta que no entra | | |
+
+**D66 (sponsor, 2026-10-02): el tablero de medición entra al MVP.** HU-171 (tablero mensual), HU-108 (embudo por cuenta) y HU-111 (instrucción frente a filtros) suben de v1.1 a la línea de MVP con EP-008. No es ampliación de alcance: ya estaban comprometidas; cambia la línea de release.
 
 **La columna F no envía el boletín** (decisión del sponsor del 2026-09-27, PRD v4.14, RF-18). El panel arma la selección curada (HU-113), genera el enlace de cada destinatario con un token opaco (HU-114) y entrega un bloque de contenido listo para copiar en Gmail o HubSpot, donde se redacta, programa y envía el correo; quien envía registra la salida en el panel (HU-115). La columna H mide entradas por el enlace, verificación y solicitud, no aperturas (HU-116), y la regla de HU-117 pasa a «tres envíos con salida registrada sin entrada». Mailgun queda solo para códigos de acceso y avisos internos. No es un recorte de alcance: redacción, programación, envío, bajas y apertura pasan a la herramienta de envío.
 

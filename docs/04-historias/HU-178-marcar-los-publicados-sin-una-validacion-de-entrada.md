@@ -46,21 +46,21 @@ depende_de: [HU-176, HU-126, HU-128]
 ### Edge case — completar lo que falta permite publicar el cambio
 
 **Dado** que un perfil publicado está marcado «Incompleto: falta la fecha de la evaluación DISC»
-**Y** que en el editor registré esa fecha
-**Cuando** guardo y confirmo el cambio
+**Y** que en el editor registré esa fecha, guardé y el panel me pide confirmar el cambio en un perfil publicado
+**Cuando** confirmo el cambio
 **Entonces** el cambio queda visible en el portal
 **Y** el perfil deja de aparecer marcado como incompleto
 
 ### Edge case — completar el último incompleto devuelve la afirmación del estándar
 
-**Dado** que tras guardar y confirmar un perfil que estaba marcado «Incompleto» quedan en el banco los publicados incompletos que dice la tabla,
+**Dado** que completé y confirmé el cambio de un perfil que estaba marcado «Incompleto», y en el banco quedan los publicados incompletos que dice la tabla,
 **cuando** un cliente abre la selección de su correo en el portal,
 **Entonces** el encabezado del estándar (HU-159) dice lo que indica la tabla
 
-| Publicados incompletos tras guardar | Encabezado del estándar en el portal |
+| Publicados incompletos tras confirmar | Encabezado del estándar en el portal |
 |---|---|
 | 1 | describe lo que el estándar exige a cada perfil, sin afirmar que ninguno llega sin SARO, DISC y validaciones |
-| 0 | afirma que ningún perfil llega al portal sin verificación SARO, prueba técnica en vivo y evaluación DISC |
+| 0 | afirma que ningún perfil llega al portal sin verificación SARO, prueba técnica revisada por Trycore y evaluación DISC |
 
 ### Edge case — el Sello Personal no marca un perfil como incompleto
 
@@ -85,9 +85,11 @@ Cubre **D62** y **D63** del sponsor sobre el motor de publicación del panel: **
 
 **Revisión INVEST 2026-10-02 (D80).** Quinto escenario añadido; la historia sigue en M porque la frase vive en HU-159 y aquí solo se expone el conteo que ya se calcula.
 
+**Validación 2026-10-02 (validador independiente).** Dos ajustes de forma, sin cambio de alcance: (1) «guardo y confirmo» eran dos acciones en un «Cuando»; ahora el «Dado» deja el estado («guardé y el panel pide confirmar») y el «Cuando» es una sola acción («confirmo»), como en HU-177. (2) «prueba técnica en vivo» pasa a **«prueba técnica revisada por Trycore»**, que no excluye las modalidades que no son en vivo (por ejemplo «Reto de código con entrega funcional», HU-155; D59); **marcado para revisión de copy** (D73), igual que en HU-159.
+
 ## Trazabilidad
 
-Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · B.6 · RF-8.2 · RF-8.4 · RF-8.10 · RF-3.4 · D10 · D60 · D62 · D63 · nace de D62 y D63 (2026-10-02) · toca el listado, el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-176 (datos SARO y DISC), HU-126 (confirmación de cambios en publicados) y HU-128 (guarda de publicación) · D80 y D81 (sponsor, 2026-10-02, segunda ronda) · relacionada con HU-156 (la ficha omite el dato ausente), HU-159 (el encabezado afirma «ninguno» solo con 0 incompletos, D80) y HU-191 (completar por importación, D81)
+Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · B.6 · RF-8.2 · RF-8.4 · RF-8.10 · RF-3.4 · D10 · D60 · D62 · D63 · nace de D62 y D63 (2026-10-02) · toca el listado, el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-176 (datos SARO y DISC), HU-126 (confirmación de cambios en publicados) y HU-128 (guarda de publicación) · D80 y D81 (sponsor, 2026-10-02, segunda ronda) · validación 2026-10-02 (forma G/W/T y copy de la prueba técnica) · relacionada con HU-156 (la ficha omite el dato ausente), HU-159 (el encabezado afirma «ninguno» solo con 0 incompletos, D80) y HU-191 (completar por importación, D81)
 
 ## INVEST
 

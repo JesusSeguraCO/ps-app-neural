@@ -48,6 +48,15 @@ depende_de: [HU-089]
 **Y** los 2 perfiles lo conservan y sus fichas lo siguen mostrando
 **Y** el catálogo no permite borrarlo, solo desactivarlo
 
+### Edge case — editar un perfil que conserva un alcance desactivado
+
+**Dado** que el alcance «Antecedentes judiciales» está desactivado en el catálogo y asignado a un perfil publicado
+**Y** que en el editor de ese perfil cambié su resumen sin tocar el alcance, guardé y el panel me pide confirmar el cambio en un perfil publicado
+**Cuando** confirmo el cambio
+**Entonces** el perfil conserva «Antecedentes judiciales» como alcance y su ficha sigue mostrándolo
+**Y** el cambio queda publicado, sin que el alcance desactivado lo marque como incompleto ni lo bloquee
+**Y** el editor muestra ese alcance como su valor actual, señalado como desactivado, y no lo ofrece a otros perfiles
+
 ## Notas
 
 Cubre la parte de **D61** que define el alcance SARO como **catálogo cerrado administrable**, al servicio de **B.7** (validación de seguridad: alcance y fecha) y **RF-3.2** (alcance como evidencia en la ficha). Sigue las reglas ya construidas para los catálogos del panel: **RF-8.16** (catálogos paramétricos administrables), selección en vez de texto libre y aviso de duplicados (**HU-089**) y **catálogos sin borrado** (capa determinista del dominio).
@@ -60,19 +69,21 @@ Cubre la parte de **D61** que define el alcance SARO como **catálogo cerrado ad
 
 **Copy para revisión de copy (D73):** el texto de cara al cliente de cada alcance lo escribe Talento Humano en el panel; el valor inicial de los ejemplos («Antecedentes judiciales, disciplinarios y fiscales») es ilustrativo y queda **marcado para revisión de copy** con Mercadeo antes de cargar el catálogo real.
 
+**Editar un perfil con un alcance ya desactivado (validación 2026-10-02, validador independiente).** Faltaba decir qué pasa cuando se edita uno de los perfiles que conservan un alcance desactivado. Opción conservadora, coherente con «los perfiles lo conservan» y con los catálogos sin borrado: el perfil **lo conserva** al guardar y **puede re-publicarse**; un alcance desactivado sigue siendo un dato registrado, así que la guarda de publicación (HU-176, HU-178) no lo trata como faltante. Desactivar solo impide **asignarlo** a perfiles que no lo tenían (también por importación, HU-191). Si Talento Humano cambia el alcance de ese perfil por otro activo, el desactivado ya no vuelve a ofrecérsele. Quinto escenario.
+
 **El valor parecido** (distancia de edición, «Fgima» frente a «Figma» en HU-089) se reutiliza tal cual de los catálogos existentes; no se reescribe aquí. Esta historia solo prueba el caso idéntico salvo mayúsculas.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · B.7 · RF-3.2 · RF-8.16 · D60 · D61 · D73 (copy) · nace de D61 (2026-10-02) · reutiliza las reglas de catálogo de HU-089 (EP-006, construida y cerrada) · habilita a HU-176 · relacionada con HU-156 (ficha que muestra el alcance) y HU-138 (historial)
+Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · B.7 · RF-3.2 · RF-8.16 · D60 · D61 · D73 (copy) · validación 2026-10-02 (editar con un alcance desactivado) · nace de D61 (2026-10-02) · reutiliza las reglas de catálogo de HU-089 (EP-006, construida y cerrada) · habilita a HU-176 · relacionada con HU-156 (ficha que muestra el alcance) y HU-138 (historial)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: reutiliza el mecanismo de catálogos de HU-089, ya construido; no espera a ninguna otra historia |
-| N | Negociable | ✓ son fijos el catálogo cerrado (D61), la ausencia de borrado y que corregir lo publicado avise; el formulario y la redacción de los avisos se pueden negociar |
+| N | Negociable | ✓ son fijos el catálogo cerrado (D61), la ausencia de borrado, que corregir lo publicado avise y que un alcance desactivado se conserve y deje re-publicar; el formulario y la redacción de los avisos se pueden negociar |
 | V | Valiosa | ✓ hace que la evidencia de seguridad diga lo mismo para todos los perfiles verificados igual y no prometa de más ante un área de riesgo |
-| E | Estimable | ✓ S: un catálogo más sobre un mecanismo que ya existe (crear, detectar duplicado, desactivar) y un aviso de impacto con su registro en el historial |
-| S | Pequeña | ✓ S: un catálogo con cuatro escenarios |
-| T | Testeable | ✓ en el panel, crear, duplicar, corregir un valor asignado a 4 perfiles sembrados y desactivar uno asignado a 2 dan resultados observables en el editor, en las fichas y en el historial |
+| E | Estimable | ✓ S: un catálogo más sobre un mecanismo que ya existe (crear, detectar duplicado, desactivar conservando el valor asignado) y un aviso de impacto con su registro en el historial |
+| S | Pequeña | ✓ S: un catálogo con cinco escenarios, en el límite de la metodología |
+| T | Testeable | ✓ en el panel, crear, duplicar, corregir un valor asignado a 4 perfiles sembrados, desactivar uno asignado a 2 y re-publicar uno de ellos tras editarlo dan resultados observables en el editor, en las fichas y en el historial |

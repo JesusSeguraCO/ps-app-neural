@@ -18,13 +18,20 @@ depende_de: [HU-102]
 
 ## Criterios de aceptación
 
-### Happy path [portal] — HubSpot no responde y el reintento lo resuelve
+### Happy path [portal] — el reintento crea el negocio cuando HubSpot vuelve
+
+**Dado** que el primer intento de crear el negocio de una solicitud falló porque HubSpot no respondía, la solicitud está guardada como pendiente y HubSpot ya volvió a responder,
+**cuando** llega la hora del siguiente intento programado,
+**Entonces** el worker crea el negocio en HubSpot
+**Y** la solicitud pasa a «registrada en HubSpot», con su enlace
+**Y** no se envía ningún aviso de fallo al responsable técnico
+
+### Error [portal] — HubSpot no responde al enviar la solicitud
 
 **Dado** que la API de CRM de HubSpot no responde o responde con un error de servidor,
 **cuando** el cliente envía la solicitud,
 **Entonces** el cliente recibe su confirmación igual, sin mención al fallo
 **Y** la solicitud queda guardada como pendiente y se reintenta con espera creciente según la tabla
-**Y** cuando HubSpot vuelve, el siguiente intento crea el negocio y la solicitud pasa a «registrada en HubSpot»
 
 | Intento fallido | Espera antes del siguiente (±10 %) |
 |---|---|
@@ -63,6 +70,8 @@ Cubre **RF-9.6** y **RF-9.6.1** (guardar antes de enviar, cola en la base de dat
 
 **Revisión 2026-10-02, segunda ronda (D76, corrige D52).** Lo que se reintenta vuelve a ser **la creación por la API**: el trabajo `crear_negocio` con subpasos `contacto` → `negocio` → `nota` (ADR-0009, enmienda D76), cada uno con su clave en `trabajos_pasos`, y un reintento **salta los pasos hechos**. La idempotencia ya no depende de un workflow: el **«Id solicitud People Service» de valor único** hace que HubSpot rechace el segundo negocio, y el worker reutiliza el existente leyéndolo por ese identificador (`crm.objects.deals.read`). El escenario que antes era [HubSpot] («el reenvío no crea un segundo negocio») pasa a [portal] y se prueba con la suite. Un rechazo por valor duplicado **no es un fallo**: no suma intento ni va a la bandeja. Antes del reintento, el doble clic ya se cortó en origen (HU-098): una sola solicitud y un solo trabajo por envío.
 
+**Revisión de validación 2026-10-02.** El happy path anterior tenía dos acciones (el envío y la vuelta de HubSpot). Se parte en dos: el **error** del envío con HubSpot caído (confirmación al cliente, pendiente y tabla de esperas) y el **happy** de la recuperación, con el fallo previo en el Dado y una sola acción (llega la hora del intento). Quedan cinco escenarios.
+
 **Ya desaparece el duplicado en la línea de tiempo** que aceptaba la versión del formulario: la nota de la solicitud se crea una sola vez (HU-161).
 
 **Ya existe en el código** (EP-001 y EP-006): la cola `operacion.trabajos` con reclamo por fila, `clave_idempotencia` única, el cálculo de espera y el adaptador de correo. Falta el manejador `crear_negocio`, el adaptador de la API de CRM y la tabla de solicitudes (EP-005).
@@ -85,5 +94,5 @@ Cubre **RF-9.6** y **RF-9.6.1** (guardar antes de enviar, cola en la base de dat
 | N | Negociable | ✓ fija guardar antes, la tabla de esperas con tope de 55 min, el aviso al tercer fallo y el mismo identificador en cada reintento; el texto del aviso se negocia |
 | V | Valiosa | ✓ una caída de HubSpot deja de costar oportunidades y el cliente nunca ve el fallo |
 | E | Estimable | ✓ M: la cola, el reclamo por fila y el cálculo de espera ya existen; se suman el manejador por subpasos, la lectura por identificador ante el duplicado y el aviso al tercer fallo |
-| S | Pequeña | ✓ M: una capacidad (recuperarse de un fallo pasajero sin duplicar) en cuatro escenarios, todos del portal |
-| T | Testeable | ✓ con reloj simulado y un doble de la API que falla N veces, que crea y no contesta, o que rechaza el valor duplicado, se ven esperas, correo, bandeja, un solo negocio y un solo contacto |
+| S | Pequeña | ✓ M: una capacidad (recuperarse de un fallo pasajero sin duplicar) en cinco escenarios, todos del portal |
+| T | Testeable | ✓ con reloj simulado y un doble de la API que falla N veces y luego responde, que crea y no contesta, o que rechaza el valor duplicado, se ven esperas, correo, bandeja, un solo negocio y un solo contacto |

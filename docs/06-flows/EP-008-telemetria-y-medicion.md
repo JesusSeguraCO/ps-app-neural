@@ -1,7 +1,7 @@
 ---
 id: flow-008-telemetria-y-medicion
 epica: EP-008
-historias_cubiertas: [HU-108, HU-109, HU-110, HU-111, HU-112, HU-167, HU-168, HU-169, HU-170, HU-171, HU-172, HU-173, HU-184, HU-185, HU-186, HU-187, HU-188, HU-189, HU-190]
+historias_cubiertas: [HU-108, HU-109, HU-110, HU-111, HU-112, HU-167, HU-168, HU-169, HU-170, HU-171, HU-172, HU-173, HU-184, HU-185, HU-186, HU-187, HU-188, HU-189, HU-190, HU-193]
 ---
 
 # Flow 008 — Telemetría y medición
@@ -61,8 +61,18 @@ flowchart TD
 
   %% HU-169
   Eventos --> Retencion[Tarea diaria: seudónimo a 12 meses, borrado a 24]
-  %% HU-169
-  Retencion --> Supresion[Supresión registrada: eventos del contacto anonimizados]
+  %% HU-193
+  AdminSup[Administrador con el permiso «Medición» registra la supresión de un correo] --> SupPend[Supresión pendiente, sin guardar el correo]
+  %% HU-193
+  AdminSup --> SupSinRastro[Correo sin rastro en el portal: nada que suprimir]
+  %% HU-193
+  NoAdminSup[Observador o administrador sin el permiso intenta registrarla] --> SupRech[No se registra; el panel explica quién puede]
+  %% HU-193
+  SupPend --> Retencion
+  %% HU-193
+  Retencion --> Supresion[Supresión aplicada: eventos del contacto anonimizados, conteos conservados]
+  %% HU-193
+  Supresion --> SupAlcance[Detalle: no alcanza HubSpot ni la lista nominal del enlace]
   %% HU-169
   Retencion --> RetFalla[Tarea detenida: aviso al responsable técnico]
 
@@ -84,7 +94,7 @@ flowchart TD
   %% HU-171
   Acceso -- sí --> Tablero[Tablero mensual: conversión por cuentas, perfiles por solicitud]
   %% HU-171
-  LecturaHS[Worker lee 1×día «Agendada el» de los negocios en HubSpot] --> O3[O3: días hábiles hasta la alineación agendada, con fecha de lectura]
+  LecturaHS[«Agendada el» guardada por la lectura diaria de HU-107, EP-007] --> O3[O3: días hábiles hasta la alineación agendada, con fecha de lectura]
   %% HU-171
   O3 --> Tablero
   %% HU-171
@@ -151,7 +161,11 @@ flowchart TD
   %% HU-185
   Acceso -- sí --> Disparador[Disparador §14.5: 50 solicitudes con reto]
   %% HU-185
-  Disparador --> Delivery[Validación de Delivery mostrada, cumplida o pendiente]
+  Disparador --> Delivery[Validación de Delivery: pendiente mientras nadie la registre]
+  %% HU-185
+  AdminDel[Administrador con el permiso «Medición» registra la validación de Delivery] --> DelOK[Condición cumplida por validación de Delivery, con fecha y quién]
+  %% HU-185
+  DelOK --> Disparador
 
   %% HU-186
   AdminAB[Administrador enciende o apaga el A/B] --> AB[Asignación por cuenta 50/50]
@@ -191,9 +205,13 @@ flowchart TD
 | Lo registrado sin datos de contacto | HU-169 | AC-1 (happy) |
 | Lote con campos no admitidos | HU-169 | AC-2 (error) |
 | Caducidad a 12 y 24 meses | HU-169 | AC-3 (edge) |
-| Supresión antes de 24 meses | HU-169 | AC-4 (edge) |
-| Tarea de retención detenida | HU-169 | AC-5 (error) |
-| Tablero del mes cerrado, con O3 de la lectura diaria de HubSpot | HU-171 | AC-1 (happy) |
+| Tarea de retención detenida | HU-169 | AC-4 (error) |
+| Registrar la supresión de un contacto | HU-193 | AC-1 (happy) |
+| Supresión aplicada en la siguiente corrida | HU-193 | AC-2 (happy) |
+| Quien no puede registrar la supresión | HU-193 | AC-3 (error) |
+| Correo sin rastro en el portal | HU-193 | AC-4 (edge) |
+| Lo que la supresión no alcanza | HU-193 | AC-5 (edge) |
+| Tablero del mes cerrado, con O3 de la lectura diaria de HU-107 | HU-171 | AC-1 (happy) |
 | Paneles pendientes o lectura de HubSpot atrasada | HU-171 | AC-2 (edge) |
 | Mes sin actividad o en curso | HU-171 | AC-3 (edge) |
 | Internas y demo fuera | HU-171 | AC-4 (edge) |
@@ -245,11 +263,11 @@ flowchart TD
 | Composiciones sin emitir | HU-184 | AC-3 (error) |
 | Tipo de proyecto sin composición | HU-184 | AC-4 (edge) |
 | Vio y descartó | HU-184 | AC-5 (edge) |
-| Cuánto falta para el disparador | HU-185 | AC-1 (happy) |
-| Límite de las 50 | HU-185 | AC-2 (edge) |
-| Solicitudes que no cuentan | HU-185 | AC-3 (error) |
-| Reto sin emitir | HU-185 | AC-4 (error) |
-| Condición de Delivery | HU-185 | AC-5 (edge) |
+| Cuánto falta para el disparador, con el límite de las 50 | HU-185 | AC-1 (happy) |
+| Solicitudes que no cuentan | HU-185 | AC-2 (error) |
+| Reto sin emitir | HU-185 | AC-3 (error) |
+| Registrar la validación de Delivery | HU-185 | AC-4 (happy) |
+| Validación de Delivery no registrada | HU-185 | AC-5 (edge) |
 | Comparación con y sin Perfil Objetivo | HU-186 | AC-1 (happy) |
 | Administrador enciende el A/B | HU-186 | AC-2 (happy) |
 | Sin experimento y sin rol de administrador | HU-186 | AC-3 (error) |
@@ -258,7 +276,7 @@ flowchart TD
 
 ## Notas
 
-**Alineación del 2026-10-02 con las decisiones del sponsor (D65–D73).** El flow cubría solo HU-108 a HU-112; ahora cubre las diecisiete historias de EP-008, incluidas las nuevas HU-187 (aviso de privacidad, D65) y HU-188 (casilla «demo», D68).
+**Alineación del 2026-10-02 con las decisiones del sponsor (D65–D73).** El flow cubría solo HU-108 a HU-112; ahora cubre las historias de EP-008 (veinte tras HU-189, HU-190 y HU-193), incluidas las nuevas HU-187 (aviso de privacidad, D65) y HU-188 (casilla «demo», D68).
 
 **Visita mixta (corrige la versión anterior).** Antes decía que la visita que usa instrucción y filtros «se atribuye a la que produjo la solicitud». Ahora cuenta como **ruta de instrucción con uso posterior de filtros**, igual que HU-111 y ADR-0006, que es lo que mide RF-14.2.
 
@@ -266,12 +284,16 @@ flowchart TD
 
 **Atribución (D69).** Hereda la de la última edición curada por la que entró el contacto, con ventana de 90 días; el reparto directa / heredada / sin edición se ve en Medición.
 
-**Tablero en el MVP (D66).** Antes esta nota decía que HU-108 y HU-111 estaban en v1.1 y que el primer trimestre los datos se leerían a mano. El sponsor decidió el tablero y sus lecturas en el **MVP**. El backlog y el mapa de historias todavía dicen v1.1 y hay que actualizarlos.
+**Tablero en el MVP (D66).** Antes esta nota decía que HU-108 y HU-111 estaban en v1.1 y que el primer trimestre los datos se leerían a mano. El sponsor decidió el tablero y sus lecturas en el **MVP**. El backlog y el mapa de historias se alinearon el 2026-10-02 (HU-108, HU-111 y HU-171 en MVP, nota D66).
 
 **Quién ve Medición (D67 corregida por D74).** D67 lo decía por área y con los dos roles del panel no se podía expresar. D74: un **permiso «Medición» por persona** en la lista nominal, independiente del rol, que concede y quita un administrador (HU-190); sin él, el panel explica el motivo (HU-171). Escribir dentro de Medición (el A/B de HU-186) exige además el rol administrador. Se enmiendan RF-8.1.2 (nota v4.18) y ADR-0006.
 
 **Talento Humano en Demanda (D82, D83).** El top 10 de HU-172 se ve en Medición y también en Demanda; las decisiones de reclutamiento se registran en Demanda con HU-189 y HU-111 las lee para la segunda condición de §14.7. Se cierra el hueco que esta nota dejaba abierto (`DecisionTH` sin historia).
 
-**O3 en el tablero (D75).** Excepción de lectura: el worker trae una vez al día la fecha «Agendada el» de los negocios People Service (propiedad de HU-107, EP-007) y el tablero calcula O3 (HU-171). El arco `LecturaHS` depende de que esa propiedad exista en HubSpot.
+**O3 en el tablero (D75).** Excepción de lectura: la tarea diaria del worker que trae «Agendada el» de los negocios del pipeline «Comercial (People y Tecnología)» con `soluciones_ofrecidas` = «People Service» (D85) **vive en HU-107** (EP-007); el tablero (HU-171) solo muestra O3 con la fecha ya guardada. El arco `LecturaHS` depende de HU-107 y de que la propiedad exista en HubSpot.
+
+**Supresión (D89).** La supresión a petición del titular sale de HU-169 a **HU-193**: la registra un administrador con el permiso «Medición» (el permiso da lectura, el rol da escritura), la aplica la tarea diaria de retención de HU-169 y el panel declara que no alcanza HubSpot ni la lista nominal del enlace. HU-169 queda con la retención y el aviso de tarea detenida.
+
+**Validación de Delivery (HU-185, D74).** La registra un administrador con el permiso «Medición»; mientras nadie la registre, la lectura la muestra pendiente.
 
 **HU-111 es la vista que falsea la Fase 2.** Mide si la subordinación de las facetas a la instrucción está bien hecha (PRD §14.7) y ahora lee las dos condiciones de retirada. Sin ella, la regla asimétrica de D-17 no tiene con qué evaluarse.

@@ -37,7 +37,7 @@ depende_de: [HU-102]
 ### Error [portal] — HubSpot rechaza la propiedad del requerimiento
 
 **Dado** que en HubSpot no existe la propiedad «Solicitudes People Service» del negocio o no admite el párrafo,
-**cuando** el worker crea el negocio y HubSpot responde 400 por esa propiedad,
+**cuando** HubSpot responde 400 a la creación del negocio por esa propiedad,
 **Entonces** el negocio no se crea sin el párrafo ni con el párrafo recortado
 **Y** la solicitud queda en la bandeja de fallos con el nombre de la propiedad que HubSpot rechazó (HU-166)
 
@@ -67,6 +67,8 @@ Cubre **RF-9.3** con el mecanismo de la **enmienda v4.18 del PRD** corregida por
 **Límite de tamaño:** una propiedad de texto multilínea admite 65 536 caracteres, de sobra para el párrafo; se comprueba con la solicitud más larga que permite el portal.
 
 **D86 (sponsor, 2026-10-02).** Se **crea** la propiedad «Solicitudes People Service» (texto multilínea). No se reutiliza `formato_people_service`, que ya existe en los negocios con uso desconocido, ni `description`, que Comercial escribe a mano.
+
+**Revisión de validación 2026-10-02.** El error 400 tenía dos acciones en el Cuando; queda una sola: «HubSpot responde 400 a la creación».
 
 ## Trazabilidad
 

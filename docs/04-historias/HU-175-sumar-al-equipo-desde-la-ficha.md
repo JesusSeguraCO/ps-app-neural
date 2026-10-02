@@ -7,7 +7,7 @@ complejidad: S
 estado: draft
 fase: referencias-juicebox
 prd_version: 4.17
-depende_de: [HU-120]  # y la capacidad de sumar a «Mi equipo» de EP-004 (RF-4.1, RF-4.2), aún sin historia redactada
+depende_de: [HU-120, HU-192]
 ---
 
 # HU-175 — Sumar o quitar un perfil de mi equipo desde su ficha sin cerrarla
@@ -69,21 +69,21 @@ Cubre la parte de **RF-13.11** que permite actuar sobre el perfil sin cerrar la 
 
 **Nace el 2026-10-02 de la partición de HU-120 por validación INVEST (fallas I y E).** **Partición, no recorte**: el alcance sigue en EP-003. HU-120 se queda con recorrer las fichas sin perder la lista (ya construido en buena parte por D47 de EP-006); esta historia lleva el «sumar desde la ficha», que quedó explícitamente en EP-003.
 
-**Dependencia con EP-004, declarada en `depende_de`:** sumar a «Mi equipo», guardarlo en el servidor por invitado y el indicador con el conteo son capacidades de **EP-004** que **no tienen historia redactada** (deuda del mapa de historias; ver los criterios recibidos de EP-001 en `docs/03-backlog/epicas.md`). Esta historia no construye esa capacidad: pone la acción en la ficha y fija que no la cierra. Se secuencia **después** de que EP-004 entregue sumar y el indicador, o se construye contra el contrato que EP-004 publique. Mientras esa historia no exista, la sesión principal debe registrarla como deuda del mapa.
+**Dependencia con EP-004, declarada en `depende_de` (D88, sponsor, 2026-10-02).** Sumar y quitar en «Mi equipo», guardarlo en el servidor por invitado y el indicador con el conteo son capacidades de **EP-004**, ahora redactadas en **HU-192** «Sumar y quitar perfiles de Mi equipo». Esta historia no construye esa capacidad: pone las mismas dos acciones en la ficha y fija que no la cierran. Se secuencia **después de HU-192**, o se construye contra el contrato que HU-192 publique. La deuda de mapa que señalaba esta nota queda pagada por D88.
 
-**D73 (sponsor, 2026-10-02, opción conservadora) cierra la pregunta abierta:** desde la ficha se puede **quitar** del equipo además de sumar, como alterna el prototipo («Sumar al equipo» / «En el equipo») y como permite RF-4.1. Cambios: se añade el escenario alterno de quitar, el de error pasa a un esquema con las dos acciones y el edge «ya estaba en mi equipo» ofrece quitar en vez de solo informar. El título y el «quiero» lo dicen. **Ampliación por decisión del sponsor, no recorte.** La complejidad sigue en S: quitar usa la misma capacidad de EP-004 y el mismo estado de la acción.
+**D73 (sponsor, 2026-10-02, opción conservadora) cierra la pregunta abierta:** desde la ficha se puede **quitar** del equipo además de sumar, como alterna el prototipo («Sumar al equipo» / «En el equipo») y como permite RF-4.1. Cambios: se añade el escenario alterno de quitar, el de error pasa a un esquema con las dos acciones y el edge «ya estaba en mi equipo» ofrece quitar en vez de solo informar. El título y el «quiero» lo dicen. **Ampliación por decisión del sponsor, no recorte.** La complejidad sigue en S: quitar usa la misma capacidad de HU-192 y el mismo estado de la acción.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-13.11 · RF-4.1 · RF-4.2 · D73 · nace de la partición de HU-120 (2026-10-02) · depende de HU-120 (ficha y recorrido) y de la capacidad de sumar de EP-004 (sin historia aún) · relacionada con HU-080 (EP-004, qué le falta al equipo)
+Épica madre: **EP-003** · PRD v4.17 · RF-13.11 · RF-4.1 · RF-4.2 · D73 · nace de la partición de HU-120 (2026-10-02) · D88 · depende de HU-120 (ficha y recorrido) y de HU-192 (sumar y quitar en «Mi equipo» con su indicador, EP-004) · relacionada con HU-080 (EP-004, qué le falta al equipo)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: necesita la ficha de HU-120, ya construida, y la capacidad de sumar de EP-004; se secuencia detrás de EP-004 o se construye contra su contrato |
+| I | Independiente | ✓ con dependencia declarada: necesita la ficha de HU-120, ya construida, y la capacidad de sumar y quitar de HU-192 (EP-004, D88); se secuencia detrás de HU-192 o se construye contra su contrato |
 | N | Negociable | ✓ son fijos sumar y quitar sin cerrar (D73), la confirmación en la ficha y que un fallo no se presente como éxito; el texto de las acciones y su forma visual se pueden negociar |
 | V | Valiosa | ✓ convierte la comparación en decisión sin perder el hilo, que es la palanca sobre el promedio de perfiles por solicitud |
-| E | Estimable | ✓ S: una acción de dos estados (sumar / quitar) en un panel que existe, que llama a la capacidad de EP-004 y refleja su estado; la incertidumbre está acotada al contrato de EP-004, no a la ficha |
+| E | Estimable | ✓ S: una acción de dos estados (sumar / quitar) en un panel que existe, que llama a la capacidad de HU-192 y refleja su estado; la incertidumbre está acotada al contrato de HU-192, no a la ficha |
 | S | Pequeña | ✓ S: una acción de dos estados con cinco escenarios, en el límite de la metodología; si crece más, se parte |
 | T | Testeable | ✓ e2e: indicador de 2 a 3 al sumar y de 3 a 2 al quitar con la ficha abierta, recorrido después de sumar, fallo simulado del servidor en las dos acciones sin cambio de indicador y perfil ya sumado desde la lista que ofrece quitar |

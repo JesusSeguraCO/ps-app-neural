@@ -40,13 +40,6 @@ prd_version: 4.17
 **Y** no veo ningún otro dato de la lista negra B.4: fotografía, datos de contacto, hoja de vida, promedio académico, certificaciones con proveedor y fecha, ni resultado detallado del DISC
 **Y** la respuesta que el servidor entrega a la ficha no contiene ninguno de esos campos
 
-### Edge case — el panel advierte, sin bloquear, el lenguaje de inventario en la trayectoria
-
-**Dado** que en el editor del panel la trayectoria de un perfil dice «perfil disponible para asignación inmediata en proyectos de banca»,
-**cuando** Talento Humano guarda el perfil,
-**Entonces** el panel le advierte que la trayectoria usa lenguaje de inventario y le señala la expresión «disponible para asignación»
-**Y** el perfil se guarda y se puede publicar igual, sin que el aviso lo impida
-
 ## Notas
 
 Cubre **RF-3.12** (verificado contra autoreportado, marcado visualmente), **RF-3.9** (la Experiencia Clave nunca se presenta como Grid Técnico), **RF-3.6** (calidez en la prosa, sin registro de inventario), **RF-3.4** (cada afirmación tiene respaldo en el inventario), **RF-3.7** y **B.4** (lista negra: motivación, promedio y certificaciones), y la parte de **RF-3.2** que corresponde a resumen, experiencia con clientes y escala, Sello Personal, formación general y stack.
@@ -56,22 +49,22 @@ Cubre **RF-3.12** (verificado contra autoreportado, marcado visualmente), **RF-3
 **Qué cuenta como «escala»** (RF-3.2): la historia no fabrica un campo nuevo (RF-14.0). La escala es la que Talento Humano escribe en la descripción de cada experiencia.
 
 **Decisiones del sponsor aplicadas (2026-10-02):**
-- **D73 (opción conservadora):** el panel **advierte, no bloquea**, cuando la trayectoria que escribe Talento Humano usa «unidad», «ítem», «disponible para asignación» o «stock». Se añade el edge case. Cierra la pregunta abierta. Es una comprobación léxica determinista sobre el texto al guardar, en el editor que construyó EP-006 (que sigue cerrada); se construye con esta historia en EP-003. La lista de expresiones es la de RF-3.6 y se puede ampliar.
+- **D73 (opción conservadora):** el panel **advierte, no bloquea**, cuando la trayectoria que escribe Talento Humano usa «unidad», «ítem», «disponible para asignación» o «stock». Cierra la pregunta abierta. Ese comportamiento vive ahora en **HU-194** (ver abajo).
 - **D63:** el **Sello Personal es opcional**. Si un perfil no lo tiene, «Verificado por Trycore» muestra las validaciones sin competencias, sin hueco (HU-081, HU-156); el happy path describe el caso con Sello Personal y no cambia. Las tres validaciones de entrada sí son obligatorias para publicar (HU-176, HU-178).
 
-**Observación honesta sobre el nuevo edge case:** su actor es Talento Humano en el panel, no el líder de área de la historia. Se deja aquí porque D73 lo asigna a esta historia y protege el mismo resultado que ve el cliente (la prosa sin registro de inventario, RF-3.6). Si la revisión BDD exige un solo actor por historia, se parte en una historia propia del panel (requiere un ID nuevo).
+**Validación 2026-10-02 (validador independiente): un solo actor.** El edge del aviso de lenguaje de inventario tenía como actor a Talento Humano en el panel, no al líder de área de esta historia. Sale a **HU-194** «Recibir un aviso de lenguaje de inventario al escribir la trayectoria» (EP-003, sub-slice inicial del panel, D60). **Partición, no recorte**: el aviso se construye igual en EP-003. Esta historia queda con tres escenarios del cliente sobre la ficha; la prohibición de lenguaje de inventario en los textos del portal (happy path) sigue aquí, y el aviso al escribir protege la prosa que la ficha muestra.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.4 · RF-3.6 · RF-3.7 · RF-3.9 · RF-3.12 · B.4 · D20 y D47 de EP-006 · D63 · D73 · se apoya en HU-127 (clientes nombrados según consentimiento) y HU-129 (la vista previa usa este mismo componente) · habilita HU-155 y HU-156 (contenido del bloque verificado)
+Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.4 · RF-3.6 · RF-3.7 · RF-3.9 · RF-3.12 · B.4 · D20 y D47 de EP-006 · D63 · D73 · validación 2026-10-02 (el aviso del panel sale a HU-194) · se apoya en HU-127 (clientes nombrados según consentimiento) y HU-129 (la vista previa usa este mismo componente) · habilita HU-155 y HU-156 (contenido del bloque verificado)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ se apoya en la ficha que ya existe; no espera a ninguna otra historia de la épica |
-| N | Negociable | ✓ son fijas las dos zonas con su origen visible, la lista negra y que el aviso de lenguaje de inventario advierta sin bloquear (D73); el tratamiento visual (columnas, bandas o placa, como explora el prototipo) se puede negociar |
+| N | Negociable | ✓ son fijas las dos zonas con su origen visible, la lista negra y la prosa sin registro de inventario en el portal; el tratamiento visual (columnas, bandas o placa, como explora el prototipo) se puede negociar |
 | V | Valiosa | ✓ responde la pregunta de todo comprador escéptico: ¿esto lo comprobaron o me lo están contando? |
-| E | Estimable | ✓ S: la estructura existe; falta asegurar los tres comportamientos en la pantalla del cliente y añadir una comprobación léxica con aviso en el editor |
-| S | Pequeña | ✓ S, con observación: cuatro escenarios sobre dos superficies ya construidas (ficha y editor); el aviso del panel tiene otro actor (ver Notas) |
-| T | Testeable | ✓ un perfil sembrado con motivación interna, y una trayectoria con «diseñó la arquitectura», dan resultados observables en la pantalla y en la respuesta del servidor; una trayectoria sembrada con «disponible para asignación» produce el aviso y se guarda igual |
+| E | Estimable | ✓ S: la estructura existe; falta asegurar los tres comportamientos en la pantalla del cliente (el aviso del editor es de HU-194) |
+| S | Pequeña | ✓ S: tres escenarios de un solo actor sobre una superficie ya construida (la ficha) |
+| T | Testeable | ✓ un perfil sembrado con motivación interna, y una trayectoria con «diseñó la arquitectura», dan resultados observables en la pantalla y en la respuesta del servidor |

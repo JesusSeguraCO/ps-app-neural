@@ -42,15 +42,15 @@ depende_de: [HU-102]
 
 ### Edge case [portal] — la sesión nunca se agenda
 
-**Dado** que el negocio de una solicitud no tiene «Agendada el»,
-**cuando** corre la lectura diaria y Mercadeo consulta O3 en el tablero,
-**Entonces** la solicitud aparece como «sin alineación agendada» con los días hábiles que lleva desde que se registró en HubSpot
+**Dado** que el negocio de una solicitud no tiene «Agendada el» y ya corrió la lectura diaria del worker,
+**cuando** se consulta el dato de O3 de esa solicitud,
+**Entonces** la solicitud figura como «sin alineación agendada» con los días hábiles que lleva desde que se registró en HubSpot
 **Y** no se descarta del cálculo como si no existiera
 
 ### Error [portal] — HubSpot no responde a la lectura diaria
 
 **Dado** que la API de CRM no responde o responde con error durante la lectura diaria,
-**cuando** el worker intenta leer los negocios People Service,
+**cuando** el worker intenta leer los negocios del portal,
 **Entonces** el portal conserva las marcas que ya tenía, sin borrar ni inventar ninguna
 **Y** el tablero muestra la hora de la última lectura completa
 **Y** la lectura se reintenta con la espera de los trabajos de HubSpot (HU-105) y, si no se completa en el día, el responsable técnico recibe un aviso
@@ -63,25 +63,27 @@ Cubre **RF-9.1.3** y **RF-17.4**. **Sin esta historia O3 no se puede medir**: co
 
 **Mecanismo propuesto:** dos propiedades de fecha en el negocio, «Fecha de la sesión de alineación» (la escribe Coordinación de Servicio, también desde el enlace del aviso de HU-101) y «Agendada el» (la escribe el workflow una sola vez, al primer cambio de la otra, sin reinscripción). Son propiedades del negocio para D57, no de la solicitud: no cuentan entre las 2 nuevas de D76. Las crea Mercadeo.
 
-**Qué negocios lee:** los del pipeline «Comercial (People y Tecnología)» con «Id solicitud People Service», para casar cada uno con su solicitud. Una solicitud registrada a mano (HU-164) se lee igual si su negocio quedó enlazado.
+**Qué negocios lee:** los del pipeline «Comercial (People y Tecnología)» con `soluciones_ofrecidas` = «People Service» (D85) y «Id solicitud People Service», para casar cada uno con su solicitud. Una solicitud registrada a mano (HU-164) se lee igual si su negocio quedó enlazado.
 
 **Por verificar en el HubSpot real (D84):** el límite de tasa de la búsqueda de negocios con el volumen esperado; con pocas decenas de solicitudes al mes no se espera problema.
 
-**El tablero mensual** (EP-008, D66, HU-171) muestra O3 desde esta lectura; ya no hace falta enlazar un informe de HubSpot.
+**La lectura diaria vive en esta historia (D75).** La tarea diaria del worker, la columna `agendada_el` de la solicitud y el conteo de días hábiles T-4 se construyen y prueban **aquí**, una sola vez. **El tablero mensual** (EP-008, D66, HU-171) **solo muestra** O3 a partir de lo que esta lectura guardó; no lee HubSpot ni duplica la tarea. Ya no hace falta enlazar un informe de HubSpot.
+
+**Revisión de validación 2026-10-02.** En el edge «la sesión nunca se agenda», que la lectura diaria ya corrió pasa al Dado (era una segunda acción en el Cuando) y la consulta deja de exigir el tablero: se observa el dato de O3 de la solicitud, así que la historia se prueba sin HU-171.
 
 **Plazo de agendamiento de RF-17.3** (T-28): sigue pendiente; sin él, «sin alineación agendada» muestra los días, sin calificarla de retrasada.
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.18 · RF-9.1.3, RF-17.3, RF-17.4 · O3 · D-21 · T-4 · D55 (sustituida en parte), D57, D75, D76 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76: vuelve una lectura diaria) · depende de HU-102 · relacionada con HU-101 y HU-099 (EP-005), HU-164 y HU-171 (EP-008)
+Épica madre: **EP-007** · PRD v4.18 · RF-9.1.3, RF-17.3, RF-17.4 · O3 · D-21 · T-4 · D55 (sustituida en parte), D57, D75, D76, D85 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76: vuelve una lectura diaria) · depende de HU-102 · relacionada con HU-101 y HU-099 (EP-005) y HU-164 · alimenta a HU-171 (EP-008), que muestra O3 y depende de esta historia
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: marca y lee el negocio que crea HU-102; no necesita el aviso ni el escalamiento; el tablero (HU-171) consume el dato pero no es necesario para probarlo |
+| I | Independiente | ✓ con dependencia declarada: marca y lee el negocio que crea HU-102; no necesita el aviso ni el escalamiento; el tablero (HU-171) consume el dato y depende de esta historia, pero no es necesario para probarla |
 | N | Negociable | ✓ fija que la primera marca nunca se sobrescribe, que el negocio sin sesión cuenta y que una lectura fallida no inventa; nombres de propiedades y hora de la lectura se configuran |
 | V | Valiosa | ✓ sin este dato O3 no existe y nadie sabe cuántas solicitudes mueren antes de la sesión |
-| E | Estimable | ✓ S: en HubSpot, dos propiedades y un workflow sin reinscripción; en el portal, una tarea diaria de lectura y el conteo con el calendario T-4 |
+| E | Estimable | ✓ S: en HubSpot, dos propiedades y un workflow sin reinscripción; en el portal, la tarea diaria de lectura (que vive aquí, no en HU-171), la columna `agendada_el` y el conteo con el calendario T-4 |
 | S | Pequeña | ✓ S: una capacidad (marcar y leer el agendamiento) en cinco escenarios |
 | T | Testeable | ✓ negocios ficticios sin fecha, con fecha y reagendados dan marcas observables en HubSpot; con un doble de la API y reloj simulado se ven la marca guardada, los días hábiles, el «sin alineación» y la lectura fallida |

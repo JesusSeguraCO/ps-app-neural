@@ -52,7 +52,7 @@ depende_de: [HU-102]
 
 ## Notas
 
-Cubre **RF-9.1.1** con el mecanismo de la **enmienda v4.18 del PRD** corregida por **D76**. Sin origen, el pipeline propio (D-6) impide comparar el portal con los demás orígenes, que es el KPI «tasa de cierre de oportunidades originadas en el portal» de §11.
+Cubre **RF-9.1.1** con el mecanismo de la **enmienda v4.18 del PRD** corregida por **D76**. Sin origen, el pipeline compartido, aislado por `soluciones_ofrecidas` (D85), no permite comparar el portal con los demás orígenes de la línea, que es el KPI «tasa de cierre de oportunidades originadas en el portal» de §11.
 
 **Revisión 2026-10-02, segunda ronda (D76).** Con la API ya no hay envío de formulario ni `context.pageUri`, así que los UTM de la versión D54 no viajan solos. D76 deja dos caminos y **los confirma Mercadeo**: (a) **propiedades por defecto** del negocio o del contacto que admitan escribirse por API (candidatas a comprobar: la propiedad de campaña de HubSpot si la suscripción la tiene, y las fuentes de tráfico, que HubSpot calcula y en un registro creado por una app privada suelen quedar como «fuentes sin conexión» con la app como detalle); (b) la **propuesta de D54** (origen `portal-people`, medio `curado|descubrimiento|a-medida`, campaña `<edición>`) llevada a la propiedad por defecto que Mercadeo designe. Lo que fija la historia, sea cual sea el camino: los tres medios se distinguen, nada nace sin origen y la campaña no se inventa. **D76 limita las propiedades nuevas a 2** («Id solicitud People Service» y «Solicitudes People Service»): si ninguna propiedad por defecto sirve, una tercera la decide Mercadeo con el sponsor. **No se recorta.**
 
@@ -66,7 +66,7 @@ Cubre **RF-9.1.1** con el mecanismo de la **enmienda v4.18 del PRD** corregida p
 
 ## Trazabilidad
 
-Épica madre: **EP-007** · PRD v4.18 · RF-9.1.1 · D-6 · §11 (KPI de tasa de cierre por origen) · D54, D76, D84 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76) · depende de HU-102 · relacionada con HU-077 (EP-010), HU-112 (EP-008), HU-164 y HU-166
+Épica madre: **EP-007** · PRD v4.18 · RF-9.1.1 · D-6 · §11 (KPI de tasa de cierre por origen) · D54, D76, D84, D85 (sponsor, 2026-10-02) · ADR-0009 (enmienda D76) · depende de HU-102 · relacionada con HU-077 (EP-010), HU-112 (EP-008), HU-164 y HU-166
 
 ## INVEST
 
@@ -74,7 +74,7 @@ Cubre **RF-9.1.1** con el mecanismo de la **enmienda v4.18 del PRD** corregida p
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: añade tres valores a la creación del negocio de HU-102; la edición se siembra si EP-008/EP-011 no están construidas |
 | N | Negociable | ✓ fija que nada del portal nace sin origen y que los tres medios se distinguen; propiedades y valores exactos los confirma Mercadeo |
-| V | Valiosa | ✓ sin origen no hay forma de saber si el portal produce negocios que cierran |
+| V | Valiosa | ✓ en un pipeline compartido (D85), sin origen no hay forma de saber si el portal produce negocios que cierran |
 | E | Estimable | ✗ hasta que Mercadeo designe las propiedades (D76) tras la prueba de capacidades D84; el lado del portal es S en cualquiera de los dos caminos (tres valores en la creación) |
 | S | Pequeña | ✓ S: cuatro escenarios sobre una sola marca de origen |
 | T | Testeable | ✓ el doble de la API muestra origen, medio y campaña de cada tipo de solicitud y el rechazo sin origen; en HubSpot, negocios ficticios de los tres tipos se filtran por origen |

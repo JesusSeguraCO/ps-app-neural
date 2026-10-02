@@ -43,9 +43,9 @@ depende_de: [HU-160]
 ### Happy path [HubSpot] — se ve en la línea de tiempo y en el negocio
 
 **Dado** que el worker creó el negocio y la nota de una solicitud,
-**cuando** Coordinación de Servicio abre el contacto y el negocio,
-**Entonces** la línea de tiempo del contacto muestra la nota con la especificación completa y su fecha
-**Y** el negocio muestra la misma nota en su actividad, con la marca de revisada o inferida
+**cuando** Coordinación de Servicio abre el negocio,
+**Entonces** el negocio muestra la nota en su actividad, con la especificación completa, su fecha y la marca de revisada o inferida
+**Y** la misma nota aparece en la línea de tiempo del contacto asociado al negocio
 
 ## Notas
 
@@ -60,6 +60,8 @@ Cubre **RF-9.4**, **RF-17.1** y **RF-17.5** en su lado de HubSpot, con el mecani
 **Datos personales:** nombre y primer apellido y código de los perfiles, nunca datos de la lista negra B.4 ni tarifas (D-9). Es lo mismo que el cliente ya vio en el portal.
 
 **Partición del 2026-10-02:** el contexto añadido a una solicitud en curso (excepción de D-7) es HU-180.
+
+**Revisión de validación 2026-10-02.** El happy [HubSpot] tenía dos acciones (abrir el contacto y el negocio); queda una (abrir el negocio) y la línea de tiempo del contacto pasa al Entonces como resultado observable de la misma nota.
 
 ## Trazabilidad
 

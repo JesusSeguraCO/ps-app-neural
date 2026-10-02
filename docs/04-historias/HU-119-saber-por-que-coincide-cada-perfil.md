@@ -50,6 +50,24 @@ depende_de: [HU-153]
 **Entonces** la línea de ese criterio aparece como no cumplida («– Sin idioma declarado: Inglés»), nunca como cumplida por omisión
 **Y** el texto de la línea sale de los datos del perfil y de una plantilla fija, sin ninguna frase redactada ni inferida sobre la persona
 
+### Edge case — cada tipo de criterio usa su plantilla fija
+
+**Esquema del escenario:** la línea sale del dato del perfil y de la plantilla de su tipo
+**Dado** que busqué con el criterio «<criterio>» de tipo <tipo>
+**Y** que un perfil publicado tiene registrado <dato_del_perfil>
+**Cuando** miro su tarjeta
+**Entonces** la línea de ese criterio dice exactamente «<linea>»
+
+**Ejemplos:**
+
+| tipo | criterio | dato_del_perfil | linea |
+|---|---|---|---|
+| rol | Desarrollador backend | el rol «Desarrollador backend» | ✓ Rol: Desarrollador backend |
+| seniority | Senior | la seniority «Semi-senior» | – Seniority registrada: Semi-senior |
+| tecnología | Java | Java en su stack | ✓ Java en su stack declarado |
+| modalidad | Remoto | ninguna modalidad | – Sin modalidad declarada: Remoto |
+| país | Colombia | el país «México» | – País registrado: México |
+
 ## Notas
 
 Cubre **RF-13.10**, **RF-13.10.1** (evidencia determinista, no redactada por un modelo) y **RF-13.10.2** (también lo no cumplido). Se apoya en **RF-16.1** (el modelo no redacta sobre perfiles) y en **RF-13.12.3** (sin porcentaje: la cifra honesta es el conteo).
@@ -66,21 +84,33 @@ Tomado de Juicebox, que muestra una línea de justificación por criterio (evide
 
 **Partida el 2026-10-02 por validación INVEST (falla I).** La historia original dependía del motor único de criterios (RF-13.8) y de HU-118, de **EP-009**, que aún no está construida. Se parte en dos, **sin recortar alcance** (complejidad M → S):
 - **HU-119 (esta):** dibuja la evidencia ✓/– en la tarjeta y en la ficha **a partir de criterios ya resueltos**: recibe, por perfil, la lista de criterios activos con su resultado (cumple / no cumple) y el dato que lo sustenta, y la convierte en líneas con plantilla fija. No calcula nada. Se construye y verifica de punta a punta con criterios sembrados, sin esperar a EP-009.
-- **HU-174:** conecta esa presentación con el motor único de criterios real cuando EP-009 exista, de modo que la evidencia, los resultados y los conteos salgan de la misma evaluación.
+- **HU-174:** conecta esa presentación con el motor único de criterios real cuando EP-009 exista, de modo que la evidencia, los resultados y los conteos salgan de la misma evaluación. **Por D87 (sponsor, 2026-10-02) HU-174 pasó a EP-009**, junto al motor y HU-118; EP-003 ya no depende de EP-009.
 
-**Pregunta abierta para el sponsor:** ¿qué texto lleva cada tipo de criterio (rol, seniority, tecnología, sector, idioma, modalidad, país)? El PRD da dos ejemplos (sector con años y sector ausente). Las plantillas de los demás tipos son copy que Mercadeo debería aprobar.
+**Plantilla de evidencia por tipo de criterio (validación 2026-10-02, opción conservadora; marcada para revisión de copy con Mercadeo, D73).** Cierra la pregunta abierta sobre el texto de cada tipo. Regla común: la línea solo nombra el valor del criterio y el dato registrado del perfil, sin adjetivos, sin inferencias y sin afirmar más de lo que dice el inventario (RF-3.4, RF-16.1). Tres formas por tipo: cumple, no cumple con dato distinto, y sin dato (que es no cumplido, nunca cumplido por omisión).
+
+| Tipo | Cumple | No cumple (dato distinto) | Sin dato |
+|---|---|---|---|
+| rol | ✓ Rol: {rol} | – Rol registrado: {rol del perfil} | – Sin rol declarado: {criterio} |
+| seniority | ✓ Seniority: {seniority} | – Seniority registrada: {seniority del perfil} | – Sin seniority declarada: {criterio} |
+| tecnología | ✓ {tecnología} en su stack declarado | – Sin {tecnología} en su stack declarado | (igual que no cumple) |
+| sector | ✓ {sector} · {n} años declarados | – Sin experiencia declarada en {sector} | (igual que no cumple) |
+| idioma | ✓ {idioma} registrado | – Sin idioma declarado: {idioma} | (igual que no cumple) |
+| modalidad | ✓ Modalidad: {modalidad} | – Modalidad registrada: {modalidad del perfil} | – Sin modalidad declarada: {criterio} |
+| país | ✓ País: {país} | – País registrado: {país del perfil} | – Sin país declarado: {criterio} |
+
+Sector e idioma salen de los ejemplos del PRD; los demás son propuesta del modelo con la misma forma. El nuevo escenario «cada tipo de criterio usa su plantilla» prueba los cinco tipos que el validador señaló (rol, seniority, tecnología, modalidad, país). Si Mercadeo cambia el copy, cambia la tabla y los ejemplos del escenario, no la mecánica.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-13.10 · RF-16.1 · RF-13.12.3 · depende de HU-153 (tarjeta) · la integración con el motor RF-13.8 y HU-118 (EP-009) es de HU-174 · relacionada con HU-121 (EP-002), HU-076 (EP-010) y HU-120 (la ficha donde vive «Frente a tu búsqueda»)
+Épica madre: **EP-003** · PRD v4.17 · RF-13.10 · RF-16.1 · RF-13.12.3 · RF-3.4 · D73 (copy) · validación 2026-10-02 (plantilla por tipo) · depende de HU-153 (tarjeta) · la integración con el motor RF-13.8 y HU-118 (EP-009) es de HU-174 (EP-009 por D87) · relacionada con HU-121 (EP-002), HU-076 (EP-010) y HU-120 (la ficha donde vive «Frente a tu búsqueda»)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ✓ con dependencia declarada: solo necesita la tarjeta de HU-153; consume criterios ya resueltos, así que se construye y prueba completa con criterios sembrados. La dependencia con EP-009 pasó a HU-174 |
-| N | Negociable | ✓ son fijos el determinismo, mostrar lo no cumplido y no usar porcentajes; la forma de cada línea y su copy se pueden negociar |
+| I | Independiente | ✓ con dependencia declarada: solo necesita la tarjeta de HU-153; consume criterios ya resueltos, así que se construye y prueba completa con criterios sembrados. La dependencia con EP-009 pasó a HU-174, que D87 movió a EP-009 |
+| N | Negociable | ✓ son fijos el determinismo, mostrar lo no cumplido y no usar porcentajes; la plantilla por tipo está fijada con opción conservadora y su copy se puede negociar con Mercadeo (marcado para revisión de copy) |
 | V | Valiosa | ✓ es la explicabilidad de la decisión de mayor impacto del portal: por qué aparece cada persona; con criterios sembrados ya se puede validar con el sponsor |
-| E | Estimable | ✓ S: plantillas fijas por tipo de criterio sobre una entrada ya resuelta, dibujadas en dos superficies que ya existen (tarjeta y ficha). Queda abierto el copy por tipo, no la mecánica |
-| S | Pequeña | ✓ S: una capacidad de presentación en dos superficies, con tres escenarios y sin lógica de evaluación |
-| T | Testeable | ✓ perfiles y criterios sembrados producen líneas exactas comparables con texto fijo, y la ausencia del bloque sin criterios es observable |
+| E | Estimable | ✓ S: plantillas fijas por tipo de criterio sobre una entrada ya resuelta, dibujadas en dos superficies que ya existen (tarjeta y ficha). La plantilla por tipo ya está fijada; solo su copy queda en revisión |
+| S | Pequeña | ✓ S: una capacidad de presentación en dos superficies, con cuatro escenarios y sin lógica de evaluación |
+| T | Testeable | ✓ perfiles y criterios sembrados producen líneas exactas comparables con la plantilla de cada tipo (cinco ejemplos del esquema), y la ausencia del bloque sin criterios es observable |

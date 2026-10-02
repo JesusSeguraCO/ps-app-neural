@@ -54,8 +54,8 @@ depende_de: [HU-125, HU-126, HU-128, HU-177]
 ### Edge case — corregir el dato de un perfil publicado
 
 **Dado** que un perfil publicado tiene registrada la verificación SARO con fecha 15 de marzo de 2026
-**Y** que en el editor cambié esa fecha por el 20 de febrero de 2026
-**Cuando** guardo y confirmo el cambio
+**Y** que en el editor cambié esa fecha por el 20 de febrero de 2026, guardé y el panel me pide confirmar el cambio en un perfil publicado
+**Cuando** confirmo el cambio
 **Entonces** la ficha del cliente muestra «febrero de 2026»
 **Y** el historial del perfil registra quién cambió la fecha, cuándo, y el valor anterior y el nuevo
 
@@ -78,9 +78,11 @@ Cubre la parte de captura de **B.7** (campos del perfil: validación de segurida
 
 **Importación masiva resuelta por D81** (sponsor, 2026-10-02, segunda ronda). La pregunta que dejaba abierta esta historia —¿la importación masiva y la plantilla (HU-086, HU-088) incluyen estos tres datos?— se respondió que **sí**: columnas SARO alcance (validado contra el catálogo de HU-177), SARO fecha y DISC fecha. Sumarlo aquí sacaba a esta historia de M (editor más importación, plantilla y exportación), así que pasa a **HU-191**, en el mismo sub-slice inicial y detrás de esta. **Partición, no recorte.** Esta historia sigue cubriendo la captura en el editor y la guarda de publicación, que la importación reutiliza.
 
+**Validación 2026-10-02 (validador independiente).** El edge de corrección decía «guardo y confirmo» (dos acciones en un «Cuando»). Ahora el «Dado» deja el estado («guardé y el panel pide confirmar», la confirmación de impacto de HU-126) y el «Cuando» es una sola acción («confirmo»), como en HU-177. Sin cambio de alcance.
+
 ## Trazabilidad
 
-Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · RF-8 · RF-8.4 · RF-8.10 · B.1 · B.6 · B.7 · RF-3.2 · RF-3.4 · D60 · D61 · D63 · nace de la partición de HU-156 (2026-10-02) · toca el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-125 y HU-126 (editor del perfil), HU-128 (guarda de publicación) y HU-177 (catálogo de alcances SARO) · alimenta a HU-156 · el trato de los perfiles ya publicados es de HU-178 · la importación masiva de estos datos es de HU-191 (D81) · relacionada con HU-129 (vista previa) y HU-138 (historial)
+Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · RF-8 · RF-8.4 · RF-8.10 · B.1 · B.6 · B.7 · RF-3.2 · RF-3.4 · D60 · D61 · D63 · validación 2026-10-02 (forma G/W/T) · nace de la partición de HU-156 (2026-10-02) · toca el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-125 y HU-126 (editor del perfil), HU-128 (guarda de publicación) y HU-177 (catálogo de alcances SARO) · alimenta a HU-156 · el trato de los perfiles ya publicados es de HU-178 · la importación masiva de estos datos es de HU-191 (D81) · relacionada con HU-129 (vista previa) y HU-138 (historial)
 
 ## INVEST
 

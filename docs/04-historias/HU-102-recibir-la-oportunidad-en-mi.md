@@ -52,7 +52,7 @@ depende_de: []
 ### Error [portal] — la propiedad de valor único no existe en HubSpot
 
 **Dado** que en HubSpot no existe la propiedad «Id solicitud People Service» del negocio,
-**cuando** el worker intenta crear el negocio y HubSpot responde 400 por esa propiedad,
+**cuando** HubSpot responde 400 a la creación del negocio por esa propiedad,
 **Entonces** no crea el negocio sin el identificador
 **Y** la solicitud queda en la bandeja de fallos con el nombre de la propiedad que falta (HU-166)
 
@@ -75,6 +75,8 @@ Cubre **RF-9.1** y la parte de **D-7** de **RF-9.2** (negocio nuevo relacionado,
 **Disparador.** La solicitud guardada por el portal (EP-005, RF-5, con su clave única por envío, HU-098; también la solicitud a medida de HU-077, EP-010). Sin EP-005 se prueba con una solicitud sembrada.
 
 **D85 (sponsor, 2026-10-02): pipeline existente.** En HubSpot no hay un pipeline «People Service» (lectura del conector, `hubspot-capacidades.md`). El negocio entra al pipeline existente **«Comercial (People y Tecnología)»**, marcado con la opción ya existente `soluciones_ofrecidas` = «People Service» para filtrarlo, y `dealtype` = «Existing Business» (al portal solo entran clientes invitados, D79). La **etapa de entrada** la confirma Comercial; propuesta: «35% Gestión con cliente / Solicitud de información». El portal la toma de configuración (`HUBSPOT_PIPELINE_ID`, `HUBSPOT_ETAPA_ENTRADA_ID`), no del código.
+
+**Revisión de validación 2026-10-02.** El error de la propiedad que falta tenía dos acciones en el Cuando (el intento del worker y la respuesta); queda una sola: «HubSpot responde 400 a la creación».
 
 ## Trazabilidad
 

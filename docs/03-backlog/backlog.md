@@ -81,10 +81,10 @@ Corresponden a la **Fase 2 de diseño** (PRD §13) y a los ajustes que esa fase 
 | **HU-105** | Recuperar una solicitud cuya integración falló | EP-007 | alta | M | borrador | — |
 | **HU-106** | Distinguir lo que entra por el portal de lo que entra por gestión | EP-007 | alta | S | borrador | — |
 | **HU-107** | Registrar cuándo se agendó la alineación | EP-007 | alta | S | borrador | — |
-| **HU-108** | Ver el embudo de cada cuenta | EP-008 | media | M | borrador | — |
+| **HU-108** | Ver el embudo de cada cuenta | EP-008 | media | M | borrador | *D66 (2026-10-02): sube de v1.1 al MVP con el tablero* |
 | **HU-109** | Ver si la curaduría acierta | EP-008 | alta | S | borrador | — |
 | **HU-110** | Ver qué filtros usan realmente los clientes | EP-008 | alta | S | borrador | *Reescrita el 22-sep: antes duplicaba HU-078* |
-| **HU-111** | Comparar la ruta de instrucción con la de filtros | EP-008 | media | M | borrador | — |
+| **HU-111** | Comparar la ruta de instrucción con la de filtros | EP-008 | media | M | borrador | *D66 (2026-10-02): sube de v1.1 al MVP con el tablero* |
 | **HU-112** | Atribuir cada sesión a su envío de correo | EP-008 | alta | S | borrador | — |
 | **HU-113** | Armar la selección de perfiles de una cuenta | EP-011 | alta | M | borrador | *Ajustada el 2026-09-27 (PRD v4.14): contenido para copiar, aviso de perfil repetido* |
 | **HU-114** | Generar el enlace de cada destinatario sin construirlo a mano | EP-011 | alta | S | borrador | *Ajustada el 2026-09-27 (PRD v4.14): token por destinatario, regenerar si se pierde* |
@@ -137,7 +137,7 @@ Reservadas en el mapa de historias. Se redactan cuando entren en construcción.
 | HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | MVP · comparador en v1.1 |
 | HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | MVP |
 | HU-042 – HU-058 | Panel de Talento Humano: inventario, validación, publicación y mantenimiento | EP-006 | **Redactadas el 2026-09-21** como HU-123 a HU-139 |
-| HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 | MVP · tablero en v1.1 |
+| HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 | MVP · tablero también en MVP (*D66, 2026-10-02: HU-108, HU-111 y HU-171 suben de v1.1*) |
 
 ## Decisiones que bloquean backlog
 

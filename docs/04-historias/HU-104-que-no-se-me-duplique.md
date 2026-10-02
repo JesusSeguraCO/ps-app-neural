@@ -23,8 +23,8 @@ depende_de: [HU-102]
 ### Happy path [portal] — el contacto ya existe
 
 **Dado** que quien envió la solicitud ya existe en HubSpot como contacto con su correo verificado,
-**cuando** el worker hace el upsert del contacto por ese correo y crea el negocio,
-**Entonces** el negocio queda asociado a ese contacto
+**cuando** el worker procesa la solicitud,
+**Entonces** el contacto se actualiza por ese correo (upsert) y el negocio queda asociado a él
 **Y** en HubSpot no aparece ningún contacto nuevo
 **Y** el worker solo escribe los campos que el portal conoce y no vacía los demás
 
@@ -65,6 +65,8 @@ Cubre **RF-9.2** en su parte de contacto y empresa: «nunca se duplican registro
 
 **Asociar la empresa al negocio.** La asociación nativa por dominio llega al **contacto**; que el negocio quede asociado a la misma empresa lo hace el workflow (acción de asociación). **Por verificar en la prueba de capacidades D84:** el orden en el tiempo (que la empresa ya esté asociada al contacto cuando el workflow procesa el negocio) y qué hace HubSpot cuando hay **más de una empresa** con el mismo dominio. El escenario exige que no elija una al azar; si la función nativa lo hace, el workflow debe detectarlo y marcar «empresa por confirmar».
 
+**Revisión de validación 2026-10-02.** El happy [portal] se reescribe con una sola acción («el worker procesa la solicitud»); el upsert pasa al Entonces. La E queda **pendiente de D84** hasta que la prueba de capacidades confirme el orden de la asociación y el caso de varias empresas con el mismo dominio; la historia no pasa a `lista` sin ese resultado.
+
 **Quién confirma la empresa** cuando queda por confirmar: el propietario o la administradora de HubSpot la asocia a mano. Supuesto conservador.
 
 ## Trazabilidad
@@ -78,6 +80,6 @@ Cubre **RF-9.2** en su parte de contacto y empresa: «nunca se duplican registro
 | I | Independiente | ✓ con dependencia declarada: asocia el negocio que crea HU-102; no depende del aviso, el requerimiento ni la bandeja |
 | N | Negociable | ✓ fija que nunca se crea un contacto ni una empresa repetidos y que el caso dudoso se marca; la redacción de la marca se configura |
 | V | Valiosa | ✓ el CRM no se ensucia con registros repetidos y la oportunidad queda en la ficha de la cuenta correcta |
-| E | Estimable | ✓ S: ajustes nativos de HubSpot más una acción de asociación y una rama del workflow; en el portal, el upsert por correo que ya hace HU-102. D79 cerró el caso del dominio nuevo |
+| E | Estimable | ⚠ S, **pendiente D84**: ajustes nativos de HubSpot más una acción de asociación y una rama del workflow; en el portal, el upsert por correo que ya hace HU-102. D79 cerró el caso del dominio nuevo, pero la prueba de capacidades D84 (solo lectura + lista de verificación de Mercadeo/RevOps) aún debe confirmar el orden de la asociación por dominio frente al workflow y qué hace HubSpot con varias empresas del mismo dominio; si la función nativa elige una, la rama del workflow crece |
 | S | Pequeña | ✓ S: una capacidad (asociar sin duplicar) en cinco escenarios cortos |
 | T | Testeable | ✓ con un doble de la API, upserts de un contacto existente y dos casi simultáneos dan un solo contacto; en HubSpot, negocios ficticios de un dominio conocido, uno sin empresa y uno genérico dan asociaciones observables |

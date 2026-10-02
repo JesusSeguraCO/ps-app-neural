@@ -116,4 +116,4 @@ sequenceDiagram
 
 **HU-099 está en v1.1.** En el MVP la confirmación explica el paso siguiente y el comercial agenda por fuera. La consecuencia hay que aceptarla explícitamente: mientras HU-099 no exista, el numerador de O3 depende de que un humano escriba la fecha a mano (HU-107 en EP-007).
 
-**AC no diagramados:** HU-096 AC-3 (equipo vacío, cubierto por HU-100), HU-097 AC-3 (contacto desconocido en empresa conocida, se resuelve en EP-007 con HU-104), HU-098 AC-3 (segunda solicitud parecida, se resuelve en EP-007 con HU-105 y la excepción de HU-077), HU-100 AC-2 y AC-3.
+**AC no diagramados:** HU-096 AC-3 (equipo vacío, cubierto por HU-100), HU-097 AC-3 (el formulario no trae los datos del contacto principal; el contacto nuevo en empresa conocida salió de HU-097 a HU-104, EP-007, en la validación del 2026-10-02), HU-098 AC-3 (misma especificación hace ≤ 7 días, D-7; el lado de HubSpot es HU-180) y AC-4 (envío repetido, esquema de dos filas), HU-100 AC-2 y AC-3.
