@@ -68,6 +68,7 @@ interface Indices {
   modalidades: Indice;
   modalidadesPrueba: Indice;
   motivosPausa: Indice;
+  alcancesSaro: Indice;
 }
 
 async function indices(tx: pg.PoolClient): Promise<Indices> {
@@ -92,6 +93,9 @@ async function indices(tx: pg.PoolClient): Promise<Indices> {
       `SELECT id, nombre FROM inventario.catalogo_modalidades_prueba WHERE ${vivo}`,
     ),
     motivosPausa: await indice(`SELECT id, nombre FROM inventario.catalogo_motivos_pausa`),
+    alcancesSaro: await indice(
+      `SELECT id, nombre FROM inventario.catalogo_alcances_saro WHERE ${vivo}`,
+    ),
   };
 }
 
@@ -205,6 +209,14 @@ class Traductor {
       e.modalidadPruebaId = s(v.modalidadPrueba)
         ? this.id(this.k.modalidadesPrueba, s(v.modalidadPrueba)!, "modalidadPrueba")
         : null;
+    // Validaciones de entrada (HU-191): el alcance por su id del catálogo; las fechas tal cual (el editor
+    // vuelve a aplicar la regla de no futura).
+    if ("saroAlcance" in v)
+      e.saroAlcanceId = s(v.saroAlcance)
+        ? this.id(this.k.alcancesSaro, s(v.saroAlcance)!, "saroAlcance")
+        : null;
+    if ("saroFecha" in v) e.saroFecha = s(v.saroFecha);
+    if ("discFecha" in v) e.discFecha = s(v.discFecha);
     for (const c of ["capacidad", "anclaje", "resumen", "formacion"] as const)
       if (c in v) e[c] = s(v[c]);
     if ("vinculo" in v)
@@ -241,6 +253,7 @@ SELECT jsonb_build_object(
   'nombre', p.nombre, 'primer_apellido', p.primer_apellido, 'estado', p.estado,
   'familia_id', p.familia_id, 'seniority_id', p.seniority_id, 'anios_experiencia', p.anios_experiencia,
   'modalidad_id', p.modalidad_id, 'pais_id', p.pais_id, 'ciudad_id', p.ciudad_id,
+  'saro_alcance_id', p.saro_alcance_id, 'saro_fecha', p.saro_fecha, 'disc_fecha', p.disc_fecha,
   'disponibilidad_fecha', p.disponibilidad_fecha, 'disponibilidad_actualizada_en', p.disponibilidad_actualizada_en,
   'motivo_pausa_id', p.motivo_pausa_id, 'pausado_en', p.pausado_en, 'modalidad_prueba_id', p.modalidad_prueba_id,
   'capacidad', p.capacidad, 'anclaje', p.anclaje, 'resumen', p.resumen, 'vinculo', p.vinculo,

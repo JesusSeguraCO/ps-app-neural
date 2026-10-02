@@ -33,7 +33,11 @@ describe("columnas del formato", () => {
     for (const c of CAMPOS_IMPORTACION.filter((x) => x.interno)) expect(c.encabezado).toMatch(/· interno$/);
   });
   it("nunca hay columna de consentimiento ni de la lista negra B.4", () => {
-    const todo = CAMPOS_IMPORTACION.map((c) => `${c.clave} ${c.encabezado}`).join(" ").toLowerCase();
+    // La fecha de la evaluación DISC sí viaja (B.7, HU-191); el resultado DISC detallado (B.4), no.
+    const todo = CAMPOS_IMPORTACION.filter((c) => c.clave !== "discFecha")
+      .map((c) => `${c.clave} ${c.encabezado}`)
+      .join(" ")
+      .toLowerCase();
     expect(todo).not.toMatch(/consentim|foto|correo|tel[eé]fono|hoja de vida|motivaci|aportar|promedio|disc/);
   });
 });

@@ -32,6 +32,7 @@ const CATALOGOS: Catalogos = {
     { nombre: "Caso de pruebas sobre una app real", familia: "Calidad" },
   ],
   motivosPausa: ["En licencia o ausencia temporal", "Pidió no ser presentado"],
+  alcancesSaro: [],
 };
 
 const laura: FilaBanco = {

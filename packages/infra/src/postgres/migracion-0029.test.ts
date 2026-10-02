@@ -113,6 +113,16 @@ describe.skipIf(!HAY_BD)("migración 0029: indicadores de publicación", () => {
     ).toBe(PERMISO_DENEGADO);
   });
 
+  it("la fila de un lote admite las tres claves nuevas del formato (HU-191) y sigue rechazando las ajenas", async () => {
+    const f = (d: object) =>
+      bd.instalacion
+        .query(`SELECT inventario.solo_claves_de_formato($1::jsonb) AS ok`, [JSON.stringify(d)])
+        .then((r) => r.rows[0].ok as boolean);
+    expect(await f({ codigo: "PS-0105", saroAlcance: "x", saroFecha: "2026-03-15", discFecha: "2026-04-10" })).toBe(true);
+    expect(await f({ codigo: "PS-0105", disc: "D alto" })).toBe(false);
+    expect(await f({ codigo: "PS-0105", consentimiento: true })).toBe(false);
+  });
+
   it("down la retira y up la devuelve con la misma lectura del portal", async () => {
     const pool = new pg.Pool({
       connectionString: bd.urlDe("ps_migrador", { directa: true }),
@@ -127,6 +137,11 @@ describe.skipIf(!HAY_BD)("migración 0029: indicadores de publicación", () => {
       const abajo = await migrator.migrateTo("0028_saro_disc_perfil");
       expect(abajo.error).toBeUndefined();
       expect(await columnas()).toEqual([]);
+      // Abajo, la función vuelve a la de la 0015: las claves SARO/DISC no caben.
+      const abajoOk = await bd.instalacion.query(
+        `SELECT inventario.solo_claves_de_formato('{"saroFecha":"2026-03-15"}'::jsonb) AS ok`,
+      );
+      expect(abajoOk.rows[0].ok).toBe(false);
       const arriba = await migrator.migrateToLatest();
       expect(arriba.error).toBeUndefined();
       expect(await columnas()).toEqual(COLUMNAS);

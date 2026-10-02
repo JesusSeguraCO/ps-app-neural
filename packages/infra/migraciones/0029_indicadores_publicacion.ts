@@ -4,8 +4,47 @@
 // incompletos con la misma `evaluarPublicacion` que marca «Incompleto» en el panel (adaptador
 // `datosDeIndicadores` del dominio): la regla no se copia en SQL, la vista solo expone los hechos, con
 // la misma lectura que `leerPerfil` (modalidad activa y de la familia del rol; el consentimiento vigente
-// si lo hay, si no el último). Solo DDL (V3-7); `down` la retira.
+// si lo hay, si no el último).
+// EP-003 · sub-slice 3 (HU-191, D81): la fila de un lote de importación admite las tres claves nuevas del
+// formato (`saroAlcance`, `saroFecha`, `discFecha`) en `solo_claves_de_formato`; la 0028 ya las admitía en
+// el estado previo. Solo DDL (V3-7); `down` retira la vista y restaura la función de la 0015.
 import { sql, type Kysely } from "kysely";
+// Claves del formato de la 0015, copiadas a esta fecha (una migración no depende de otra).
+const CLAVES_FORMATO = [
+  "codigo",
+  "estado",
+  "nombre",
+  "primerApellido",
+  "rol",
+  "familia",
+  "seniority",
+  "aniosExperiencia",
+  "tecnologias",
+  "sectores",
+  "modalidad",
+  "ciudad",
+  "disponibilidad",
+  "modalidadPrueba",
+  "capacidad",
+  "anclaje",
+  "resumen",
+  "formacion",
+  "vinculo",
+  "idiomas",
+  "selloPersonal",
+  "experiencias",
+  "motivoPausa",
+];
+
+const soloClavesDeFormato = (
+  claves: readonly string[],
+) => `CREATE OR REPLACE FUNCTION inventario.solo_claves_de_formato(d jsonb) RETURNS boolean
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $f$
+  SELECT jsonb_typeof(d) = 'object'
+     AND NOT EXISTS (
+       SELECT 1 FROM jsonb_object_keys(d) k
+        WHERE k <> ALL (ARRAY[${claves.map((c) => `'${c}'`).join(", ")}]))
+$f$;`;
 
 export async function up(db: Kysely<unknown>): Promise<void> {
   await sql
@@ -46,6 +85,8 @@ WHERE p.estado = 'publicado';
 
 GRANT SELECT ON operacion.indicadores_publicacion TO ps_portal, ps_panel;
 
+${soloClavesDeFormato([...CLAVES_FORMATO, "saroAlcance", "saroFecha", "discFecha"])}
+
 RESET ROLE;
 `,
     )
@@ -57,6 +98,7 @@ export async function down(db: Kysely<unknown>): Promise<void> {
     .raw(
       `
 SET LOCAL ROLE ps_duenio;
+${soloClavesDeFormato(CLAVES_FORMATO)}
 DROP VIEW operacion.indicadores_publicacion;
 RESET ROLE;
 `,

@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
   CAMPOS_IMPORTACION,
-  EJEMPLOS_PLANTILLA,
+  ejemplosPlantilla,
   escribirCsv,
   escribirErrores,
   escribirJson,
@@ -25,6 +25,7 @@ import {
 import { calcularPlan, mapearFilas, type Modo, type Plan } from "@ps/dominio/importacion/plan";
 import {
   actualizarPlanLote,
+  alcanceActivoDeEjemplo,
   bancoEnFormato,
   catalogosImportacion,
   confirmarLote,
@@ -107,8 +108,9 @@ export function archivo(
 export const exportarBanco = async (f: FormatoArchivo) =>
   archivo(await bancoEnFormato(poolDe("panel")), f, "banco-de-perfiles");
 
-export const plantillaDeMuestra = (f: FormatoArchivo) =>
-  archivo(EJEMPLOS_PLANTILLA, f, "plantilla-importacion");
+// El alcance SARO del ejemplo, uno activo del catálogo tal como está registrado (HU-191).
+export const plantillaDeMuestra = async (f: FormatoArchivo) =>
+  archivo(ejemplosPlantilla(await alcanceActivoDeEjemplo(poolDe("panel"))), f, "plantilla-importacion");
 
 // ─── paso 2: leer y emparejar ────────────────────────────────────────────────────────────────
 

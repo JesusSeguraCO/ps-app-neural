@@ -81,8 +81,12 @@ const BLOQUEOS: ReadonlyArray<{ patron: RegExp; motivo: MotivoNoImportar; detall
   },
 ];
 
+// La fecha de la evaluación DISC sí se importa (B.7, HU-191): solo ella escapa al bloqueo del DISC.
+const FECHA_DISC = /^(fecha( de la evaluacion)? disc|disc fecha)$/;
+
 function bloqueo(columna: string): Destino | null {
   const n = normalizarEncabezado(columna);
+  if (FECHA_DISC.test(n)) return null;
   const b = BLOQUEOS.find((x) => x.patron.test(n));
   return b ? { tipo: "no_importar", motivo: b.motivo, detalle: b.detalle } : null;
 }

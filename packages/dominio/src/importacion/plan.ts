@@ -9,7 +9,11 @@
 import { clasificarNombre, masCercanos, normalizar } from "../catalogo/parecidos";
 import { evaluarCoherencia } from "../inventario/coherencia";
 import type { EstadoAlmacenado } from "../inventario/estados";
-import { OPCIONES_DISPONIBILIDAD, clienteEnDescripcion } from "../inventario/perfil";
+import {
+  OPCIONES_DISPONIBILIDAD,
+  clienteEnDescripcion,
+  validarFechaVerificacion,
+} from "../inventario/perfil";
 import { CAMPOS_LISTA, CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
 import { VACIAR, formatearExperiencia, leerExperiencia, partirLista, sinNeutralizar } from "./celdas";
 import type { ColumnaEmparejada } from "./emparejar";
@@ -27,6 +31,9 @@ export interface Catalogos {
   modalidades: readonly string[];
   modalidadesPrueba: ReadonlyArray<{ nombre: string; familia: string }>;
   motivosPausa: readonly string[];
+  // Catálogo cerrado de alcances SARO (HU-177, HU-191): activos y desactivados; un desactivado solo vale
+  // para el perfil que ya lo tiene.
+  alcancesSaro: ReadonlyArray<{ nombre: string; activo: boolean }>;
 }
 
 export type Modo = "crear_y_actualizar" | "solo_actualizar" | "solo_crear";
@@ -163,6 +170,17 @@ const TOPE_LISTA: Partial<Record<ClaveCampo, number>> = {
   experiencias: 12,
 };
 const LARGO_ELEMENTO: Partial<Record<ClaveCampo, number>> = { idiomas: 60, selloPersonal: 80 };
+// Validaciones de entrada (HU-191): ni vaciables en un publicado ni valores nuevos de la taxonomía.
+const VALIDACIONES_ENTRADA: ReadonlySet<ClaveCampo> = new Set(["saroAlcance", "saroFecha", "discFecha"]);
+const NOMBRE_FECHA = { saroFecha: "La fecha SARO", discFecha: "La fecha DISC" } as const;
+export const MENSAJE_VACIAR_VALIDACION =
+  "No se puede vaciar una validación de entrada de un perfil publicado; pásalo a borrador desde el editor";
+// AAAA-MM-DD o DD/MM/AAAA (como se escribe en Colombia) → AAAA-MM-DD; null si no es una fecha.
+function fechaCivil(t: string): string | null {
+  const dmy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t);
+  const iso = dmy ? `${dmy[3]}-${dmy[2]!.padStart(2, "0")}-${dmy[1]!.padStart(2, "0")}` : t;
+  return fechaValida(iso) ? iso : null;
+}
 const ETIQUETA_TIPO_NUEVO = { rol: "rol", tecnologia: "tecnología", sector: "sector" } as const;
 
 function sumarDias(fecha: string, dias: number): string {
@@ -305,6 +323,36 @@ function leerCampo(ctx: Contexto, campo: ClaveCampo, celda: string): Valor | und
       );
     case "familia":
       return cerrado(ctx, campo, celda, k.familias, "familia");
+    case "saroAlcance": {
+      // Catálogo cerrado (D61): se compara normalizado y se guarda la forma registrada. Si es
+      // desactivado, la fila decide después si el perfil ya lo tenía.
+      const a = k.alcancesSaro.find((x) => normalizar(x.nombre) === normalizar(celda));
+      if (!a) {
+        ctx.errores.push({ campo, mensaje: `El alcance SARO no está en el catálogo: «${celda}»` });
+        return undefined;
+      }
+      return a.nombre;
+    }
+    case "saroFecha":
+    case "discFecha": {
+      const f = fechaCivil(celda);
+      if (!f) {
+        ctx.errores.push({
+          campo,
+          mensaje: `${NOMBRE_FECHA[campo]} no se reconoce como fecha: «${celda}»`,
+          opciones: ["AAAA-MM-DD", "DD/MM/AAAA"],
+        });
+        return undefined;
+      }
+      if (!validarFechaVerificacion(f, ctx.hoy).ok) {
+        ctx.errores.push({
+          campo,
+          mensaje: `La fecha de una verificación no puede ser posterior a hoy: «${celda}»`,
+        });
+        return undefined;
+      }
+      return f;
+    }
     case "tecnologias":
       return partirLista(celda).map((v) => abierto(ctx, campo, "tecnologia", v, k.tecnologias));
     case "sectores":
@@ -453,6 +501,25 @@ function evaluarFila(
         mensaje: `«${prueba}» no es de la familia ${fam}`,
       });
   }
+
+  // Alcance SARO desactivado: solo para el perfil que ya lo tiene (HU-177 edge, HU-191).
+  const alcance = leidos.saroAlcance;
+  if (
+    typeof alcance === "string" &&
+    !catalogos.alcancesSaro.find((a) => a.nombre === alcance)?.activo &&
+    actual?.saroAlcance !== alcance
+  ) {
+    ctx.errores.push({
+      campo: "saroAlcance",
+      mensaje: `El alcance SARO está desactivado en el catálogo: «${alcance}»`,
+    });
+    delete leidos.saroAlcance;
+  }
+  // Vaciar una validación de entrada de un publicado: la importación no pregunta ni cambia estados.
+  if (actual?.estado === "publicado")
+    for (const campo of VALIDACIONES_ENTRADA)
+      if (campo in leidos && leidos[campo] === null)
+        ctx.errores.push({ campo, mensaje: MENSAJE_VACIAR_VALIDACION });
 
   if (estado !== undefined) leidos.estado = estado;
   const resultante: FilaBanco = { ...(actual ?? {}), ...leidos, codigo };
