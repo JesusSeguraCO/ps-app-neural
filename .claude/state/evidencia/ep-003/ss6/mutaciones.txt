@@ -1,0 +1,20 @@
+M1 SARO ausente con marca «pendiente»: rc=1 · 2 failed | 10 passed (12)
+M2 DISC sin sus competencias: rc=1 · 1 failed | 7 passed (8)
+M3 Sello Personal también en fila aparte: rc=1 · 1 failed | 7 passed (8)
+M4 sin DISC se pierde el Sello Personal: rc=1 · 1 failed | 7 passed (8)
+M5 hueco de competencias sin sello: rc=1 · 1 failed | 7 passed (8)
+M6 SARO como insignia: rc=1 · 1 failed | 7 passed (8)
+M7 código de vuelta en la cabecera: rc=1 · 2 failed | 10 passed (12)
+M8 SLA en letra pequeña: rc=1 · 1 failed | 7 passed (8)
+M9 la garantía cambia según la persona: rc=1 · 2 failed | 10 passed (12)
+M10 Neural Speed como insignia de la persona: rc=1 · 1 failed | 7 passed (8)
+M11 la ciudad siempre: rc=1 · 1 failed | 7 passed (8)
+M12 sin idiomas en las condiciones: rc=1 · 1 failed | 7 passed (8)
+M13 sin la banda en las condiciones: rc=1 · 1 failed | 7 passed (8)
+M14 referencia sin la línea del estándar: rc=1 · 2 failed | 10 passed (12)
+M15 la vista previa no lleva SARO: rc=1 · 1 failed | 5 passed (6)
+M17 recorrido: marca «pendiente» en el heredado: rc=1 · 1 failed
+M18 recorrido: SLA en letra pequeña: rc=1 · 1 failed
+M16 el contrato no admite el heredado sin SARO: rc=1 · 1 failed | 3 passed (4)
+(M16 y M18 reformulados: la primera versión de M16 no compilaba —el build lo rechazaba— y la de M18 era equivalente por la cascada CSS; se registran las dos corridas)
+restaurado

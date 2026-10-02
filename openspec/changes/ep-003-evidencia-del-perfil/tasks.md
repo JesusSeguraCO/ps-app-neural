@@ -56,12 +56,12 @@
 
 ## 6. Sub-slice 6 — Ficha: SARO/DISC y cierre con condiciones, SLA y garantía (HU-156, HU-158)
 
-- [ ] 6.1 Contrato `FichaPerfil` con `seguridad` y `disc` anulables y «mes de año» del dominio; `armarFicha` desde la vista; tests primero de contrato (un heredado sin datos sigue abriendo ficha)
-- [ ] 6.2 Líneas SARO (texto del alcance, también desactivado) y DISC con competencias en «Verificado por Trycore», omitidas sin marca si faltan, sin puntaje ni DISC detallado; verificar los cinco escenarios de HU-156
-- [ ] 6.3 Cierre: condiciones operativas (ciudad según `armarFicha`), SLA de 10 días hábiles en el tamaño del texto, garantía Neural Speed con texto único; código fuera de la cabecera y del `<title>`, solo al pie con la línea del estándar; copy centralizado y marcado para revisión (D73); verificar los cuatro escenarios de HU-158
-- [ ] 6.4 Regresión de la vista previa del panel (HU-129) con los bloques nuevos: mismo HTML que el portal para el mismo perfil
+- [x] 6.1 Contrato `FichaPerfil` con `seguridad` y `disc` anulables y «mes de año» del dominio; `armarFicha` desde la vista; tests primero de contrato (un heredado sin datos sigue abriendo ficha)
+- [x] 6.2 Líneas SARO (texto del alcance, también desactivado) y DISC con competencias en «Verificado por Trycore», omitidas sin marca si faltan, sin puntaje ni DISC detallado; verificar los cinco escenarios de HU-156
+- [x] 6.3 Cierre: condiciones operativas (ciudad según `armarFicha`), SLA de 10 días hábiles en el tamaño del texto, garantía Neural Speed con texto único; código fuera de la cabecera y del `<title>`, solo al pie con la línea del estándar; copy centralizado y marcado para revisión (D73); verificar los cuatro escenarios de HU-158
+- [x] 6.4 Regresión de la vista previa del panel (HU-129) con los bloques nuevos: mismo HTML que el portal para el mismo perfil
 - [ ] 6.5 Fidelidad con captura MCP de la ficha completa (SARO/DISC, sin Sello Personal, heredado sin SARO, cierre y pie)
-- [ ] 6.6 Journey smoke: ficha de un perfil completo (SARO, DISC, cierre, código al pie) → ficha de un heredado sin SARO (línea omitida, sin marca) → completarlo en el panel → la ficha muestra la línea; evidencia en `ss6/` y checkpoint
+- [x] 6.6 Journey smoke: ficha de un perfil completo (SARO, DISC, cierre, código al pie) → ficha de un heredado sin SARO (línea omitida, sin marca) → completarlo en el panel → la ficha muestra la línea; evidencia en `ss6/` y checkpoint
 
 ## 7. Sub-slice 7 — Encabezado del estándar y re-verificación del recorrido (HU-159, HU-120)
 

@@ -173,3 +173,18 @@ para no mover los conteos del banco ficticio que fijan los tests. El guardado de
   (mismo componente, contacto leído en el servidor en cada carga). Copy en `packages/ui/src/copy.ts`,
   marcado para revisión (D73).
 - Sin migraciones (0030–0031 siguen libres). Capturas: `.claude/state/evidencia/ep-003/ss5/fidelidad.md`.
+
+### Decisiones de construcción · SS6 (HU-156, HU-158) — elegidas por el modelo por delegación del sponsor
+
+- **Competencias con la DISC**: con fecha DISC, las tres competencias del Sello Personal van en la misma línea de la
+  evaluación («Sello Personal: …», B.1) y no en una fila aparte; sin fecha DISC (heredado, D62) el Sello Personal
+  registrado conserva su fila propia, porque es un dato registrado que no afirma la evaluación.
+- **SARO** conserva la forma «{texto del alcance} · {mes de año}» de SS1 (vista previa y portal iguales).
+- **Orden del cierre**: Declarado → Conversación con Trycore → Condiciones de trabajo (modalidad con país y ciudad
+  según `armarFicha`, banda, idiomas) → El servicio de Trycore (SLA y garantía Neural Speed) → referencia al pie.
+  Modalidad e idiomas salen de «Declarado por la persona» para no repetirse. La banda se repite en el cierre
+  (también está en la cabecera) porque HU-158 la pide entre las condiciones.
+- **Tamaño del SLA**: `--tc-fs-body` (15 px, el de la persona y el resumen); la referencia en `--tc-fs-caption`.
+- **Código**: fuera de la cabecera; el `<title>` del portal ya era fijo («Portal de Perfiles People Service»).
+- Copy nuevo en `packages/ui/src/copy.ts` (garantía, SLA, títulos, referencia), marcado para revisión (D73).
+- Sin migraciones (0030–0031 siguen libres). Capturas: `.claude/state/evidencia/ep-003/ss6/fidelidad.md`.
