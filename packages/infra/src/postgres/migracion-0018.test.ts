@@ -157,6 +157,10 @@ describe.skipIf(!HAY_BD)("migración 0018: validaciones", () => {
       "reporte_evaluador",
       "reporte_fecha",
       "reporte_criterios",
+      // EP-003 (0028; HU-176, HU-156): texto del alcance SARO, fecha SARO y fecha DISC.
+      "saro_texto",
+      "saro_fecha",
+      "disc_fecha",
     ]);
   });
 });

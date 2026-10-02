@@ -238,6 +238,15 @@ export const MOTIVOS_PAUSA_FICTICIOS = [
   { nombre: "Decisión de Talento Humano", descripcion: "Se revisa el perfil o su evidencia." },
 ];
 
+// Alcance SARO ficticio (HU-177; catálogo cerrado de la 0027): los perfiles sembrados fuera de borrador
+// lo llevan con su fecha y la de la evaluación DISC, porque entrar en publicado los exige (D61, 0028).
+// Texto ilustrativo, marcado para revisión de copy (D73) antes de cargar el catálogo real.
+export const ALCANCE_SARO_FICTICIO = {
+  nombre: "Antecedentes judiciales, disciplinarios y fiscales",
+  texto: "Verificamos sus antecedentes judiciales, disciplinarios y fiscales.",
+};
+export const FECHAS_VALIDACION_FICTICIAS = { saro: "2026-03-15", disc: "2026-04-10" };
+
 function fechaEnDias(dias: number): string {
   return new Date(Date.now() + dias * 86_400_000).toISOString().slice(0, 10);
 }
@@ -253,6 +262,11 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
        SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_motivos_pausa WHERE nombre = $1)`,
       [m.nombre, m.descripcion],
     );
+  await ctx.bd.query(
+    `INSERT INTO inventario.catalogo_alcances_saro (nombre, texto_cliente)
+     SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_alcances_saro WHERE nombre = $1)`,
+    [ALCANCE_SARO_FICTICIO.nombre, ALCANCE_SARO_FICTICIO.texto],
+  );
   for (const p of PERFILES_FICTICIOS) {
     const creado = await conAuditoria(ctx.bd, ctx.auditoria, async (tx) => {
       const existe = await tx.query(`SELECT 1 FROM inventario.perfiles WHERE codigo = $1`, [
@@ -318,6 +332,13 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
         await tx.query(
           `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'dato ficticio de prueba: nombre, trayectoria y clientes')`,
           [id],
+        );
+        await tx.query(
+          `UPDATE inventario.perfiles
+              SET saro_alcance_id = (SELECT id FROM inventario.catalogo_alcances_saro WHERE nombre = $2),
+                  saro_fecha = $3, disc_fecha = $4
+            WHERE id = $1`,
+          [id, ALCANCE_SARO_FICTICIO.nombre, FECHAS_VALIDACION_FICTICIAS.saro, FECHAS_VALIDACION_FICTICIAS.disc],
         );
         // Un pausado lleva su motivo del catálogo (HU-133; migración 0019); pausado y archivado no
         // tienen disponibilidad (matriz D5, D32).

@@ -50,6 +50,8 @@ const COLUMNAS_CATALOGO = [
   "ciudad",
   "disponibilidad_fecha",
   "disponibilidad_actualizada_en",
+  // EP-003 (0028; HU-081): las tres competencias del Sello Personal, para la tarjeta.
+  "sello_personal",
 ];
 
 describe.skipIf(!HAY_BD)("inventario mínimo y catálogo publicable (V8-10, V3-2)", () => {

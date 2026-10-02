@@ -49,11 +49,12 @@ describe.skipIf(!HAY_BD)("migración 0014: perfil del Anexo B y consentimiento n
     expect(columnas).toContain("perfil_experiencias.cliente_nombrado");
     for (const c of columnas)
       expect(c).not.toMatch(
-        /foto|correo|telefono|contacto|hoja_de_vida|\bcv\b|motivacion|proyeccion|promedio|certific|disc/,
+        // La fecha de la evaluación DISC (B.7, EP-003) no es el DISC detallado de B.4.
+        /foto|correo|telefono|contacto|hoja_de_vida|\bcv\b|motivacion|proyeccion|promedio|certific|disc(?!_fecha$)/,
       );
   });
 
-  it("catalogo_publicable no gana columnas con la migración (lista blanca de EP-001)", async () => {
+  it("catalogo_publicable no gana columnas con la migración (lista blanca de EP-001; la 0028 añade el Sello Personal)", async () => {
     const r = await bd.instalacion.query(
       `SELECT column_name FROM information_schema.columns
         WHERE table_schema = 'operacion' AND table_name = 'catalogo_publicable' ORDER BY ordinal_position`,
@@ -73,6 +74,7 @@ describe.skipIf(!HAY_BD)("migración 0014: perfil del Anexo B y consentimiento n
       "ciudad",
       "disponibilidad_fecha",
       "disponibilidad_actualizada_en",
+      "sello_personal",
     ]);
   });
 
