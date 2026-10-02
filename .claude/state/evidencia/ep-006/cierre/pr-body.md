@@ -1,8 +1,8 @@
-Épica **EP-006 — Administración del inventario**, construida en 10 sub-slices más un cierre (11). Gates del slice: {{GATES}}. DoD {{DOD}}. El change OpenSpec se archiva en este mismo PR.
+Épica **EP-006 — Administración del inventario**, construida en 10 sub-slices más un cierre (11). Gates del slice: dor, coherence_link, tdd, journey_smoke, fidelity, api, data y wiring_verified en verde. DoD PASS (2026-10-01 @ 99e03b1, `cierre/gate-dod.md`). El change OpenSpec se archiva en este mismo PR.
 
 ## Trazabilidad
-- Épica: EP-006 · HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-150, HU-151
-- OpenSpec change: `administracion-del-inventario` → {{ARCHIVO}}
+- Épica: EP-006 · 27 HU (las 28 de la épica menos HU-131, diferida): HU-086, HU-087, HU-088, HU-089, HU-124, HU-125, HU-126, HU-127, HU-128, HU-129, HU-130, HU-132, HU-133, HU-134, HU-135, HU-136, HU-137, HU-138, HU-139, HU-140, HU-141, HU-142, HU-143, HU-147, HU-148, HU-150, HU-151
+- OpenSpec change: `administracion-del-inventario` → archivado en `openspec/changes/archive/2026-10-01-administracion-del-inventario/`; 11 specs principales actualizados en `openspec/specs/` (+50 requisitos, 1 modificado)
 - Decisiones: D1–D19 (`decisiones-sponsor-2026-09-30.md`) y D20–D48 (`decisiones-sponsor-2026-10-01.md`)
 - **Fuera de este change, declarado:**
   - HU-131 (adjuntar el artefacto de evidencia): **diferida a una versión futura** por el sponsor (D29). Sus 5 items de cableado y `I-spaces-subida-csp` quedan sin cerrar; no hay código a medias (sin tabla, SDK, permisos ni CSP del bucket).
