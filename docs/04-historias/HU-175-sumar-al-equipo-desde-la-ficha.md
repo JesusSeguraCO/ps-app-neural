@@ -1,7 +1,7 @@
 ---
 id: HU-175
 titulo: "Sumar o quitar un perfil de mi equipo desde su ficha sin cerrarla"
-epica: EP-003
+epica: EP-004
 prioridad: alta
 complejidad: S
 estado: lista
@@ -73,9 +73,11 @@ Cubre la parte de **RF-13.11** que permite actuar sobre el perfil sin cerrar la 
 
 **D73 (sponsor, 2026-10-02, opción conservadora) cierra la pregunta abierta:** desde la ficha se puede **quitar** del equipo además de sumar, como alterna el prototipo («Sumar al equipo» / «En el equipo») y como permite RF-4.1. Cambios: se añade el escenario alterno de quitar, el de error pasa a un esquema con las dos acciones y el edge «ya estaba en mi equipo» ofrece quitar en vez de solo informar. El título y el «quiero» lo dicen. **Ampliación por decisión del sponsor, no recorte.** La complejidad sigue en S: quitar usa la misma capacidad de HU-192 y el mismo estado de la acción.
 
+**D101 (sponsor, 2026-10-02): cambio de épica.** Esta historia pasa a **EP-004**, donde nacen los datos o la capacidad de la que depende. No es recorte: se construye entera con esa épica.
+
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-13.11 · RF-4.1 · RF-4.2 · D73 · nace de la partición de HU-120 (2026-10-02) · D88 · depende de HU-120 (ficha y recorrido) y de HU-192 (sumar y quitar en «Mi equipo» con su indicador, EP-004) · relacionada con HU-080 (EP-004, qué le falta al equipo)
+Épica madre: **EP-004** (D101) · PRD v4.17 · RF-13.11 · RF-4.1 · RF-4.2 · D73 · nace de la partición de HU-120 (2026-10-02) · D88 · depende de HU-120 (ficha y recorrido) y de HU-192 (sumar y quitar en «Mi equipo» con su indicador, EP-004) · relacionada con HU-080 (EP-004, qué le falta al equipo)
 
 ## INVEST
 

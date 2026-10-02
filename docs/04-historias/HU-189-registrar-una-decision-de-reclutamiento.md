@@ -1,7 +1,7 @@
 ---
 id: HU-189
 titulo: "Registrar una decisión de reclutamiento"
-epica: EP-008
+epica: EP-010
 prioridad: media
 complejidad: S
 estado: lista
@@ -69,9 +69,11 @@ Cubre la **segunda condición de retirada de §14.7** (D-17): *«el registro de 
 
 **Propuestas del modelo, negociables:** anular en lugar de borrar (los catálogos y registros del panel no tienen borrado físico, RF-8.3); fecha no futura; que el observador consulte la lista sin escribir (RF-8.1.2: el observador consulta demanda).
 
+**D103 (sponsor, 2026-10-02): cambio de épica.** Esta historia pasa a **EP-010**, donde nacen los datos o la capacidad de la que depende. No es recorte: se construye entera con esa épica.
+
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.18 · §14.7 (D-17) · RF-15 · RF-8.1.2 · RF-8.3 · D-13 · D73 y D83 (sponsor, 2026-10-02) · ADR-0006 (H43) · depende de HU-078 (registro de demanda, EP-010) · la lee HU-111 (segunda condición de retirada) · relacionada con HU-172 (top 10 en Demanda, D82) y HU-190 (permiso «Medición»)
+Épica madre: **EP-010** (D103) · PRD v4.18 · §14.7 (D-17) · RF-15 · RF-8.1.2 · RF-8.3 · D-13 · D73 y D83 (sponsor, 2026-10-02) · ADR-0006 (H43) · depende de HU-078 (registro de demanda, EP-010) · la lee HU-111 (segunda condición de retirada) · relacionada con HU-172 (top 10 en Demanda, D82) y HU-190 (permiso «Medición»)
 
 ## INVEST
 
