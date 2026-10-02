@@ -173,6 +173,29 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("Observador en el panel (HU-124)"
     expect(html).not.toContain(`/api/v1/importacion/lotes/${loteId}/errores`);
   });
 
+  it("un lote sin aplicar: la observadora no ve «Volver a pegar» (HU-124, D45; pasada 2 M1)", async () => {
+    const c = await pedir(
+      "/api/v1/importacion/lotes",
+      {
+        texto: ["Código\tAños de experiencia", `${codigo}\t14`].join("\n"),
+        formato: "tsv",
+        modo: "crear_y_actualizar",
+        archivo: "sin-aplicar.tsv",
+        columnas: [
+          { columna: "Código", clave: "codigo" },
+          { columna: "Años de experiencia", clave: "aniosExperiencia" },
+        ],
+      },
+      admin,
+    );
+    expect(c.status).toBe(201);
+    const loteId = (await c.json()).loteId as string;
+    expect(await pagina(`/importar?lote=${loteId}`, admin)).toContain("Volver a pegar");
+    const html = await pagina(`/importar?lote=${loteId}`);
+    expect(html).toContain("Esta importación no se confirmó.");
+    expect(html).not.toContain("Volver a pegar");
+  });
+
   it("por la dirección de edición: formulario inerte, «tu rol es de consulta», intento registrado y sin cambio en el perfil", async () => {
     const antes = await cambiosDe(codigo);
     const html = await pagina(`/inventario/${codigo}`);

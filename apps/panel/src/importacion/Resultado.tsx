@@ -183,9 +183,11 @@ export function ResultadoImportacion(p: {
               ? "Esta importación no se confirmó."
               : motivo(lote.motivoAborto)}
           </p>
-          <a className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="/importar">
-            Volver a pegar
-          </a>
+          {p.puedeImportar && (
+            <a className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="/importar">
+              Volver a pegar
+            </a>
+          )}
         </div>
       </div>
     );

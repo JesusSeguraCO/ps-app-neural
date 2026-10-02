@@ -534,8 +534,8 @@ function evaluarFila(
 }
 
 // Lo que la publicación exige de la ficha y la importación puede quitar (evaluarPublicacion; el
-// consentimiento no viaja en el archivo). La modalidad de prueba vale si existe, activa, en la familia
-// del rol.
+// consentimiento no viaja en el archivo). La modalidad de prueba vale si está en el catálogo de la
+// importación —que solo trae las activas— y es de la familia del rol.
 const ETIQUETA_FALTA = {
   rol: "sin rol",
   seniority: "sin seniority",

@@ -259,6 +259,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
       expect(html).toContain("Verificado por Trycore");
       expect(html).toContain("Aprobada, nivel senior");
       expect(html).toContain("Célula de arquitectura de Trycore");
+      expect(html).toMatch(/Evaluó: .+\./);
     });
 
     it("7 · importar y revertir: el worker aplica el lote y luego lo deshace; el perfil vuelve a como estaba", async () => {

@@ -157,12 +157,23 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
     expect(html).toContain(nombreDe(c));
   });
 
-  it("en el banco la ficha recorre la lista filtrada y conserva el filtro al cerrar", async () => {
+  it("en el banco la ficha recorre la lista del banco y vuelve a ella al cerrar", async () => {
     const lista = await pagina(`/banco`);
     expect(lista).toContain(`href="/banco?ficha=${a}"`);
-    const html = await pagina(`/banco?ficha=${a}`);
-    const ficha = dialogo(html)!;
+    const ficha = dialogo(await pagina(`/banco?ficha=${a}`))!;
     expect(ficha).toMatch(/de \d+<\/b> · banco de perfiles/);
     expect(ficha).toMatch(/href="\/banco"[^>]*aria-label="Cerrar la ficha"/);
+  });
+
+  it("con un filtro aplicado, la ficha recorre solo la lista filtrada y al cerrar conserva el filtro", async () => {
+    const familia = PERFILES_FICTICIOS.find((p) => p.codigo === a)!.familia;
+    const enFamilia = PERFILES_FICTICIOS.filter((p) => p.estado === "publicado" && p.familia === familia);
+    const q = `categoria=${encodeURIComponent(familia)}`;
+    const ficha = dialogo(await pagina(`/banco?${q}&ficha=${a}`))!;
+    expect(ficha).toMatch(new RegExp(`de ${enFamilia.length}</b> · banco · ${familia}`));
+    expect(ficha).toContain(`href="/banco?${q.replace(/%20/g, "+")}"`);
+    // Un perfil de otra familia no se abre sobre esta lista filtrada.
+    const otro = PERFILES_FICTICIOS.find((p) => p.estado === "publicado" && p.familia !== familia)!.codigo;
+    expect(dialogo(await pagina(`/banco?${q}&ficha=${otro}`))).toBeNull();
   });
 });

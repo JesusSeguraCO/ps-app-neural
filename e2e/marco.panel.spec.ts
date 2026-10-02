@@ -295,7 +295,8 @@ test.describe("sesión vencida al guardar (HU-138 escenario 2, HU-151)", () => {
 
   test("Guardar con la sesión vencida no escribe nada y lleva a la puerta con la causa", async ({ page }) => {
     await page.goto("/inventario/nuevo");
-    await page.getByLabel("Nombre", { exact: true }).fill("E2E vencida");
+    const nombre = `E2E vencida ${randomBytes(3).toString("hex")}`;
+    await page.getByLabel("Nombre", { exact: true }).fill(nombre);
     const bd = new pg.Client({ connectionString: INSTALACION });
     await bd.connect();
     try {
@@ -310,6 +311,15 @@ test.describe("sesión vencida al guardar (HU-138 escenario 2, HU-151)", () => {
     await page.getByRole("button", { name: "Guardar borrador" }).click();
     await expect(page).toHaveURL(/\/acceso\?motivo=sesion_expirada/);
     await expect(page.getByText("No se pudo guardar")).toHaveCount(0);
+    // Nada se escribió: ningún perfil con ese nombre.
+    const consulta = new pg.Client({ connectionString: INSTALACION });
+    await consulta.connect();
+    try {
+      const n = await consulta.query(`SELECT count(*)::int AS n FROM inventario.perfiles WHERE nombre = $1`, [nombre]);
+      expect(n.rows[0].n).toBe(0);
+    } finally {
+      await consulta.end();
+    }
   });
 });
 
