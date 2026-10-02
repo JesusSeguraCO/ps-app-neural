@@ -66,7 +66,7 @@ export const VARIABLES: Record<Proceso, readonly string[]> = {
     "PANEL_ADMIN_INICIAL",
     // Renovación del enlace vencido (HU-092, HU-146): enlace nuevo con el origen del portal y buzón de
     // Talento Humano para el aviso de cada petición. Sin HubSpot desde el 2026-09-29 (sponsor): su
-    // token vuelve con la épica que escriba en el CRM (EP-007). Enmienda de ADR-0010 §3.3.
+    // token vuelve con la épica que escriba en el CRM (EP-007). Enmienda pendiente de ADR-0010 §3.3 (E-8, E-15).
     "PORTAL_ORIGEN",
     "CORREO_TALENTO_HUMANO",
   ],
