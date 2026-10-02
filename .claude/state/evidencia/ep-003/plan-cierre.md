@@ -39,3 +39,38 @@ suite completa verde y journey smoke propio. Ningún gate de épica se ha cerrad
 - **Migrar `ps`** al merge (D125): 0028 bloquea publicar sin SARO/DISC; la demo y las e2e de `main` lo notarán.
 - **La frase «ningún»** solo aparece con 0 incompletos en todo el banco: con los heredados de demostración
   (`--heredados-incompletos`) la demo mostrará la versión descriptiva (es lo que D80 pide).
+
+## Retomar aquí (pausa del sponsor, 2026-10-02)
+
+**Gates cerrados:** `tdd` → `gate-tdd.md` (suite 1548/1548, lint y tipos en verde; 95 items de wiring, 94 con
+mutante muerto y el e2e INT-SS1-journey-smoke sin mutación propia; M14–M17 añadidas en el cierre).
+
+**Con evidencia lista pero sin registrar** (van después de `journey_smoke` en el orden de fases):
+- `fidelity` → `gate-fidelity.md` + `fidelidad-final/` (re-captura MCP en HEAD de selección, encabezado y ficha) y
+  desviaciones en `design.md` § «Fidelidad final de la épica» (commit 017089d).
+- `data` → `gate-data.md` (data-consistency-checker: 5 invariantes CUMPLE; observación: `faltasDePublicado` en
+  `packages/dominio/src/importacion/plan.ts:603` es una segunda lista que no llama a `evaluarPublicacion`).
+- `api` → `gate-api.md` (Newman: 71 peticiones, 179 aserciones, 0 fallidas, rc 0; commits fc27548, e5ceb69, c3ce4ea).
+  Ojo: una corrida previa del Newman borró perfiles marcador y dejó colisión de códigos (500) en `ps_ep003` entre ~22:46 y
+  22:48 UTC; ya se archivan en vez de borrarse (detalle en gate-api.md).
+
+**Gate pendiente: `journey_smoke`.** `runner-integracion.md` salió ROJO solo por la e2e
+`estandar-recorrido.portal` (código de acceso no llegó): causa probable, el worker del Newman corría a la vez sobre
+`ps_ep003` y se llevó el trabajo `enviar_codigo` (job 157 despachado en 7 ms). Aislado, acceso+estandar pasan
+(13/13). El recorrido integrado 8.1 pasa 2 veces (`journey-integrado.md`, spec `e2e/journey-ep003.portal.spec.ts`).
+`marco.panel` :824/:952 ya pasan con PORTAL_URL/PANEL_URL (commit 71305da).
+
+**Siguiente paso exacto** (sin otro proceso sobre `ps_ep003` ni en 3200/3201/3210/3211):
+1. `bash /private/tmp/claude-501/-Users-cmo-Local-claude-Apps-App-People-Service/e5d4a5ad-ce69-4930-81c2-9b46673c9ba5/scratchpad/runner-ep003.sh .claude/state/evidencia/ep-003/runner-integracion.md`
+   (fases build, migrar sobre ps_ep003, lint, tipos, tests, e2e con `.local/playwright.ep003.config.ts`; ahora incluye el journey 8.1).
+2. Si VERDE: escribir `gate-journey-smoke.md` (runner + `journey-integrado.md`) y
+   `slice-ops.sh phase smoke` → `gate journey_smoke pass --evidence-file …` → `gate fidelity pass --evidence-file gate-fidelity.md`
+   → `phase api` → `gate api …` → `phase data` → `gate data pass --evidence-file gate-data.md` (re-anclar sha a HEAD).
+3. Opcional antes de cerrar: mutación del e2e INT-SS1-journey-smoke (M2 en `perfil.ts`, recompilar panel, correr `validaciones-entrada.panel`).
+No cerrar `wiring_verified` ni `dod` (verificador independiente).
+
+**Actualización `api` (tras la pausa):** `gate-api.md` listo: Newman 71 peticiones, 179 aserciones, 0 fallidas, rc 0
+(commits fc27548, e5ceb69, c3ce4ea). Límites: la ficha del portal se verificó sobre HTML (no hay JSON) y la importación
+por lotes con SARO/DISC no está en Newman (sí plantilla y exportación). Incidente ya corregido: una primera limpieza
+borró perfiles y provocó códigos PS repetidos (500) en `ps_ep003` entre ~22:46 y 22:48 UTC; se insertaron 7
+marcadores archivados y la limpieza ahora archiva.

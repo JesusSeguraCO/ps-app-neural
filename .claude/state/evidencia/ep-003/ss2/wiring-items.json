@@ -1,0 +1,19 @@
+[
+  {"item_id": "HU-178-ac1a-incompleto-sin-saro", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-178-ac1b-incompleto-sin-disc", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-178-ac1c-incompleto-sin-modalidad", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-178-ac2-editar-sin-completar", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-178-ac3-completar-lo-que-falta", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-178-ac5-sello-no-marca", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-194-ac1-aviso-no-bloquea", "kind": "hu_ac", "ref": "HU-194"},
+  {"item_id": "HU-194-ac2-aviso-con-error-de-fecha", "kind": "hu_ac", "ref": "HU-194"},
+  {"item_id": "HU-194-ac3a-item-otra-escritura", "kind": "hu_ac", "ref": "HU-194"},
+  {"item_id": "HU-194-ac3b-stockholm-sin-aviso", "kind": "hu_ac", "ref": "HU-194"},
+  {"item_id": "HU-194-ac4-corregir-retira-aviso", "kind": "hu_ac", "ref": "HU-194"},
+  {"item_id": "INT-SS2-migracion-0029-indicadores-ps-portal", "kind": "integration_point", "ref": "EP-003#0029"},
+  {"item_id": "INT-SS2-conteo-portal-igual-marcas-panel", "kind": "integration_point", "ref": "EP-003#conteo-incompletos"},
+  {"item_id": "INT-SS2-ruta-gemela-listado-api", "kind": "integration_point", "ref": "EP-003#listado-api"},
+  {"item_id": "INT-SS2-avisos-en-alta-y-publicado", "kind": "integration_point", "ref": "EP-003#avisos-gemelas"},
+  {"item_id": "INT-SS2-marca-no-cruza-al-portal", "kind": "integration_point", "ref": "EP-003#portal-sin-marca"},
+  {"item_id": "INT-SS2-journey-smoke", "kind": "integration_point", "ref": "EP-003#journey-ss2"}
+]
