@@ -114,3 +114,14 @@ Migraciones 0027–0029 hacia adelante, solo esquema y vistas (V3-7, sin DML); `
 
 - ¿El bloque de validación técnica abre plegado o desplegado por omisión? Se construye desplegado como el prototipo (HU-155, negociable, no cambia escenarios).
 - Copy del encabezado, del bloque de respaldo, de la garantía Neural Speed, del pie y de los textos de alcance: marcado para revisión de copy con Mercadeo (D73).
+
+### Desviación registrada · SS2 (D124)
+
+Las pantallas de SS2 sin dibujo en el prototipo (marca y pestaña «Incompletos» del listado, aviso de
+lenguaje de inventario en el editor, variante «Este cambio no se puede publicar» de la pregunta D1) se
+construyeron con los patrones aprobados de EP-006 (pestaña con alerta ámbar, sub-línea de estado,
+`pp-aviso--warn`, hoja `perfil-editor--incompleto-al-guardar`). Capturas en
+`.claude/state/evidencia/ep-003/ss2/fidelidad.md`; revisables por el sponsor en el PR. Los heredados
+incompletos de demostración se siembran aparte (`sembrarHeredadosIncompletos`, `--heredados-incompletos`)
+para no mover los conteos del banco ficticio que fijan los tests. El guardado devuelve `avisos[]` junto al
+`motivo`/`campo` del rechazo existente (no se añade un `errores[]` paralelo: el rechazo ya es único).
