@@ -24,7 +24,7 @@
 - [x] 11 · Cierre: recorrido integrado, Newman, fidelidad final, gate data, verificación adversarial y ficha del cliente en el portal (D47)
 
 ## Verificación (ejecutada)
-- Runner `integration-check` en 738d7f1: vitest {{VITEST}} con BD real; Playwright {{E2E}}; build, lint, tipos y Lighthouse en verde
+- Runner `integration-check` en 738d7f1: vitest 1229 ✓ / 1 omitido (frontera real de Gemini, sin llave) con BD real; Playwright 60 ✓ / 1 omitido (axe WCAG 2.1 AA, móvil 320/390, CSP); build, lint, tipos y Lighthouse en verde
 - Recorrido integrado de punta a punta con la cola real del worker (11 pasos)
 - Newman: 226 peticiones / 350 aserciones / 0 fallos; los 52 métodos de las 42 rutas nuevas del panel
 - Fidelidad visual: 66 pantallas de EP-006 (64 FIEL + 2 N/A por D29) y la ficha del portal (FIEL contra `vista-previa-ficha`, D48), por captura MCP real
