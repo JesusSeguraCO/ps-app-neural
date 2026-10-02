@@ -7,6 +7,9 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type BrowserContext } from "@playwright/test";
 import pg from "pg";
 
+// Orígenes del portal y del panel: por defecto los del playwright.config.ts; un entorno aislado los cambia.
+const PORTAL_URL = process.env.PORTAL_URL ?? "http://127.0.0.1:3100";
+const PANEL_URL = process.env.PANEL_URL ?? "http://127.0.0.1:3101";
 const CORREO = "e2e-marco@trycore.com";
 // Mismo número en e2e/acceso.portal.spec.ts: serializa los e2e que escriben el contacto de Trycore.
 const CANDADO_CONTACTO = 147_147;
@@ -821,7 +824,7 @@ test.describe("carga de Operaciones (HU-150)", () => {
     const galletas = await page.context().cookies();
     const cab = {
       "x-ps-csrf": galletas.find((c) => c.name === "__Host-csrf")!.value,
-      origin: "http://127.0.0.1:3101",
+      origin: PANEL_URL,
       cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
     };
     try {
@@ -1006,7 +1009,7 @@ test.describe("administración (HU-151, HU-147, HU-138)", () => {
       await page.getByLabel("Correo", { exact: true }).fill("servicio.clientes@trycore.com");
       await page.getByRole("button", { name: "Guardar contacto" }).click();
       await expect(page.getByText("Contacto guardado.")).toBeVisible();
-      await page.goto("http://127.0.0.1:3100/acceso?motivo=enlace_revocado");
+      await page.goto(`${PORTAL_URL}/acceso?motivo=enlace_revocado`);
       await expect(page.getByText("o escribe a People Service: servicio.clientes@trycore.com")).toBeVisible();
 
       // Registro del perfil: cada cambio con su autor.

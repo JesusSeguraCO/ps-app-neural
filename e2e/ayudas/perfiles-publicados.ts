@@ -10,7 +10,8 @@ import pg from "pg";
 export const INSTALACION =
   process.env.BD_INSTALACION_URL ?? "postgres://ps_instalacion@127.0.0.1:54329/ps";
 const BD = new URL(INSTALACION).pathname.slice(1);
-export const PANEL = process.env.PANEL_URL ?? "http://127.0.0.1:3201";
+// Por defecto el panel del playwright.config.ts (3101); el entorno aislado de EP-003 pasa PANEL_URL=…:3201.
+export const PANEL = process.env.PANEL_URL ?? "http://127.0.0.1:3101";
 const ADMIN = "e2e-portal-perfiles@trycore.com";
 export const entorno = (proceso: string): Record<string, string> => {
   const salida = execFileSync("bash", ["scripts/entorno-dev.sh", proceso], { encoding: "utf8" });
