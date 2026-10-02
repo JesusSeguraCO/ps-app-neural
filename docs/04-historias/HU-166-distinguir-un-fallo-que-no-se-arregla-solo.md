@@ -20,24 +20,24 @@ depende_de: [HU-105]
 
 ### Happy path — credencial inválida o sin permisos
 
-**Dado** que la credencial del portal en HubSpot fue revocada o perdió permisos,
-**cuando** el portal intenta enviar una solicitud y HubSpot la rechaza por autenticación o permisos,
+**Dado** que la credencial del portal en HubSpot fue revocada o perdió permisos, de modo que HubSpot responde 401 o 403,
+**cuando** el worker envía una solicitud a HubSpot,
 **Entonces** el responsable técnico recibe un correo inmediato que dice «credencial de HubSpot inválida o sin permisos», sin esperar al tercer fallo
 **Y** ninguna solicitud se pierde: todas quedan pendientes y se envían cuando la credencial vuelva a funcionar
 **Y** el cliente recibe su confirmación igual
 
 ### Error — HubSpot rechaza la solicitud por configuración
 
-**Dado** que en HubSpot se borró la etapa de entrada del pipeline People Service,
-**cuando** el portal intenta crear el negocio y HubSpot lo rechaza por un dato no válido,
+**Dado** que en HubSpot se borró la etapa de entrada del pipeline People Service, de modo que HubSpot responde 400 por un dato no válido al crear el negocio,
+**cuando** el worker envía una solicitud a HubSpot,
 **Entonces** la solicitud entra a la bandeja de fallos desde el primer rechazo, con el error de HubSpot y la indicación «este error no se arregla solo»
 **Y** el responsable técnico recibe el aviso inmediato
 **Y** la solicitud se sigue reintentando, para que salga sola cuando alguien corrija la configuración
 
 ### Edge case — límite de tasa de HubSpot
 
-**Dado** que HubSpot responde que se superó su límite de peticiones e indica cuánto esperar,
-**cuando** el portal intenta enviar una solicitud,
+**Dado** que HubSpot responde 429 porque se superó su límite de peticiones e indica cuánto esperar,
+**cuando** el worker envía una solicitud a HubSpot,
 **Entonces** el siguiente intento se programa tras esa espera, como máximo 10 minutos
 **Y** ese intento no cuenta como fallo ni produce aviso ni entrada en la bandeja
 
@@ -64,4 +64,4 @@ Cubre la parte de **RF-9.6** que separa los fallos por su clase. Los errores tip
 | V | Valiosa | ✓ la causa real (credencial, configuración) se corrige el mismo día y las alarmas significan algo |
 | E | Estimable | ✓ S: clasificar respuestas en tres clases y programar la espera; la cola ya existe |
 | S | Pequeña | ✓ S: una capacidad (clasificar el fallo) en tres escenarios |
-| T | Testeable | ✓ un doble de HubSpot que responde 401, 403, 400 y 429 con espera da avisos, bandeja y programación observables |
+| T | Testeable | ✓ un doble de HubSpot fijado de antemano a responder 401, 403, 400 o 429 con espera da, ante un envío del worker, avisos, bandeja y programación observables |

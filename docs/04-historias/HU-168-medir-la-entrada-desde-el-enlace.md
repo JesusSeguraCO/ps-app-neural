@@ -20,8 +20,8 @@ depende_de: [HU-167]
 
 ### Happy path — la apertura y la entrada de una misma visita quedan unidas
 
-**Dado** que un destinatario abre por primera vez el enlace de su edición curada,
-**cuando** pide su código, lo verifica y entra,
+**Dado** que un destinatario abrió por primera vez el enlace de su edición curada y ya pidió su código,
+**cuando** lo verifica,
 **Entonces** quedan registrados, como una sola visita, la entrada atribuida al enlace, a la cuenta y a la edición, el código pedido y el acceso concedido
 **Y** esos eventos quedan ligados al contacto solo a partir del momento en que verificó el código
 
@@ -54,6 +54,8 @@ Cubre el evento **«entrada» de RF-7.1** y el primer escalón del embudo, que e
 
 **Toca código ya construido.** El acceso del cliente es de EP-001 y ya existe (`apps/portal/app/api/v1/acceso/*`). Esta historia añade la escritura de eventos sin cambiar su contrato ni su respuesta; el registro de seguridad `identidad.accesos_log` sigue siendo el de seguridad, no la medida.
 
+**Revisión G/W/T 2026-10-02 (validador independiente).** El When del happy path encadenaba tres acciones («pide su código, lo verifica y entra»); la apertura y la petición del código pasan al Given como estado y el When queda en una sola acción, verificar el código. Los tres eventos (entrada, código pedido, acceso concedido) siguen en el Then; el alcance no cambia.
+
 **Abierto para el sponsor:** si la apertura de un enlace **revocado o vencido** debe contar como entrada (es una señal de que alguien quiso volver, útil para HU-146) o quedarse solo en el registro de seguridad. ADR-0006 no lo fija; por eso el escenario de error se limita al enlace inexistente.
 
 ## Trazabilidad
@@ -68,5 +70,5 @@ Cubre el evento **«entrada» de RF-7.1** y el primer escalón del embudo, que e
 | N | Negociable | ✓ fija qué pasos se cuentan, cuándo se liga el contacto y que la respuesta no cambie; el mecanismo para unir los dos tramos de la visita es del equipo |
 | V | Valiosa | ✓ sin este escalón el embudo empieza en quien ya entró y oculta justo la pérdida que más le importa al correo curado |
 | E | Estimable | ✓ S: escritura en tres puntos del acceso ya construido, identificador de visita y unión por 24 horas; diseño cerrado en ADR-0006 |
-| S | Pequeña | ✓ S: una capacidad en cuatro escenarios |
-| T | Testeable | ✓ visitas con token válido, reenviado sin invitación, con códigos fallidos e inexistente producen eventos y respuestas comparables |
+| S | Pequeña | ✓ S: una capacidad en cuatro escenarios, cada When con una sola acción |
+| T | Testeable | ✓ cada Given es un estado reproducible (enlace abierto, código pedido); visitas con token válido, reenviado sin invitación, con códigos fallidos e inexistente producen eventos y respuestas comparables |

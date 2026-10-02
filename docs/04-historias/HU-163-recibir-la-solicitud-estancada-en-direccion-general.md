@@ -49,11 +49,11 @@ depende_de: [HU-162]
 
 Cubre **RF-9.7.3** (segundo escalón): «a las 24 horas hábiles sin movimiento de etapa, se escala a Dirección General». Lo que cuenta es el **cambio de etapa**, no la apertura (prototipo `correo-aviso-interno--escalamiento`: «Abrir el negocio no basta»).
 
-**24 horas hábiles** con el calendario de T-4 (L–V 8:00–18:00 `America/Bogota`, festivos de Colombia) son 2,4 jornadas de 10 horas. **Discrepancia a resolver:** el prototipo de escalamiento pone el vencimiento del aviso del lunes 28 sep a las 10:42 en el **jueves 1 oct a las 10:42** (tres jornadas); con el calendario aprobado es el **miércoles 30 sep a las 14:42**. La tabla sigue el calendario aprobado; pregunta al sponsor si «24 horas hábiles» quiere decir tres días hábiles.
+**24 horas hábiles** con el calendario de T-4 (L–V 8:00–18:00 `America/Bogota`, festivos de Colombia) son 2,4 jornadas de 10 horas. **Discrepancia a resolver:** el prototipo de escalamiento pone el vencimiento del aviso del lunes 28 sep a las 10:42 en el **jueves 1 oct a las 10:42** (tres jornadas); con el calendario aprobado es el **miércoles 30 sep a las 14:42**. Pregunta al sponsor: ¿«24 horas hábiles» son 24 horas del calendario aprobado o tres días hábiles? **Opción conservadora que usan los escenarios:** el calendario aprobado (T-4), que escala antes y no deja a la cuenta esperando más de lo prometido. Si el sponsor elige tres días, cambia la tabla, no la regla.
 
 **Error de lectura:** `escalar` es tarea crítica en ADR-0009 (alerta al primer fallo). El escalamiento se retrasa como mucho lo que dure la caída, nunca se dispara con un dato inventado.
 
-**Destinatario nominal** de Dirección General (R-36): no definido; pregunta abierta. El prototipo menciona además que «HubSpot también asignó una tarea de seguimiento a Dirección Comercial»: eso sería un workflow de HubSpot, no del portal; pregunta abierta si se quiere.
+**Destinatario nominal** de Dirección General (R-36): no definido; pregunta abierta. El prototipo menciona además que «HubSpot también asignó una tarea de seguimiento a Dirección Comercial»: eso sería un workflow de HubSpot, no del portal; pregunta abierta si se quiere. Supuesto de los escenarios: el portal no crea esa tarea.
 
 ## Trazabilidad
 
@@ -66,6 +66,6 @@ Cubre **RF-9.7.3** (segundo escalón): «a las 24 horas hábiles sin movimiento 
 | I | Independiente | ✓ con dependencia declarada: reutiliza la tarea, el calendario y los avisos de HU-162 |
 | N | Negociable | ✓ fija 24 horas hábiles, que cuenta la etapa y que no se escala a ciegas; el buzón y el texto se negocian |
 | V | Valiosa | ✓ la solicitud que nadie mueve llega a quien puede mover a todos |
-| E | Estimable | ✓ S: una regla más sobre la tarea de HU-162 y una lectura de etapa |
+| E | Estimable | ✗ hasta que el sponsor cierre qué son «24 horas hábiles» (calendario T-4 o tres días hábiles): con la opción conservadora es S, una regla más sobre la tarea de HU-162 y una lectura de etapa; la otra opción cambia la tabla de vencimientos |
 | S | Pequeña | ✓ S: tres escenarios sobre un solo escalón |
 | T | Testeable | ✓ con reloj simulado y un doble de HubSpot con etapa fija, cambiada y caído se observan correos y marcas en las fechas de la tabla |

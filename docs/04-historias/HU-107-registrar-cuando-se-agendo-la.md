@@ -58,8 +58,8 @@ Cubre **RF-9.1.3** y **RF-17.4**. **Sin esta historia O3 no se puede medir**: co
 
 **Preguntas abiertas al sponsor:**
 - **Qué fecha mide O3.** «Días entre solicitud enviada y sesión de alineación agendada» puede ser hasta el **momento en que se agendó** (el compromiso, lo que decía esta historia) o hasta la **fecha de la sesión**. Los escenarios guardan las dos y miden hasta el momento en que se agendó; con sincronización diaria, la precisión es de un día. Si se quiere precisión horaria, hay que leer el historial de la propiedad en HubSpot.
-- **El botón «Registrar fecha de alineación»** del correo a Coordinación de Servicio (prototipo `correo-aviso-interno--solicitud-delivery`, HU-101) sugiere registrar la fecha desde el portal o el panel y escribirla en HubSpot. ADR-0009 supone que se escribe en HubSpot directamente. Hay que decidir si ese botón lleva a HubSpot o a una pantalla del panel (más alcance, EP-005).
-- **Plazo de agendamiento de RF-17.3** (T-28 sigue pendiente en ese punto): sin él, «sin alineación agendada» no sabe desde cuándo es un retraso.
+- **El botón «Registrar fecha de alineación»** del correo a Coordinación de Servicio (prototipo `correo-aviso-interno--solicitud-delivery`, HU-101) sugiere registrar la fecha desde el portal o el panel y escribirla en HubSpot. ADR-0009 supone que se escribe en HubSpot directamente. Hay que decidir si ese botón lleva a HubSpot o a una pantalla del panel (más alcance, EP-005). **Opción conservadora que usan los escenarios:** la fecha se escribe en HubSpot, como supone ADR-0009; el botón abriría el negocio.
+- **Plazo de agendamiento de RF-17.3** (T-28 sigue pendiente en ese punto): sin él, «sin alineación agendada» no sabe desde cuándo es un retraso. **Opción conservadora que usan los escenarios:** se muestran los días hábiles que lleva la solicitud, sin calificarla de retrasada ni avisar a nadie.
 
 ## Trazabilidad
 
@@ -72,6 +72,6 @@ Cubre **RF-9.1.3** y **RF-17.4**. **Sin esta historia O3 no se puede medir**: co
 | I | Independiente | ✓ con dependencia declarada: lee el negocio de HU-102; no necesita el aviso ni el escalamiento |
 | N | Negociable | ✓ fija que la primera fecha nunca se sobrescribe y que la solicitud sin sesión cuenta; qué fecha mide O3 y desde dónde se registra se negocian |
 | V | Valiosa | ✓ sin este dato O3 no existe y nadie sabe cuántas solicitudes mueren antes de la sesión |
-| E | Estimable | ✓ M: una tarea diaria, dos propiedades y un cálculo de días hábiles con el calendario de HU-162 |
+| E | Estimable | ✗ hasta que el sponsor cierre qué fecha mide O3, el plazo de RF-17.3 y adónde lleva el botón: con las opciones conservadoras es M, una tarea diaria, dos propiedades y un cálculo de días hábiles con el calendario de HU-162; registrar la fecha desde el panel o leer el historial de HubSpot suma alcance |
 | S | Pequeña | ✓ M: una capacidad (registrar el tramo hasta la alineación) en cuatro escenarios |
 | T | Testeable | ✓ con reloj simulado y un doble de HubSpot con negocios sin fecha, con fecha, reagendados y caído, se observan las fechas del portal y la propiedad de HubSpot |

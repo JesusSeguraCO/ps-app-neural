@@ -57,11 +57,11 @@ Cubre **RF-9.1** y la parte de **D-7** de **RF-9.2** (negocio nuevo relacionado,
 
 **El identificador único hace imposible el duplicado** (ADR-0009, R-21): un segundo intento de crear el mismo negocio choca en HubSpot y el portal reutiliza el existente (HU-105). Por eso, si la propiedad no es única, el portal prefiere no crear nada antes que arriesgar duplicados.
 
-**«Abierto»** = negocio de la empresa que no está en una etapa cerrada (ganado o perdido). El PRD no dice si cuentan los negocios abiertos de otros pipelines o solo los de People Service: pregunta abierta al sponsor; los escenarios valen para cualquiera de las dos respuestas.
+**«Abierto»** = negocio de la empresa que no está en una etapa cerrada (ganado o perdido). El PRD no dice si cuentan los negocios abiertos de otros pipelines o solo los de People Service: pregunta abierta al sponsor. No bloquea: los escenarios valen para cualquiera de las dos respuestas.
 
 **Disparador.** El evento es la solicitud guardada por el portal (EP-005, RF-5; también la solicitud a medida de HU-077, EP-010). Esta historia no se puede demostrar de punta a punta sin la solicitud de EP-005.
 
-**Pendiente de decisión (E-6 del backlog arquitectónico, sponsor 2026-09-28):** se planteó que la solicitud llegue a HubSpot por formulario más un workflow de HubSpot que «crea el lead». El PRD v4.17 sigue pidiendo un **negocio** con asociaciones, relacionado y propietario (RF-9), y ADR-0009 lo hace por la API. Esta historia sigue el PRD; si el sponsor confirma formulario más workflow, hay que reescribirla.
+**Pendiente de decisión (E-6 del backlog arquitectónico, sponsor 2026-09-28):** se planteó que la solicitud llegue a HubSpot por formulario más un workflow de HubSpot que «crea el lead». El PRD v4.17 sigue pidiendo un **negocio** con asociaciones, relacionado y propietario (RF-9), y ADR-0009 lo hace por la API. Pregunta al sponsor: ¿API o formulario más workflow? **Opción conservadora que usan los escenarios: la API**, como pide el PRD v4.17 y resuelve ADR-0009, porque es la que garantiza negocio, identificador único y relación con el abierto. Si el sponsor confirma formulario más workflow, hay que reescribirla.
 
 ## Trazabilidad
 
@@ -74,6 +74,6 @@ Cubre **RF-9.1** y la parte de **D-7** de **RF-9.2** (negocio nuevo relacionado,
 | I | Independiente | ✓ con dependencia declarada: necesita una solicitud guardada (EP-005); se prueba con una solicitud sembrada y un doble de HubSpot sin esperar a contacto, propiedades ni aviso |
 | N | Negociable | ✓ fija el pipeline, la etapa de entrada, el identificador único y la regla de D-7; el mecanismo (API o formulario, E-6) y la forma del enlace en el portal se negocian |
 | V | Valiosa | ✓ el comercial recibe la oportunidad en su herramienta, con la atribución intacta aunque la cuenta ya tenga un negocio |
-| E | Estimable | ✓ M: crear un negocio, comprobar la propiedad única y relacionar con el abierto; el algoritmo está en ADR-0009 |
+| E | Estimable | ✗ hasta que se cierre E-6: con la API (lo que siguen los escenarios) es M, crear un negocio, comprobar la propiedad única y relacionar con el abierto según ADR-0009; con formulario más workflow la historia se reescribe y la estimación cambia |
 | S | Pequeña | ✓ M: una capacidad (convertir la solicitud en negocio) en cuatro escenarios |
 | T | Testeable | ✓ contra un portal de pruebas de HubSpot o un doble: cuenta sin negocios, con uno abierto, solo con cerrados y con la propiedad mal configurada dan resultados observables en HubSpot y en el portal |

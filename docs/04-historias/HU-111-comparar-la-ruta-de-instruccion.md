@@ -54,7 +54,7 @@ Cubre **RF-7.1** como comparación entre rutas, la prueba de falsación de **RF-
 
 **Línea de release:** el mapa de historias pone esta historia en **v1.1**. No es recorte. La revisión de §14.7 ocurre al cierre del primer trimestre, así que la lectura tiene que existir para esa fecha.
 
-**Se distingue de HU-110** (qué facetas se usan) y de **HU-173** (sugerencias sin editar y experimento del Perfil Objetivo dentro de la ruta de instrucción).
+**Se distingue de HU-110** (qué facetas se usan) y de **HU-173** (sugerencias sin editar dentro de la ruta de instrucción) y **HU-186** (experimento del Perfil Objetivo).
 
 **Discrepancia con el flow de EP-008.** El flow dice que la visita mixta «se atribuye a la que produjo la solicitud»; esta historia (y ADR-0006) la cuentan como ruta de instrucción con uso posterior de filtros, que es lo que mide RF-14.2. Hay que alinear el flow.
 
@@ -64,7 +64,7 @@ Cubre **RF-7.1** como comparación entre rutas, la prueba de falsación de **RF-
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.17 · RF-7.1 · RF-14.2 · §14.7 (D-17) · ADR-0006 (`v_ruta_entrada`, `v_filtros_tras_instruccion`, `v_tiempo_primer_perfil`) · T-26 · relacionada con HU-074, HU-110 y HU-173 · depende de HU-167 y HU-110
+Épica madre: **EP-008** · PRD v4.17 · RF-7.1 · RF-14.2 · §14.7 (D-17) · ADR-0006 (`v_ruta_entrada`, `v_filtros_tras_instruccion`, `v_tiempo_primer_perfil`) · T-26 · relacionada con HU-074, HU-110, HU-173 y HU-186 · depende de HU-167 y HU-110
 
 ## INVEST
 

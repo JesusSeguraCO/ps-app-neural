@@ -28,11 +28,19 @@ depende_de: [HU-154]
 
 ### Edge case — Neural Speed nunca es un atributo de la persona
 
-**Dado** que un perfil está registrado como «banco no vinculado», sin experiencia en IA en su trayectoria, y otro tiene en su trayectoria declarada un proyecto con LLM,
-**cuando** abro sus dos fichas,
-**Entonces** las dos muestran la misma garantía de servicio, con el mismo texto
-**Y** la experiencia con LLM del segundo aparece solo en su trayectoria, en «Declarado por la persona»
-**Y** ninguna ficha marca a la persona con Neural Speed, ni con una insignia ni con un estado
+**Esquema del escenario:** la garantía es del servicio, sea cual sea la persona
+**Dado** que un perfil publicado <perfil>
+**Cuando** abro su ficha
+**Entonces** veo la garantía de servicio con el mismo texto que en la ficha de cualquier otro perfil del banco
+**Y** la experiencia con LLM <experiencia_llm>
+**Y** la ficha no marca a la persona con Neural Speed, ni con una insignia ni con un estado
+
+**Ejemplos:**
+
+| perfil | experiencia_llm |
+|---|---|
+| está registrado como «banco no vinculado» y no tiene experiencia en IA en su trayectoria | no aparece en ninguna parte de la ficha |
+| tiene en su trayectoria declarada un proyecto con LLM | aparece solo en su trayectoria, en «Declarado por la persona» |
 
 ### Edge case — el código está para citar, no para etiquetar
 
@@ -49,7 +57,7 @@ Cubre el cierre de **RF-3.2** («cierra con condiciones operativas, SLA y la gar
 
 **La ciudad condicionada** a la modalidad de la necesidad la decide `armarFicha` (D-18, ya construido). La necesidad declarada la produce **EP-009** (RF-13.5). Hasta entonces, la necesidad es «remota» por omisión y la ciudad no se muestra.
 
-**Evidencia previa en IA (B.8.5):** cuando existe, entra como experiencia en la trayectoria que escribe Talento Humano. Esta historia no crea un campo nuevo (RF-14.0). El campo interno `vinculo` (B.7) no cambia lo que ve el cliente (HU-157).
+**Evidencia previa en IA (B.8.5):** cuando existe, entra como experiencia en la trayectoria que escribe Talento Humano. El edge case de Neural Speed se prueba con un esquema de una ficha por fila (refinado el 2026-10-02: antes un solo «Cuando» abría dos fichas). Esta historia no crea un campo nuevo (RF-14.0). El campo interno `vinculo` (B.7) no cambia lo que ve el cliente (HU-157).
 
 **Preguntas abiertas para el sponsor:**
 1. El texto exacto de la garantía de servicio y su nombre de cara al cliente («Neural Speed» o una descripción sin la marca): RF-6.5 da el contenido, no la redacción aprobada por Mercadeo.
@@ -67,5 +75,5 @@ Cubre el cierre de **RF-3.2** («cierra con condiciones operativas, SLA y la gar
 | N | Negociable | ✓ son fijos los contenidos (condiciones, SLA visible, garantía del servicio y no de la persona, código al pie); la redacción y la disposición se pueden negociar |
 | V | Valiosa | ✓ cierra la decisión con lo que el cliente necesita para sumar a alguien y citarlo, sin prometer nada que la persona no trae |
 | E | Estimable | ✓ M: reordenar el componente compartido (mover el código, agrupar condiciones) y añadir un bloque de texto fijo; sin datos nuevos |
-| S | Pequeña | ✓ M: tres escenarios sobre un componente ya construido |
+| S | Pequeña | ✓ M: tres escenarios (uno de ellos un esquema con dos ejemplos) sobre un componente ya construido |
 | T | Testeable | ✓ perfiles sembrados (híbrido con dos idiomas, no vinculado, con LLM en la trayectoria, PS-0142) dan textos exactos; la posición del código y el título de la pestaña se comprueban en el DOM |

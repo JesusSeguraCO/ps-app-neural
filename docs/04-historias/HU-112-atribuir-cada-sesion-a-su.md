@@ -20,21 +20,21 @@ depende_de: [HU-167, HU-168]
 
 ### Happy path — entrada por el enlace de su edición
 
-**Dado** que un destinatario tiene el enlace que se generó para él en una edición curada,
-**cuando** entra con ese enlace y verifica su código,
+**Dado** que un destinatario está en la pantalla de su código, a la que llegó con el enlace que se generó para él en una edición curada,
+**cuando** verifica su código,
 **Entonces** su visita queda atribuida a la cuenta, a su contacto y a esa edición
 **Y** la atribución queda marcada como directa
 
 ### Error — la visita no llega por una edición
 
-**Dado** que un contacto entra con un enlace que no pertenece a ninguna edición,
+**Dado** que un contacto está en la pantalla de su código, a la que llegó con un enlace que no pertenece a ninguna edición,
 **cuando** verifica su código,
 **Entonces** su visita hereda la última edición por la que ese contacto entró antes, marcada como heredada, si esa entrada está dentro de la ventana configurada
 **Y** si nunca entró por una edición, la visita queda como directa sin edición, sin inventarle una de origen
 
 ### Edge case — entra otro invitado del mismo enlace
 
-**Dado** que un enlace tiene varios invitados y lo abre uno distinto del destinatario de la edición,
+**Dado** que un enlace de una edición tiene varios invitados y uno distinto del destinatario está en la pantalla de su código, a la que llegó con ese enlace,
 **cuando** verifica su código,
 **Entonces** su visita se atribuye a la misma edición
 **Y** queda con su propio contacto, distinto del destinatario original
@@ -56,6 +56,8 @@ Cubre **RF-7.3** (*atribución de cada sesión a la cuenta, al contacto y al env
 
 **La solicitud toma su atribución de la sesión** (§8, *Trazabilidad*: cuenta, contacto, sesión, conjunto curado y correo de origen). Ese vínculo lo escribe EP-005 al crear la solicitud; esta historia deja la atribución resuelta en la sesión para que la tome.
 
+**Revisión G/W/T 2026-10-02 (validador independiente).** Los Given del happy path, del error y del primer edge describían una acción («entra con ese enlace», «lo abre uno distinto»); ahora describen el estado (el invitado ya está en la pantalla de su código, con el enlace por el que llegó) y el When queda con una sola acción: verificar el código. El alcance no cambia.
+
 **Complejidad:** sube de S (backlog) a M por la regla de herencia con ventana y el reparto visible. Ajustar el backlog si el sponsor lo aprueba.
 
 **Abierto para el sponsor:** la **ventana de herencia** (ADR-0006 propone 90 días, *a validar por negocio*) y si la herencia se aplica o toda visita sin edición debe quedar como directa. Con herencia amplia, la meta de ≥ 99 % de visitas atribuidas (QA-21) se cumple «por construcción» y deja de medir algo real.
@@ -72,5 +74,5 @@ Cubre **RF-7.3** (*atribución de cada sesión a la cuenta, al contacto y al env
 | N | Negociable | ✓ fija las tres atribuciones y su reparto visible; la ventana de herencia queda abierta |
 | V | Valiosa | ✓ es lo que permite decir qué edición produjo qué resultado; sin esto el correo curado no se puede evaluar |
 | E | Estimable | ✓ M: resolución al abrir la sesión, búsqueda del último envío del contacto con ventana, guardado en la sesión y un conteo de reparto |
-| S | Pequeña | ✓ M: una regla en cuatro escenarios |
-| T | Testeable | ✓ tokens fijados de edición, de cuenta con entrada previa, de cuenta sin entrada previa y de un segundo invitado dan atribuciones y reparto observables |
+| S | Pequeña | ✓ M: una regla en cuatro escenarios, cada uno con una sola acción (verificar el código o abrir Medición) |
+| T | Testeable | ✓ cada When es una acción única y cada Given un estado reproducible; tokens fijados de edición, de cuenta con entrada previa, de cuenta sin entrada previa y de un segundo invitado dan atribuciones y reparto observables |

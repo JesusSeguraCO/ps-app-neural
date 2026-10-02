@@ -45,6 +45,15 @@ depende_de: [HU-103]
 **Entonces** la cuenta como abierta en el momento del cambio y no la escala
 **Y** guarda ese momento como primera apertura
 
+### Error — HubSpot no responde al evaluar el escalamiento
+
+**Dado** que una solicitud cumplió 4 horas hábiles desde el aviso, nadie usó el enlace ni el botón, y HubSpot no responde al leer la etapa y el propietario de su negocio,
+**cuando** el portal evalúa la solicitud,
+**Entonces** no la escala ni la da por abierta con un dato que no pudo leer
+**Y** la vuelve a evaluar en la siguiente pasada de 15 minutos, sin perderla
+**Y** el responsable técnico recibe el aviso de fallo de la tarea de escalamiento desde el primer fallo
+**Y** el fallo queda registrado con su hora en la ejecución de la tarea
+
 ## Notas
 
 Cubre **RF-9.7.3** (primer escalón, 4 horas hábiles) y **RF-9.7.4** (tiempo hasta la primera apertura, la métrica que dice si el mecanismo funciona). El segundo escalón (24 h hábiles sin cambio de etapa → Dirección General) es HU-163.
@@ -52,6 +61,8 @@ Cubre **RF-9.7.3** (primer escalón, 4 horas hábiles) y **RF-9.7.4** (tiempo ha
 **Calendario hábil** (T-4, 2026-09-25): lunes a viernes de 8:00 a 18:00 `America/Bogota`, festivos de Colombia en una tabla administrable. La tarea `escalar` corre cada 15 minutos, por eso el escalamiento llega entre el vencimiento y 15 minutos después, y nunca fuera de horario hábil.
 
 **Qué cuenta como «abrir»** (CRN-1, ADR-0009): HubSpot no expone que alguien vio un negocio. Cuentan el primer clic en el enlace rastreado del aviso, el botón «Ya lo estoy atendiendo» y un cambio de etapa o de propietario leído de HubSpot. **Riesgo aceptado (R-23):** si el comercial abre el negocio directo en HubSpot y no lo cambia, el portal no lo ve y escala igual; el botón del correo de escalamiento corta la cadena. **Pregunta abierta:** ¿se acepta ese falso escalamiento?
+
+**Error de lectura** (mismo criterio que HU-163): `escalar` es tarea crítica en ADR-0009 (alerta al primer fallo). Mientras HubSpot no responda, el escalamiento se retrasa lo que dure la caída, nunca se dispara ni se descarta con un dato inventado. Si el enlace o el botón ya registraron la apertura, no hace falta leer HubSpot y la solicitud no se escala.
 
 **Destinatario nominal** de «la dirección comercial» (R-36): no está definido. Pregunta abierta. Se configura como un correo, no se codifica.
 
@@ -66,8 +77,8 @@ Cubre **RF-9.7.3** (primer escalón, 4 horas hábiles) y **RF-9.7.4** (tiempo ha
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: escala el aviso de HU-103; no necesita el segundo escalón |
-| N | Negociable | ✓ fija las 4 horas hábiles, el calendario y las tres señales de apertura; el texto del correo y el buzón se negocian |
+| N | Negociable | ✓ fija las 4 horas hábiles, el calendario, las tres señales de apertura y que no se escala a ciegas; el texto del correo y el buzón se negocian |
 | V | Valiosa | ✓ una solicitud que el propietario no vio no se queda quieta: la toma alguien el mismo día |
-| E | Estimable | ✓ M: una tarea cada 15 min, un cálculo de horas hábiles con festivos y un enlace rastreado |
-| S | Pequeña | ✓ M: una capacidad (primer escalón y su métrica) en tres escenarios |
-| T | Testeable | ✓ con reloj simulado sobre una semana con festivo y un doble de HubSpot se observan correos, marcas y tiempos de apertura en las fechas de la tabla |
+| E | Estimable | ✓ M: una tarea cada 15 min, un cálculo de horas hábiles con festivos, un enlace rastreado y el reintento en la siguiente pasada |
+| S | Pequeña | ✓ M: una capacidad (primer escalón y su métrica) en cuatro escenarios |
+| T | Testeable | ✓ con reloj simulado sobre una semana con festivo y un doble de HubSpot que responde, cambia el negocio o está caído se observan correos, marcas, avisos de fallo y tiempos de apertura en las fechas de la tabla |

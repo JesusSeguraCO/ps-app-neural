@@ -28,16 +28,16 @@ depende_de: [HU-105]
 
 ### Happy path — enlazar un negocio creado a mano
 
-**Dado** que una solicitud de la bandeja ya tiene un negocio que alguien creó a mano en HubSpot,
-**cuando** escribo el ID de ese negocio en «Ya lo creé en HubSpot…» y confirmo,
+**Dado** que una solicitud de la bandeja ya tiene un negocio que alguien creó a mano en HubSpot y escribí el ID de ese negocio en «Ya lo creé en HubSpot…»,
+**cuando** confirmo,
 **Entonces** la solicitud queda enlazada a ese negocio y sale de la bandeja
 **Y** su reintento se detiene sin crear otro negocio
 **Y** queda registrado quién la enlazó y cuándo
 
 ### Error — el ID no existe en HubSpot
 
-**Dado** que una solicitud está en la bandeja,
-**cuando** escribo un ID de negocio que no existe en HubSpot y confirmo,
+**Dado** que una solicitud está en la bandeja y escribí en «Ya lo creé en HubSpot…» un ID de negocio que no existe en HubSpot,
+**cuando** confirmo,
 **Entonces** el panel no la enlaza y me dice que ese negocio no existe
 **Y** la solicitud sigue en la bandeja con su reintento programado
 

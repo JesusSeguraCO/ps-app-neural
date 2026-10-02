@@ -35,10 +35,19 @@ depende_de: [HU-147]
 
 ### Edge case — el vínculo laboral no se declara ni se insinúa
 
-**Dado** que un perfil está registrado internamente como «vinculado» y otro como «banco no vinculado»,
-**cuando** abro sus dos fichas,
-**Entonces** las dos muestran exactamente el mismo texto de representación comercial y la misma forma de expresar la disponibilidad
-**Y** ninguna dice ni sugiere con una etiqueta si la persona es empleada, contratista o parte de una red extendida de Trycore
+**Esquema del escenario:** la ficha dice lo mismo sea cual sea el vínculo interno
+**Dado** que un perfil publicado está registrado internamente con el vínculo <vinculo>
+**Cuando** abro su ficha
+**Entonces** veo el mismo texto de representación comercial y la misma forma de expresar la disponibilidad que en la ficha de cualquier otro perfil del banco
+**Y** no veo nada que diga o sugiera con una etiqueta si la persona es empleada, contratista o parte de una red extendida de Trycore
+
+**Ejemplos:**
+
+| vinculo |
+|---|
+| vinculado |
+| banco no vinculado |
+| fábrica de software |
 
 ## Notas
 
@@ -46,7 +55,7 @@ Cubre **RF-3.3** (se publican nombre y primer apellido; no foto, correo, teléfo
 
 **Reutiliza el contacto de HU-147** (EP-006, construida): el portal ya obtiene el contacto vigente de `operacion.contacto_trycore` y lo dibuja con `packages/ui/src/ContactoTrycore.tsx` (hoy en la pantalla de enlace revocado). Si solo hay buzón, se muestra como define HU-147 («escribe a People Service: …»). Esta historia no cambia cómo se configura ese contacto.
 
-**El campo `vinculo` existe en el modelo** (migración 0014, B.7: vinculado · banco no vinculado · fábrica de software). Se usa internamente para Neural Speed (HU-158) y **nunca cruza al portal**. El edge case lo prueba.
+**El campo `vinculo` existe en el modelo** (migración 0014, B.7: vinculado · banco no vinculado · fábrica de software). Se usa internamente para Neural Speed (HU-158) y **nunca cruza al portal**. El edge case lo prueba con un esquema de una ficha por fila, uno por cada valor de B.7 (refinado el 2026-10-02: antes un solo «Cuando» abría dos fichas).
 
 **Pregunta abierta para el sponsor:** ¿la ficha debe ofrecer una acción para iniciar esa conversación (por ejemplo «Escribir a Trycore sobre este perfil», con el código ya citado), o basta con mostrar el contacto? El PRD solo exige que se vea por dónde va la conversación. Una acción que abra el correo sería una vía nueva hacia Comercial que hoy no está especificada, y competiría con «Sumar al equipo».
 
@@ -63,4 +72,4 @@ Cubre **RF-3.3** (se publican nombre y primer apellido; no foto, correo, teléfo
 | V | Valiosa | ✓ protege el modelo de negocio (riesgo de contacto directo, §10.3) y le dice al cliente cuál es el siguiente paso |
 | E | Estimable | ✓ S: un bloque de texto con el contacto que ya existe, más pruebas de ausencia |
 | S | Pequeña | ✓ S: tres escenarios de presentación |
-| T | Testeable | ✓ con el contacto configurado y dos perfiles con vínculo distinto, el texto es comparable y la ausencia de enlaces y campos de contacto se comprueba en la pantalla y en la respuesta |
+| T | Testeable | ✓ con el contacto configurado y un perfil por cada valor de vínculo (tres filas de ejemplo), el texto es comparable y la ausencia de enlaces y campos de contacto se comprueba en la pantalla y en la respuesta |

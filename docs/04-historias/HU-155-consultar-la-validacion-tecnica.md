@@ -51,7 +51,7 @@ Cubre **RF-3.10** (estructura fija de cinco campos, nunca vacía, nunca «no apl
 **Sin artefacto adjunto en esta versión (D29):** el artefacto no se sube al panel. La evidencia la tiene Talento Humano en su formato, y la línea del edge case no promete un archivo del portal: promete la revisión en la sesión de alineación (B.8.4, regla de cierre alineada con D-1).
 
 **Preguntas abiertas para el sponsor:**
-1. ¿Los cinco campos de la ficha son los de B.8.3 («Se le pidió» y «Entregó» a la vista del cliente) o los de D30 y el prototipo (con evaluador, sin enunciado ni entregables)? Si se queda B.8.3, el enunciado del reto sale del catálogo, pero «Entregó» exige el Nivel 2 por perfil (B.9.2), que hoy no se captura.
+1. **Decisión pendiente que bloquea la estimación (INVEST E ✗, validación del 2026-10-02):** ¿Los cinco campos de la ficha son los de B.8.3 («Se le pidió» y «Entregó» a la vista del cliente) o los de D30 y el prototipo (con evaluador, sin enunciado ni entregables)? Si se queda B.8.3, el enunciado del reto sale del catálogo, pero «Entregó» exige el Nivel 2 por perfil (B.9.2), que hoy no se captura. Mientras no se decida, la historia no se puede estimar: con D30 es M sin datos nuevos; con B.8.3 exige capturar el Nivel 2 por perfil en EP-006 y la estimación cambia. El happy path está redactado con los campos de D30 y se reescribe si gana B.8.3.
 2. B.9.2 dice que el Nivel 0 incluye la **fecha** de validación, pero en el modelo la fecha solo existe con el reporte. ¿El Nivel 0 debe mostrar fecha (otro dato a capturar en EP-006) o basta con la modalidad?
 3. ¿El bloque abre plegado o desplegado por omisión? (El prototipo lo deja desplegado.)
 
@@ -66,6 +66,6 @@ Cubre **RF-3.10** (estructura fija de cinco campos, nunca vacía, nunca «no apl
 | I | Independiente | ✓ con dependencia declarada: vive en el bloque verificado de HU-154 y usa datos que EP-006 ya produce; no espera a la búsqueda ni al equipo |
 | N | Negociable | ✓ son fijos los cinco campos estables, sin puntaje, nunca vacío y sin artefacto; queda abierto qué cinco campos son (pregunta 1) y el estado inicial del desplegable |
 | V | Valiosa | ✓ es la respuesta concreta, con fecha y alcance, a «¿cómo lo validaron?», que es el diferencial que vende Trycore |
-| E | Estimable | ✓ M: convertir una fila en un bloque desplegable accesible con estructura fija y dos estados (Nivel 0 / Nivel 1), sin datos nuevos si se confirman los campos de D30 |
-| S | Pequeña | ✓ M: un bloque de la ficha con tres escenarios |
+| E | Estimable | ✗ pendiente de la decisión del sponsor sobre los cinco campos (pregunta 1): con los de D30 sería M (convertir una fila en un bloque desplegable con estructura fija y dos estados, sin datos nuevos); con los de B.8.3 exige capturar «Entregó» (Nivel 2, B.9.2) en EP-006 y no se puede estimar hasta saberlo |
+| S | Pequeña | ✓ M con los campos de D30: un bloque de la ficha con tres escenarios; se revisa si gana B.8.3 |
 | T | Testeable | ✓ perfiles sembrados con y sin reporte dan campos exactos; la ausencia de enlaces y puntajes se comprueba en la pantalla y en la respuesta; el despliegue se prueba con toque en un teléfono emulado |
