@@ -1,7 +1,7 @@
 ---
 id: HU-196
 titulo: "Ver en el tablero los días hasta la alineación agendada"
-epica: EP-008
+epica: EP-007
 prioridad: alta
 complejidad: S
 estado: lista
@@ -68,9 +68,11 @@ Cubre **§3 O3** (días entre solicitud enviada y sesión de alineación agendad
 
 **D100 (sponsor, 2026-10-02).** O3 se agrega con la **mediana** de días hábiles y el **% de solicitudes agendadas en ≤ 3 días hábiles**; las no agendadas no entran en ninguno de los dos y se cuentan aparte. Sustituye la propuesta anterior de mediana sola.
 
+**D103 (sponsor, 2026-10-02): cambio de épica.** Esta historia pasa a **EP-007**, donde nacen los datos o la capacidad de la que depende. No es recorte: se construye entera con esa épica.
+
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.18 · §3 O3 · §11 KPIs · RF-9.1.3 · RF-17.4 · T-4 · D68, D74 y D75 · D91, D92 y D93 (sponsor, 2026-10-02, tercera ronda) · sale de HU-171 (partición, no recorte) · depende de HU-171 (tablero y permiso «Medición») y HU-107 (lectura diaria y conteo de días hábiles, EP-007) · D100 (sponsor, 2026-10-02: mediana + % en ≤ 3 días hábiles)
+Épica madre: **EP-007** (D103) · PRD v4.18 · §3 O3 · §11 KPIs · RF-9.1.3 · RF-17.4 · T-4 · D68, D74 y D75 · D91, D92 y D93 (sponsor, 2026-10-02, tercera ronda) · sale de HU-171 (partición, no recorte) · depende de HU-171 (tablero y permiso «Medición») y HU-107 (lectura diaria y conteo de días hábiles, EP-007) · D100 (sponsor, 2026-10-02: mediana + % en ≤ 3 días hábiles)
 
 ## INVEST
 

@@ -153,6 +153,8 @@ prd_version_alineada: 4.13
 - **RF-6.3** Bloque de respaldo: Trycore University, Hive Mind y Coordinación de Servicio dedicada.
 - **RF-6.4** **Declaración de condición de entrada**, visible antes del primer resultado y con autoridad: ningún perfil llega al portal sin verificación de identidad bajo SARO, prueba técnica en vivo y evaluación DISC. Se enuncia una vez, no se repite por tarjeta.
 - **RF-6.5** **Garantía de servicio (Neural Speed)**, enunciada como propiedad del servicio y nunca como atributo de la persona: el talento que entra al proyecto trabaja con agentes de IA desde el día 1 y con línea directa al CoE. Donde exista evidencia previa del perfil en IA aplicada, se muestra como parte de su experiencia.
+- **D101 (2026-10-02): HU-175 pasa a EP-004**, junto a HU-192. EP-003 abre con 15 historias.
+
 ---
 
 ## EP-004 — Armado de equipo
@@ -193,6 +195,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 - **RF-4.3** Vista de resumen: perfiles seleccionados, roles cubiertos y fecha de inicio más temprana posible del conjunto.
 - **RF-4.4** Comparador de hasta 3 perfiles con los mismos criterios en paralelo.
 - **RF-4.5** La selección sobrevive al cierre del navegador y al cambio de dispositivo **dentro de la vigencia del enlace**. Como está ligada al enlace, un enlace nuevo para la misma cuenta abre un equipo nuevo.
+- **Recibe HU-175 (D101, 2026-10-02)**: sumar o quitar desde la ficha, que depende de HU-192.
+
 ---
 
 ## EP-005 — Solicitud de equipo y agendamiento
@@ -349,6 +353,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
   - **RF-9.7.2** La notificación trae lo necesario para decidir sin abrir el CRM: cuenta, quién solicita, perfiles o especificación, momento de incorporación y enlace al negocio.
   - **RF-9.7.3 · Escalamiento.** Si nadie abre el negocio en **4 horas hábiles**, se reenvía a la dirección comercial. A las **24 horas hábiles** sin movimiento de etapa, se escala a Dirección General. Un punto único de falla sin escalamiento no es un mecanismo: es una esperanza. *Mecanismo:* una tarea programada cada quince minutos compara los plazos en horas hábiles contra el estado del negocio en HubSpot. La ejecuta el proceso de trabajo diferido, activo desde la v1 (§8.3).
   - **RF-9.7.4** El tiempo entre la notificación y la primera apertura del negocio se registra. Es la métrica que dice si el mecanismo funciona, y sin ella el escalamiento se calibra a ciegas.
+- **Recibe HU-196 (D103, 2026-10-02)**: O3 en el tablero de Medición, porque la fecha de agendado nace aquí (HU-107).
+
 ---
 
 ## EP-008 — Telemetría y medición
@@ -381,6 +387,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 - **RF-7.2** Reporte de filtros más usados y de búsquedas sin resultados — insumo directo para decidir qué perfiles reclutar.
 - **RF-7.3** Atribución de cada sesión a la cuenta, al contacto y al envío de correo que la originó.
 - **RF-7.4** Distinguir interacción con el conjunto curado frente a interacción por descubrimiento. Mide si la curaduría acierta.
+- **D103 (2026-10-02): HU-189 pasa a EP-010 y HU-196 a EP-007**, donde nacen sus datos. EP-008 abre con 20 historias. **D102:** las pantallas de Medición se prototipan con /build:prototype y las aprueba el sponsor antes de construir su UI.
+
 ---
 
 ## EP-009 — Entrada por instrucción y Perfil Objetivo
@@ -517,6 +525,8 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 - **RF-15.1** Se registra la **especificación estructurada completa**, no el texto libre. *(M-18 · evidencia E)*
   - *En contra:* solo vale si alguien lo revisa con cadencia. Sin dueño y frecuencia definidos antes de construirlo, es una tabla que nadie abre. Y RF-12.1 puede contaminarlo con demanda inducida.
   - *Resuelto (D-13):* **Talento Humano, revisión mensual.** Es quien actúa sobre el dato. El registro deja de estar bloqueado.
+- **Recibe HU-189 (D103, 2026-10-02)**: registrar una decisión de reclutamiento, que usa el registro de demanda de HU-078.
+
 ---
 
 ## EP-011 — Correo curado y distribución
