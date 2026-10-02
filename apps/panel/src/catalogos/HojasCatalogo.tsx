@@ -432,6 +432,13 @@ function HojaValor({
                 </span>
                 {`Al confirmar, ${impactoTexto.length === 1 ? "su ficha muestra" : "sus fichas muestran"} el texto nuevo y el historial guarda quién lo cambió, cuándo, y el texto anterior y el nuevo.`}
               </p>
+            </div>
+          )}
+          {impactoTexto && impactoTexto.length > 0 && (
+            <section className="ct-seccion" aria-labelledby="ct-fichas-texto">
+              <h3 className="ct-seccion__titulo" id="ct-fichas-texto">
+                Fichas publicadas que cambian
+              </h3>
               <ul className="ct-perfiles">
                 {impactoTexto.map((x) => (
                   <li key={x.codigo} className="ct-perfil ct-perfil--2">
@@ -440,7 +447,7 @@ function HojaValor({
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           )}
           {tipo === "modalidad_prueba" && (
             <>
