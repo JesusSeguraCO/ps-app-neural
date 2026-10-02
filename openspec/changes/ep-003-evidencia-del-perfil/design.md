@@ -213,3 +213,24 @@ para no mover los conteos del banco ficticio que fijan los tests. El guardado de
   línea de competencias). Quedan textos de 12 px anteriores a SS6 en la cara cliente (`pp-meta`, `rs-sello`,
   `fp-atajos`, campos de la validación técnica): se anotan para el Release Gate, no se tocan aquí.
 - Sin migraciones (0030–0031 siguen libres). Capturas: `.claude/state/evidencia/ep-003/ss7/fidelidad.md`.
+
+### Fidelidad final de la épica · desviaciones registradas (tarea 8.3; D124, D126, D134)
+
+Consolidado de `ss1…ss7/fidelidad.md` (capturas reales con MCP chrome-devtools, contexto aislado «ep003», contra el
+prototipo v2 `docs/07-prototipo/` y las pantallas de `docs/05-prototipo/pantallas/`). Evidencia del gate:
+`.claude/state/evidencia/ep-003/gate-fidelity.md`. Todas las desviaciones van a favor de una HU, del PRD o de una
+decisión registrada; ninguna recorta alcance.
+
+| Pantalla | Referencia | Trato | Desviaciones |
+|---|---|---|---|
+| Catálogos · pestaña de alcances SARO; editor · bloque de validaciones de entrada; vista previa (SS1) | sin dibujo en el prototipo | D124: patrones aprobados de EP-006 (catálogos, editor) | pantallas nuevas sobre patrón; sin hero ni componentes propios |
+| Listado · marca y pestaña «Incompletos»; aviso de lenguaje; variante D1 (SS2) | `inventario-perfiles.html`, `perfil-editor--incompleto-al-guardar.html` | D124/D126 | marca y pestaña con la alerta ámbar de EP-006; aviso `pp-aviso--warn` |
+| Importación con columnas SARO/DISC (SS3) | `importar-perfiles*.html` | D126 | el selector de ancho fijo corta «Alcance de la verificación SAR…» (copy a la pasada D73) |
+| Tarjeta (SS4) | v2 `tarjeta-perfil.tsx`, `resultados.html` | prototipo v2 | título = capacidad (HU-153); solo país (RF-13.5.5); sin «Cumple N de M» ni grupos (EP-009, D87); sin «Sumar al equipo» (EP-004); sello solo en el bloque verificado; banda con rótulos de EP-001 |
+| Ficha · «Frente a tu búsqueda», validación técnica, contacto (SS4–SS5) | v2 `ficha-perfil.tsx`, `validacion-tecnica.tsx`, `ficha-perfil.html` | prototipo v2 | campos y orden de D59; encabezado «Validación técnica» dentro de «Verificado por Trycore»; «Conversación con Trycore» con el patrón de sección (no está en el prototipo) |
+| Ficha · SARO, DISC, Sello, cierre y referencia (SS6) | v2 §6 | prototipo v2 | cierre con condiciones/SLA/garantía sobre patrón (HU-158, no dibujado); el código sale de la cabecera y queda al pie (RF-3.5); competencias del Sello bajo la DISC (B.1) |
+| Encabezado del estándar y respaldo (SS7) | v2 §1 `hero-neural-grid`, `franja-servicio` | D134 | marca simple núcleo + cuatro nodos (D64) en vez del hero ilustrado con retratos; SLA fijo en el bloque de respaldo en vez de la franja que se cierra (RF-6.1/6.2) |
+
+Pendiente para el Release Gate (no bloquea `fidelity`): textos de 12 px heredados en la cara cliente (M-8:
+`.pp-meta`, `.rs-sello`, `.fp-atajos`, campos de la validación técnica, `.fp-validacion__nota`) y la pasada de
+copy con Mercadeo (D73) sobre `packages/ui/src/copy.ts` y `packages/dominio/src/catalogo/estandar.ts`.
