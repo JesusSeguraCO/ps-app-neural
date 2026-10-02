@@ -2,7 +2,7 @@
 // (`selloValido`). Un sello fuera de contrato no se dibuja recortado ni con huecos: la ficha lo omite,
 // como si no hubiera sello, igual que la tarjeta. La vista previa del panel usa esta misma función.
 import { describe, expect, it } from "vitest";
-import { FichaPerfil, armarFicha, cambiosDeCaraAlCliente, type DatosFicha } from "./ficha";
+import { FichaPerfil, armarFicha, type DatosFicha } from "./ficha";
 
 const ahora = new Date("2026-10-02T15:00:00Z");
 const base: DatosFicha = {

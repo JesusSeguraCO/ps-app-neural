@@ -45,7 +45,8 @@ describe("contrato del catálogo (V8-4)", () => {
     expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", "B", "C", "D"] }).success).toBe(false);
     expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", ""] }).success).toBe(false);
     expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", "   "] }).success).toBe(false);
-    const { selloPersonal: _s, ...sinSello } = valido;
+    const sinSello: Partial<typeof valido> = { ...valido };
+    delete sinSello.selloPersonal;
     expect(PerfilCatalogo.safeParse(sinSello).success).toBe(false);
   });
 
