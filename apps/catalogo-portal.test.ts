@@ -76,7 +76,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("catálogo tras sesión (V8-4)",
     bd = await crearBdPrueba();
     const panelEnv = entornoDev("panel");
     await sembrarFicticios({
-      bd: bd.como("ps_worker"),
+      bd: bd.como("ps_panel"),
       auditoria: { hmac: panelEnv.AUDIT_HMAC_KEY!, kek: panelEnv.AUDIT_KEK! },
       appEnv: "ci",
       registrar: () => {},

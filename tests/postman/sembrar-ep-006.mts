@@ -18,9 +18,8 @@ const DIR = new URL("../../.local/newman-ep-006/", import.meta.url);
 mkdirSync(DIR, { recursive: true });
 
 const bd = await crearBdPrueba();
-const worker = bd.como("ps_worker");
-await sembrarFicticios({ bd: worker, auditoria, appEnv: "ci", registrar: () => {} });
-await sembrarLexicoFicticio({ bd: worker, appEnv: "ci", registrar: () => {} });
+await sembrarFicticios({ bd: bd.como("ps_panel"), auditoria, appEnv: "ci", registrar: () => {} });
+await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
 const i = bd.instalacion;
 
 async function usuario(correo: string, rol: "administrador" | "observador") {

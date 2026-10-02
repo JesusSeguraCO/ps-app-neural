@@ -3,7 +3,7 @@
 // Los errores nombran variables, nunca valores.
 import { z } from "zod";
 
-export type Proceso = "portal" | "panel" | "worker" | "migrar";
+export type Proceso = "portal" | "panel" | "worker" | "migrar" | "sembrar";
 export type AppEnv = "local" | "ci" | "staging" | "produccion";
 export type Doble = "mailgun" | "gemini" | "spaces" | "latido";
 
@@ -66,11 +66,15 @@ export const VARIABLES: Record<Proceso, readonly string[]> = {
     "PANEL_ADMIN_INICIAL",
     // Renovación del enlace vencido (HU-092, HU-146): enlace nuevo con el origen del portal y buzón de
     // Talento Humano para el aviso de cada petición. Sin HubSpot desde el 2026-09-29 (sponsor): su
-    // token vuelve con la épica que escriba en el CRM (EP-007). Enmienda de ADR-0010 §3.3.
+    // token vuelve con la épica que escriba en el CRM (EP-007). Enmienda pendiente de ADR-0010 §3.3 (E-8, E-15).
     "PORTAL_ORIGEN",
     "CORREO_TALENTO_HUMANO",
   ],
   migrar: ["APP_ENV", "MIGRATOR_DATABASE_URL"],
+  // Siembra ficticia (local, CI y staging; `migrar.js --sembrar-ficticios`): cada dato con el rol que lo
+  // escribe en producción. Perfiles, consentimientos y catálogos con el del panel; candidatas del léxico
+  // con el del worker, que ya no escribe consentimientos ni catálogos (ADR-0009, migración 0026).
+  sembrar: ["APP_ENV", "SEMBRAR_PANEL_URL", "SEMBRAR_WORKER_URL", "AUDIT_HMAC_KEY", "AUDIT_KEK"],
 };
 
 // Variables que solo existen durante una rotación, o con valor por omisión.
@@ -106,6 +110,8 @@ const FORMATO: Record<string, z.ZodType<string>> = {
   DATABASE_DIRECT_URL: urlPostgres,
   EXPORT_DATABASE_URL: urlPostgres,
   MIGRATOR_DATABASE_URL: urlPostgres,
+  SEMBRAR_PANEL_URL: urlPostgres,
+  SEMBRAR_WORKER_URL: urlPostgres,
   MAILGUN_DOMAIN: z.string().regex(/^mg\./),
   SPACES_BUCKET: z.string().min(3),
   LATIDO_URL: z.url(),

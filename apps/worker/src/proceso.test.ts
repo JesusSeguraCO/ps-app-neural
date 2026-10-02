@@ -11,7 +11,7 @@ const RAIZ = fileURLToPath(new URL("../../../", import.meta.url));
 const WORKER = fileURLToPath(new URL("../dist/worker.js", import.meta.url));
 const MIGRAR = fileURLToPath(new URL("../dist/migrar.js", import.meta.url));
 
-function entornoDev(proceso: "worker" | "migrar"): Record<string, string> {
+function entornoDev(proceso: "worker" | "migrar" | "sembrar"): Record<string, string> {
   const salida = execFileSync("bash", [`${RAIZ}/scripts/entorno-dev.sh`, proceso], {
     encoding: "utf8",
   });
@@ -65,18 +65,13 @@ describe("arranque con configuración incompleta (V8-9)", () => {
     expect(r.stderr).toContain("DOBLES");
   });
 
-  it("--sembrar-ficticios con APP_ENV=produccion sale con código ≠ 0 sin conectarse (tarea 3.2)", () => {
-    const entorno = entornoDev("worker");
-    delete entorno.DOBLES;
-    for (const v of obligatorias) entorno[v] ??= "x".repeat(40);
+  it("migrar --sembrar-ficticios con APP_ENV=produccion sale con código ≠ 0 sin conectarse (tarea 3.2)", () => {
+    const entorno = entornoDev("sembrar");
     entorno.APP_ENV = "produccion";
-    entorno.MAILGUN_DOMAIN = "mg.people.trycore.com";
-    entorno.SPACES_BUCKET = "ps-evidencias";
-    entorno.LATIDO_URL = "https://latido.example/ping";
-    entorno.EXPORT_AGE_RECIPIENT = "age1produccion";
-    // Una BD inalcanzable: si intentara conectar, el error sería otro.
-    entorno.DATABASE_URL = "postgres://ps_worker:x@127.0.0.1:1/ps";
-    const r = correr(WORKER, entorno, ["--sembrar-ficticios"]);
+    // BD inalcanzables: si intentara conectar, el error sería otro.
+    entorno.SEMBRAR_PANEL_URL = "postgres://ps_panel:x@127.0.0.1:1/ps";
+    entorno.SEMBRAR_WORKER_URL = "postgres://ps_worker:x@127.0.0.1:1/ps";
+    const r = correr(MIGRAR, entorno, ["--sembrar-ficticios"]);
     expect(r.status).not.toBe(0);
     expect(r.stdout).toContain("ficticios_rechazado");
     expect(r.stdout).not.toContain("ficticios_fallo");
@@ -154,21 +149,21 @@ describe.skipIf(!HAY_BD)("procesos contra una BD real (V8-11)", () => {
     await bd.instalacion.query(`DELETE FROM identidad_panel.usuarios_panel`);
   }, 30_000);
 
-  it("--sembrar-ficticios en CI siembra y sale con 0; repetirlo no crea nada", () => {
+  it("migrar --sembrar-ficticios en CI siembra con el rol del panel y el del worker, sale con 0; repetirlo no crea nada", () => {
     const entorno = {
-      ...entornoDev("worker"),
+      ...entornoDev("sembrar"),
       APP_ENV: "ci",
-      DATABASE_URL: bd.urlDe("ps_worker"),
-      DATABASE_DIRECT_URL: bd.urlDe("ps_worker", { directa: true }),
+      SEMBRAR_PANEL_URL: bd.urlDe("ps_panel"),
+      SEMBRAR_WORKER_URL: bd.urlDe("ps_worker"),
     };
-    const primera = correr(WORKER, entorno, ["--sembrar-ficticios"]);
+    const primera = correr(MIGRAR, entorno, ["--sembrar-ficticios"]);
     expect(primera.status, primera.stdout + primera.stderr).toBe(0);
     const eventos = (salida: string) => salida.trim().split("\n").map((l) => JSON.parse(l) as Record<string, unknown>);
     const de = (salida: string, evento: string) => eventos(salida).find((e) => e.evento === evento);
     expect(de(primera.stdout, "ficticios_sembrados")).toBeDefined();
     // EP-006: también las modalidades de prueba y las consultas sin coincidencia sintéticas.
     expect(de(primera.stdout, "lexico_ficticio_sembrado")).toMatchObject({ candidatas: 7 });
-    const segunda = correr(WORKER, entorno, ["--sembrar-ficticios"]);
+    const segunda = correr(MIGRAR, entorno, ["--sembrar-ficticios"]);
     expect(de(segunda.stdout, "ficticios_sembrados")).toMatchObject({ creados: 0 });
     expect(de(segunda.stdout, "lexico_ficticio_sembrado")).toMatchObject({ modalidades: 0, candidatas: 0 });
   }, 30_000);

@@ -32,9 +32,10 @@ export {
   unirLista,
   formatearExperiencia,
   leerExperiencia,
+  sinNeutralizar,
   type ExperienciaTexto,
 } from "@ps/dominio/importacion/celdas";
-import { SEPARADOR_LISTA, VACIAR, unirLista } from "@ps/dominio/importacion/celdas";
+import { SEPARADOR_LISTA, VACIAR, neutralizar, unirLista } from "@ps/dominio/importacion/celdas";
 
 export const CAMPOS_IMPORTACION: readonly CampoImportacion[] = [
   {
@@ -345,7 +346,8 @@ function aCelda(v: FilaFormato[ClaveCampo]): string {
 }
 
 function comillas(c: string): string {
-  return /[",\n\r]/.test(c) ? `"${c.replaceAll('"', '""')}"` : c;
+  const n = neutralizar(c);
+  return /[",\n\r]/.test(n) ? `"${n.replaceAll('"', '""')}"` : n;
 }
 
 // Hoja de cálculo: CSV con BOM (Excel abre los acentos bien) y encabezados autoexplicativos.
@@ -386,8 +388,10 @@ export function escribirTabla(
       2,
     )}\n`;
   const sep = formato === "tsv" ? "\t" : ",";
-  const celda = (c: string) =>
-    c.includes(sep) || /["\n\r]/.test(c) ? `"${c.replaceAll('"', '""')}"` : c;
+  const celda = (c: string) => {
+    const n = neutralizar(c);
+    return n.includes(sep) || /["\n\r]/.test(n) ? `"${n.replaceAll('"', '""')}"` : n;
+  };
   const cuerpo = [encabezados, ...filas].map((cs) => cs.map(celda).join(sep));
   return `${formato === "csv" ? "\uFEFF" : ""}${cuerpo.join("\r\n")}\r\n`;
 }

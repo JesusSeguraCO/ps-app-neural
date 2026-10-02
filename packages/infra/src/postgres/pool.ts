@@ -5,7 +5,7 @@ import pg from "pg";
 import { cargarConfiguracion, type Proceso } from "../config";
 
 const pools = new Map<Proceso, pg.Pool>();
-const MAXIMOS: Record<Proceso, number> = { portal: 4, panel: 4, worker: 5, migrar: 1 };
+const MAXIMOS: Record<Proceso, number> = { portal: 4, panel: 4, worker: 5, migrar: 1, sembrar: 1 };
 
 export function poolDe(proceso: Proceso): pg.Pool {
   let p = pools.get(proceso);

@@ -42,3 +42,22 @@ describe("banda de disponibilidad (RF-3.13, RF-8.14.4)", () => {
     expect(bandaDeDisponibilidad({ fecha: "2026-12-01", actualizadaEn: hace(90) }, HOY)).toBe("mas_de_un_mes");
   });
 });
+
+describe("«sin tocar» cuenta días civiles de Bogotá, como la bandeja de vigencia (Release Gate R0, smell B2)", () => {
+  it("actualizada el 1 sep a la 1 a. m. y vista el 1 oct a las 11 p. m.: 30 días civiles, todavía no «por confirmar»", () => {
+    // En milisegundos son 30 días y 22 horas (> 30); en días civiles son 30: la bandeja no la lista.
+    const banda = bandaDeDisponibilidad(
+      { fecha: "2026-09-15", actualizadaEn: new Date("2026-09-01T06:00:00Z") },
+      new Date("2026-10-02T04:00:00Z"),
+    );
+    expect(banda).toBe("inmediato");
+  });
+
+  it("al día civil 31 pasa a «por confirmar»", () => {
+    const banda = bandaDeDisponibilidad(
+      { fecha: "2026-09-15", actualizadaEn: new Date("2026-09-01T06:00:00Z") },
+      new Date("2026-10-02T06:00:00Z"),
+    );
+    expect(banda).toBe("por_confirmar");
+  });
+});

@@ -103,7 +103,7 @@ export default async function Banco({
               <li key={perfil.codigo}>
                 <TarjetaPerfil
                   item={{ codigo: perfil.codigo, tipo: "disponible", perfil }}
-                  ficha={{ href: href(perfil.codigo), abierta: Boolean(ficha) && perfil.codigo === pedida }}
+                  ficha={{ href: href(perfil.codigo), abierta: Boolean(paso) && perfil.codigo === pedida }}
                 />
               </li>
             ))}
@@ -129,7 +129,7 @@ export default async function Banco({
       </div>
     </MarcoPortal>
   );
-  if (!paso || !ficha) return pagina;
+  if (!paso) return pagina;
   const lista = filtro.tipo === "todo" ? "banco de perfiles" : `banco · ${filtro.tipo === "contexto" ? "tu selección" : filtro.valor}`;
   return (
     <>

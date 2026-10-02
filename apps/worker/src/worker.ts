@@ -1,7 +1,5 @@
 // Worker de trabajo diferido (ADR-0009 §3). `node dist/worker.js`:
 //   --comprobar          valida la configuración y sale (0 si es válida; V8-11)
-//   --sembrar-ficticios  siembra los perfiles ficticios, las modalidades de prueba y las consultas sin
-//                        coincidencia sintéticas y sale (local, CI y staging; EP-001 3.2, EP-006 1.8)
 //   --proponer-lexico    corre una vez la tarea semanal `proponer_lexico` y sale (EP-006 1.7)
 //   --migrar-colocados   pasa los perfiles en estado `colocado` a publicado con su colocación y sale
 //                        (EP-006 9.1; requisito de la migración 0021). También corre al arrancar.
@@ -16,8 +14,6 @@ import { registrarTareas, vueltaPlanificador, type Tarea } from "./planificador"
 import { migrarColocados } from "@ps/infra/postgres/colocados";
 import { proponerLexico } from "./proponer-lexico";
 import { sembrarAdminInicial } from "./sembrar";
-import { sembrarFicticios } from "./sembrar-ficticios";
-import { sembrarLexicoFicticio } from "./sembrar-lexico";
 
 const registrar = (e: Record<string, unknown>) =>
   console.log(JSON.stringify({ ts: new Date().toISOString(), ...e }));
@@ -27,28 +23,6 @@ const config = exigirConfiguracion("worker");
 if (process.argv.includes("--comprobar")) {
   registrar({ evento: "configuracion_valida", proceso: "worker", app_env: config.APP_ENV });
   process.exit(0);
-}
-
-if (process.argv.includes("--sembrar-ficticios")) {
-  if (config.APP_ENV === "produccion") {
-    registrar({ evento: "ficticios_rechazado", motivo: "bloqueado en producción" });
-    process.exit(1);
-  }
-  const pool = new pg.Pool({ connectionString: config.DATABASE_URL, max: 2 });
-  try {
-    await sembrarFicticios({
-      bd: pool,
-      auditoria: { hmac: config.AUDIT_HMAC_KEY!, kek: config.AUDIT_KEK! },
-      appEnv: config.APP_ENV,
-      registrar,
-    });
-    await sembrarLexicoFicticio({ bd: pool, appEnv: config.APP_ENV, registrar });
-    await pool.end();
-    process.exit(0);
-  } catch (e) {
-    registrar({ evento: "ficticios_fallo", error: (e as Error).message });
-    process.exit(1);
-  }
 }
 
 const correo: EnviadorCorreo = doblesDe(config).has("mailgun")

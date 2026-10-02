@@ -1,4 +1,4 @@
-// Siembra de perfiles ficticios (EP-001 · tarea 3.2): `node dist/worker.js --sembrar-ficticios`.
+// Siembra de perfiles ficticios (EP-001 · tarea 3.2): `node dist/migrar.js --sembrar-ficticios` (rol del panel; ADR-0009, 0026).
 // Solo en local, CI y staging; con APP_ENV=produccion se niega antes de abrir conexiones. Idempotente
 // por código. Cada perfil se audita con su propio titular (clave por profesional, ADR-0003 H42).
 // Datos inventados: ninguna persona real; sin campos de la lista negra B.4.

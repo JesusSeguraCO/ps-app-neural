@@ -10,20 +10,12 @@
 import { bandaDeDisponibilidad, DIAS_SIN_TOCAR } from "../catalogo/banda";
 import type { EstadoAlmacenado } from "./estados";
 
+import { diaCivilDeColombia, diasCivilesDesde } from "../fecha/colombia";
+
+// Se re-exportan para quien ya los importa de aquí; el hogar es `fecha/colombia`.
+export { diaCivilDeColombia, diasCivilesDesde };
+
 const DIA_MS = 86_400_000;
-const BOGOTA_MS = -5 * 3_600_000;
-
-// Fecha civil de Bogotá (AAAA-MM-DD) de un instante.
-export const diaCivilDeColombia = (d: Date) =>
-  new Date(d.getTime() + BOGOTA_MS).toISOString().slice(0, 10);
-
-export function diasCivilesDesde(desde: Date, ahora: Date): number {
-  return Math.round(
-    (Date.parse(`${diaCivilDeColombia(ahora)}T00:00:00Z`) -
-      Date.parse(`${diaCivilDeColombia(desde)}T00:00:00Z`)) /
-      DIA_MS,
-  );
-}
 
 const sumarDias = (aaaammdd: string, dias: number) =>
   new Date(Date.parse(`${aaaammdd}T00:00:00Z`) + dias * DIA_MS).toISOString().slice(0, 10);

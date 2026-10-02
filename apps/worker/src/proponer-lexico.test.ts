@@ -18,7 +18,7 @@ describe("sembrarLexicoFicticio se niega en producción", () => {
       query: () => Promise.reject(new Error("no debió tocar la BD")),
     } as unknown as pg.Pool;
     await expect(
-      sembrarLexicoFicticio({ bd, appEnv: "produccion", registrar: () => {} }),
+      sembrarLexicoFicticio({ bd, candidatas: bd, appEnv: "produccion", registrar: () => {} }),
     ).rejects.toThrow(/producci[oó]n/);
   });
 });
@@ -31,12 +31,12 @@ describe.skipIf(!HAY_BD)("proponer_lexico con el doble de Gemini (V9-8)", () => 
   beforeAll(async () => {
     bd = await crearBdPrueba();
     worker = bd.como("ps_worker");
-    await sembrarFicticios({ bd: worker, auditoria: CLAVES, appEnv: "ci", registrar: () => {} });
-    const s = await sembrarLexicoFicticio({ bd: worker, appEnv: "ci", registrar: () => {} });
+    await sembrarFicticios({ bd: bd.como("ps_panel"), auditoria: CLAVES, appEnv: "ci", registrar: () => {} });
+    const s = await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
     expect(s.candidatas).toBe(CANDIDATAS_SINTETICAS.length);
     // Idempotente.
     expect(
-      (await sembrarLexicoFicticio({ bd: worker, appEnv: "ci", registrar: () => {} })).candidatas,
+      (await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} })).candidatas,
     ).toBe(0);
   }, 90_000);
 

@@ -104,7 +104,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
       bd = await crearBdPrueba();
       const auditoria = { hmac: panelEnv.AUDIT_HMAC_KEY!, kek: panelEnv.AUDIT_KEK! };
       await sembrarFicticios({
-        bd: bd.como("ps_worker"),
+        bd: bd.como("ps_panel"),
         auditoria,
         appEnv: "ci",
         registrar: () => {},

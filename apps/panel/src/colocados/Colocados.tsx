@@ -383,7 +383,10 @@ export function NombreColocado(p: { colocado: ColocadoEnHoja }) {
                   </div>
                 </dl>
               )}
-              <p>El cliente ve la banda, nunca la fecha ni la cuenta.</p>
+              <p>
+                En el banco el cliente ve la banda, nunca la fecha ni la cuenta; en la selección de su
+                correo, la fecha en que se libera.
+              </p>
             </section>
           </div>
         </Hoja>

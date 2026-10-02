@@ -118,7 +118,7 @@ export default async function Inicio({
             <li key={item.codigo}>
               <TarjetaPerfil
                 item={item}
-                ficha={{ href: href(item.codigo), abierta: Boolean(ficha) && item.codigo === pedida }}
+                ficha={{ href: href(item.codigo), abierta: Boolean(paso) && item.codigo === pedida }}
               />
             </li>
           ))}
@@ -126,7 +126,7 @@ export default async function Inicio({
       </section>
     </MarcoPortal>
   );
-  if (!paso || !ficha) return pagina;
+  if (!paso) return pagina;
   return (
     <>
       <div inert>{pagina}</div>

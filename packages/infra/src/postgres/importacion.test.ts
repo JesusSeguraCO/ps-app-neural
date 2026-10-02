@@ -43,7 +43,7 @@ describe.skipIf(!HAY_BD)(
       bd = await crearBdPrueba();
       panel = bd.como("ps_panel");
       await sembrarFicticios({
-        bd: bd.como("ps_worker"),
+        bd: bd.como("ps_panel"),
         auditoria: claves,
         appEnv: "ci",
         registrar: () => {},
@@ -53,7 +53,7 @@ describe.skipIf(!HAY_BD)(
         [randomBytes(32)],
       );
       autor = { usuarioId: u.rows[0].id, correo: "karen@trycore.com" };
-      await sembrarLexicoFicticio({ bd: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
+      await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
       // Un perfil con todos los campos del Anexo B (la siembra de EP-001 no trae trayectoria ni sello).
       const id = async (tabla: string, nombre: string) =>
         (

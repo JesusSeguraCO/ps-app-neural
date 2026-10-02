@@ -8,6 +8,7 @@
 // contradicción señalada con su salida (HU-134, D6).
 import { useEffect, useRef, useState } from "react";
 import { bandaDeDisponibilidad, ROTULO_BANDA } from "@ps/dominio/catalogo/banda";
+import { diasCivilesDesde } from "@ps/dominio/fecha/colombia";
 import {
   ETIQUETA_BANDA_PANEL,
   OPCIONES_DISPONIBILIDAD,
@@ -185,8 +186,9 @@ export function DisponibilidadFila(p: {
   );
 }
 
+// Días civiles de Bogotá, como la bandeja de vigencia: la fila y la bandeja dicen lo mismo.
 function momento(iso: string): string {
-  const dias = Math.round((Date.now() - Date.parse(iso)) / 86_400_000);
+  const dias = diasCivilesDesde(new Date(iso), new Date());
   return dias <= 0 ? "hoy" : dias === 1 ? "ayer" : `hace ${dias} días`;
 }
 

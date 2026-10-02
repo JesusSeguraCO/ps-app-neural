@@ -111,8 +111,11 @@ export const CANDIDATAS_SINTETICAS: Array<{
   },
 ];
 
+// `bd` es el rol del panel (modalidades de prueba, como en producción); `candidatas`, el del worker,
+// único que inserta consultas sin coincidencia (0013).
 export async function sembrarLexicoFicticio(ctx: {
   bd: pg.Pool;
+  candidatas: pg.Pool;
   appEnv: "local" | "ci" | "staging" | "produccion";
   registrar: (e: Record<string, unknown>) => void;
 }): Promise<{ modalidades: number; candidatas: number }> {
@@ -132,7 +135,7 @@ export async function sembrarLexicoFicticio(ctx: {
   let candidatas = 0;
   for (const c of CANDIDATAS_SINTETICAS) {
     // El período es el mes (en Bogotá) de la última búsqueda.
-    const r = await ctx.bd.query(
+    const r = await ctx.candidatas.query(
       `INSERT INTO inventario.candidatas_lexico (consulta, periodo, veces, cuentas, ultima_en, modelo_permitido, sintetica)
        SELECT $1, date_trunc('month', (now() - make_interval(days => $4)) AT TIME ZONE 'America/Bogota')::date,
               $2, $3, now() - make_interval(days => $4), $5, true

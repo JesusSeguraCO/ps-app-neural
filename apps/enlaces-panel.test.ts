@@ -67,7 +67,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))("generar enlace desde el panel (H
     bd = await crearBdPrueba();
     entorno = { ...entornoDev("panel"), APP_ENV: "ci", DATABASE_URL: bd.urlDe("ps_panel") };
     await sembrarFicticios({
-      bd: bd.como("ps_worker"),
+      bd: bd.como("ps_panel"),
       auditoria: { hmac: entorno.AUDIT_HMAC_KEY!, kek: entorno.AUDIT_KEK! },
       appEnv: "ci",
       registrar: () => {},

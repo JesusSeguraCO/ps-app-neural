@@ -13,13 +13,16 @@ export const BANDAS = [
 ] as const;
 export type Banda = (typeof BANDAS)[number];
 
+import { diaCivilDeColombia, diasCivilesDesde } from "../fecha/colombia";
+
 const DIA_MS = 86_400_000;
-const BOGOTA_MS = -5 * 3_600_000;
+// Una sola regla de «sin tocar» (RF-3.13.3, RF-8.14.4, HU-133): la usan la banda, la bandeja de
+// vigencia y la matriz de coherencia.
 export const DIAS_SIN_TOCAR = 30;
 
 // Días entre hoy (en Bogotá) y `fecha` (AAAA-MM-DD, fecha civil sin hora).
 function diasHasta(fecha: string, ahora: Date): number {
-  const hoy = new Date(ahora.getTime() + BOGOTA_MS).toISOString().slice(0, 10);
+  const hoy = diaCivilDeColombia(ahora);
   return Math.round((Date.parse(`${fecha}T00:00:00Z`) - Date.parse(`${hoy}T00:00:00Z`)) / DIA_MS);
 }
 
@@ -30,7 +33,7 @@ export function bandaDeDisponibilidad(
   if (!d.fecha || !d.actualizadaEn) return "por_confirmar";
   const dias = diasHasta(d.fecha, ahora);
   if (dias <= 0) {
-    const sinTocar = (ahora.getTime() - d.actualizadaEn.getTime()) / DIA_MS;
+    const sinTocar = diasCivilesDesde(d.actualizadaEn, ahora);
     return dias < 0 && sinTocar > DIAS_SIN_TOCAR ? "por_confirmar" : "inmediato";
   }
   if (dias <= 7) return "una_semana";

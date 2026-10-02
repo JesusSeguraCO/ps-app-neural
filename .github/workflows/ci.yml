@@ -38,8 +38,8 @@ jobs:
           npx vitest run
       - name: Perfiles ficticios para el navegador (tarea 3.2; bloqueado en producción)
         run: |
-          eval "$(scripts/entorno-dev.sh worker)"
-          APP_ENV=ci node apps/worker/dist/worker.js --sembrar-ficticios
+          eval "$(scripts/entorno-dev.sh sembrar)"
+          APP_ENV=ci node apps/worker/dist/migrar.js --sembrar-ficticios
       - name: Navegador (CSP, axe, móvil)
         run: |
           npx playwright install --with-deps chromium

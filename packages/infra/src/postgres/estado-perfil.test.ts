@@ -106,9 +106,8 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
     bd = await crearBdPrueba();
     panel = bd.como("ps_panel");
     portal = bd.como("ps_portal");
-    const worker = bd.como("ps_worker");
-    await sembrarFicticios({ bd: worker, auditoria: claves, appEnv: "ci", registrar: () => {} });
-    await sembrarLexicoFicticio({ bd: worker, appEnv: "ci", registrar: () => {} });
+    await sembrarFicticios({ bd: bd.como("ps_panel"), auditoria: claves, appEnv: "ci", registrar: () => {} });
+    await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
     const u = await bd.instalacion.query(
       `INSERT INTO identidad_panel.usuarios_panel (correo, correo_hmac, rol) VALUES ('karen@trycore.com', $1, 'administrador') RETURNING id`,
       [randomBytes(32)],

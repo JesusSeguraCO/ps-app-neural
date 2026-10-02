@@ -107,14 +107,13 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
     beforeAll(async () => {
       bd = await crearBdPrueba();
       const entorno = { ...entornoDev("panel"), APP_ENV: "ci", DATABASE_URL: bd.urlDe("ps_panel") };
-      const worker = bd.como("ps_worker");
       await sembrarFicticios({
-        bd: worker,
+        bd: bd.como("ps_panel"),
         auditoria: { hmac: entorno.AUDIT_HMAC_KEY!, kek: entorno.AUDIT_KEK! },
         appEnv: "ci",
         registrar: () => {},
       });
-      await sembrarLexicoFicticio({ bd: worker, appEnv: "ci", registrar: () => {} });
+      await sembrarLexicoFicticio({ bd: bd.como("ps_panel"), candidatas: bd.como("ps_worker"), appEnv: "ci", registrar: () => {} });
       portal = bd.como("ps_portal");
       admin = await sesion("karen@trycore.com", "administrador");
       observador = await sesion("mirar@trycore.com", "observador");
@@ -163,7 +162,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       expect(await fechaPortal(a.codigo)).toBe("2026-12-24");
     });
 
-    it("pausar con motivo: sale del portal; el listado lo muestra con su motivo y la hoja trae el desvío", async () => {
+    it("pausar con motivo: sale del portal; el listado lo muestra con su motivo (el desvío «es una fecha» lo recorre el e2e)", async () => {
       const p = await publicado();
       const html = await pagina("/inventario");
       expect(html).toContain("Más acciones para Lorena Salcedo");

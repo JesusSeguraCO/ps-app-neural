@@ -50,7 +50,7 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
     bd = await crearBdPrueba();
     const panelEnv = entornoDev("panel");
     await sembrarFicticios({
-      bd: bd.como("ps_worker"),
+      bd: bd.como("ps_panel"),
       auditoria: { hmac: panelEnv.AUDIT_HMAC_KEY!, kek: panelEnv.AUDIT_KEK! },
       appEnv: "ci",
       registrar: () => {},
@@ -146,15 +146,20 @@ describe.skipIf(!HAY_BD || !hayBuild("portal"))("ficha del perfil en el portal (
       expect(dialogo(await pagina(`/?ficha=${encodeURIComponent(codigo)}`)), codigo).toBeNull();
   });
 
-  it("un publicado con un dato heredado fuera de contrato (sin trayectoria) no tumba la página: la ficha no se abre", async () => {
+  it("un publicado con un dato heredado fuera de contrato (sin trayectoria): el panel se abre y lo explica, sin datos del perfil (Release Gate R0, ux B1)", async () => {
     await bd.instalacion.query(
       `UPDATE inventario.perfil_experiencias SET vigente = false, retirada_en = now()
         WHERE perfil_id = (SELECT id FROM inventario.perfiles WHERE codigo = $1)`,
       [c],
     );
     const html = await pagina(`/?ficha=${c}`);
-    expect(dialogo(html)).toBeNull();
     expect(html).toContain(nombreDe(c));
+    const panel = dialogo(html)!;
+    expect(panel).toContain("Esta ficha se está actualizando");
+    expect(panel).toMatch(/<b>3 de 3<\/b> · selección para ti/);
+    expect(panel).toMatch(/href="\/"[^>]*aria-label="Cerrar la ficha"/);
+    expect(panel).not.toContain("Verificado por Trycore");
+    expect(panel).not.toContain(nombreDe(c));
   });
 
   it("en el banco la ficha recorre la lista del banco y vuelve a ella al cerrar", async () => {
