@@ -188,3 +188,28 @@ para no mover los conteos del banco ficticio que fijan los tests. El guardado de
 - **Código**: fuera de la cabecera; el `<title>` del portal ya era fijo («Portal de Perfiles People Service»).
 - Copy nuevo en `packages/ui/src/copy.ts` (garantía, SLA, títulos, referencia), marcado para revisión (D73).
 - Sin migraciones (0030–0031 siguen libres). Capturas: `.claude/state/evidencia/ep-003/ss6/fidelidad.md`.
+
+### Decisiones de construcción · SS7 (HU-159, HU-120) — elegidas por el modelo por delegación del sponsor
+
+- **Forma del encabezado** (negociable en HU-159 · N): sección en el flujo con una marca decorativa de núcleo y
+  cuatro nodos (el prototipo `hero-neural-grid` dibuja núcleo + anillo de componentes + retratos ilustrativos que
+  orbitan); sin retratos ni animación, sin logo (el portal no sirve recursos estáticos propios). Cuatro dimensiones
+  con su papel (D64), no los «cinco componentes» del prototipo.
+- **Una sola vez**: la frase («ningún…» o la descriptiva) es el único lugar donde se nombran SARO, la prueba técnica
+  y la DISC; el detalle de cada dimensión no las repite.
+- **Frases y dimensiones en el dominio** (`dominio/catalogo/estandar.ts`) junto a la regla que las elige; resto del
+  copy (antetítulo, introducción, respaldo, SLA) en `packages/ui/src/copy.ts`. Todo marcado para revisión (D73).
+- **Conteo**: `contarIncompletosConTiempo` (transacción de solo lectura con `SET LOCAL statement_timeout` = 500 ms)
+  sobre la misma `contarIncompletos` del panel; fallo o vencimiento → frase descriptiva y registro
+  `{evento: "conteo_incompletos_no_disponible", motivo: "tiempo_agotado" | "consulta_fallida"}`.
+- **Ubicación**: selección (tras la franja del título, antes de la lista), banco (tras la cabecera, antes de la
+  lista) y encuadre (`Encuadre.tsx`, antes de «¿Qué necesita tu proyecto?», también en su variante sin perfiles).
+  El bloque de respaldo va al final de la selección, con el SLA en el tamaño del texto.
+- **HU-120 · hueco cerrado**: cerrar la ficha (enlace, velo y Esc) volvía a la lista sin posición. Ahora
+  `cerrarFicha(ruta, consulta, abierto)` añade el ancla de la tarjeta (`anclaDePerfil`, la misma que lleva la
+  tarjeta) y `.pp-perfil__rol` tiene `scroll-margin-top`; `Recorrido` gana `abierto`. Lo demás de D47 (3 de 5,
+  extremos con botón y teclado sin dar la vuelta, pantalla completa en el teléfono) se re-verificó sin cambios.
+- **Letra mínima (M-8)**: lo nuevo no baja de 13 px (la referencia de la ficha pasó de 12 a 13 px, igual que la
+  línea de competencias). Quedan textos de 12 px anteriores a SS6 en la cara cliente (`pp-meta`, `rs-sello`,
+  `fp-atajos`, campos de la validación técnica): se anotan para el Release Gate, no se tocan aquí.
+- Sin migraciones (0030–0031 siguen libres). Capturas: `.claude/state/evidencia/ep-003/ss7/fidelidad.md`.

@@ -1,0 +1,52 @@
+[
+ {
+  "item_id": "HU-159-ac1-una-vez-arriba-tres-pantallas",
+  "kind": "hu_ac",
+  "ref": "HU-159"
+ },
+ {
+  "item_id": "HU-159-ac2-respaldo-y-sla",
+  "kind": "hu_ac",
+  "ref": "HU-159"
+ },
+ {
+  "item_id": "HU-159-ac3-ninguno-solo-con-cero",
+  "kind": "hu_ac",
+  "ref": "HU-159"
+ },
+ {
+  "item_id": "HU-159-ac4-conteo-no-disponible",
+  "kind": "hu_ac",
+  "ref": "HU-159"
+ },
+ {
+  "item_id": "HU-159-ac5-telefono-sin-bloqueo",
+  "kind": "hu_ac",
+  "ref": "HU-159"
+ },
+ {
+  "item_id": "HU-120-ac1-tres-de-cinco-computador-telefono",
+  "kind": "hu_ac",
+  "ref": "HU-120"
+ },
+ {
+  "item_id": "HU-120-ac2-ultimo-con-boton",
+  "kind": "hu_ac",
+  "ref": "HU-120"
+ },
+ {
+  "item_id": "HU-120-ac3-primero-con-teclado",
+  "kind": "hu_ac",
+  "ref": "HU-120"
+ },
+ {
+  "item_id": "HU-120-ac4-cerrar-misma-lista-y-posicion",
+  "kind": "hu_ac",
+  "ref": "HU-120"
+ },
+ {
+  "item_id": "INT-SS7-journey-smoke",
+  "kind": "integration_point",
+  "ref": "EP-003#journey-ss7"
+ }
+]

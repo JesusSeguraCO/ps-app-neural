@@ -65,13 +65,13 @@
 
 ## 7. Sub-slice 7 — Encabezado del estándar y re-verificación del recorrido (HU-159, HU-120)
 
-- [ ] 7.1 Dominio `fraseDelEstandar(conteo | null)`; tests primero con 0, 1 y `null`, y que ninguna frase incluye el número
-- [ ] 7.2 Encabezado único en `packages/ui` montado en la selección, el banco y el encuadre sin selección, antes del primer contenido y en el flujo de la página, en cuatro dimensiones (corrige «cinco componentes» del prototipo); verificar los cuatro escenarios de pantallas y teléfono de HU-159
-- [ ] 7.3 Conteo en el servidor del portal con `statement_timeout` corto, degradación a la versión descriptiva y registro `conteo_incompletos_no_disponible`; verificar «cero», «un incompleto» y «conteo no disponible» de HU-159 y los dos escenarios de afirmación de HU-178 (completar el último incompleto devuelve la frase)
-- [ ] 7.4 Bloque de respaldo (Trycore University, Hive Mind, Coordinación de Servicio dedicada, SLA en el tamaño del texto) en la selección; verificar su escenario de HU-159
-- [ ] 7.5 E2E de HU-120 contra lo construido (D47): siguiente en computador y teléfono con «3 de 5», extremos con botón y con flecha del teclado, cerrar vuelve a la misma lista con el mismo filtro y en la posición del tercer perfil; corregir en `PanelFicha.tsx`/`recorrido.ts` lo que falle; verificar los seis escenarios del requisito modificado
+- [x] 7.1 Dominio `fraseDelEstandar(conteo | null)`; tests primero con 0, 1 y `null`, y que ninguna frase incluye el número
+- [x] 7.2 Encabezado único en `packages/ui` montado en la selección, el banco y el encuadre sin selección, antes del primer contenido y en el flujo de la página, en cuatro dimensiones (corrige «cinco componentes» del prototipo); verificar los cuatro escenarios de pantallas y teléfono de HU-159
+- [x] 7.3 Conteo en el servidor del portal con `statement_timeout` corto, degradación a la versión descriptiva y registro `conteo_incompletos_no_disponible`; verificar «cero», «un incompleto» y «conteo no disponible» de HU-159 y los dos escenarios de afirmación de HU-178 (completar el último incompleto devuelve la frase)
+- [x] 7.4 Bloque de respaldo (Trycore University, Hive Mind, Coordinación de Servicio dedicada, SLA en el tamaño del texto) en la selección; verificar su escenario de HU-159
+- [x] 7.5 E2E de HU-120 contra lo construido (D47): siguiente en computador y teléfono con «3 de 5», extremos con botón y con flecha del teclado, cerrar vuelve a la misma lista con el mismo filtro y en la posición del tercer perfil; corregir en `PanelFicha.tsx`/`recorrido.ts` lo que falle; verificar los seis escenarios del requisito modificado
 - [ ] 7.6 Fidelidad con captura MCP de `hero-neural-grid`, `franja-servicio` y el encabezado en el encuadre, en computador y teléfono
-- [ ] 7.7 Journey smoke: selección con un incompleto (frase descriptiva) → completar el último en el panel → recargar (frase «ninguno») → recorrer fichas hasta el extremo → cerrar en la misma posición; evidencia en `ss7/` y checkpoint
+- [x] 7.7 Journey smoke: selección con un incompleto (frase descriptiva) → completar el último en el panel → recargar (frase «ninguno») → recorrer fichas hasta el extremo → cerrar en la misma posición; evidencia en `ss7/` y checkpoint
 
 ## 8. Cierre de la épica
 

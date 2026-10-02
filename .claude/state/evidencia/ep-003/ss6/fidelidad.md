@@ -4,7 +4,7 @@
 - Captura real con MCP chrome-devtools, contexto aislado «ep003», portal de este worktree en 3200 (borde 3203)
   contra `ps_ep003`, con la sesión del banco abierta en SS4. Perfiles: PS-0408 (completo, Sello Personal, Nivel 1),
   PS-0105 (heredado sin SARO, D62), PS-0358 (DISC sin Sello Personal). Computador 1440×900; teléfono 390×844 DPR 3
-  con toque. Medido en el teléfono: SLA 15 px (tamaño del texto de la ficha) frente a la referencia 12 px; 0 px de
+  con toque. Medido en el teléfono: SLA 15 px (tamaño del texto de la ficha) frente a la referencia 12 px (subida a 13 px en SS7 por M-8); 0 px de
   desplazamiento horizontal.
 
 ## Referencia

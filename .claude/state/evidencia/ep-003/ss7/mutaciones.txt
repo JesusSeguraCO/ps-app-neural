@@ -1,0 +1,19 @@
+N1 con 1 incompleto afirma «ningún»: rc=1 · 3 failed | 8 passed (11)
+N2 sin conteo afirma «ningún»: rc=1 · 2 failed | 9 passed (11)
+N3 la frase dice el número: rc=1 · 4 failed | 2 passed (6)
+N4 cinco componentes: rc=1 · 3 failed | 8 passed (11)
+N5 el encabezado después de la lista: rc=1 · 1 failed | 4 passed (5)
+N6 sin encabezado en el encuadre: rc=1 · 1 failed | 4 passed (5)
+N7 sin encabezado en el banco: rc=1 · 1 failed | 4 passed (5)
+N8 el encabezado como ventana: rc=1 · 1 failed | 4 passed (5)
+N9 sin tiempo acotado: rc=1 · 1 failed | 2 passed (3)
+N10 el fallo del conteo tumba la página: rc=1 · 1 failed | 4 passed (5)
+N11 sin registro técnico: rc=1 · 1 failed | 4 passed (5)
+N12 respaldo sin Hive Mind: rc=1 · 2 failed | 8 passed (10)
+N13 SLA del respaldo en letra pequeña: rc=1 · 1 failed | 4 passed (5)
+N14 cerrar sin la posición: rc=1 · 5 failed | 11 passed (16)
+N15 recorrido: la tarjeta sin ancla: rc=1 · 1 failed
+N16 recorrido: anterior da la vuelta: rc=1 · 1 failed
+N17 recorrido: encabezado fijo encima de la lista: rc=1 · 1 failed
+N18 recorrido: cerrar sin la posición: rc=1 · 1 failed
+restaurado
