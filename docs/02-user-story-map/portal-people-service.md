@@ -118,16 +118,18 @@ Esta v2.0 reconstruye el mapa sobre el PRD 4.5 con **los IDs que realmente exist
 |  |  | HU-173 Saber si la entrada por instrucción capta la demanda o la dicta |
 |  |  | HU-186 Comparar la búsqueda con y sin Perfil Objetivo |
 |  |  | HU-189 Registrar una decisión de reclutamiento *(D83)* |
+|  |  | HU-196 Ver en el tablero los días hasta la alineación agendada *(D91, D92)* |
+|  |  | HU-195 Registrar la validación de Delivery de las composiciones de referencia *(D94, D99)* |
 | **━━━━━━━━━━ v1.1 ━━━━━━━━━━** | | |
 | HU-117 Reaccionar a una cuenta que no entra | | |
 
 **D66 (sponsor, 2026-10-02): el tablero de medición entra al MVP.** HU-171 (tablero mensual), HU-108 (embudo por cuenta) y HU-111 (instrucción frente a filtros) suben de v1.1 a la línea de MVP con EP-008. No es ampliación de alcance: ya estaban comprometidas; cambia la línea de release.
 
-**Discovery 2026-10-02 (D52–D89, `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`).** Columna G: la solicitud llega por **híbrido API + workflow** (D76): contacto y negocio por API con «Id solicitud People Service» único, en el pipeline existente **«Comercial (People y Tecnología)»** (D85); la empresa por dominio, el escalamiento 4 h / 24 h hábiles y los avisos comerciales en el workflow de HubSpot (D53, D55, D77). Columna H: la base de EP-008 (HU-167, HU-168, HU-169) va primero; el permiso «Medición» es por persona (D74, HU-190) y la supresión Ley 1581 es historia propia (D89, HU-193). Todo en MVP.
+**Discovery 2026-10-02 (D52–D89, `.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`).** Columna G: la solicitud llega por **híbrido API + workflow** (D76): contacto y negocio por API con «Id solicitud People Service» único, en el pipeline existente **«Comercial (People y Tecnología)»** (D85); la empresa por dominio, el escalamiento 4 h / 24 h hábiles y los avisos comerciales en el workflow de HubSpot (D53, D55, D77). Columna H: la base de EP-008 (HU-167, HU-168, HU-169) va primero; el permiso «Medición» es por persona (D74, HU-190) y la supresión Ley 1581 es historia propia (D89, HU-193). Todo en MVP. **Tercera ronda (D91–D99):** entran en MVP **HU-196** (O3 en el tablero, días hábiles cruzados, D91; sale de HU-171) y **HU-195** (Coordinación de Servicio registra la validación de Delivery con el permiso por persona «Validar composiciones», D94, D99; sale de HU-185). La fecha de agendado de HU-107 es `engagements_last_meeting_booked` del contacto (D92) y el disparador de §14.5 exige las tres condiciones a la vez (D98).
 
 **La columna F no envía el boletín** (decisión del sponsor del 2026-09-27, PRD v4.14, RF-18). El panel arma la selección curada (HU-113), genera el enlace de cada destinatario con un token opaco (HU-114) y entrega un bloque de contenido listo para copiar en Gmail o HubSpot, donde se redacta, programa y envía el correo; quien envía registra la salida en el panel (HU-115). La columna H mide entradas por el enlace, verificación y solicitud, no aperturas (HU-116), y la regla de HU-117 pasa a «tres envíos con salida registrada sin entrada». Mailgun queda solo para códigos de acceso y avisos internos. No es un recorte de alcance: redacción, programación, envío, bajas y apertura pasan a la herramienta de envío.
 
-**HU-101 y HU-107 cierran RF-17**, el traspaso a Delivery. Sin ellas O3 —días entre solicitud y sesión agendada— no se puede medir, porque al usar las etapas del pipeline comercial vigente (D-21) la alineación no tiene etapa propia y la propiedad de fecha es el único registro del tramo.
+**HU-101 y HU-107 cierran RF-17**, el traspaso a Delivery. Sin ellas O3 —días entre solicitud y sesión agendada— no se puede medir, porque al usar las etapas del pipeline comercial vigente (D-21) la alineación no tiene etapa propia y la fecha de agendado (`engagements_last_meeting_booked` del contacto, D92) es el único registro del tramo.
 
 **HU-105 acompaña obligatoriamente a HU-102.** Sin cola de reintento, el modo de falla de la integración es silencioso: el cliente cree que lo ignoraron.
 
@@ -158,7 +160,7 @@ Los rangos de la v1.0 que **siguen sin historia redactada**. No son IDs vivos: s
 | HU-029 – HU-034 | Mi equipo, resumen y comparador | EP-004 | **Parcial.** HU-080, HU-084 y, desde el 2026-10-02, **HU-192** (sumar, quitar e indicador, D88; absorbe los criterios recibidos de HU-094 y HU-095). Siguen sin historia el resumen del conjunto (RF-4.3), el comparador de tres (RF-4.4) y la recuperación al volver (RF-4.5) |
 | HU-035 – HU-041 | Solicitud, identificación y confirmación | EP-005 | **Cubierto** por HU-096 a HU-101 |
 | HU-042 – HU-058 | Panel de Talento Humano completo | EP-006 | **Cubierto el 2026-09-21** por HU-123 a HU-139, más HU-086 a HU-089 |
-| HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 · EP-011 | **Cubierto** por HU-102 a HU-117 y, el 2026-10-02, HU-160 a HU-173, HU-180, HU-184 a HU-190 y HU-193 |
+| HU-059 – HU-064 | Distribución, oportunidad en HubSpot y medición | EP-007 · EP-008 · EP-011 | **Cubierto** por HU-102 a HU-117 y, el 2026-10-02, HU-160 a HU-173, HU-180, HU-184 a HU-190, HU-193, HU-195 y HU-196 |
 
 **Conteo (2026-10-02).** Con el discovery de EP-003, EP-007 y EP-008, el alcance anticipado sin historia baja a **alrededor de 5**: **EP-004** (resumen, comparador y recuperación de «Mi equipo») y **EP-002** (sondeo RF-10 y espacio no-perfil RF-11).
 

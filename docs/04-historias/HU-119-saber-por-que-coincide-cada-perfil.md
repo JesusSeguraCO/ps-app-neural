@@ -4,7 +4,7 @@ titulo: "Saber por qué coincide cada perfil y por qué no"
 epica: EP-003
 prioridad: alta
 complejidad: S
-estado: draft
+estado: lista
 fase: referencias-juicebox
 prd_version: 4.17
 depende_de: [HU-153]
@@ -35,13 +35,37 @@ depende_de: [HU-153]
 | su tarjeta en la lista de resultados |
 | el bloque «Frente a tu búsqueda» de su ficha |
 
-### Error — sin criterios activos
+### Error — el criterio es de un tipo sin plantilla
 
+**Esquema del escenario:** un tipo nuevo nunca deja la línea en blanco
+**Dado** que busqué con el criterio «Disponibilidad inmediata», de un tipo que no tiene plantilla en la tabla de evidencia
+**Y** que el criterio llega resuelto para un perfil publicado como <resultado>
+**Cuando** miro su tarjeta
+**Entonces** la línea de ese criterio dice exactamente «<linea>», en el mismo lugar y con la misma distinción visual que las demás
+**Y** la línea nunca aparece en blanco ni se omite
+**Y** queda un registro técnico que nombra el tipo de criterio sin plantilla, para que el equipo la añada
+
+**Ejemplos:**
+
+| resultado | linea |
+|---|---|
+| cumple | ✓ Cumple Disponibilidad inmediata |
+| no cumple | – No cumple Disponibilidad inmediata |
+
+### Edge case — sin criterios activos
+
+**Esquema del escenario:** sin criterios no hay evidencia en ningún lugar
 **Dado** que no tengo ningún criterio de búsqueda activo, por ejemplo en la selección del correo antes de ampliar la búsqueda,
-**cuando** abro una ficha,
-**Entonces** la ficha no muestra ningún bloque de evidencia, ni vacío ni con título
-**Y** la tarjeta de ese perfil en la lista tampoco muestra ninguno
+**cuando** miro un perfil en <lugar>,
+**Entonces** no aparece ningún bloque de evidencia, ni vacío ni con título
 **Y** no aparece ninguna línea de coincidencia deducida de la selección
+
+**Ejemplos:**
+
+| lugar |
+|---|
+| su tarjeta en la lista de resultados |
+| su ficha |
 
 ### Edge case — el perfil no tiene registrado el dato de un criterio
 
@@ -98,19 +122,21 @@ Tomado de Juicebox, que muestra una línea de justificación por criterio (evide
 | modalidad | ✓ Modalidad: {modalidad} | – Modalidad registrada: {modalidad del perfil} | – Sin modalidad declarada: {criterio} |
 | país | ✓ País: {país} | – País registrado: {país del perfil} | – Sin país declarado: {criterio} |
 
+**Tipo sin plantilla (D96, tercera ronda 2026-10-02).** Si llega un criterio de un tipo que no está en la tabla, la línea usa el **texto genérico** «✓ Cumple {criterio}» o «– No cumple {criterio}», nunca queda en blanco ni se omite, y se deja un **registro técnico** con el tipo para que el equipo añada su plantilla. Es el nuevo escenario de error; «sin criterios activos», que era el error, pasa a edge porque no es un fallo sino un estado legítimo. Cinco escenarios; sigue en S.
+
 Sector e idioma salen de los ejemplos del PRD; los demás son propuesta del modelo con la misma forma. El nuevo escenario «cada tipo de criterio usa su plantilla» prueba los cinco tipos que el validador señaló (rol, seniority, tecnología, modalidad, país). Si Mercadeo cambia el copy, cambia la tabla y los ejemplos del escenario, no la mecánica.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-13.10 · RF-16.1 · RF-13.12.3 · RF-3.4 · D73 (copy) · validación 2026-10-02 (plantilla por tipo) · depende de HU-153 (tarjeta) · la integración con el motor RF-13.8 y HU-118 (EP-009) es de HU-174 (EP-009 por D87) · relacionada con HU-121 (EP-002), HU-076 (EP-010) y HU-120 (la ficha donde vive «Frente a tu búsqueda»)
+Épica madre: **EP-003** · PRD v4.17 · RF-13.10 · RF-16.1 · RF-13.12.3 · RF-3.4 · D73 (copy) · D96 (tipo sin plantilla) · validación 2026-10-02 (plantilla por tipo) · depende de HU-153 (tarjeta) · la integración con el motor RF-13.8 y HU-118 (EP-009) es de HU-174 (EP-009 por D87) · relacionada con HU-121 (EP-002), HU-076 (EP-010) y HU-120 (la ficha donde vive «Frente a tu búsqueda»)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: solo necesita la tarjeta de HU-153; consume criterios ya resueltos, así que se construye y prueba completa con criterios sembrados. La dependencia con EP-009 pasó a HU-174, que D87 movió a EP-009 |
-| N | Negociable | ✓ son fijos el determinismo, mostrar lo no cumplido y no usar porcentajes; la plantilla por tipo está fijada con opción conservadora y su copy se puede negociar con Mercadeo (marcado para revisión de copy) |
+| N | Negociable | ✓ son fijos el determinismo, mostrar lo no cumplido, no usar porcentajes y que un tipo sin plantilla use el texto genérico y se registre (D96); la plantilla por tipo está fijada con opción conservadora y su copy se puede negociar con Mercadeo (marcado para revisión de copy) |
 | V | Valiosa | ✓ es la explicabilidad de la decisión de mayor impacto del portal: por qué aparece cada persona; con criterios sembrados ya se puede validar con el sponsor |
-| E | Estimable | ✓ S: plantillas fijas por tipo de criterio sobre una entrada ya resuelta, dibujadas en dos superficies que ya existen (tarjeta y ficha). La plantilla por tipo ya está fijada; solo su copy queda en revisión |
-| S | Pequeña | ✓ S: una capacidad de presentación en dos superficies, con cuatro escenarios y sin lógica de evaluación |
-| T | Testeable | ✓ perfiles y criterios sembrados producen líneas exactas comparables con la plantilla de cada tipo (cinco ejemplos del esquema), y la ausencia del bloque sin criterios es observable |
+| E | Estimable | ✓ S: plantillas fijas por tipo de criterio, con un texto genérico de respaldo, sobre una entrada ya resuelta, dibujadas en dos superficies que ya existen (tarjeta y ficha). La plantilla por tipo ya está fijada; solo su copy queda en revisión |
+| S | Pequeña | ✓ S: una capacidad de presentación en dos superficies, con cinco escenarios y sin lógica de evaluación |
+| T | Testeable | ✓ perfiles y criterios sembrados producen líneas exactas comparables con la plantilla de cada tipo (cinco ejemplos del esquema), un tipo sembrado sin plantilla produce las dos líneas genéricas y su registro, y la ausencia del bloque sin criterios es observable |

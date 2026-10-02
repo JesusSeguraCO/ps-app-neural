@@ -1,14 +1,14 @@
 ---
 id: flow-008-telemetria-y-medicion
 epica: EP-008
-historias_cubiertas: [HU-108, HU-109, HU-110, HU-111, HU-112, HU-167, HU-168, HU-169, HU-170, HU-171, HU-172, HU-173, HU-184, HU-185, HU-186, HU-187, HU-188, HU-189, HU-190, HU-193]
+historias_cubiertas: [HU-108, HU-109, HU-110, HU-111, HU-112, HU-167, HU-168, HU-169, HU-170, HU-171, HU-172, HU-173, HU-184, HU-185, HU-186, HU-187, HU-188, HU-189, HU-190, HU-193, HU-195, HU-196]
 ---
 
 # Flow 008 — Telemetría y medición
 
 ## Resumen
 
-De la puerta de acceso y los eventos que emite el portal a las lecturas que el equipo necesita en **Medición**. Actores: el **contacto de una cuenta cliente** (ve el aviso de privacidad y genera la visita), las personas con el **permiso «Medición»** (D74: por persona, independiente del rol; típicamente Mercadeo, Comercial y Dirección General) como lectores de Medición, **administradores** (conceden el permiso, casilla «demo», encender el A/B, supresión, validación de Delivery) y **Talento Humano** (en Demanda: ve el top 10 y registra decisiones de reclutamiento, D82 y D83). Condición de éxito: cada objetivo del PRD tiene una lectura que lo mide sobre **sesiones reales**, cada sesión está atribuida a su edición curada, y el tablero mensual sale sin trabajo manual.
+De la puerta de acceso y los eventos que emite el portal a las lecturas que el equipo necesita en **Medición**. Actores: el **contacto de una cuenta cliente** (ve el aviso de privacidad y genera la visita), las personas con el **permiso «Medición»** (D74: por persona, independiente del rol; típicamente Mercadeo, Comercial y Dirección General) como lectores de Medición, **administradores** (conceden el permiso, casilla «demo», encender el A/B, supresión), **Coordinación de Servicio** (registra la validación de Delivery con el permiso «Validar composiciones», D94) y **Talento Humano** (en Demanda: ve el top 10 y registra decisiones de reclutamiento, D82 y D83). Condición de éxito: cada objetivo del PRD tiene una lectura que lo mide sobre **sesiones reales**, cada sesión está atribuida a su edición curada, y el tablero mensual sale sin trabajo manual.
 
 ## Diagrama
 
@@ -92,13 +92,15 @@ flowchart TD
   %% HU-171
   Acceso -- no --> Denegado[El panel explica que Medición requiere el permiso y quién lo concede, sin cifras]
   %% HU-171
-  Acceso -- sí --> Tablero[Tablero mensual: conversión por cuentas, perfiles por solicitud]
-  %% HU-171
-  LecturaHS[«Agendada el» guardada por la lectura diaria de HU-107, EP-007] --> O3[O3: días hábiles hasta la alineación agendada, con fecha de lectura]
-  %% HU-171
+  Acceso -- sí --> Tablero[Tablero mensual: conversión por cuentas, perfiles por solicitud, O4]
+  %% HU-196
+  LecturaHS[«agendada el» guardada por la lectura diaria de HU-107, EP-007, desde la herramienta de reuniones] --> O3[O3: días hábiles cruzados hasta la alineación agendada, con fecha de lectura]
+  %% HU-196
   O3 --> Tablero
+  %% HU-196
+  O3 --> O3Atraso[O3 con aviso si la lectura se atrasa; «aún no se mide» sin ninguna lectura]
   %% HU-171
-  Tablero --> TabPend[Paneles de acierto, top 10 u O3 en «aún no se mide» si no existen; O3 con aviso si la lectura se atrasa]
+  Tablero --> TabPend[Paneles de acierto, top 10, O3 o KPI del 35 % en «aún no se mide» mientras falte HU-109, HU-172, HU-196 o EP-011]
   %% HU-171
   Tablero --> TabFuera[Dice cuántas visitas internas y demo dejó fuera]
 
@@ -161,9 +163,11 @@ flowchart TD
   %% HU-185
   Acceso -- sí --> Disparador[Disparador §14.5: 50 solicitudes con reto]
   %% HU-185
-  Disparador --> Delivery[Validación de Delivery: pendiente mientras nadie la registre]
-  %% HU-185
-  AdminDel[Administrador con el permiso «Medición» registra la validación de Delivery] --> DelOK[Condición cumplida por validación de Delivery, con fecha y quién]
+  Disparador --> Delivery[Tres condiciones de §14.5, que se cumplen a la vez D98; la de Delivery, pendiente mientras nadie la registre]
+  %% HU-195
+  CoordDel[Coordinación de Servicio con el permiso «Validar composiciones» registra tres composiciones con su proyecto] --> DelOK[Validación vigente, con fecha, quién y auditoría]
+  %% HU-195
+  CoordDel --> DelRech[Sin el permiso o con menos de tres composiciones: no se guarda y se explica]
   %% HU-185
   DelOK --> Disparador
 
@@ -211,11 +215,15 @@ flowchart TD
 | Quien no puede registrar la supresión | HU-193 | AC-3 (error) |
 | Correo sin rastro en el portal | HU-193 | AC-4 (edge) |
 | Lo que la supresión no alcanza | HU-193 | AC-5 (edge) |
-| Tablero del mes cerrado, con O3 de la lectura diaria de HU-107 | HU-171 | AC-1 (happy) |
-| Paneles pendientes o lectura de HubSpot atrasada | HU-171 | AC-2 (edge) |
+| Tablero del mes cerrado, con O4 | HU-171 | AC-1 (happy) |
+| Paneles en «aún no se mide» (acierto, top 10, O3, KPI del 35 %) | HU-171 | AC-2 (edge) |
 | Mes sin actividad o en curso | HU-171 | AC-3 (edge) |
 | Internas y demo fuera | HU-171 | AC-4 (edge) |
 | Sin el permiso «Medición» | HU-171 | AC-5 (error) |
+| O3 del mes cerrado, con la lectura diaria de HU-107 | HU-196 | AC-1 (happy) |
+| Lectura de HubSpot atrasada | HU-196 | AC-2 (error) |
+| Sin ninguna lectura | HU-196 | AC-3 (edge) |
+| Agendada el mes siguiente, con festivo | HU-196 | AC-4 (edge) |
 | Conceder el permiso «Medición» | HU-190 | AC-1 (happy) |
 | Quitar el permiso con Medición abierta | HU-190 | AC-2 (happy) |
 | Concesión por ruta directa sin ser administrador | HU-190 | AC-3 (error) |
@@ -263,11 +271,14 @@ flowchart TD
 | Composiciones sin emitir | HU-184 | AC-3 (error) |
 | Tipo de proyecto sin composición | HU-184 | AC-4 (edge) |
 | Vio y descartó | HU-184 | AC-5 (edge) |
-| Cuánto falta para el disparador, con el límite de las 50 | HU-185 | AC-1 (happy) |
+| El disparador se cumple con las tres condiciones a la vez, límite de las 50 (D98) | HU-185 | AC-1 (happy) |
 | Solicitudes que no cuentan | HU-185 | AC-2 (error) |
 | Reto sin emitir | HU-185 | AC-3 (error) |
-| Registrar la validación de Delivery | HU-185 | AC-4 (happy) |
-| Validación de Delivery no registrada | HU-185 | AC-5 (edge) |
+| Una sola vía cumplida no abre el disparador (D98) | HU-185 | AC-4 (edge) |
+| Registrar la validación de Delivery | HU-195 | AC-1 (happy) |
+| Sin el permiso «Validar composiciones» | HU-195 | AC-2 (error) |
+| Menos de tres composiciones respaldadas | HU-195 | AC-3 (edge) |
+| Renovar una validación | HU-195 | AC-4 (edge) |
 | Comparación con y sin Perfil Objetivo | HU-186 | AC-1 (happy) |
 | Administrador enciende el A/B | HU-186 | AC-2 (happy) |
 | Sin experimento y sin rol de administrador | HU-186 | AC-3 (error) |
@@ -276,7 +287,7 @@ flowchart TD
 
 ## Notas
 
-**Alineación del 2026-10-02 con las decisiones del sponsor (D65–D73).** El flow cubría solo HU-108 a HU-112; ahora cubre las historias de EP-008 (veinte tras HU-189, HU-190 y HU-193), incluidas las nuevas HU-187 (aviso de privacidad, D65) y HU-188 (casilla «demo», D68).
+**Alineación del 2026-10-02 con las decisiones del sponsor (D65–D73).** El flow cubría solo HU-108 a HU-112; ahora cubre las historias de EP-008 (veintidós tras HU-189, HU-190, HU-193, HU-195 y HU-196), incluidas las nuevas HU-187 (aviso de privacidad, D65) y HU-188 (casilla «demo», D68).
 
 **Visita mixta (corrige la versión anterior).** Antes decía que la visita que usa instrucción y filtros «se atribuye a la que produjo la solicitud». Ahora cuenta como **ruta de instrucción con uso posterior de filtros**, igual que HU-111 y ADR-0006, que es lo que mide RF-14.2.
 
@@ -290,10 +301,10 @@ flowchart TD
 
 **Talento Humano en Demanda (D82, D83).** El top 10 de HU-172 se ve en Medición y también en Demanda; las decisiones de reclutamiento se registran en Demanda con HU-189 y HU-111 las lee para la segunda condición de §14.7. Se cierra el hueco que esta nota dejaba abierto (`DecisionTH` sin historia).
 
-**O3 en el tablero (D75).** Excepción de lectura: la tarea diaria del worker que trae «Agendada el» de los negocios del pipeline «Comercial (People y Tecnología)» con `soluciones_ofrecidas` = «People Service» (D85) **vive en HU-107** (EP-007); el tablero (HU-171) solo muestra O3 con la fecha ya guardada. El arco `LecturaHS` depende de HU-107 y de que la propiedad exista en HubSpot.
+**O3 en el tablero (D75, D91, D92, D93).** Excepción de lectura: la tarea diaria del worker que trae la fecha de agendado **vive en HU-107** (EP-007); desde D92 la fuente es `engagements_last_meeting_booked` del contacto (herramienta de reuniones de HubSpot), sin propiedad nueva, y lo agendado fuera de ella no se mide. O3 se cuenta en días hábiles cruzados, sin fracción (D91). El panel de O3 salió de HU-171 a **HU-196** (partición, no recorte, al entrar O4 y el KPI del 35 % por D93); HU-171 lo reserva en «aún no se mide» hasta que exista. El arco `LecturaHS` depende de HU-107.
 
 **Supresión (D89).** La supresión a petición del titular sale de HU-169 a **HU-193**: la registra un administrador con el permiso «Medición» (el permiso da lectura, el rol da escritura), la aplica la tarea diaria de retención de HU-169 y el panel declara que no alcanza HubSpot ni la lista nominal del enlace. HU-169 queda con la retención y el aviso de tarea detenida.
 
-**Validación de Delivery (HU-185, D74).** La registra un administrador con el permiso «Medición»; mientras nadie la registre, la lectura la muestra pendiente.
+**Validación de Delivery (D94, D95; antes D74).** Es la tercera condición de §14.5 (enmienda v4.18). La registra **Coordinación de Servicio** con el permiso «Validar composiciones» en **HU-195**; HU-185 queda solo con la lectura de Mercadeo y, mientras nadie la registre, la muestra pendiente. Sustituye la lectura de D74 (administrador con el permiso «Medición»).
 
 **HU-111 es la vista que falsea la Fase 2.** Mide si la subordinación de las facetas a la instrucción está bien hecha (PRD §14.7) y ahora lee las dos condiciones de retirada. Sin ella, la regla asimétrica de D-17 no tiene con qué evaluarse.

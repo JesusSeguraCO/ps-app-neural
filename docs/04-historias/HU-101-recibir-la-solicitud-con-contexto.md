@@ -51,7 +51,7 @@ Cubre RF-17.1, RF-17.2 y RF-17.5 en el lado de Delivery, y la parte de **RF-9.7.
 
 **Revisión 2026-10-02 (D76, D78, sponsor).** **D78**: el aviso a Coordinación de Servicio **lo envía el portal** por Mailgun **tras crear el negocio**, con el enlace directo. Es posible porque con **D76** el worker crea el negocio por la API y conoce su ID (en la versión del formulario, D52, el portal no lo conocía y esta historia quedaba sin enlace). Mecanismo propuesto (ADR-0009, enmienda D76): al terminar `crear_negocio` se encola un trabajo `notificar_coordinacion` con `clave_idempotencia` = la solicitud, así que un reintento nunca produce un segundo correo. El enlace sigue la forma del registro de negocio de HubSpot con `HUBSPOT_PORTAL_ID`. El aviso al **comercial** no es del portal: lo hace el workflow de HubSpot (D55, HU-103).
 
-**Desde el enlace se registra la alineación.** Coordinación de Servicio escribe en el negocio la fecha de la sesión, y el workflow marca «Agendada el» (HU-107). El botón «Registrar fecha de alineación» del prototipo lleva al negocio: **marcado para revisión de copy**.
+**Desde el enlace se registra la alineación.** La fecha de agendado la llena HubSpot en `engagements_last_meeting_booked` del contacto cuando el comercial agenda con la herramienta de reuniones (D92, HU-107); ya no hay marca «Agendada el» del workflow. El botón «Registrar fecha de alineación» del prototipo lleva al negocio: **marcado para revisión de copy**.
 
 **Qué salió de esta historia.** El escenario anterior «sin responsable asignado → se activa el escalamiento» lo cubren HU-162 y HU-163 (EP-007), donde el workflow escala a la dirección comercial y a Dirección General. No es un recorte: pasa a la historia que lo implementa.
 

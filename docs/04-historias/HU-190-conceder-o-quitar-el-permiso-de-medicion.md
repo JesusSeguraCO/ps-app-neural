@@ -78,11 +78,13 @@ Cubre la enmienda **v4.18 de RF-8.1.2** (permiso «Medición» por persona) sobr
 - Al desplegar la enmienda, **nadie** tiene el permiso hasta que un administrador lo conceda; la lista inicial (quién de Mercadeo, Comercial y Dirección General lo recibe) la entrega el sponsor. No hay riesgo de quedarse sin nadie: conceder el permiso es del rol administrador, que no lo necesita para hacerlo.
 - Dar de baja un correo y volver a inscribirlo no recupera el permiso anterior.
 
+**Segundo permiso por persona: «Validar composiciones» (D99, sponsor 2026-10-02).** HU-195 usa la **misma mecánica** que esta historia para un segundo permiso, «Validar composiciones»: lo concede y lo quita un administrador desde la lista de acceso, independiente del rol, con auditoría y corte en la siguiente petición. Coordinación de Servicio entra como observadora más ese permiso. La lista de acceso muestra un control por permiso; los escenarios de esta historia se prueban con «Medición» y valen igual para el segundo. A diferencia de «Medición», «Validar composiciones» sí da una escritura (el registro de HU-195) sin el rol administrador, por excepción de D94, y no abre Medición.
+
 **Dirección General** necesita estar inscrita en la lista nominal (rol observador) para ver Medición; hoy no consta que lo esté. Lo confirma el sponsor.
 
 ## Trazabilidad
 
-Épica madre: **EP-008** · PRD v4.18 · RF-8.1.2 (enmienda v4.18, D74) · RF-8.1.5 · RF-8.1.6 · RF-8.1.3 · ADR-0006 (enmienda 2026-10-02, D74) · D74 (corrige D67) y D17 · toca la lista de acceso de **HU-151 (EP-006, cerrada)** · depende de HU-151 · relacionada con HU-124 (matriz rol × acción), HU-171 (negación en Medición) y HU-186 (escritura en Medición)
+Épica madre: **EP-008** · PRD v4.18 · RF-8.1.2 (enmienda v4.18, D74) · RF-8.1.5 · RF-8.1.6 · RF-8.1.3 · ADR-0006 (enmienda 2026-10-02, D74) · D74 (corrige D67), D17 y D99 (segundo permiso, HU-195) · toca la lista de acceso de **HU-151 (EP-006, cerrada)** · depende de HU-151 · relacionada con HU-124 (matriz rol × acción), HU-171 (negación en Medición) y HU-186 (escritura en Medición)
 
 ## INVEST
 

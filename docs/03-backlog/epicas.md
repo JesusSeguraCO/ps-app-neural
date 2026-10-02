@@ -366,13 +366,14 @@ EP-001 deja construido el mínimo sobre el que esto se apoya: un «Mi equipo» p
 
 **Historias anticipadas:** registrar la entrada atribuida al correo · registrar filtros aplicados · distinguir curaduría de descubrimiento · registrar el embudo hasta el envío · reportar búsquedas sin resultados · reportar filtros más usados.
 
-**Historias escritas:** *base* HU-167 · HU-168 · HU-169 · HU-187 · HU-193 · HU-188 · HU-190 — *atribución y lecturas* HU-112 · HU-109 · HU-110 · HU-108 · HU-111 · HU-171 · HU-172 · HU-170 · HU-184 · HU-185 · HU-173 · HU-186 · HU-189.
+**Historias escritas:** *base* HU-167 · HU-168 · HU-169 · HU-187 · HU-193 · HU-188 · HU-190 — *atribución y lecturas* HU-112 · HU-109 · HU-110 · HU-108 · HU-111 · HU-171 · HU-196 · HU-172 · HU-170 · HU-184 · HU-185 · HU-195 · HU-173 · HU-186 · HU-189.
 
 **Discovery 2026-10-02** (`.claude/state/evidencia/discovery-2026-10-02/decisiones-sponsor-2026-10-02.md`):
 - **Tablero mensual en el MVP (D66)**, no en v1.1: HU-171, HU-108 y HU-111 entran con la épica. Conversión = cuentas con solicitud / cuentas que entraron, por mes de envío (D70); atribución heredada del último correo curado a 90 días (D69, HU-112 pasa de S a M).
 - **Permiso «Medición» por persona (D74, corrige D67)** en la lista nominal del panel, independiente del rol (HU-190). Toca la lista de HU-151 de EP-006, que está cerrada: el cambio se construye en esta épica. Se enmiendan RF-8.1.2 y ADR-0006.
 - **Sesión real (D68):** código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo» (HU-188). Vista del recorrido de una visita incluida (D72). Ley 1581: solo aviso de privacidad en la puerta (D65, HU-187) y supresión como historia propia (D89, HU-193). A/B con/sin Perfil Objetivo por cuenta 50/50, lectura descriptiva (D71, HU-186). Decisiones de reclutamiento registradas por Talento Humano (D83, HU-189); top 10 sin resultados también en «Demanda» (D82).
-- Particiones sin recorte: HU-170 → HU-170 + HU-184 + HU-185; HU-173 → HU-173 + HU-186; HU-169 → HU-169 + HU-193.
+- Particiones sin recorte: HU-170 → HU-170 + HU-184 + HU-185; HU-173 → HU-173 + HU-186; HU-169 → HU-169 + HU-193; HU-185 → HU-185 + HU-195 (D94); HU-171 → HU-171 + HU-196.
+- **Tercera ronda (D91–D99), todo en MVP:** **HU-195** «Registrar la validación de Delivery de las composiciones de referencia» — la registra Coordinación de Servicio (rol observador) con el permiso por persona «Validar composiciones», concedido como «Medición» (D94, D99); es la tercera condición de §14.5 y el disparador se cumple solo con las tres a la vez (D95, D98). **HU-196** «Ver en el tablero los días hasta la alineación agendada» — O3 en días hábiles cruzados (D91) con la fecha de agendado que lee HU-107 de `engagements_last_meeting_booked` del contacto (D92).
 
 ### Requisitos de esta épica
 

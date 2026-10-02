@@ -36,14 +36,14 @@ sequenceDiagram
   end
 
   %% HU-097
-  C->>P: Se identifica con nombre, cargo y correo corporativo
+  C->>P: Pone su nombre y su cargo; el correo verificado aparece de solo lectura
   %% HU-097
   P-->>C: Acepta la identificación y esa es la que viaja al CRM
 
   %% HU-097
-  alt Correo personal
+  alt Falta nombre o cargo
     %% HU-097
-    P-->>C: Pide un correo corporativo y explica por qué
+    P-->>C: No envía y señala «falta nombre o cargo»
   end
 
   %% HU-098
@@ -100,7 +100,7 @@ sequenceDiagram
 | Perfil no disponible en el resumen | HU-096 | AC-2 (error) |
 | Envío sin selección | HU-100 | AC-1 (happy) |
 | Identificación | HU-097 | AC-1 (happy) |
-| Correo personal | HU-097 | AC-2 (error) |
+| Falta nombre o cargo | HU-097 | AC-2 (error) |
 | Envío y confirmación | HU-098 | AC-1 (happy) |
 | Falla de integración | HU-098 | AC-2 (error) |
 | Traspaso a Delivery | HU-101 | AC-1 (happy) |
@@ -114,6 +114,6 @@ sequenceDiagram
 
 **HU-101 cierra RF-17, el hueco entre «se envió la solicitud» y «alguien la convirtió en sesión agendada».** Es donde vive O3. El requisito manda responsable nominal, no bandeja compartida: una bandeja sin dueño es una bandeja sin lector.
 
-**HU-099 está en v1.1.** En el MVP la confirmación explica el paso siguiente y el comercial agenda por fuera. La consecuencia hay que aceptarla explícitamente: mientras HU-099 no exista, el numerador de O3 depende de que un humano escriba la fecha a mano (HU-107 en EP-007).
+**HU-099 está en v1.1.** En el MVP la confirmación explica el paso siguiente y el comercial agenda por fuera. La consecuencia hay que aceptarla explícitamente: mientras HU-099 no exista, el numerador de O3 depende de que el comercial agende con su enlace de reuniones de HubSpot, que llena `engagements_last_meeting_booked` del contacto; lo agendado fuera de esa herramienta no se mide (HU-107 en EP-007, D92, riesgo aceptado).
 
-**AC no diagramados:** HU-096 AC-3 (equipo vacío, cubierto por HU-100), HU-097 AC-3 (el formulario no trae los datos del contacto principal; el contacto nuevo en empresa conocida salió de HU-097 a HU-104, EP-007, en la validación del 2026-10-02), HU-098 AC-3 (misma especificación hace ≤ 7 días, D-7; el lado de HubSpot es HU-180) y AC-4 (envío repetido, esquema de dos filas), HU-100 AC-2 y AC-3.
+**AC no diagramados:** HU-096 AC-3 (equipo vacío, cubierto por HU-100), HU-097 AC-3 (el formulario no trae los datos del contacto principal y muestra el correo de solo lectura; el contacto nuevo en empresa conocida salió de HU-097 a HU-104, EP-007, en la validación del 2026-10-02) y AC-4 (petición alterada con otro correo: se registra el de la sesión, D90), HU-098 AC-3 (misma especificación hace ≤ 7 días, D-7; el lado de HubSpot es HU-180) y AC-4 (envío repetido, esquema de dos filas), HU-100 AC-2 y AC-3.

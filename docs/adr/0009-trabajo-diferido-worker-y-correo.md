@@ -510,12 +510,12 @@ CRN-5 sin cambio de símbolo (en staging, R-12). Trazabilidad: backlog E-1, T-31
 | `CrmPort` (leer negocio, crear, asociar, anotar, leer estado, escribir propiedad) | **`FormularioPort { enviar(e: EnvioFormulario): Promise<void> /* lanza Transitorio, Espera, Permanente */ }`** → `infra/hubspot-forms`, `fetch` con timeout. Sin lecturas de HubSpot |
 | `NotificarSolicitud` (correo del portal al propietario con enlace al negocio) | **Retirado**: lo hace el workflow (notificación interna + notificación nativa de asignación). El correo a Coordinación de Servicio (HU-101) pierde el enlace al negocio: **pendiente de revisar en EP-005** |
 | `EscalarSolicitudes` (tarea `escalar` cada 15 min), `/r/{id}`, `aperturas`, botón «Ya lo estoy atendiendo» | **Retirados**: el escalamiento y la marca de primera atención (RF-9.7.4) son del workflow. `calendario_habil` deja de usarse en EP-007 (se conserva si otra épica lo usa) |
-| `SincronizarNegocios` (diaria) y `solicitudes.fecha_alineacion_primera/actual` | **Retirados**: la marca «agendada el» (D57) la escribe el workflow en el negocio; O3 se informa en HubSpot |
+| `SincronizarNegocios` (diaria) y `solicitudes.fecha_alineacion_primera/actual` | **Retirados**: la marca «agendada el» (D57) la escribe el workflow en el negocio; O3 se informa en HubSpot. *D92 (2026-10-02) sustituye la marca: ver «Enmienda D92» más abajo* |
 | Errores: `Transitorio` (5xx, timeout, 429), `Conflicto`, `Permanente` (4xx de validación) | `Transitorio` (5xx, timeout) → espera 5-10-20-40-55 min ±10 %; **`Espera`** (429) → tras `Retry-After` o 1 min, tope 10 min, sin contar fallo; **`Permanente`** (400, 401, 403; 404 propuesto) → bandeja y aviso inmediato, **sin reintento automático** (D73), reenvío manual desde la bandeja. `Conflicto` desaparece del portal |
 | Bandeja: «Ya lo creé en HubSpot…» con verificación del ID por la API | «**Ya lo registré en HubSpot…**» con referencia obligatoria guardada **sin verificar** (el portal no lee HubSpot) |
 | Vigilancia: `vigilar` sobre `escalar` y la cola; latido a `LATIDO_URL`; proveedor del monitor sin decidir | Vigilancia de **envíos vencidos sin tomar** (> 10 min, el arrendamiento) desde la salud completa, y **alertas de DigitalOcean App Platform** como monitor externo (D58) sobre la salud, que responde 503 si `worker_ciclo` no avanza. `LATIDO_URL` queda **a revisar** con Tecnología (puede sobrar) |
 | Runbook PITR: lista de negocios con `ps_solicitud_id` sin solicitud local | Sin lectura de HubSpot: tras restaurar se reenvían las solicitudes `pendiente`; el identificador único en el negocio impide duplicados. La revisión de huérfanos pasa a ser un informe en HubSpot |
-| Propiedades `ps_especificacion_revisada`, `ps_fecha_alineacion_primera`, `ps_fecha_alineacion_actual` | La marca revisada va en el párrafo. Propiedades del negocio para D57 («Fecha de la sesión de alineación», «Agendada el») y para RF-9.7.4 («Primera atención»), creadas por Mercadeo |
+| Propiedades `ps_especificacion_revisada`, `ps_fecha_alineacion_primera`, `ps_fecha_alineacion_actual` | La marca revisada va en el párrafo. Propiedades del negocio para D57 («Fecha de la sesión de alineación», «Agendada el») y para RF-9.7.4 («Primera atención»), creadas por Mercadeo. *D92: las de D57 no se crean; la fecha de agendado es `engagements_last_meeting_booked` del contacto* |
 
 **Configuración.**
 
@@ -616,14 +616,21 @@ ADR-0010 §3.3 (variables) y alertas.
   «Comercial (People y Tecnología)» con `soluciones_ofrecidas` = «People Service» (D85): asocia la **empresa por dominio** y **la crea si no existe** (D53, D79; HU-104),
   asocia el negocio **relacionado** al abierto de la cuenta (D-7, HU-102), asigna el propietario y hace
   los **avisos comerciales** (HU-103), el **escalamiento 4 h / 24 h hábiles** y la marca de primera
-  atención (D55; HU-162, HU-163) y la marca «Agendada el» (D57, HU-107).
+  atención (D55; HU-162, HU-163). *La marca «Agendada el» (D57) ya no la hace el workflow: D92.*
 - **D77.** Calendario hábil **T-4 con jornadas de 10 h** (L–V 8:00–18:00 `America/Bogota`, festivos de
   Colombia); 24 h hábiles ≈ 2,4 jornadas. Corrige la frase «3 jornadas de 8 h» de D56.
-- **D75 · Excepción de lectura.** Una tarea diaria **`sincronizar_alineacion`** (nombre propuesto) lee
-  «Agendada el» de los negocios del pipeline «Comercial (People y Tecnología)» (D85) con «Id solicitud People Service» y la guarda en
+- **D75 · Excepción de lectura (fuente corregida por D92).** Una tarea diaria **`sincronizar_alineacion`** (nombre propuesto) lee
+  `engagements_last_meeting_booked` **del contacto** de cada solicitud con negocio en el pipeline «Comercial (People y Tecnología)» (D85) y la guarda en
   `solicitudes.agendada_el`; O3 se calcula en el portal en días hábiles T-4. La tarea vive en HU-107;
   el tablero de HU-171 solo muestra el dato. Una lectura
   fallida conserva lo que había y muestra la hora de la última lectura completa.
+- **Enmienda D92 (sponsor, 2026-10-02, tercera ronda).** La fecha de agendado **no** es una propiedad
+  «Agendada el» marcada por el workflow (D57 queda sustituida en este punto): es
+  `engagements_last_meeting_booked` del **contacto** de la solicitud (el que crea o actualiza HU-102),
+  que HubSpot llena cuando el comercial agenda con su enlace de la **herramienta de reuniones**. Sin
+  propiedad nueva; la lectura cabe en `crm.objects.contacts.read`, ya dentro de los scopes mínimos.
+  `leerAgendadas(desde)` lee contactos, no negocios. Riesgo aceptado: lo agendado fuera de la
+  herramienta de reuniones no se mide. O3 en días hábiles cruzados (D91; HU-107, HU-196).
 
 **Qué cambia respecto de la enmienda D52.**
 
@@ -632,12 +639,12 @@ ADR-0010 §3.3 (variables) y alertas.
 | `enviar_formulario` (un solo paso; éxito = envío aceptado) | `crear_negocio` por subpasos `contacto` → `negocio` → `nota`; éxito = negocio creado y su ID guardado |
 | `FormularioPort` → `infra/hubspot-forms` | **`CrmPort` reducido** → `infra/hubspot`: `upsertContacto`, `crearNegocio` (lanza `Conflicto`), `leerNegocioPorSolicitud`, `leerNegocio`, `escribirIdSolicitud` (enlace manual), `notaConMarcador`, `anotar`, `leerAgendadas(desde)`. **Sin** empresas, asociaciones negocio↔negocio ni lecturas de etapa o propietario (el escalamiento sigue en el workflow) |
 | Idempotencia por campo oculto que copia el workflow | Valor único en el negocio que **rechaza HubSpot** + lectura por `idProperty`; doble clic cortado en origen |
-| «El portal no consulta HubSpot» (D55) | El worker **lee** lo justo: el negocio duplicado por identificador, el negocio indicado en el enlace manual y, una vez al día, «Agendada el» (D75). El escalamiento sigue sin leer nada |
+| «El portal no consulta HubSpot» (D55) | El worker **lee** lo justo: el negocio duplicado por identificador, el negocio indicado en el enlace manual y, una vez al día, la fecha de agendado (D75; D92: `engagements_last_meeting_booked` del contacto). El escalamiento sigue sin leer nada |
 | Bandeja: «Ya lo registré en HubSpot…» sin verificar | Vuelve **«Ya lo creé en HubSpot…» verificado** (existe, está en el pipeline, no tiene otro identificador) y el worker le **escribe el «Id solicitud People Service»**, para que ningún reintento lo duplique. El panel encola `enlazar_negocio`; el token vive solo en el worker (HU-164) |
 | Resumen en la línea de tiempo = envío del formulario (duplicado aceptado tras respuesta perdida) | Nota con marcador, sin duplicado (HU-161, HU-180) |
 | UTM en `context.pageUri` | Propiedades por defecto escribibles por API o propuesta D54 (HU-106) |
 | Errores `Transitorio`, `Espera`, `Permanente` | Igual (D73) y vuelve **`Conflicto`** (valor único duplicado o contacto ya existente) → reutilizar, no es fallo. 401 = token revocado o rotado; 403 = falta un scope (HU-166) |
-| `SincronizarNegocios` y `fecha_alineacion_*` retirados | Vuelve solo la lectura de «Agendada el» (`sincronizar_alineacion`, D75) y `solicitudes.agendada_el`; la escritura de la marca sigue en el workflow |
+| `SincronizarNegocios` y `fecha_alineacion_*` retirados | Vuelve solo la lectura de la fecha de agendado (`sincronizar_alineacion`, D75) y `solicitudes.agendada_el`; D92: la fuente es `engagements_last_meeting_booked` del contacto (herramienta de reuniones), no una marca del workflow |
 | `NotificarSolicitud` retirado; HU-101 sin enlace | `notificar_coordinacion` (D78) con enlace; el aviso al comercial sigue en el workflow |
 | Runbook PITR sin lectura de HubSpot | Tras restaurar, se reintentan las solicitudes `pendiente`; el valor único impide duplicados y el worker **reutiliza** el negocio existente, de modo que una solicitud restaurada recupera su enlace. La lista de huérfanos (negocios con identificador sin solicitud local) vuelve a poder sacarse por API |
 
@@ -684,9 +691,9 @@ doble de la API (2xx, 5xx, timeout tras crear, 409/valor duplicado → lectura p
 sin `Retry-After`, 400, 401, 403, 404), subpasos que se saltan al reintentar, un solo
 `notificar_coordinacion` y doble POST con la misma `clave_envio` → una fila y un trabajo. **V9-E2′**:
 prueba de aceptación en HubSpot con datos ficticios (empresa por dominio y creada si no existe,
-relacionado, propietario y avisos, escalamiento en la semana con el festivo del 12 oct 2026, «Agendada
-el», unicidad de la propiedad). **V9-E3** (alerta de DigitalOcean parando el worker) sigue igual.
+relacionado, propietario y avisos, escalamiento en la semana con el festivo del 12 oct 2026, una reunión agendada con la herramienta
+de reuniones que llena `engagements_last_meeting_booked` del contacto (D92), unicidad de la propiedad). **V9-E3** (alerta de DigitalOcean parando el worker) sigue igual.
 
-**Trazabilidad.** D52 (sustituida en parte), D53–D55, D57, D58, D73, D75–D79, D84 · PRD v4.18 (RF-9,
+**Trazabilidad.** D52 (sustituida en parte), D53–D55, D57 (sustituida por D92), D58, D73, D75–D79, D84, D91, D92 · PRD v4.18 (RF-9,
 nota D76) · HU-098 y HU-101 (EP-005) · HU-102–HU-107, HU-160–HU-166, HU-180 · T-4 · ADR-0002 (lista
 blanca: `crear_negocio`, `notificar_coordinacion`, `enlazar_negocio`), ADR-0010 §3.3 (variables).

@@ -165,6 +165,9 @@ sequenceDiagram
   else Queda al menos un publicado incompleto
     %% HU-159
     P-->>C: Describe lo que el estándar exige, sin afirmar «ninguno»
+  else El conteo de incompletos no está disponible
+    %% HU-159
+    P-->>C: Muestra la versión descriptiva, sin «ninguno» ni mensaje de error; carga los perfiles y deja registro técnico
   end
   %% HU-159
   P-->>C: Muestra el respaldo del servicio y el SLA de 10 días hábiles
@@ -206,6 +209,11 @@ sequenceDiagram
   C->>P: Busca con criterios
   %% HU-119
   P-->>C: Tarjeta y ficha muestran una línea ✓/– por criterio, determinista y sin porcentaje
+  %% HU-119
+  alt Criterio de un tipo sin plantilla
+    %% HU-119
+    P-->>C: Línea genérica «✓ Cumple» o «– No cumple» más el nombre del criterio, nunca en blanco; queda registro técnico
+  end
   %% HU-119
   alt Sin criterios activos
     %% HU-119
@@ -329,20 +337,22 @@ sequenceDiagram
 | El guardado falla por otra regla | HU-194 | AC-2 (error) |
 | Otra escritura o dentro de otra palabra | HU-194 | AC-3 (edge) |
 | Reescribir sin la expresión | HU-194 | AC-4 (edge) |
-| Encabezado del estándar | HU-159 | AC-1 (happy) |
+| Encabezado del estándar | HU-159 | AC-1 (happy, esquema) |
 | Respaldo y SLA | HU-159 | AC-2 (happy) |
 | «Ninguno» solo con 0 incompletos (D80) | HU-159 | AC-3 (edge) |
-| Encabezado en el teléfono | HU-159 | AC-4 (edge) |
+| Conteo de incompletos no disponible (D97) | HU-159 | AC-4 (error) |
+| Encabezado en el teléfono | HU-159 | AC-5 (edge) |
 | Capacidad en la tarjeta | HU-153 | AC-1 (happy) |
 | Disponibilidad vencida | HU-153 | AC-2 (error) |
 | Más de 5 tecnologías y sin sector | HU-153 | AC-3 (edge) |
 | Competencias en la tarjeta | HU-081 | AC-1 (happy) |
 | Perfil sin Sello Personal | HU-081 | AC-2 (edge) |
 | Sello Personal fuera de contrato | HU-081 | AC-3 (error) |
-| Evidencia por criterio, también lo no cumplido | HU-119 | AC-1 (happy) |
-| Sin criterios activos | HU-119 | AC-2 (error) |
-| Dato ausente = no cumplido | HU-119 | AC-3 (edge) |
-| Plantilla por tipo de criterio | HU-119 | AC-4 (edge) |
+| Evidencia por criterio, también lo no cumplido | HU-119 | AC-1 (happy, esquema) |
+| Criterio de un tipo sin plantilla (D96) | HU-119 | AC-2 (error, esquema) |
+| Sin criterios activos | HU-119 | AC-3 (edge, esquema) |
+| Dato ausente = no cumplido | HU-119 | AC-4 (edge) |
+| Plantilla por tipo de criterio | HU-119 | AC-5 (edge, esquema) |
 | Panel lateral con posición | HU-120 | AC-1 (happy) |
 | Extremos de la lista | HU-120 | AC-2 (error), AC-3 (edge) |
 | Cerrar vuelve a la misma lista | HU-120 | AC-4 (edge) |
@@ -373,6 +383,8 @@ sequenceDiagram
 **Segunda ronda (2026-10-02): D80 y D81.** D80: el encabezado del estándar afirma «ningún perfil sin SARO, DISC y validaciones» **solo con 0 publicados incompletos**; mientras quede uno, describe el estándar sin afirmarlo (HU-159 y HU-178, alt nuevos). D81: la importación masiva y su plantilla llevan las columnas SARO alcance (validado contra el catálogo), SARO fecha y DISC fecha; como sacaba a HU-176 de M, nace **HU-191** en el sub-slice inicial, detrás de HU-176.
 
 **Validación independiente (2026-10-02) y D87–D88.** HU-174 (evidencia calculada por el motor único) **se movió a EP-009** por D87 y su recorrido está en `docs/06-flows/EP-009-instruccion-y-perfil-objetivo.md`; EP-003 ya no depende de EP-009. El aviso de lenguaje de inventario salió de HU-154 a **HU-194** (un solo actor por historia), en el sub-slice inicial del panel. HU-081 suma un error real (sello fuera de contrato) y su caso sin sello pasa a edge; HU-119 fija la plantilla por tipo de criterio; HU-177 dice qué pasa al editar un perfil con un alcance desactivado; HU-191 separa la plantilla de la exportación y funde sus errores en un esquema.
+
+**Tercera ronda (2026-10-02): D96 y D97.** D96: un criterio de un tipo sin plantilla muestra la línea genérica «✓ Cumple / – No cumple» con el nombre del criterio, nunca en blanco, y se registra (HU-119, nuevo AC-2 de error; los demás AC se renumeran). D97: si el conteo de publicados incompletos no está disponible, el encabezado muestra la versión descriptiva sin afirmar «ninguno» (HU-159, nuevo AC-4 de error; el del teléfono pasa a AC-5).
 
 **HU-079 (reconocer de un vistazo qué ha logrado un perfil) está descartada y no se diagrama.** D-15 la cerró: el logro cuantificado no existe en el banco entregado por Talento Humano, extraerlo tiene costo recurrente y es autoreportado por naturaleza. Lo reemplazan las tres competencias del Sello Personal (RF-14.1).
 

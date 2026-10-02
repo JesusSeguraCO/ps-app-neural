@@ -485,7 +485,8 @@ internas y demo (D68) y la retención no cambian.
 **Relacionadas en la misma ronda (no son de esta ADR, se citan para la trazabilidad):** el top 10 de
 búsquedas sin resultados también se muestra en el destino Demanda a Talento Humano (D82, HU-172), y las
 decisiones de reclutamiento se registran en Demanda (D83, HU-189); el tablero mensual muestra O3 con la
-fecha «Agendada el» que el worker lee una vez al día de HubSpot (D75, HU-171; el mecanismo de lectura
+fecha de agendado que el worker lee una vez al día de HubSpot (D75, HU-171; D92: `engagements_last_meeting_booked`
+del contacto, no la propiedad «Agendada el»; el mecanismo de lectura
 pertenece a la enmienda 2026-10-02 de ADR-0009).
 
 **Veredictos que cambian en §5:** ninguno. UC-17 sigue cubierto; el control de acceso pasa a expresarse

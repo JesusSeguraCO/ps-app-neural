@@ -4,7 +4,7 @@ titulo: "Entender el estándar Neural-Grid antes del primer perfil"
 epica: EP-003
 prioridad: alta
 complejidad: M
-estado: draft
+estado: lista
 fase: cierre-de-huecos
 prd_version: 4.18
 depende_de: [HU-178]
@@ -21,8 +21,8 @@ depende_de: [HU-178]
 ### Happy path — el estándar se declara una vez, arriba
 
 **Esquema del escenario:** la declaración precede a lo primero que el cliente evalúa
-**Dado** que tengo una sesión válida y entro a <pantalla>
-**Cuando** carga la página
+**Dado** que tengo una sesión válida
+**Cuando** entro a <pantalla>
 **Entonces** antes de <primer_contenido> veo un encabezado breve que explica el estándar Neural-Grid en cuatro dimensiones: tres condiciones de entrada y Neural Speed como garantía del servicio
 **Y** veo, una sola vez, que el estándar exige a cada perfil verificación de identidad bajo SARO, prueba técnica revisada por Trycore y evaluación DISC
 **Y** nada de lo que sigue en la página repite esa declaración, y ninguna tarjeta lleva una insignia del estándar
@@ -54,10 +54,18 @@ depende_de: [HU-178]
 | 0 | afirma que ningún perfil llega al portal sin verificación de identidad bajo SARO, prueba técnica revisada por Trycore y evaluación DISC |
 | 1 | describe lo que el estándar exige a cada perfil, sin la palabra «ningún» ni otra afirmación de que todos lo cumplen |
 
+### Error — el conteo de incompletos no está disponible
+
+**Dado** que el conteo de perfiles publicados marcados como incompletos (HU-178) no se puede obtener en este momento, por ejemplo porque su consulta falla o no responde a tiempo,
+**cuando** entro a la selección de mi correo,
+**Entonces** el encabezado del estándar muestra la versión que describe lo que el estándar exige a cada perfil, sin la palabra «ningún» ni otra afirmación de que todos lo cumplen
+**Y** la página carga los perfiles con normalidad, sin mensaje de error en el encabezado
+**Y** queda un registro técnico de que el conteo no estuvo disponible
+
 ### Edge case — el encuadre no bloquea la exploración en el teléfono
 
-**Dado** que entro a la selección de mi correo desde un teléfono,
-**cuando** carga la página,
+**Dado** que tengo una sesión válida y uso un teléfono,
+**cuando** entro a la selección de mi correo,
 **Entonces** veo el encabezado del estándar y puedo bajar hasta el primer perfil sin cerrar, aceptar ni descartar nada
 **Y** el encabezado no se abre como una ventana sobre la lista ni vuelve a aparecer encima de ella al recorrer los perfiles
 
@@ -78,19 +86,21 @@ Cubre **RF-6.1** (encabezado breve antes del primer resultado, sin bloquear la e
 
 **Validación 2026-10-02 (validador independiente): «prueba técnica en vivo» → «prueba técnica revisada por Trycore».** La validación técnica admite modalidades que no son en vivo (por ejemplo «Reto de código con entrega funcional», HU-155; D59), así que «en vivo» afirmaba de todos los perfiles algo que no todos cumplen. Se usa una redacción que vale para todas las modalidades, **marcada para revisión de copy** con Mercadeo (D73); el mismo cambio se hizo en HU-178.
 
+**Error sin conteo (D97, tercera ronda 2026-10-02).** La historia no tenía escenario de error. D97: si el conteo de publicados incompletos **no está disponible**, el encabezado **no afirma «ninguno»** y muestra la **versión descriptiva** de D80; en la duda, la frase que vale siempre. La página no se bloquea por eso y el fallo queda registrado. Quinto escenario; sigue en M.
+
 **Revisión INVEST 2026-10-02 (D80).** Se añade el cuarto escenario y `depende_de: [HU-178]`: la frase depende de la marca «incompleto». La historia sigue en M.
 
 ## Trazabilidad
 
-Épica madre: **EP-003** · PRD v4.17 · RF-6.1 · RF-6.2 · RF-6.3 · RF-6.4 · RF-3.8 · B.6 · D59 · D64 · D73 · D80 · validación 2026-10-02 (copy de la prueba técnica) · depende de HU-178 (conteo de publicados incompletos) · pantallas compartidas con EP-001 (HU-091, HU-093, HU-144, banco ampliado), EP-002 y EP-009 · relacionada con HU-158 (SLA y recordatorio del estándar en la ficha) y HU-153 (tarjeta sin insignia)
+Épica madre: **EP-003** · PRD v4.17 · RF-6.1 · RF-6.2 · RF-6.3 · RF-6.4 · RF-3.8 · B.6 · D59 · D64 · D73 · D80 · D97 · validación 2026-10-02 (copy de la prueba técnica) · depende de HU-178 (conteo de publicados incompletos) · pantallas compartidas con EP-001 (HU-091, HU-093, HU-144, banco ampliado), EP-002 y EP-009 · relacionada con HU-158 (SLA y recordatorio del estándar en la ficha) y HU-153 (tarjeta sin insignia)
 
 ## INVEST
 
 | | Criterio | Estado |
 |---|---|---|
 | I | Independiente | ✓ con dependencia declarada: se añade sobre pantallas ya construidas de EP-001 y lee la marca «incompleto» de HU-178 (sub-slice inicial de la misma épica, que se construye antes); no espera a EP-002 ni a EP-009 |
-| N | Negociable | ✓ son fijos el contenido mínimo (estándar en cuatro dimensiones, condición de entrada con SARO, prueba técnica revisada por Trycore y DISC, respaldo y SLA), que se diga una vez, en tres pantallas, que no bloquee y que «ninguno» solo se afirme con 0 incompletos (D80); la forma (cabecera ilustrada o texto) y el copy se pueden negociar |
+| N | Negociable | ✓ son fijos el contenido mínimo (estándar en cuatro dimensiones, condición de entrada con SARO, prueba técnica revisada por Trycore y DISC, respaldo y SLA), que se diga una vez, en tres pantallas, que no bloquee y que «ninguno» solo se afirme con 0 incompletos y un conteo disponible (D80, D97); la forma (cabecera ilustrada o texto) y el copy se pueden negociar |
 | V | Valiosa | ✓ declarar una vez lo que todos cumplen libera la tarjeta para lo que sí diferencia, y le da autoridad al conjunto antes del primer perfil |
 | E | Estimable | ✓ M: un encabezado en tres pantallas existentes (selección, banco y encuadre) con dos frases según el conteo de incompletos que ya calcula HU-178, y un bloque de respaldo, con comportamiento adaptable; el copy pendiente no cambia la mecánica |
-| S | Pequeña | ✓ M: cuatro escenarios de presentación; el encuadre suma una fila al esquema y D80 una regla de redacción con tabla, no una capacidad |
-| T | Testeable | ✓ el orden en el DOM (declaración antes de la primera tarjeta o de la pregunta de encuadre), que nombre cuatro dimensiones, la frase con 0 y con 1 publicado incompleto sembrado, que no se repita en las tarjetas, el tamaño del texto del SLA y que no haya diálogo en un teléfono emulado son observables |
+| S | Pequeña | ✓ M: cinco escenarios de presentación; el encuadre suma una fila al esquema, D80 una regla de redacción con tabla y D97 su caída segura, no una capacidad |
+| T | Testeable | ✓ el orden en el DOM (declaración antes de la primera tarjeta o de la pregunta de encuadre), que nombre cuatro dimensiones, la frase con 0 y con 1 publicado incompleto sembrado y con el conteo forzado a fallar, que no se repita en las tarjetas, el tamaño del texto del SLA y que no haya diálogo en un teléfono emulado son observables |
