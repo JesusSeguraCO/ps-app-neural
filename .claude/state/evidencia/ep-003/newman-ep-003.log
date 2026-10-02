@@ -1,0 +1,424 @@
+ep-003: 71 peticiones
+newman
+
+EP-003 · Evidencia del perfil (contrato API)
+
+❏ 1 · Catálogo de alcances SARO: alta
+↳ lista el catálogo con el texto de cara al cliente
+  GET http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [200 OK, 7.57kB, 35ms]
+  ✓  status 200
+  ✓  content-type json
+  ✓  valores[] con textoCliente
+
+↳ crear un alcance → 201
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [201 Created, 974B, 16ms]
+  ✓  status 201
+  ✓  content-type json
+  ✓  valor con claves exactas
+
+↳ duplicado idéntico salvo mayúsculas → 409 con el existente
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [409 Conflict, 1.01kB, 8ms]
+  ✓  status 409
+  ✓  motivo duplicado
+  ✓  señala el existente
+
+↳ sin texto de cara al cliente → 422 texto_cliente_requerido
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [422 Unprocessable Entity, 896B, 4ms]
+  ✓  status 422
+  ✓  motivo texto_cliente_requerido
+
+↳ texto en blanco → 422 texto_cliente_requerido
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [422 Unprocessable Entity, 896B, 4ms]
+  ✓  status 422
+  ✓  motivo texto_cliente_requerido
+
+↳ texto de 281 caracteres → 422 texto_cliente_largo con el máximo
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [422 Unprocessable Entity, 905B, 4ms]
+  ✓  status 422
+  ✓  motivo texto_cliente_largo
+  ✓  maximo 280
+
+↳ texto de exactamente 280 caracteres → 201 (límite)
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [201 Created, 981B, 8ms]
+  ✓  status 201
+
+↳ entrada fuera de forma → 400
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [400 Bad Request, 880B, 4ms]
+  ✓  status 400
+  ✓  motivo entrada_invalida
+
+↳ observadora crea → 403 sin_permiso
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [403 Forbidden, 965B, 5ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+↳ fichas que dependen del alcance nuevo: ninguna
+  GET http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196 [200 OK, 937B, 5ms]
+  ✓  status 200
+  ✓  sin publicados
+
+❏ 2 · Perfiles: SARO, DISC y avisos
+↳ crear sin SARO/DISC, con lenguaje de inventario → 201 + aviso
+  POST http://127.0.0.1:3211/api/v1/perfiles [201 Created, 3.63kB, 30ms]
+  ✓  status 201
+  ✓  content-type json
+  ✓  aviso de lenguaje de inventario «disponible para asignación»
+  ✓  nace en borrador con saro/disc vacíos
+  ✓  evaluación con las tres condiciones nuevas sin cumplir
+
+↳ la expresión con otra escritura («ITEM») también avisa
+  POST http://127.0.0.1:3211/api/v1/perfiles [201 Created, 3.56kB, 16ms]
+  ✓  status 201
+  ✓  aviso de lenguaje de inventario «ITEM»
+
+↳ dentro de otra palabra («itemizada») no avisa
+  POST http://127.0.0.1:3211/api/v1/perfiles [201 Created, 3.53kB, 19ms]
+  ✓  status 201
+  ✓  avisos vacío
+
+↳ fecha SARO futura → 422 con el campo, y el aviso aparte
+  POST http://127.0.0.1:3211/api/v1/perfiles [422 Unprocessable Entity, 1.02kB, 6ms]
+  ✓  status 422
+  ✓  motivo fecha_verificacion_futura
+  ✓  campo saroFecha
+  ✓  aviso de lenguaje de inventario «disponible para asignación»
+
+↳ fecha DISC futura → 422 campo discFecha
+  POST http://127.0.0.1:3211/api/v1/perfiles [422 Unprocessable Entity, 951B, 4ms]
+  ✓  status 422
+  ✓  motivo fecha_verificacion_futura
+  ✓  campo discFecha
+
+↳ fecha que no existe (31 de febrero) → 422 ilegible
+  POST http://127.0.0.1:3211/api/v1/perfiles [422 Unprocessable Entity, 953B, 3ms]
+  ✓  status 422
+  ✓  motivo fecha_verificacion_ilegible
+  ✓  campo saroFecha
+
+↳ fecha SARO de hoy → 201 (límite)
+  POST http://127.0.0.1:3211/api/v1/perfiles [201 Created, 3.72kB, 11ms]
+  ✓  status 201
+  ✓  guarda alcance y fechas
+
+↳ alcance como texto libre (no uuid) → 400
+  POST http://127.0.0.1:3211/api/v1/perfiles [400 Bad Request, 880B, 3ms]
+  ✓  status 400
+  ✓  motivo entrada_invalida
+
+↳ alcance que no está en el catálogo → 422 valor_no_disponible
+  POST http://127.0.0.1:3211/api/v1/perfiles [422 Unprocessable Entity, 981B, 3ms]
+  ✓  status 422
+  ✓  motivo valor_no_disponible
+  ✓  señala la tabla
+
+↳ observadora crea → 403
+  POST http://127.0.0.1:3211/api/v1/perfiles [403 Forbidden, 965B, 2ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+↳ registrar el consentimiento
+  POST http://127.0.0.1:3211/api/v1/perfiles/PS-0741/consentimiento [201 Created, 3.78kB, 11ms]
+  ✓  status 201
+
+↳ publicar sin SARO/DISC → 409 «Falta el alcance de la verificación SARO»
+  POST http://127.0.0.1:3211/api/v1/perfiles/PS-0741/publicar [409 Conflict, 2.01kB, 6ms]
+  ✓  status 409
+  ✓  motivo no_publicable
+  ✓  «Falta el alcance de la verificación SARO» con su campo
+  ✓  «Falta la fecha de la verificación SARO» con su campo
+  ✓  «Falta la fecha de la evaluación DISC» con su campo
+  ✓  consentimiento cumple
+
+↳ guardar el alcance SARO
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [200 OK, 3.96kB, 11ms]
+  ✓  status 200
+  ✓  alcance con su texto de cara al cliente
+
+↳ publicar sin fecha SARO → 409 «Falta la fecha de la verificación SARO»
+  POST http://127.0.0.1:3211/api/v1/perfiles/PS-0741/publicar [409 Conflict, 2.01kB, 5ms]
+  ✓  status 409
+  ✓  motivo no_publicable
+  ✓  saro_alcance cumple
+  ✓  «Falta la fecha de la verificación SARO» con su campo
+
+↳ guardar fecha SARO futura → 422 y nada escrito
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [422 Unprocessable Entity, 951B, 5ms]
+  ✓  status 422
+  ✓  motivo fecha_verificacion_futura
+
+↳ guardar la fecha SARO
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [200 OK, 3.97kB, 9ms]
+  ✓  status 200
+  ✓  fecha guardada
+
+↳ publicar sin fecha DISC → 409 «Falta la fecha de la evaluación DISC»
+  POST http://127.0.0.1:3211/api/v1/perfiles/PS-0741/publicar [409 Conflict, 2.01kB, 9ms]
+  ✓  status 409
+  ✓  saro_fecha cumple
+  ✓  «Falta la fecha de la evaluación DISC» con su campo
+
+↳ guardar la fecha DISC
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [200 OK, 3.98kB, 14ms]
+  ✓  status 200
+  ✓  evaluación publicable
+
+↳ publicar completo → 200 publicado
+  POST http://127.0.0.1:3211/api/v1/perfiles/PS-0741/publicar [200 OK, 3.97kB, 15ms]
+  ✓  status 200
+  ✓  publicado
+
+↳ listado: el publicado completo no lleva marca Incompleto
+  GET http://127.0.0.1:3211/api/v1/perfiles [200 OK, 199.15kB, 913ms]
+  ✓  status 200
+  ✓  incompleto null
+
+↳ previsualizar corregir la fecha DISC de un publicado → impacto en meses
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741?previsualizar [200 OK, 5.16kB, 9ms]
+  ✓  status 200
+  ✓  cambio de cara al cliente
+
+↳ confirmar la corrección
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [200 OK, 3.98kB, 11ms]
+  ✓  status 200
+  ✓  fecha corregida y sigue publicado
+
+↳ D1 · previsualizar quitar el alcance → 200 deja_incompleto con la pregunta
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741?previsualizar [200 OK, 5.43kB, 7ms]
+  ✓  status 200
+  ✓  motivo deja_incompleto
+  ✓  pregunta D1
+
+↳ D1 · confirmar sin responder la pregunta → 409
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [409 Conflict, 5.44kB, 9ms]
+  ✓  status 409
+  ✓  motivo deja_incompleto
+
+↳ D1 · resolución descartar → 200 y nada escrito
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741?resolucion=descartar [200 OK, 4kB, 5ms]
+  ✓  status 200
+  ✓  descartado, alcance intacto
+
+↳ observadora edita → 403
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [403 Forbidden, 965B, 2ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+❏ 3 · Portal: catálogo y ficha
+↳ catálogo sin sesión → 401 sin datos
+  GET http://127.0.0.1:3210/api/v1/catalogo [401 Unauthorized, 975B, 5ms]
+  ✓  status 401
+  ✓  motivo sin_sesion
+  ✓  sin perfiles
+
+↳ catálogo sin cabecera de borde → 403
+  GET http://127.0.0.1:3210/api/v1/catalogo [403 Forbidden, 336B, 2ms]
+  ✓  status 403
+  ✓  sin perfiles
+
+↳ catálogo con sesión → 200, claves exactas, sin B.4 ni «Incompleto»
+  GET http://127.0.0.1:3210/api/v1/catalogo [200 OK, 120.39kB, 23ms]
+  ✓  status 200
+  ✓  content-type json
+  ✓  cache-control private, no-store
+  ✓  nosniff
+  ✓  solo {perfiles}
+  ✓  cada perfil con las 13 claves exactas
+  ✓  selloPersonal ≤ 3 sin vacíos
+  ✓  ni Incompleto ni falta en el cuerpo
+  ✓  sin claves B.4 ni internas
+  ✓  el perfil publicado de la corrida llega
+
+↳ ficha del perfil: texto del alcance y mes; nunca id ni nombre interno
+  GET http://127.0.0.1:3210/banco?ficha=PS-0741 [200 OK, 973.55kB, 111ms]
+  ✓  status 200
+  ✓  html
+  ✓  cache-control private, no-store
+  ✓  Verificación de seguridad SARO con el texto de cara al cliente y el mes
+  ✓  Evaluación DISC con el mes
+  ✓  ni el id ni el nombre interno del alcance
+  ✓  ni fecha exacta de las verificaciones
+  ✓  sin claves B.4 ni internas ni «Incompleto»
+
+❏ 4 · Alcance SARO en uso: corregir y retirar
+↳ previsualizar el texto nuevo → impacto con las fichas publicadas
+  PATCH http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196?previsualizar [200 OK, 1.01kB, 5ms]
+  ✓  status 200
+  ✓  impacto exacto
+
+↳ previsualizar no escribió: el catálogo conserva el texto
+  GET http://127.0.0.1:3211/api/v1/catalogos/alcance_saro [200 OK, 8.3kB, 7ms]
+  ✓  status 200
+  ✓  texto anterior
+
+↳ previsualizar en un catálogo sin texto de cara al cliente → 409 no_aplica
+  PATCH http://127.0.0.1:3211/api/v1/catalogos/tecnologia/8e0dec44-cec5-4c41-84a7-aab87638a68b?previsualizar [409 Conflict, 870B, 3ms]
+  ✓  status 409
+  ✓  motivo no_aplica
+
+↳ previsualizar un alcance inexistente → 404
+  PATCH http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/00000000-0000-4000-8000-000000000000?previsualizar [404 Not Found, 871B, 2ms]
+  ✓  status 404
+  ✓  motivo no_existe
+
+↳ confirmar con texto de 281 → 422 texto_cliente_largo
+  PATCH http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196 [422 Unprocessable Entity, 905B, 3ms]
+  ✓  status 422
+  ✓  motivo texto_cliente_largo
+
+↳ observadora corrige → 403
+  PATCH http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196 [403 Forbidden, 965B, 3ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+↳ confirmar el texto nuevo → 200
+  PATCH http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196 [200 OK, 969B, 11ms]
+  ✓  status 200
+  ✓  valor
+
+↳ la ficha del portal ya muestra el texto nuevo
+  GET http://127.0.0.1:3210/banco?ficha=PS-0741 [200 OK, 973.58kB, 85ms]
+  ✓  status 200
+  ✓  texto nuevo
+
+↳ observadora retira → 403
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196/desactivar [403 Forbidden, 965B, 3ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+↳ retirar el alcance en uso → 200 con sus dependientes
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196/desactivar [200 OK, 919B, 5ms]
+  ✓  status 200
+  ✓  inactivo y en uso
+
+↳ retirado: la ficha publicada sigue mostrando su texto
+  GET http://127.0.0.1:3210/banco?ficha=PS-0741 [200 OK, 973.58kB, 81ms]
+  ✓  status 200
+  ✓  texto del alcance retirado
+
+↳ retirado: no se puede asignar a un perfil nuevo → 422
+  POST http://127.0.0.1:3211/api/v1/perfiles [422 Unprocessable Entity, 981B, 5ms]
+  ✓  status 422
+  ✓  motivo valor_no_disponible
+
+↳ reactivar el alcance
+  POST http://127.0.0.1:3211/api/v1/catalogos/alcance_saro/92abd141-8c27-4b0e-9795-396a8ef5c196/reactivar [200 OK, 918B, 6ms]
+  ✓  status 200
+  ✓  activo
+
+❏ 5 · Importación: plantilla y exportación
+↳ plantilla CSV con las columnas SARO/DISC
+  GET http://127.0.0.1:3211/api/v1/importacion/plantilla?formato=csv [200 OK, 2.54kB, 3ms]
+  ✓  status 200
+  ✓  text/csv adjunto
+  ✓  cache-control private, no-store
+  ✓  columnas SARO/DISC tras la modalidad de prueba
+
+↳ plantilla JSON: la fila de alta trae saroAlcance, saroFecha y discFecha
+  GET http://127.0.0.1:3211/api/v1/importacion/plantilla?formato=json [200 OK, 2.2kB, 2ms]
+  ✓  status 200
+  ✓  fila de alta
+
+↳ plantilla en otro formato → 400
+  GET http://127.0.0.1:3211/api/v1/importacion/plantilla?formato=xlsx [400 Bad Request, 883B, 2ms]
+  ✓  status 400
+
+↳ observadora pide la plantilla → 403
+  GET http://127.0.0.1:3211/api/v1/importacion/plantilla?formato=csv [403 Forbidden, 965B, 3ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+↳ exportar CSV: el perfil sale con alcance (nombre interno) y fechas
+  GET http://127.0.0.1:3211/api/v1/importacion/exportar?formato=csv [200 OK, 147.62kB, 30ms]
+  ✓  status 200
+  ✓  text/csv adjunto
+  ✓  columnas SARO/DISC tras la modalidad de prueba
+  ✓  fila del perfil
+
+↳ exportar JSON: saroAlcance, saroFecha y discFecha del perfil
+  GET http://127.0.0.1:3211/api/v1/importacion/exportar?formato=json [200 OK, 328.4kB, 23ms]
+  ✓  status 200
+  ✓  item del perfil
+
+↳ observadora exporta → 403
+  GET http://127.0.0.1:3211/api/v1/importacion/exportar?formato=csv [403 Forbidden, 965B, 3ms]
+  ✓  status 403
+  ✓  motivo sin_permiso
+
+❏ 6 · Publicado heredado sin SARO (HU-178)
+↳ preparar: quitar el SARO por debajo de la app (ayudante)
+  POST http://127.0.0.1:3219/heredado?codigo=PS-0741 [200 OK, 193B, 30ms]
+  ✓  status 200
+  ✓  una fila
+
+↳ listado: marca «Incompleto: falta la verificación SARO (alcance y fecha)»
+  GET http://127.0.0.1:3211/api/v1/perfiles [200 OK, 199.2kB, 971ms]
+  ✓  status 200
+  ✓  marca exacta
+
+↳ releer el perfil (versión vigente)
+  GET http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [200 OK, 3.79kB, 5ms]
+  ✓  status 200
+
+↳ editar sin completarlo → 200 deja_incompleto: no se publica mientras falte
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741?previsualizar [200 OK, 5.22kB, 6ms]
+  ✓  status 200
+  ✓  motivo deja_incompleto
+  ✓  pregunta de HU-178
+
+↳ portal: el catálogo lo sirve sin marca Incompleto
+  GET http://127.0.0.1:3210/api/v1/catalogo [200 OK, 120.39kB, 7ms]
+  ✓  status 200
+  ✓  presente con claves exactas
+  ✓  sin Incompleto
+
+↳ portal: la ficha omite el SARO sin marca y conserva el DISC
+  GET http://127.0.0.1:3210/banco?ficha=PS-0741 [200 OK, 973.04kB, 58ms]
+  ✓  status 200
+  ✓  sin fila SARO ni marca
+
+↳ completar lo que falta: previsualizar
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741?previsualizar [200 OK, 5.07kB, 9ms]
+  ✓  status 200
+  ✓  impacto, sin pregunta
+
+↳ completar lo que falta: confirmar → publicado completo
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741 [200 OK, 3.99kB, 12ms]
+  ✓  status 200
+  ✓  publicable
+
+↳ listado: ya sin marca
+  GET http://127.0.0.1:3211/api/v1/perfiles [200 OK, 199.15kB, 911ms]
+  ✓  status 200
+  ✓  incompleto null
+
+↳ D1 · pasar a borrador (resolución a_borrador) sale del portal
+  PATCH http://127.0.0.1:3211/api/v1/perfiles/PS-0741?resolucion=a_borrador [200 OK, 3.8kB, 10ms]
+  ✓  status 200
+  ✓  borrador
+
+↳ portal: el perfil en borrador ya no está en el catálogo
+  GET http://127.0.0.1:3210/api/v1/catalogo [200 OK, 120.08kB, 7ms]
+  ✓  status 200
+  ✓  ausente
+
+┌─────────────────────────┬───────────────────┬───────────────────┐
+│                         │          executed │            failed │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│              iterations │                 1 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│                requests │                71 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│            test-scripts │                71 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│      prerequest-scripts │                 0 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│              assertions │               179 │                 0 │
+├─────────────────────────┴───────────────────┴───────────────────┤
+│ total run duration: 4.6s                                        │
+├─────────────────────────────────────────────────────────────────┤
+│ total data received: 5.4MB (approx)                             │
+├─────────────────────────────────────────────────────────────────┤
+│ average response time: 51ms [min: 2ms, max: 971ms, s.d.: 185ms] │
+└─────────────────────────────────────────────────────────────────┘
+newman rc=0
+quedan (archivados) perfiles=4 no archivados=0 alcances=0 usuarios activos=0 claves huérfanas=0
