@@ -32,8 +32,8 @@ depende_de: [HU-118, HU-119]
 **Dado** que busqué con «Banca» como obligatorio
 **Y** que un perfil publicado no tiene experiencia declarada en Banca
 **Cuando** reviso la lista de resultados
-**Entonces** ese perfil no aparece entre los resultados
-**Y** ningún perfil de la lista muestra «–» en un criterio obligatorio
+**Entonces** ese perfil no aparece en las coincidencias directas
+**Y** ningún perfil de las coincidencias directas muestra «–» en un criterio obligatorio
 
 ### Edge case — una opción que no existe en el banco no produce línea
 
@@ -61,7 +61,7 @@ Cubre **RF-13.8** (un solo motor de criterios, capa determinista: lo que decide 
 
 **El dato ausente es «no cumplido»**, como fija HU-119: el motor y la presentación deben coincidir en esa regla (un perfil sin idioma registrado falla «Inglés»; si «Inglés» es obligatorio, no aparece).
 
-**Fronteras:** «lo más cercano», que dice qué criterio obligatorio falla, es de **EP-010** (RF-14.3, D-14); esta historia solo garantiza que en los resultados normales ningún obligatorio aparece como no cumplido. La vista de tabla con la misma evidencia en columnas es de **HU-121** (EP-002).
+**Fronteras:** «lo más cercano», que dice qué criterio obligatorio falla, es de **EP-010** (RF-14.3, D-14); esta historia solo garantiza que en los resultados normales ningún obligatorio aparece como no cumplido. La vista de tabla con la misma evidencia en columnas es de **HU-121** (EP-002). **Coherencia 2026-10-02:** el escenario de error dice «coincidencias directas» y no «resultados», porque debajo de ellas la sección «Relacionados» de **HU-210** sí muestra a quien falla exactamente un obligatorio, con ese obligatorio marcado.
 
 ## Trazabilidad
 

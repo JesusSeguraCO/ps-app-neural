@@ -65,7 +65,7 @@ Cubre la **segunda condición de retirada de §14.7** (D-17): *«el registro de 
 
 **Qué es una decisión.** Un texto corto de qué se decidió (abrir un reclutamiento, sumar un perfil, descartar una demanda), su fecha y al menos una búsqueda del registro de demanda que la motivó. Una decisión enlazada a varias búsquedas cuenta **una vez** en el trimestre. El texto es interno del panel y no cruza al portal; no lleva datos de profesionales ni de contactos (las búsquedas enlazadas ya llegan enmascaradas, ADR-0006 H43).
 
-**Dependencia del registro de demanda.** Las búsquedas enlazables son las de HU-078 (EP-010). Si EP-008 se construye antes que EP-010, esta historia necesita al menos el listado de `operacion.consultas_sin_coincidencia` que crea EP-002 (RF-2.6.3) para poder enlazar; la historia no se puede probar sin búsquedas sembradas. Lo ordena el equipo en el DoR.
+**Dependencia del registro de demanda.** Las búsquedas enlazables son las de HU-078 (EP-010). Si EP-008 se construye antes que EP-010, esta historia necesita al menos el listado de `operacion.consultas_sin_coincidencia` que crea EP-009 (RF-2.6.3; corregido el 2026-10-02: antes se atribuía a EP-002) para poder enlazar; la historia no se puede probar sin búsquedas sembradas. Lo ordena el equipo en el DoR.
 
 **Propuestas del modelo, negociables:** anular en lugar de borrar (los catálogos y registros del panel no tienen borrado físico, RF-8.3); fecha no futura; que el observador consulte la lista sin escribir (RF-8.1.2: el observador consulta demanda).
 
@@ -79,7 +79,7 @@ Cubre la **segunda condición de retirada de §14.7** (D-17): *«el registro de 
 
 | | Criterio | Estado |
 |---|---|---|
-| I | Independiente | ⚠ con dependencia declarada: necesita búsquedas del registro de demanda para enlazarlas (HU-078, EP-010, o al menos la tabla de consultas sin coincidencia de EP-002); no depende de HU-111, que la lee |
+| I | Independiente | ⚠ con dependencia declarada: necesita búsquedas del registro de demanda para enlazarlas (HU-078, EP-010, o al menos la tabla de consultas sin coincidencia de EP-009, RF-2.6.3); no depende de HU-111, que la lee |
 | N | Negociable | ✓ son fijos que la registre Talento Humano en Demanda (D73, D83), que se enlace al menos una búsqueda y que se audite; anular en lugar de borrar, la fecha no futura y los campos del texto son negociables |
 | V | Valiosa | ✓ sin ella la segunda condición de retirada de §14.7 nunca se puede medir y la revisión trimestral decide sin el dato que justifica la ruta de instrucción |
 | E | Estimable | ✓ S: una tabla con su migración, un formulario con dos validaciones, el enlace a búsquedas existentes, la anulación y la auditoría |

@@ -1,7 +1,7 @@
 ---
 id: flow-009-instruccion-y-perfil-objetivo
 epica: EP-009
-historias_cubiertas: [HU-065, HU-066, HU-067, HU-068, HU-069, HU-070, HU-071, HU-072, HU-073, HU-082, HU-083, HU-084, HU-085, HU-118, HU-174]
+historias_cubiertas: [HU-065, HU-066, HU-067, HU-068, HU-069, HU-070, HU-071, HU-072, HU-073, HU-082, HU-083, HU-084, HU-085, HU-118, HU-174, HU-209, HU-210, HU-211, HU-212, HU-213]
 ---
 
 # Flow 009 — Entrada por instrucción y Perfil Objetivo
@@ -210,6 +210,82 @@ sequenceDiagram
   end
 ```
 
+
+## Diagrama — motor único, relacionados, especificación con la solicitud, variante y aviso de servicio externo (discovery 2026-10-02)
+
+```mermaid
+sequenceDiagram
+  participant C as Cliente
+  participant P as Portal
+  participant G as Gemini
+  participant CS as Coordinación de Servicio
+
+  %% HU-212
+  C->>P: Entra con su cuenta asignada a una variante del experimento
+  %% HU-212
+  P-->>C: Ve siempre su variante, con o sin Perfil Objetivo, igual que sus colegas de cuenta
+
+  %% HU-212
+  alt El navegador intenta elegir la variante
+    %% HU-212
+    P-->>C: El servidor descarta la clave y la sesión mantiene la variante asignada
+  end
+
+  %% HU-209
+  C->>P: Aplica criterios en el panel de especificación
+  %% HU-209
+  P-->>C: El contador del panel es exactamente el número de resultados; en tecnologías basta con alguna
+
+  %% HU-209
+  alt La combinación queda vacía
+    %% HU-209
+    P-->>C: Un solo aviso, y por campo solo el valor que no existe
+  end
+
+  %% HU-210
+  P-->>C: Bajo las coincidencias directas, «Relacionados»: quienes cumplen todo menos un obligatorio, con el que falta
+
+  %% HU-210
+  alt Sin coincidencias directas
+    %% HU-210
+    P-->>C: No hay sección de relacionados: es el camino del cero (EP-010)
+  end
+
+  %% HU-213
+  C->>P: Pega un requerimiento largo
+  %% HU-213
+  P-->>C: Aviso antes de cualquier envío: interpretar con Gemini o sin servicio externo
+
+  %% HU-213
+  alt Elige con Gemini
+    %% HU-213
+    P->>G: Solo el texto saneado y la taxonomía, nunca datos de perfiles
+  end
+
+  %% HU-213
+  alt Elige sin servicio externo
+    %% HU-213
+    P-->>C: Interpreta con el algoritmo propio; nada sale del portal
+  end
+
+  %% HU-213
+  alt Cierra el aviso sin elegir
+    %% HU-213
+    P-->>C: No busca ni llama a nadie; su texto sigue completo en la barra
+  end
+
+  %% HU-211
+  C->>P: Envía la solicitud de equipo
+  %% HU-211
+  P->>CS: La solicitud lleva la especificación revisada, o inferida y marcada así si nunca abrió el Perfil Objetivo
+
+  %% HU-211
+  alt La especificación del navegador no cumple el esquema
+    %% HU-211
+    P-->>C: La solicitud se guarda con sus perfiles y la marca «especificación no recibida»; la confirmación lo dice
+  end
+```
+
 ## Trazabilidad
 
 | Paso | HU | AC |
@@ -238,10 +314,22 @@ sequenceDiagram
 | Recuperar la especificación | HU-073 | AC-1 (happy) |
 | Navegador sin el dato | HU-073 | AC-2 (error) |
 | Otro invitado del mismo enlace | HU-073 | AC-3 (edge) |
+| Variante por cuenta | HU-212 | AC-1 y AC-2 (happy) · AC-4 (edge) |
+| Variante elegida por el navegador | HU-212 | AC-3 (error) |
+| Contador = resultados | HU-209 | AC-1 y AC-2 (happy) |
+| Combinación vacía | HU-209 | AC-3 (error) · AC-4 (edge) |
+| Relacionados | HU-210 | AC-1 (happy) · AC-2 y AC-3 (edge) |
+| Sin coincidencias directas | HU-210 | AC-4 (error) |
+| Aviso de servicio externo | HU-213 | AC-1 (happy) · AC-5 (edge) |
+| Sin servicio externo / cerrar sin elegir | HU-213 | AC-2 (happy) · AC-4 (error) |
+| Especificación con la solicitud | HU-211 | AC-1 (happy) · AC-2 (edge) |
+| Especificación fuera de esquema | HU-211 | AC-4 (error) |
 
 ## Notas
 
-**Cuarta ronda (D108, 2026-10-02): HU-084 entra en EP-009**, junto a HU-083. Se dibuja en la vista «Mi equipo» de EP-004 (HU-203) y lee las composiciones que registra HU-207 (EP-008). Sigue en draft hasta que HU-083 fije cómo el reto se asigna a uno de los tres tipos de proyecto.
+**Discovery 2026-10-02.** La épica pasa de 15 a 20 historias: nacen **HU-209** (panel y resultados dicen lo mismo, motor único RF-13.8), **HU-210** (relacionados bajo las coincidencias directas), **HU-211** (la especificación viaja con la solicitud de equipo), **HU-212** (variante del experimento por cuenta, D71) y **HU-213** (aviso y saneamiento del requerimiento pegado, partida de HU-067). Quedan **17 en lista y 3 en draft** (HU-067, HU-213, HU-072): dependen de la prueba previa T-23 de RF-12.2, y qué hacer si no se ejecuta es **D131, pendiente del sponsor**. La consulta sin coincidencia (RF-2.6.3, `operacion.consultas_sin_coincidencia`) la registra esta épica, no EP-002.
+
+**Cuarta ronda (D108, 2026-10-02): HU-084 entra en EP-009**, junto a HU-083. Se dibuja en la vista «Mi equipo» de EP-004 (HU-203) y lee las composiciones que registra HU-207 (EP-008). Ya está en lista: HU-083 fijó cómo el reto se asigna a un tipo de proyecto, cuyo nombre se trata como público (alineado con HU-207).
 
 **Esta es la apuesta de producto y tiene su prueba de falsación escrita.** La Fase 2 invirtió la jerarquía: la instrucción es la entrada y las facetas el refinamiento. §14.7 del PRD fija la regla asimétrica que puede tumbarla, fijada **antes** de observar: solo se reduce el alcance si los tres participantes completan la tarea con la lista y al menos dos lo hacen con menos fricción visible. Cualquier otro resultado es evidencia insuficiente, no un voto a favor de la lista.
 
@@ -251,6 +339,6 @@ sequenceDiagram
 
 **HU-174 llegó desde EP-003 por D87** (sponsor, 2026-10-02): vive junto al motor único de criterios (RF-13.8) y HU-118. Conecta con el motor la presentación ✓/– que HU-119 dejó construida en EP-003 (tarjeta y bloque «Frente a tu búsqueda» de la ficha). No es recorte: cambia de épica, y EP-003 queda sin dependencia de EP-009.
 
-**HU-067 está condicionada** a la prueba previa de RF-12.2. Sale del MVP por eso, no por falta de valor.
+**HU-067, HU-213 y HU-072 están condicionadas** a la prueba previa de RF-12.2 (T-23). Salen del MVP por eso, no por falta de valor; D131 queda pendiente del sponsor.
 
-**AC no diagramados:** HU-065 AC-2 y AC-3 (los cubre HU-072 como degradación), HU-067 AC-2, HU-068 AC-3, HU-069 AC-3 (lo cubre HU-075 en EP-010), HU-070 AC-3, HU-071 AC-3, HU-072 AC-3, HU-073 AC-3, HU-082 AC-4, HU-083 AC-4, HU-084 AC-4 y AC-5 (selección completa; sin repetir la observación de vacío de HU-080), HU-085 AC-4, HU-118 AC-2 y AC-4.
+**AC no diagramados:** HU-065 AC-2 y AC-3 (los cubre HU-072 como degradación), HU-067 AC-2, HU-068 AC-3, HU-069 AC-3 (lo cubre HU-075 en EP-010), HU-070 AC-3, HU-071 AC-3, HU-072 AC-3, HU-073 AC-3, HU-082 AC-4, HU-083 AC-4, HU-084 AC-4 y AC-5 (selección completa; sin repetir la observación de vacío de HU-080), HU-085 AC-4, HU-118 AC-2 y AC-4, HU-209 AC-5, HU-211 AC-3, HU-212 AC-5, HU-213 AC-3.

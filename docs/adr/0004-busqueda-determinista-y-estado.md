@@ -24,6 +24,11 @@ add:
 > ADR-0008 remite a ella sin enumerar los parámetros. QA-1 queda ⚠️ hasta ejecutar V4-1 (igual que en
 > ADR-0008 y el tablero). La persistencia de la vista por defecto y el umbral de confianza 0,8 pasan a
 > ser propuestas por defecto pendientes de T-30 y T-32.
+>
+> **Enmienda de discovery (2026-10-02, EP-002):** la lista cerrada de parámetros de URL se amplía con
+> Categoría, Sector, Disponibilidad y orden, y el descarte y el voto del sondeo pasan de `localStorage`
+> al servidor por invitado. Ver la sección «Enmienda de discovery (2026-10-02)» al final; rige sobre
+> el texto anterior donde choquen.
 
 > Plantilla alineada al método **ADD** (Attribute-Driven Design, Len Bass — *Software Architecture in
 > Practice*). Cada sección numerada corresponde a un paso del método. Las decisiones deben trazar a
@@ -467,3 +472,16 @@ fuera del stack: la llamada es `fetch` desde el servidor.
 **Trazabilidad añadida:** EP-004 (HU-080, HU-084, HU-120, HU-121) · RF-2.6.1, RF-2.6.2, RF-4.3, RF-4.4,
 RF-12.2, RF-13.9.4, RF-13.12, RF-13.12.4 · ADR-0009 (`vigilar`, `proponer_lexico`), ADR-0010 (entornos,
 verificaciones en oscuro) · stack: `nuqs`.
+
+## Enmienda de discovery (2026-10-02)
+
+> Nace de la discovery de EP-002 (HU-219, HU-221, HU-222, HU-019, HU-020). No cambia el alcance: alinea
+> la ADR con las historias. Elegida por el modelo por delegación del sponsor; revisable en el PR de la
+> discovery y se concreta en el change de EP-002. Rige sobre el texto anterior, incluida la revisión
+> adversarial (H34), donde choquen.
+
+| Tema | Decisión vigente | Razón |
+|------|------------------|-------|
+| Parámetros de URL que faltaban (H34) | La lista cerrada se **amplía** (no se reutilizan parámetros existentes) con las facetas de RF-2.3 que no tenía y con el orden de RF-2.7: **Categoría**, **Sector**, **Disponibilidad** (banda de arranque) y **orden**. Nombres propuestos: `cat`, `sec`, `disp` y `orden`; el change de EP-002 los fija en `packages/contratos/estado-busqueda` con su parser. Rigen las mismas reglas: `v=1`, parámetros desconocidos ignorados, valor inválido al valor por defecto, y el `orden` por omisión (relevancia) no se escribe. V4-2 cubre los nuevos parámetros en su ida y vuelta | HU-221 exige que el enlace reproduzca exactamente filtros, orden y vista (RF-2.5); sin estos parámetros, Categoría, Sector, Disponibilidad y orden se perderían al compartir |
+| Descarte y voto del sondeo (RF-10.4) | **Se guardan en el servidor por invitado**, no en `localStorage`: el sondeo no vuelve en visitas siguientes desde ningún dispositivo del mismo invitado (HU-020; el voto lo lleva a HubSpot HU-224). La fila «descarte del sondeo» sale de la persistencia local de §2 (CON-14, UC-6) y del diagrama de §4; la persistencia local queda para el Perfil Objetivo, la vista por defecto (pendiente de T-30) y la elección del aviso de servicio externo | Con identidad nominal (D-4) una visita siguiente puede venir de otro dispositivo; guardar en el navegador haría reaparecer la pregunta |
+
