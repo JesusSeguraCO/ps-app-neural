@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Prototipo de referencia — pantalla medicion--sin-actividad
+  Prototipo de referencia — pantalla admin-supresiones--sin-rastro
   Reglas duras del artefacto (NO negociables):
   - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
     Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
@@ -8,8 +8,8 @@
     ../tokens.css. Cero valores mágicos fuera de tokens.
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes que la HU exija son VARIANTES de pantalla en archivos propios.
-  Trazabilidad: épica EP-008 · historias HU-171, HU-172, HU-109, HU-196 · registrada en ../manifest.json
-  Estado de ESTE archivo (medicion--sin-actividad): variante — HU-171 edge: mes cerrado sin ninguna cuenta con sesión real; cada indicador dice «sin dato en este período» y ninguno muestra 0 %.
+  Trazabilidad: épica EP-008 · historias HU-193 · registrada en ../manifest.json
+  Estado de ESTE archivo (admin-supresiones--sin-rastro): variante — HU-193 edge: el correo no corresponde a ningún contacto con eventos; el panel lo dice y no queda supresión pendiente.
   Origen: modo feature (2026-10-02), extraído en vivo del panel implementado (/administracion/accesos, /enlaces/nuevo en 127.0.0.1:3101; CSS computado = tokens.css): mismas piezas pp-* que la app. Borrador: pendiente de aprobación humana.
   Patrones copiados de ../_patrones.html v2 y de las pantallas aprobadas de EP-006 (admin-accesos).
 -->
@@ -17,7 +17,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Medición · mes sin actividad — prototipo</title>
+  <title>Supresiones de contactos — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
@@ -498,31 +498,13 @@
 
 
   </style>
-  <style>
-    /* PP:marca-ep008 — pasada de branding D105 (2026-10-02). Solo tokens del DS Trycore:
-       · series de gráfica en teal de marca (--tc-primary; colors.css: «acento, trazos, series de
-         gráfica»; 3,2:1 sobre blanco ≥ 3:1 de WCAG 1.4.11 para gráficos, nunca como texto);
-       · cifras clave en navy de autoridad (--pp-navy-ink: 14,8:1 en claro, #B4C3FF en oscuro) y
-         peso 700 de «cifras destacadas» (DESIGN.md › Tipografía);
-       · posición del top 10 en teal de texto (--pp-teal-ink, 5,3:1);
-       · opción elegida del conmutador con el tinte de selección de pp-btn--contorno[aria-pressed]. */
-    .mp-kpi__cifra, .md-kpi { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
-    .mp-kpi__cifra.mp-kpi__cifra--nula { font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
-    .md-paso__cifra { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
-    .md-paso__cifra.md-tenue { font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
-    .md-barra { background: var(--tc-primary); }
-    .mp-top__pos { color: var(--pp-teal-ink); }
-    .mp-top__num strong, .md-uso__num { color: var(--pp-navy-ink); }
-    .md-segmento button[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
-    /* /PP:marca-ep008 */
-  </style>
 </head>
 <body>
   <div class="pp-panel">
     <nav class="pp-sidebar" aria-label="Panel de People Service">
       <div class="pp-sidebar__marca">
         <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
-        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Dirección de Mercadeo</span></span>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Talento Humano</span></span>
       </div>
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
@@ -536,42 +518,58 @@
       <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
       <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
       <p class="pp-sidebar__seccion">Operación</p>
-      <a class="pp-sidelink" href="medicion.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
       <a class="pp-sidelink" href="seguimiento-envios.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
       <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
-      <a class="pp-sidebar__pie pp-sidebar__pie--enlace" href="admin-accesos.html">
-        <span class="pp-avatar" aria-hidden="true">JS</span>
-        <span class="pp-persona"><span class="pp-persona__nombre">Administración</span><span class="pp-persona__area">Jesús Segura</span></span>
+      <a class="pp-sidebar__pie pp-sidebar__pie--enlace" href="admin-accesos.html" aria-current="page">
+        <span class="pp-avatar" aria-hidden="true">KR</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Administración</span><span class="pp-persona__area">Karen Rodríguez</span></span>
       </a>
     </nav>
     <div class="pp-panel__cuerpo">
       <header class="pp-panel__topbar">
-        <ol class="pp-migas"><li>Operación</li><li aria-current="page">Medición</li></ol>
+        <ol class="pp-migas"><li>Administración</li><li aria-current="page">Supresiones</li></ol>
         <div class="pp-panel__herramientas">
-          <span class="pp-meta">jesus.segura@trycore.com</span>
+          <span class="pp-meta">karen.rodriguez@trycore.com</span>
           <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
         </div>
       </header>
       <main class="pp-panel__contenido" id="contenido">
         <div class="pp-encabezado">
           <div class="pp-encabezado__texto">
-            <h1 class="pp-encabezado__titulo">Medición</h1>
-            <p class="pp-encabezado__meta">1–31 ago 2026 · mes cerrado · ninguna cuenta con sesiones reales</p>
+            <h1 class="pp-encabezado__titulo">Administración</h1>
+            <p class="pp-encabezado__meta">Supresiones de contactos · 1 pendiente · 1 aplicada</p>
           </div>
-          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option>Noviembre de 2026 (en curso)</option><option>Octubre de 2026</option><option>Septiembre de 2026</option><option selected>Agosto de 2026</option></select></label></form>
         </div>
-        <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Lecturas de Medición"><a class="pp-pestana" role="tab" aria-selected="true" href="medicion.html">Tablero del mes</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-embudo.html">Embudo</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-curaduria.html">Curaduría</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-filtros.html">Filtros y rutas</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-atribucion.html">Atribución</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-recorridos.html">Recorridos</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-pruebas.html">Pruebas del PRD</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-experimento.html">Experimento</a></div>
+        <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Secciones de Administración"><a class="pp-pestana" role="tab" aria-selected="false" href="admin-contacto.html">Contacto de Trycore</a><a class="pp-pestana" role="tab" aria-selected="false" href="admin-accesos--permisos.html">Accesos al panel <span class="pp-pestana__conteo">7</span></a><a class="pp-pestana" role="tab" aria-selected="true" href="admin-supresiones.html">Supresiones</a></div>
+        <p class="mp-texto">Para la petición de un titular que llegó por el canal del aviso de privacidad. La corrida diaria anonimiza todo su rastro en el portal, también lo que ya estaba en seudónimo; las cifras de los meses cerrados no cambian.</p>
+        <div class="pp-aviso pp-aviso--info mp-avisos" role="status"><span class="pp-aviso__icono" aria-hidden="true">i</span><p><span class="pp-aviso__titulo">El portal no tiene rastro de ese correo.</span>No hay ningún contacto con eventos para compras@cliente-ficticio.co, así que no hay nada que suprimir en el portal. No quedó ninguna supresión pendiente.</p></div>
+        <form class="pp-tarjeta mp-grupo" action="#" aria-labelledby="su-form">
+          <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="su-form">Registrar una supresión</h2></div>
+          <label class="pp-label" for="su-correo">Correo del titular</label>
+          <div class="mp-form-linea"><input class="pp-input" id="su-correo" type="email" value="compras@cliente-ficticio.co" aria-describedby="su-ayuda"><button type="submit" class="pp-btn pp-btn--primario">Registrar supresión</button></div>
+          <p class="pp-ayuda" id="su-ayuda">Solo sirve para encontrar al contacto: no se guarda en la supresión.</p>
+        </form>
+        <section class="mp-grupo" aria-labelledby="su-lista">
+          <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="su-lista">Supresiones registradas</h2><span class="pp-meta">el contacto se identifica por su identificador interno; el correo no se guarda</span></div>
+          <ul class="pp-filas" aria-labelledby="su-lista">
+            <li class="pp-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo mp-fila-titulo"><span class="mp-opaco">c-41a2</span><span class="pp-estado pp-estado--warn">Pendiente</span></p>
+                <p class="pp-fila__meta">Registrada hoy, 10:12 a. m., por karen.rodriguez@trycore.com · se aplica en la próxima corrida diaria, mañana a las 3:00 a. m.</p>
+              </div>
+              <div class="pp-fila__acciones"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="admin-supresiones--detalle-aplicada.html">Ver detalle</a></div>
+            </li>
+            <li class="pp-fila">
+              <div class="pp-fila__principal">
+                <p class="pp-fila__titulo mp-fila-titulo"><span class="mp-opaco">c-0d77</span><span class="pp-estado pp-estado--ok">Aplicada</span></p>
+                <p class="pp-fila__meta">Registrada el 3 nov por karen.rodriguez@trycore.com · aplicada el 4 nov, 3:00 a. m. · 214 eventos anonimizados</p>
+              </div>
+              <div class="pp-fila__acciones"><a class="pp-btn pp-btn--fantasma pp-btn--sm" href="admin-supresiones--detalle-aplicada.html">Ver detalle</a></div>
+            </li>
+          </ul>
+        </section>
 
-        <p class="mp-fuera">Quedaron fuera <strong>4 visitas internas</strong> (@trycore.com) y <strong>0 visitas demo</strong>. Solo cuentan sesiones reales: código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo».</p>
-        <section class="md-seccion" aria-labelledby="mp-ind-t">
-          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-ind-t">Indicadores del mes</h2><span class="md-seccion__meta">cada uno junto a su meta del PRD</span></div>
-          <div class="mp-kpis"><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Conversión</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><p class="mp-kpi__lados">ninguna cuenta tuvo una sesión real en agosto</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 20 %</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Perfiles por solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 1,8</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Calidad del brief (O4)</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 85 %</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Días hasta la alineación (O3)</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≤ 3 días hábiles</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Acierto de la curaduría</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 70 %</span></div></div><div class="mp-kpi mp-kpi--pendiente"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Cuentas que envían al menos una solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Aún no se mide</p><p class="mp-kpi__falta">Falta <strong>EP-011</strong>: el denominador son las cuentas contactadas en cada edición y Envíos aún no las registra.</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 35 % de las cuentas contactadas, por trimestre</span></div></div></div>
-        </section>
-        <section class="md-seccion" aria-labelledby="mp-top-t">
-          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-top-t">Las 10 búsquedas sin resultados más repetidas</h2><span class="md-seccion__meta">ordenadas por cuentas distintas · las variantes de acentos, mayúsculas y plurales cuentan como una</span></div>
-          <div class="md-panel"><div class="pp-vacio"><h3>No hubo búsquedas sin resultados en este período</h3><p>Ninguna cuenta tuvo una sesión real en agosto.</p></div></div>
-          <p class="md-nota">La misma lista, con las mismas cifras, la ve Talento Humano en <a class="pp-enlace" href="demanda-top10.html">Demanda</a>. Los correos, teléfonos y nombres del banco que escribió un cliente aparecen enmascarados.</p>
-        </section>
       </main>
     </div>
   </div>

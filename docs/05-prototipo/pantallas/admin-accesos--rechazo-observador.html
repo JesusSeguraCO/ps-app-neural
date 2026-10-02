@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Prototipo de referencia — pantalla medicion--sin-actividad
+  Prototipo de referencia — pantalla admin-contacto--observador
   Reglas duras del artefacto (NO negociables):
   - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
     Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
@@ -8,16 +8,18 @@
     ../tokens.css. Cero valores mágicos fuera de tokens.
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes que la HU exija son VARIANTES de pantalla en archivos propios.
-  Trazabilidad: épica EP-008 · historias HU-171, HU-172, HU-109, HU-196 · registrada en ../manifest.json
-  Estado de ESTE archivo (medicion--sin-actividad): variante — HU-171 edge: mes cerrado sin ninguna cuenta con sesión real; cada indicador dice «sin dato en este período» y ninguno muestra 0 %.
-  Origen: modo feature (2026-10-02), extraído en vivo del panel implementado (/administracion/accesos, /enlaces/nuevo en 127.0.0.1:3101; CSS computado = tokens.css): mismas piezas pp-* que la app. Borrador: pendiente de aprobación humana.
-  Patrones copiados de ../_patrones.html v2 y de las pantallas aprobadas de EP-006 (admin-accesos).
+  Trazabilidad: épica EP-008 · historias HU-190 (sobre la vista de observador de HU-147, EP-006) · registrada en ../manifest.json
+  Estado de ESTE archivo (admin-accesos--rechazo-observador): variante — HU-190 error: un observador con el permiso «Medición» envía por dirección directa la concesión a otro correo; el panel la rechaza y explica que solo un administrador cambia permisos. Modo feature 2026-10-02.
+  Origen: modo feature (2026-09-30), extraído en vivo del panel implementado (/enlaces, /enlaces/nuevo,
+  /peticiones en 127.0.0.1:3101): mismas piezas pp-* que la app (marco, filas densas, tabla, formulario
+  alineado, avisos, hoja lateral). 
+  Patrones copiados de ../_patrones.html v2.
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Medición · mes sin actividad — prototipo</title>
+  <title>Contacto de Trycore — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
@@ -270,251 +272,38 @@
     /* /PP:toast */
   </style>
   <style>
-    /* Composición propia de las pantallas EP-008. Valores visuales → var(--token). */
-
+    /* Composición propia de esta pantalla. Valores visuales → var(--token). */
+    /* Pie del panel como entrada a «Administración» (HU-147, HU-151): el menú de doce destinos no cambia */
     .pp-sidebar__pie--enlace { padding: var(--tc-sp-2); border-radius: var(--tc-r-sm); text-decoration: none; transition: background var(--tc-dur-fast) var(--tc-ease); }
     .pp-sidebar__pie--enlace { margin-top: auto; }
     .pp-sidebar__pie--enlace:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); }
     .pp-sidebar__pie--enlace[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); }
     @media (max-width: 1023px) { .pp-sidebar__pie--enlace { display: flex; margin: 0; padding: 0 var(--tc-sp-3); min-height: 44px; flex: none; } .pp-sidebar__pie--enlace .pp-avatar { display: none; } .pp-sidebar__pie--enlace .pp-persona__area { display: none; } .pp-sidebar__pie--enlace[aria-current="page"] { order: -1; } }
-    /* Destino inactivo: copia de la app (mp-sidelink--inactivo, opacidad 0.55, sin cursor de enlace) */
-    .mp-sidelink--inactivo { position: relative; opacity: 0.55; cursor: default; }
-    .mp-sidelink--inactivo:hover { background: none; color: inherit; }
-    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
-
-    /* ── Composición propia de la pantalla medicion (prefijo md-) ── */
-    .md-filtros { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
-    .md-filtros .pp-select { width: 208px; }
-    .md-filtros .pp-input { font-size: var(--tc-fs-small); }
-    .md-indice { position: sticky; top: 0; z-index: 5; display: flex; gap: var(--tc-sp-5); overflow-x: auto; margin: 0 0 var(--tc-sp-8); padding: 0; list-style: none; background: var(--tc-bg-canvas); border-bottom: 1px solid var(--tc-border); scrollbar-width: none; }
-    .md-indice a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tc-sp-1); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-b); text-decoration: none; text-underline-offset: 3px; white-space: nowrap; transition: color var(--tc-dur-fast) var(--tc-ease); }
-    .md-indice a:hover { color: var(--tc-text-h); text-decoration: underline; }
-    .md-indice__rotulo { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--tc-fs-caption); color: var(--tc-text-m); white-space: nowrap; }
-    .md-resumen { display: none; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); font-variant-numeric: tabular-nums; white-space: normal; }
-    .md-seccion { scroll-margin-top: calc(var(--tc-sp-8) * 2); }
-    .md-seccion + .md-seccion { margin-top: var(--tc-sp-10); }
-    .md-seccion__cabecera { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-2) var(--tc-sp-4); margin-bottom: var(--tc-sp-3); }
-    .md-seccion__grupo { display: flex; align-items: center; gap: var(--tc-sp-1); min-width: 0; }
-    .md-seccion__titulo { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
-    .md-seccion__meta { font-size: var(--tc-fs-small); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-    .md-seccion__lado { display: flex; align-items: center; gap: var(--tc-sp-3); }
-    .md-nota { max-width: 76ch; margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
-    .md-nota strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
-    .md-subtitulo { margin: var(--tc-sp-6) 0 var(--tc-sp-3); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); letter-spacing: normal; }
-
-    /* ayuda (i) con la regla de cálculo: tooltip en hover y foco */
-    .md-ayuda { position: relative; display: inline-flex; }
-    .md-ayuda__boton { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--tc-r-sm); background: none; color: var(--tc-text-s); cursor: help; transition: color var(--tc-dur-fast) var(--tc-ease), background var(--tc-dur-fast) var(--tc-ease); }
-    .md-ayuda__boton:hover, .md-ayuda__boton:focus { color: var(--tc-text-h); background: var(--tc-bg-subtle); }
-    .md-ayuda__texto { display: none; position: absolute; left: 0; top: 100%; z-index: 10; width: 300px; margin-top: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); border-radius: var(--tc-r-sm); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); line-height: var(--tc-lh-body); letter-spacing: normal; }
-    .md-ayuda:hover .md-ayuda__texto, .md-ayuda__boton:focus + .md-ayuda__texto { display: block; }
-
-    /* conmutador Personas / Sesiones */
-    .md-segmento { display: inline-flex; border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); overflow: hidden; }
-    .md-segmento button { min-height: 32px; padding: 0 var(--tc-sp-3); border: 0; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); cursor: pointer; transition: background var(--tc-dur-fast) var(--tc-ease), color var(--tc-dur-fast) var(--tc-ease); }
-    .md-segmento button + button { border-left: 1px solid var(--tc-border); }
-    .md-segmento button:hover { background: var(--tc-surface-quiet); color: var(--tc-text-h); }
-    .md-segmento button[aria-pressed="true"] { background: var(--tc-bg-subtle); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
-
-    /* contenedor hairline */
-    .md-panel { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
-
-    /* embudo */
-    .md-embudo { margin: 0; padding: 0; list-style: none; }
-    .md-paso { display: grid; grid-template-columns: 168px minmax(0, 1fr) 56px 112px; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-5); padding: var(--tc-sp-4) var(--tc-sp-5); }
-    .md-paso + .md-paso { border-top: 1px solid var(--tc-border); }
-    .md-paso__etiqueta { font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .md-paso__cifra { font-size: var(--tc-fs-h3); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-tight); color: var(--tc-text-h); text-align: right; font-variant-numeric: tabular-nums; }
-    .md-paso__sub { font-size: var(--tc-fs-caption); color: var(--tc-text-m); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .md-pista { display: block; height: 8px; border-radius: var(--tc-r-pill); background: var(--tc-bg-subtle); overflow: hidden; }
-    .md-barra { display: block; height: 100%; border-radius: var(--tc-r-pill); background: var(--tc-navy); }
-    .md-pista--mini { width: 56px; height: 6px; flex: none; }
-
-    /* tablas del informe */
-    .pp-tabla-marco.md-sin-tope { max-height: none; }
-    .md-tabla .md-der { text-align: right; }
-    .md-tabla tbody th, .md-tabla tfoot th, .md-tabla thead th:first-child { position: sticky; left: 0; background: var(--tc-card); }
-    .md-tabla thead th:first-child { z-index: 2; }
-    .md-tabla tbody tr:hover th { background: var(--tc-surface-quiet); }
-    .md-tabla tfoot th, .md-tabla tfoot td { border-top: 1px solid var(--tc-border-s); border-bottom: 0; font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .md-tabla tfoot .pp-tabla__perfil { font-weight: var(--tc-fw-semibold); }
-    .md-tabla--compacta { min-width: 0; }
-    .md-tabla--compacta thead th { white-space: normal; }
-    .md-tenue { font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-    .md-tabla tr.md-fila-apagada th .pp-tabla__perfil { color: var(--tc-text-b); font-weight: var(--tc-fw-regular); }
-    .md-uso { display: flex; align-items: center; justify-content: flex-end; gap: var(--tc-sp-3); }
-    .md-uso__num { min-width: 24px; text-align: right; font-variant-numeric: tabular-nums; color: var(--tc-text-h); }
-    .md-valores { margin: 0; color: var(--tc-text-b); }
-    .md-valores span { color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-    .md-col-n { display: block; font-weight: var(--tc-fw-regular); color: var(--tc-text-s); font-variant-numeric: tabular-nums; }
-
-    /* acierto de curaduría */
-    .md-acierto { display: grid; grid-template-columns: 280px minmax(0, 1fr); }
-    .md-acierto__kpi { padding: var(--tc-sp-6) var(--tc-sp-5); border-right: 1px solid var(--tc-border); }
-    .md-kpi { margin: 0; font-size: var(--tc-fs-h1); line-height: var(--tc-lh-h1); font-weight: var(--tc-fw-semibold); letter-spacing: var(--tc-ls-heading); color: var(--tc-text-h); font-variant-numeric: tabular-nums; }
-    .md-kpi__texto { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-    .md-acierto__kpi .md-nota { margin-top: var(--tc-sp-4); }
-    .md-acierto__lista { min-width: 0; }
-    .md-acierto__lista .pp-filas__cabecera { min-height: 44px; }
-    .md-acierto__lista .pp-fila { padding-top: var(--tc-sp-3); padding-bottom: var(--tc-sp-3); align-items: center; }
-    .md-acierto__lista .pp-fila__nota q { quotes: "«" "»"; }
-
-    /* atribución: últimas sesiones */
-    .md-lateral__titulo { margin: 0 0 var(--tc-sp-3); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); letter-spacing: normal; }
-    .md-correo { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-    .md-invitado { margin-top: var(--tc-sp-1); }
-
-    @media (max-width: 1100px) { .md-lateral { padding-top: var(--tc-sp-2); } }
+    .ad-pestanas { margin-bottom: var(--tc-sp-6); }
+    .ad-texto { margin: 0 0 var(--tc-sp-5); max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .ad-vista { display: grid; gap: var(--tc-sp-2); padding: var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); }
+    .ad-vista__frase { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-h); }
+    .ad-vista__frase a { color: var(--pp-teal-ink); }
+    .ad-lateral { display: grid; gap: var(--tc-sp-8); align-content: start; }
+    .ad-vista + .pp-ayuda { margin-top: var(--tc-sp-3); }
+    .ad-vista .pp-meta { margin: 0; }
+    .ad-lista { margin: 0; padding-left: var(--tc-sp-4); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+    .ad-avisos { margin-bottom: var(--tc-sp-5); }
+    .ad-rol { display: grid; gap: var(--tc-sp-1); }
+    .ad-fila-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); }
+    .ad-tu { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .ad-grupo + .ad-grupo { margin-top: var(--tc-sp-8); }
+    .ad-hoja-bloque { display: grid; gap: var(--tc-sp-3); }
+    .ad-hoja-bloque > p { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .ad-roles { display: grid; gap: 0; margin: 0; padding: 0; border: 0; }
+    .pi-fondo { pointer-events: none; }
     @media (max-width: 767px) {
-      .pp-encabezado__acciones, .md-filtros { width: 100%; }
-      .md-filtros .pp-select { flex: 1 1 100%; width: auto; }
-      .md-filtros .pp-input { font-size: var(--tc-fs-h3); }
-      .md-indice { margin-bottom: var(--tc-sp-6); gap: var(--tc-sp-4); }
-      .md-ayuda { position: static; }
-      .md-ayuda__boton { width: 44px; height: 44px; }
-      .md-ayuda__texto { left: 0; right: 0; width: auto; }
-      .md-segmento button { min-height: 44px; }
-      .md-paso { grid-template-columns: minmax(0, 1fr) auto auto; padding: var(--tc-sp-3) var(--tc-sp-4); gap: var(--tc-sp-2) var(--tc-sp-3); }
-      .md-paso .md-pista { grid-column: 1 / -1; grid-row: 2; }
-      .md-paso__sub { min-width: 88px; }
-      .md-acierto { grid-template-columns: minmax(0, 1fr); }
-      .pp-tabla-marco.md-sin-tope { overflow: visible; border-radius: var(--tc-r-md); }
-      .md-tabla, .md-tabla tbody, .md-tabla tfoot, .md-tabla tr { display: block; width: 100%; min-width: 0; }
-      .md-tabla thead { display: none; }
-      .md-tabla tr { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
-      .md-tabla tbody tr:last-child { border-bottom: 0; }
-      .md-tabla tfoot tr { border-top: 1px solid var(--tc-border-s); border-bottom: 0; }
-      .md-tabla th, .md-tabla td { display: none; position: static; padding: 0; border: 0; background: none; }
-      .md-tabla th[scope="row"] { display: block; }
-      .md-tabla td[colspan] { display: block; margin-top: var(--tc-sp-1); white-space: normal; }
-      .md-tabla .md-resumen { display: block; }
-      .md-tabla tbody tr:hover th { background: none; }
-      .md-acierto__kpi { padding: var(--tc-sp-5) var(--tc-sp-4); border-right: 0; border-bottom: 1px solid var(--tc-border); }
-    }
-
-  
-
-    .mp-pestanas { margin-bottom: var(--tc-sp-6); overflow-x: auto; scrollbar-width: none; }
-    .mp-pestanas .pp-pestana { white-space: nowrap; }
-    .mp-texto { margin: 0 0 var(--tc-sp-5); max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-    .mp-fuera { margin: 0 0 var(--tc-sp-6); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-    .mp-fuera strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
-    .mp-avisos { margin-bottom: var(--tc-sp-5); }
-    /* tablero: rejilla de indicadores con hairlines (una superficie, no una tarjeta por cifra) */
-    .mp-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
-    .mp-kpi { display: flex; flex-direction: column; gap: var(--tc-sp-1); min-width: 0; padding: var(--tc-sp-5); border-right: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); }
-    .mp-kpi:nth-child(3n) { border-right: 0; }
-    .mp-kpi--ancha { grid-column: span 3; border-right: 0; }
-    .mp-kpi__rotulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .mp-kpi__cifra { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-h1); line-height: var(--tc-lh-h1); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; letter-spacing: var(--tc-ls-heading); }
-    .mp-kpi__cifra--nula { font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); letter-spacing: normal; }
-    .mp-kpi__lados { margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-    .mp-kpi__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); margin-top: auto; padding-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-    .mp-kpi__meta { color: var(--tc-text-b); }
-    .mp-kpi__falta { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
-    .mp-kpi__falta strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
-    .mp-kpi--pendiente { background: var(--tc-surface-quiet); }
-    .mp-top { margin: 0; padding: 0; list-style: none; counter-reset: top; }
-    .mp-top__item { display: grid; grid-template-columns: 28px minmax(0, 1fr) 168px; align-items: baseline; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-h); }
-    .mp-top__item + .mp-top__item { border-top: 1px solid var(--tc-border); }
-    .mp-top__pos { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-s); font-variant-numeric: tabular-nums; }
-    .mp-top__texto { min-width: 0; overflow-wrap: anywhere; }
-    .mp-top__num { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
-    .mp-top__nums { display: grid; grid-template-columns: 88px 64px; justify-content: end; gap: var(--tc-sp-2); }
-    .mp-top__num strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .mp-mask { padding: 0 var(--tc-sp-1); border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-    .mp-empate { border-top: 1px dashed var(--tc-border-s); }
-    /* recorrido */
-    .mp-captura { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-5); margin-bottom: var(--tc-sp-6); padding: var(--tc-sp-3) var(--tc-sp-4); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); font-size: var(--tc-fs-small); color: var(--tc-text-b); font-variant-numeric: tabular-nums; }
-    .mp-captura strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .mp-captura--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
-    .mp-eventos { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
-    .mp-evento { display: grid; grid-template-columns: 32px 72px minmax(0, 1fr) auto; align-items: baseline; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-b); }
-    .mp-evento + .mp-evento { border-top: 1px solid var(--tc-border); }
-    .mp-evento__n, .mp-evento__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-    .mp-evento__que strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .mp-evento__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-    .mp-opaco { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-    .mp-datos { margin: 0 0 var(--tc-sp-4); }
-    .md-panel + .mp-kpis { margin-top: var(--tc-sp-4); }
-    .md-paso { grid-template-columns: 168px minmax(0, 1fr) 56px 176px; }
-    @media (max-width: 767px) { .md-paso { grid-template-columns: minmax(0, 1fr) auto auto; } .md-paso__sub { min-width: 0; } }
-    .mp-rotulo-desc { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
-    .mp-lectura { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); max-width: 76ch; }
-    .mp-lectura strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-    .mp-condiciones { margin: 0; padding: 0; list-style: none; }
-    .mp-control + .mp-condiciones { border-top: 1px solid var(--tc-border); }
-    .mp-condicion { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-h); }
-    .mp-condicion + .mp-condicion { border-top: 1px solid var(--tc-border); }
-    .mp-condicion__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-    .mp-control { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-5); padding: var(--tc-sp-4) var(--tc-sp-5); }
-    .mp-control p { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
-    .mp-control p strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-    .mp-control .pp-ayuda { margin: var(--tc-sp-1) 0 0; }
-    .pp-btn[disabled] { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
-    /* permisos en fila */
-    .mp-permisos { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-5); }
-    .mp-permisos .pp-check { min-height: 32px; padding: 0; align-items: center; }
-    .mp-permisos .pp-check input { margin: 0; }
-    .pp-seccion__cabecera { flex-wrap: wrap; }
-    .pp-seccion__cabecera .pp-estado { white-space: normal; }
-    .mp-fila-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); }
-    .mp-tu { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
-    .mp-grupo + .mp-grupo { margin-top: var(--tc-sp-8); }
-    .mp-form-linea { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); align-items: flex-start; }
-    .mp-form-linea .pp-input { flex: 1 1 280px; }
-    .mp-composiciones { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; border: 0; }
-    .mp-composicion { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-2); padding: var(--tc-sp-3) 0; }
-    .mp-composicion + .mp-composicion { border-top: 1px solid var(--tc-border); }
-    .mp-composicion .pp-input { width: 100%; }
-    @media (max-width: 1023px) {
-      .mp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .mp-kpi:nth-child(3n) { border-right: 1px solid var(--tc-border); }
-      .mp-kpi:nth-child(2n) { border-right: 0; }
-      .mp-kpi--ancha { grid-column: span 2; }
-    }
-    @media (max-width: 767px) {
-      .mp-kpis { grid-template-columns: minmax(0, 1fr); }
-      .mp-kpi, .mp-kpi:nth-child(3n) { border-right: 0; }
-      .mp-kpi--ancha { grid-column: span 1; }
-      .mp-kpi { padding: var(--tc-sp-4); }
-      .mp-top__item { grid-template-columns: 24px minmax(0, 1fr); padding: var(--tc-sp-3) var(--tc-sp-4); }
-      .mp-top__nums { grid-column: 2; display: flex; justify-content: flex-start; gap: var(--tc-sp-3); }
-      .mp-top__num { text-align: left; }
-      .mp-evento { grid-template-columns: 28px minmax(0, 1fr); padding: var(--tc-sp-3) var(--tc-sp-4); }
-      .mp-evento__hora { grid-column: 2; grid-row: 2; }
-      .mp-evento__ambito { grid-column: 2; }
-      .mp-condicion { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-3) var(--tc-sp-4); }
-      .mp-control { padding: var(--tc-sp-4); }
-      .mp-control .pp-btn { width: 100%; min-height: 44px; }
-      .mp-permisos .pp-check { min-height: 44px; }
       .pp-fila__acciones { flex-wrap: wrap; }
       .pp-fila__acciones .pp-btn { flex: 1 1 auto; }
-      .pp-form__acciones .pp-btn { flex: 1 1 0; }
       .pp-hoja__pie .pp-btn { flex: 1 1 0; }
-      .mp-form-linea .pp-btn { width: 100%; min-height: 44px; }
-      .md-filtros .pp-select { flex: 1 1 100%; width: auto; }
+      .pp-form__acciones .pp-btn { flex: 1 1 0; }
     }
 
-
-  </style>
-  <style>
-    /* PP:marca-ep008 — pasada de branding D105 (2026-10-02). Solo tokens del DS Trycore:
-       · series de gráfica en teal de marca (--tc-primary; colors.css: «acento, trazos, series de
-         gráfica»; 3,2:1 sobre blanco ≥ 3:1 de WCAG 1.4.11 para gráficos, nunca como texto);
-       · cifras clave en navy de autoridad (--pp-navy-ink: 14,8:1 en claro, #B4C3FF en oscuro) y
-         peso 700 de «cifras destacadas» (DESIGN.md › Tipografía);
-       · posición del top 10 en teal de texto (--pp-teal-ink, 5,3:1);
-       · opción elegida del conmutador con el tinte de selección de pp-btn--contorno[aria-pressed]. */
-    .mp-kpi__cifra, .md-kpi { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
-    .mp-kpi__cifra.mp-kpi__cifra--nula { font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
-    .md-paso__cifra { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
-    .md-paso__cifra.md-tenue { font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
-    .md-barra { background: var(--tc-primary); }
-    .mp-top__pos { color: var(--pp-teal-ink); }
-    .mp-top__num strong, .md-uso__num { color: var(--pp-navy-ink); }
-    .md-segmento button[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
-    /* /PP:marca-ep008 */
   </style>
 </head>
 <body>
@@ -522,56 +311,55 @@
     <nav class="pp-sidebar" aria-label="Panel de People Service">
       <div class="pp-sidebar__marca">
         <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
-        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Dirección de Mercadeo</span></span>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Talento Humano</span></span>
       </div>
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
-      <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
-      <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
-      <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
       <a class="pp-sidelink" href="enlaces-acceso.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Enlaces</a>
-      <a class="pp-sidelink" href="peticiones-invitacion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6"/></svg>Peticiones<span class="pp-sidelink__conteo">3</span></a>
       <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
-      <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
-      <p class="pp-sidebar__seccion">Operación</p>
-      <a class="pp-sidelink" href="medicion.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
-      <a class="pp-sidelink" href="seguimiento-envios.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
-      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
-      <a class="pp-sidebar__pie pp-sidebar__pie--enlace" href="admin-accesos.html">
-        <span class="pp-avatar" aria-hidden="true">JS</span>
-        <span class="pp-persona"><span class="pp-persona__nombre">Administración</span><span class="pp-persona__area">Jesús Segura</span></span>
+      <a class="pp-sidebar__pie pp-sidebar__pie--enlace" href="admin-contacto--observador.html" aria-current="page">
+        <span class="pp-avatar" aria-hidden="true">MV</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Administración</span><span class="pp-persona__area">Mariana Vélez</span></span>
       </a>
     </nav>
     <div class="pp-panel__cuerpo">
       <header class="pp-panel__topbar">
-        <ol class="pp-migas"><li>Operación</li><li aria-current="page">Medición</li></ol>
+        <ol class="pp-migas"><li>Administración</li><li aria-current="page">Contacto de Trycore</li></ol>
         <div class="pp-panel__herramientas">
-          <span class="pp-meta">jesus.segura@trycore.com</span>
+          <span class="pp-meta">mariana.velez@trycore.com</span>
           <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
         </div>
       </header>
       <main class="pp-panel__contenido" id="contenido">
         <div class="pp-encabezado">
           <div class="pp-encabezado__texto">
-            <h1 class="pp-encabezado__titulo">Medición</h1>
-            <p class="pp-encabezado__meta">1–31 ago 2026 · mes cerrado · ninguna cuenta con sesiones reales</p>
+            <h1 class="pp-encabezado__titulo">Administración</h1>
+            <p class="pp-encabezado__meta">Contacto que ve el cliente · solo consulta</p>
           </div>
-          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option>Noviembre de 2026 (en curso)</option><option>Octubre de 2026</option><option>Septiembre de 2026</option><option selected>Agosto de 2026</option></select></label></form>
         </div>
-        <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Lecturas de Medición"><a class="pp-pestana" role="tab" aria-selected="true" href="medicion.html">Tablero del mes</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-embudo.html">Embudo</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-curaduria.html">Curaduría</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-filtros.html">Filtros y rutas</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-atribucion.html">Atribución</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-recorridos.html">Recorridos</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-pruebas.html">Pruebas del PRD</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-experimento.html">Experimento</a></div>
-
-        <p class="mp-fuera">Quedaron fuera <strong>4 visitas internas</strong> (@trycore.com) y <strong>0 visitas demo</strong>. Solo cuentan sesiones reales: código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo».</p>
-        <section class="md-seccion" aria-labelledby="mp-ind-t">
-          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-ind-t">Indicadores del mes</h2><span class="md-seccion__meta">cada uno junto a su meta del PRD</span></div>
-          <div class="mp-kpis"><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Conversión</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><p class="mp-kpi__lados">ninguna cuenta tuvo una sesión real en agosto</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 20 %</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Perfiles por solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 1,8</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Calidad del brief (O4)</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 85 %</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Días hasta la alineación (O3)</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≤ 3 días hábiles</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Acierto de la curaduría</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 70 %</span></div></div><div class="mp-kpi mp-kpi--pendiente"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Cuentas que envían al menos una solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Aún no se mide</p><p class="mp-kpi__falta">Falta <strong>EP-011</strong>: el denominador son las cuentas contactadas en cada edición y Envíos aún no las registra.</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 35 % de las cuentas contactadas, por trimestre</span></div></div></div>
-        </section>
-        <section class="md-seccion" aria-labelledby="mp-top-t">
-          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-top-t">Las 10 búsquedas sin resultados más repetidas</h2><span class="md-seccion__meta">ordenadas por cuentas distintas · las variantes de acentos, mayúsculas y plurales cuentan como una</span></div>
-          <div class="md-panel"><div class="pp-vacio"><h3>No hubo búsquedas sin resultados en este período</h3><p>Ninguna cuenta tuvo una sesión real en agosto.</p></div></div>
-          <p class="md-nota">La misma lista, con las mismas cifras, la ve Talento Humano en <a class="pp-enlace" href="demanda-top10.html">Demanda</a>. Los correos, teléfonos y nombres del banco que escribió un cliente aparecen enmascarados.</p>
-        </section>
+        <div class="pp-pestanas ad-pestanas" role="tablist" aria-label="Secciones de Administración"><a class="pp-pestana" role="tab" aria-selected="true" href="admin-contacto--observador.html">Contacto de Trycore</a></div>
+        <div class="pp-aviso pp-aviso--danger ad-avisos" role="alert"><span class="pp-aviso__icono" aria-hidden="true">!</span><p><span class="pp-aviso__titulo">No se cambió ningún permiso.</span>Solo un administrador cambia los permisos de la lista de acceso. El intento quedó en la auditoría.</p></div>
+        <div class="pp-aviso pp-aviso--info ad-avisos" role="status"><span class="pp-aviso__icono" aria-hidden="true">i</span><p><span class="pp-aviso__titulo">Tu rol es de consulta.</span>Ves el contacto vigente; lo cambia la administradora de inventario.</p></div>
+        <div class="pp-con-lateral">
+          <section class="pp-tarjeta" aria-labelledby="ad-vig-t">
+            <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ad-vig-t">Contacto vigente</h2></div>
+            <dl class="pp-datos">
+              <div class="pp-datos__fila"><dt>Nombre</dt><dd>Eida Tinjacá</dd></div>
+              <div class="pp-datos__fila"><dt>Cargo</dt><dd>Coordinación de Servicio</dd></div>
+              <div class="pp-datos__fila"><dt>Correo</dt><dd class="pp-mono">eida.tinjaca@trycore.com</dd></div>
+              <div class="pp-datos__fila"><dt>Último cambio</dt><dd>Karen Rodríguez · hoy, 9:12 a. m.</dd></div>
+            </dl>
+          </section>
+          <aside class="ad-lateral" aria-label="Vista del cliente">
+            <section aria-labelledby="ad-vista-t">
+              <div class="pp-seccion__cabecera"><h2 class="pp-seccion__titulo" id="ad-vista-t">Así lo verá el cliente</h2></div>
+              <div class="ad-vista"><p class="pp-meta">¿Dudas sobre tu enlace?</p><p class="ad-vista__frase">Eida Tinjacá, Coordinación de Servicio: <a href="#contenido">eida.tinjaca@trycore.com</a></p></div>
+              <p class="pp-ayuda">Sale en las pantallas de contacto del portal:</p>
+              <ul class="ad-lista"><li>Invitación rechazada</li><li>Enlace revocado</li><li>«Abre tu enlace»</li><li>Intentos agotados en la puerta</li><li>«Recibimos tu petición»</li></ul>
+            </section>
+          </aside>
+        </div>
       </main>
     </div>
   </div>

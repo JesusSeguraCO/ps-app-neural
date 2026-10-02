@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Prototipo de referencia — pantalla medicion--sin-actividad
+  Prototipo de referencia — pantalla medicion-atribucion
   Reglas duras del artefacto (NO negociables):
   - AUTOCONTENIDO: cero dependencias externas (sin CDNs, sin frameworks, sin fetch, sin JS).
     Única importación permitida: ../tokens.css. Debe renderizar en file:// indefinidamente.
@@ -8,8 +8,8 @@
     ../tokens.css. Cero valores mágicos fuera de tokens.
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
   - ESTADOS: los estados relevantes que la HU exija son VARIANTES de pantalla en archivos propios.
-  Trazabilidad: épica EP-008 · historias HU-171, HU-172, HU-109, HU-196 · registrada en ../manifest.json
-  Estado de ESTE archivo (medicion--sin-actividad): variante — HU-171 edge: mes cerrado sin ninguna cuenta con sesión real; cada indicador dice «sin dato en este período» y ninguno muestra 0 %.
+  Trazabilidad: épica EP-008 · historias HU-112 · registrada en ../manifest.json
+  Estado de ESTE archivo (medicion-atribucion): base — HU-112 edge «el reparto está a la vista»: visitas directas, heredadas (ventana de 90 días) y directas sin edición; parte del crédito que viene de la herencia; por edición con otros invitados del mismo enlace.
   Origen: modo feature (2026-10-02), extraído en vivo del panel implementado (/administracion/accesos, /enlaces/nuevo en 127.0.0.1:3101; CSS computado = tokens.css): mismas piezas pp-* que la app. Borrador: pendiente de aprobación humana.
   Patrones copiados de ../_patrones.html v2 y de las pantallas aprobadas de EP-006 (admin-accesos).
 -->
@@ -17,7 +17,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Medición · mes sin actividad — prototipo</title>
+  <title>Medición · atribución — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
@@ -546,7 +546,7 @@
     </nav>
     <div class="pp-panel__cuerpo">
       <header class="pp-panel__topbar">
-        <ol class="pp-migas"><li>Operación</li><li aria-current="page">Medición</li></ol>
+        <ol class="pp-migas"><li>Operación</li><li>Medición</li><li aria-current="page">Atribución</li></ol>
         <div class="pp-panel__herramientas">
           <span class="pp-meta">jesus.segura@trycore.com</span>
           <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
@@ -556,21 +556,34 @@
         <div class="pp-encabezado">
           <div class="pp-encabezado__texto">
             <h1 class="pp-encabezado__titulo">Medición</h1>
-            <p class="pp-encabezado__meta">1–31 ago 2026 · mes cerrado · ninguna cuenta con sesiones reales</p>
+            <p class="pp-encabezado__meta">1–31 oct 2026 · mes cerrado · solo sesiones reales</p>
           </div>
-          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option>Noviembre de 2026 (en curso)</option><option>Octubre de 2026</option><option>Septiembre de 2026</option><option selected>Agosto de 2026</option></select></label></form>
+          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option>Noviembre de 2026 (en curso)</option><option selected>Octubre de 2026</option><option>Septiembre de 2026</option><option>Agosto de 2026</option></select></label><label class="pp-select"><span class="pp-sr">Cuenta</span><select class="pp-input"><option selected>Todas las cuentas</option><option>Bancolombia</option><option>Grupo Nutresa</option><option>Alpina</option><option>Davivienda</option><option>Sura</option></select></label></form>
         </div>
-        <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Lecturas de Medición"><a class="pp-pestana" role="tab" aria-selected="true" href="medicion.html">Tablero del mes</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-embudo.html">Embudo</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-curaduria.html">Curaduría</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-filtros.html">Filtros y rutas</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-atribucion.html">Atribución</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-recorridos.html">Recorridos</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-pruebas.html">Pruebas del PRD</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-experimento.html">Experimento</a></div>
-
-        <p class="mp-fuera">Quedaron fuera <strong>4 visitas internas</strong> (@trycore.com) y <strong>0 visitas demo</strong>. Solo cuentan sesiones reales: código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo».</p>
-        <section class="md-seccion" aria-labelledby="mp-ind-t">
-          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-ind-t">Indicadores del mes</h2><span class="md-seccion__meta">cada uno junto a su meta del PRD</span></div>
-          <div class="mp-kpis"><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Conversión</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><p class="mp-kpi__lados">ninguna cuenta tuvo una sesión real en agosto</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 20 %</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Perfiles por solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 1,8</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Calidad del brief (O4)</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 85 %</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Días hasta la alineación (O3)</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≤ 3 días hábiles</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Acierto de la curaduría</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Sin dato en este período</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 70 %</span></div></div><div class="mp-kpi mp-kpi--pendiente"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Cuentas que envían al menos una solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Aún no se mide</p><p class="mp-kpi__falta">Falta <strong>EP-011</strong>: el denominador son las cuentas contactadas en cada edición y Envíos aún no las registra.</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 35 % de las cuentas contactadas, por trimestre</span></div></div></div>
-        </section>
-        <section class="md-seccion" aria-labelledby="mp-top-t">
-          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-top-t">Las 10 búsquedas sin resultados más repetidas</h2><span class="md-seccion__meta">ordenadas por cuentas distintas · las variantes de acentos, mayúsculas y plurales cuentan como una</span></div>
-          <div class="md-panel"><div class="pp-vacio"><h3>No hubo búsquedas sin resultados en este período</h3><p>Ninguna cuenta tuvo una sesión real en agosto.</p></div></div>
-          <p class="md-nota">La misma lista, con las mismas cifras, la ve Talento Humano en <a class="pp-enlace" href="demanda-top10.html">Demanda</a>. Los correos, teléfonos y nombres del banco que escribió un cliente aparecen enmascarados.</p>
+        <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Lecturas de Medición"><a class="pp-pestana" role="tab" aria-selected="false" href="medicion.html">Tablero del mes</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-embudo.html">Embudo</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-curaduria.html">Curaduría</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-filtros.html">Filtros y rutas</a><a class="pp-pestana" role="tab" aria-selected="true" href="medicion-atribucion.html">Atribución</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-recorridos.html">Recorridos</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-pruebas.html">Pruebas del PRD</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-experimento.html">Experimento</a></div>
+        <p class="mp-fuera">Quedaron fuera <strong>9 visitas internas</strong> (@trycore.com) y <strong>3 visitas demo</strong>. Solo cuentan sesiones reales: código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo».</p>
+        <section class="md-seccion" id="atribucion" aria-labelledby="atribucion-t">
+          <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="atribucion-t">¿De qué edición vino cada visita?</h2><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: atribución" aria-describedby="mp-a-atr"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="mp-a-atr">Se resuelve una vez, al verificar el código, y se guarda en la visita. Sin edición, hereda la última por la que entró el contacto si fue hace 90 días o menos; a los 91 días queda directa sin edición.</span></span></div><div class="md-seccion__lado"><span class="md-seccion__meta">86 visitas · 71 atribuidas a una edición</span></div></div>
+          <div class="mp-kpis mp-datos">
+            <div class="mp-kpi"><p class="mp-kpi__rotulo">Directa</p><p class="mp-kpi__cifra">58</p><p class="mp-kpi__lados">visitas que entraron por el enlace de su edición</p></div>
+            <div class="mp-kpi"><p class="mp-kpi__rotulo">Heredada</p><p class="mp-kpi__cifra">13</p><p class="mp-kpi__lados">por un enlace sin edición; heredan la última edición del contacto, de hace 90 días o menos</p></div>
+            <div class="mp-kpi"><p class="mp-kpi__rotulo">Directa sin edición</p><p class="mp-kpi__cifra">15</p><p class="mp-kpi__lados">nunca entraron por una edición, o la última fue hace más de 90 días</p></div>
+          </div>
+          <p class="mp-lectura"><strong>El 18 % del crédito del correo viene de la regla de herencia</strong> (13 de 71 visitas atribuidas a una edición).</p>
+          <h3 class="md-subtitulo">Por edición curada</h3>
+          <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="Visitas por edición curada">
+            <table class="pp-tabla md-tabla">
+              <caption class="pp-sr">Visitas atribuidas a cada edición curada, octubre de 2026</caption>
+              <thead><tr><th scope="col">Edición</th><th scope="col" class="md-der">Enviada</th><th scope="col" class="md-der">Directas</th><th scope="col" class="md-der">Heredadas</th><th scope="col" class="md-der">Otros invitados</th><th scope="col" class="md-der">Solicitudes</th></tr></thead>
+              <tbody>
+                <tr><th scope="row"><span class="pp-tabla__perfil">Bancolombia · edición de octubre</span><span class="pp-tabla__sub">Modernización de pagos</span><span class="md-resumen" aria-hidden="true">3 oct · 24 directas · 5 heredadas · 2 solicitudes</span></th><td class="pp-tabla__num md-der">3 oct</td><td class="pp-tabla__num md-der">24</td><td class="pp-tabla__num md-der">5</td><td class="pp-tabla__num md-der">2</td><td class="pp-tabla__num md-der">2</td></tr>
+                <tr><th scope="row"><span class="pp-tabla__perfil">Alpina · edición de octubre</span><span class="pp-tabla__sub">App de distribuidores</span><span class="md-resumen" aria-hidden="true">6 oct · 12 directas · 2 heredadas · 2 solicitudes</span></th><td class="pp-tabla__num md-der">6 oct</td><td class="pp-tabla__num md-der">12</td><td class="pp-tabla__num md-der">2</td><td class="pp-tabla__num md-der">3</td><td class="pp-tabla__num md-der">2</td></tr>
+                <tr><th scope="row"><span class="pp-tabla__perfil">Grupo Nutresa · edición de septiembre</span><span class="pp-tabla__sub">Calidad de software</span><span class="md-resumen" aria-hidden="true">12 sep · 16 directas · 6 heredadas · 1 solicitud</span></th><td class="pp-tabla__num md-der">12 sep</td><td class="pp-tabla__num md-der">16</td><td class="pp-tabla__num md-der">6</td><td class="pp-tabla__num md-der">0</td><td class="pp-tabla__num md-der">1</td></tr>
+                <tr class="md-fila-apagada"><th scope="row"><span class="pp-tabla__perfil">Sin edición</span><span class="pp-tabla__sub">enlaces generados desde la selección del panel</span><span class="md-resumen" aria-hidden="true">15 visitas · 1 solicitud</span></th><td class="md-der"><span class="md-tenue">–</span></td><td class="pp-tabla__num md-der">15</td><td class="md-der"><span class="md-tenue">–</span></td><td class="md-der"><span class="md-tenue">–</span></td><td class="pp-tabla__num md-der">1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="md-nota">«Otros invitados» son visitas de un invitado del mismo enlace distinto del destinatario: se atribuyen a la edición con su propio contacto.</p>
         </section>
       </main>
     </div>

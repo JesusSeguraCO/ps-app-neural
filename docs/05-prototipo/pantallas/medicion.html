@@ -7,27 +7,17 @@
   - TOKENS: todo color, fuente, spacing, radio y sombra sale de las custom properties de
     ../tokens.css. Cero valores mágicos fuera de tokens.
   - DATOS ILUSTRATIVOS ESTÁTICOS: contenido de ejemplo neutro, embebido en el HTML.
-  - ESTADOS: los estados relevantes (vacío, error, cargando) que la HU exija son VARIANTES
-    de pantalla en archivos propios (medicion--estado.html), no interacciones.
-  Trazabilidad: épica EP-008 · historias HU-108, HU-109, HU-110, HU-111, HU-112 · registrada en ../manifest.json
-  Pantalla #35 «Tablero: embudo, acierto, facetas, rutas» · origen: nueva (sin equivalente en el v2).
-  Oficio v2 (2026-09-27): sin eyebrows con ID de historia, sin avisos con borde lateral, sin tarjetas por ítem;
-  secciones con título-pregunta + (i) con la regla de cálculo, índice de anclas, notas a pie en --tc-text-m,
-  cifras a la derecha en tabular-nums, barras planas navy (no degradado), «–»/texto apagado en vez de píldoras.
-  Estado de ESTE archivo: base — septiembre de 2026 (1 al 27), 9 cuentas con enlace, 7 con entradas.
-  Embudo en personas distintas y sesiones (HU-108, Grupo Éxito: 23 sesiones de 2 personas no infla el total);
-  acierto de curaduría 8 de 11 con 3 solicitudes sin curaduría excluidas y las 3 fallidas con lo que buscaron (HU-109);
-  uso de facetas separado entre sesiones que solo filtraron y filtros tras una instrucción, con facetas sin uso (HU-110);
-  comparación de rutas con muestra suficiente y sesiones mixtas contadas como instrucción (HU-111);
-  atribución por envío (el boletín sale desde HubSpot/Gmail, PRD v4.14), origen directo aparte y otros
-  invitados del mismo enlace con su correo (HU-112). Cuentas sin entradas con su motivo, nunca con ceros.
-  Variantes: medicion--sin-actividad (periodo sin entradas), medicion--ruta-sin-datos (una ruta sin muestra).
+  - ESTADOS: los estados relevantes que la HU exija son VARIANTES de pantalla en archivos propios.
+  Trazabilidad: épica EP-008 · historias HU-171, HU-172, HU-109, HU-196 · registrada en ../manifest.json
+  Estado de ESTE archivo (medicion): base — tablero de octubre de 2026 cerrado: conversión, perfiles por solicitud y O4 (bajo la meta) completos; O3 (HU-196) y acierto (HU-109) con su cifra; KPI del 35 % en «aún no se mide» (espera a EP-011); top 10 (HU-172); internas y demo fuera, contadas.
+  Origen: modo feature (2026-10-02), extraído en vivo del panel implementado (/administracion/accesos, /enlaces/nuevo en 127.0.0.1:3101; CSS computado = tokens.css): mismas piezas pp-* que la app. Borrador: pendiente de aprobación humana.
+  Patrones copiados de ../_patrones.html v2 y de las pantallas aprobadas de EP-006 (admin-accesos).
 -->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Medición — prototipo</title>
+  <title>Medición · tablero del mes — prototipo</title>
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* PP:base — SIEMPRE se copia primero. Utilidades transversales. */
@@ -59,172 +49,190 @@
     @media (max-width: 1100px) { .pp-con-lateral { grid-template-columns: minmax(0, 1fr); } }
     /* /PP:base */
     /* PP:botones */
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
-      .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
-      .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
-      .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
-      .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
-      .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
-      .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
-      .pp-btn--fantasma { color: var(--tc-text-b); }
-      .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
-      .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
-      .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
-      .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
-      .pp-btn--icono { width: 40px; padding: 0; }
-      .pp-btn--sm.pp-btn--icono { width: 32px; }
-      .pp-btn--bloque { width: 100%; }
-      .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
-      .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
-      @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
-      /* /PP:botones */
+    .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--tc-sp-2); min-height: 40px; padding: 0 var(--tc-sp-4); border: 1px solid transparent; border-radius: var(--tc-r-md); font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); text-decoration: none; white-space: nowrap; cursor: pointer; background: none; color: var(--tc-text-h); transition: background var(--tc-dur) var(--tc-ease), border-color var(--tc-dur) var(--tc-ease), color var(--tc-dur) var(--tc-ease); }
+    .pp-btn--primario { background: var(--pp-teal-fill); color: var(--tc-bg-topbar); box-shadow: var(--pp-btn-shadow); }
+    .pp-btn--primario:hover { background: var(--pp-teal-fill-hover); }
+    .pp-btn--cta { background: var(--pp-press); color: var(--pp-press-ink); border-radius: var(--tc-r-pill); box-shadow: var(--tc-sh-1); padding: 0 var(--tc-sp-6); font-weight: var(--tc-fw-semibold); }
+    .pp-btn--contorno { background: var(--tc-card); border-color: var(--tc-border-s); color: var(--tc-text-h); box-shadow: var(--tc-sh-1); }
+    .pp-btn--contorno:hover { background: var(--tc-bg-subtle); }
+    .pp-btn--contorno[aria-pressed="true"] { border-color: var(--tc-primary-surface-border); background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    .pp-btn--fantasma { color: var(--tc-text-b); }
+    .pp-btn--fantasma:hover { background: var(--tc-bg-subtle); color: var(--tc-text-h); }
+    .pp-btn--destructivo { background: var(--tc-red); color: var(--tc-card); }
+    .pp-btn--destructivo:hover { background: var(--tc-danger-ink); }
+    .pp-btn--sm { min-height: 32px; padding: 0 var(--tc-sp-3); }
+    .pp-btn--icono { width: 40px; padding: 0; }
+    .pp-btn--sm.pp-btn--icono { width: 32px; }
+    .pp-btn--bloque { width: 100%; }
+    .pp-btn .pp-kbd { margin-left: var(--tc-sp-1); }
+    .pp-btn[disabled], .pp-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 767px) { .pp-btn { min-height: 44px; } .pp-btn--icono, .pp-btn--sm.pp-btn--icono { width: 44px; } .pp-btn .pp-kbd { display: none; } }
+    /* /PP:botones */
     /* PP:estado */
-      .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
-      .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
-      .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
-      .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
-      .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
-      .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
-      .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
-      .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
-      .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
-      /* /PP:estado */
+    .pp-estado, .pp-badge { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); line-height: var(--tc-lh-tight); color: var(--tc-text-b); white-space: nowrap; }
+    .pp-estado::before, .pp-badge::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--tc-text-s); }
+    .pp-estado--ok::before, .pp-badge--disponible::before, .pp-badge--publicado::before { background: var(--tc-green); }
+    .pp-estado--warn::before, .pp-badge--por-confirmar::before, .pp-badge--pausado::before { background: var(--tc-amber); }
+    .pp-estado--danger::before, .pp-badge--archivado::before { background: var(--tc-red); }
+    .pp-estado--info::before, .pp-badge--colocado::before { background: var(--tc-blue); }
+    .pp-estado--neutro::before, .pp-badge--banda::before { background: var(--tc-text-s); }
+    .pp-estado--borrador::before, .pp-badge--no-publicado::before { background: none; border: 1.5px solid var(--tc-text-s); }
+    .pp-estado--warn, .pp-estado--danger { color: var(--tc-text-h); }
+    /* /PP:estado */
     /* PP:panel */
-      .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
-      .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
-      .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
-      .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
-      .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
-      .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
-      .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
-      .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
-      .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
-      .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
-      .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
-      .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
-      .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
-      .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
-      .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
-      .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
-      .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
-      .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
-      .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
-      .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
-      .pp-migas a:hover { color: var(--tc-text-h); }
-      .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
-      .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
-      @media (max-width: 1023px) {
-        .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-        .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
-        .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
-        .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
-        .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
-      }
-      @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
-      /* /PP:panel */
+    .pp-panel { display: grid; grid-template-columns: var(--tc-sidebar-w) minmax(0, 1fr); min-height: 100vh; background: var(--tc-bg-canvas); }
+    .pp-sidebar { display: flex; flex-direction: column; gap: 0; padding: var(--tc-sp-4) var(--tc-sp-3); background: var(--tc-grad-sidebar); color: var(--tc-navy-ink); }
+    .pp-sidebar__marca { display: flex; align-items: center; gap: var(--tc-sp-3); padding: var(--tc-sp-1) var(--tc-sp-2) var(--tc-sp-4); }
+    .pp-sidebar__titulo { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-bg-topbar); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); line-height: var(--tc-lh-h3); }
+    .pp-sidebar__seccion { margin: 0; padding: var(--tc-sp-5) var(--tc-sp-2) var(--tc-sp-1); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink-mute); }
+    .pp-sidelink { display: flex; align-items: center; gap: var(--tc-sp-3); min-height: 36px; padding: 0 var(--tc-sp-2); border-radius: var(--tc-r-sm); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-navy-ink); text-decoration: none; white-space: nowrap; transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-sidelink .pp-icono { color: var(--tc-navy-ink-mute); }
+    .pp-sidelink:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); color: var(--tc-bg-topbar); }
+    .pp-sidelink[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); color: var(--tc-bg-topbar); font-weight: var(--tc-fw-semibold); }
+    .pp-sidelink[aria-current="page"] .pp-icono { color: var(--tc-bg-topbar); }
+    .pp-sidelink__conteo { margin-left: auto; font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-variant-numeric: tabular-nums; color: var(--tc-navy-ink-mute); }
+    .pp-sidebar__pie { margin-top: auto; padding: var(--tc-sp-4) var(--tc-sp-2) 0; display: flex; align-items: center; gap: var(--tc-sp-3); }
+    .pp-avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: var(--tc-r-pill); background: var(--pp-retrato); color: var(--pp-navy-ink); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); }
+    .pp-persona { min-width: 0; line-height: var(--tc-lh-h3); }
+    .pp-persona__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-bg-topbar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pp-persona__area { display: block; font-size: var(--tc-fs-caption); color: var(--tc-navy-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pp-panel__cuerpo { display: flex; flex-direction: column; min-width: 0; }
+    .pp-panel__topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-4); min-height: 56px; padding: var(--tc-sp-2) var(--tc-sp-8); border-bottom: 1px solid var(--tc-border); background: var(--tc-card); }
+    .pp-migas { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+    .pp-migas li + li::before { content: "/"; margin-right: var(--tc-sp-2); color: var(--tc-border-s); }
+    .pp-migas a { color: var(--tc-text-m); text-decoration: none; }
+    .pp-migas a:hover { color: var(--tc-text-h); }
+    .pp-migas [aria-current="page"] { color: var(--tc-text-h); font-weight: var(--tc-fw-medium); }
+    .pp-panel__herramientas { display: flex; align-items: center; gap: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-panel__contenido { flex: 1; min-width: 0; width: 100%; max-width: 1280px; padding: var(--tc-sp-8); }
+    @media (max-width: 1023px) {
+      .pp-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+      .pp-sidebar { flex-direction: row; align-items: center; gap: var(--tc-sp-1); padding: var(--tc-sp-2) var(--tc-sp-3); overflow-x: auto; }
+      .pp-sidebar__marca { flex: none; padding: 0 var(--tc-sp-2) 0 0; white-space: nowrap; }
+      .pp-sidebar__sub, .pp-sidebar__seccion, .pp-sidebar__pie, .pp-sidelink__conteo, .pp-sidelink .pp-icono { display: none; }
+      .pp-sidelink { min-height: 44px; padding: 0 var(--tc-sp-3); }
+    }
+    @media (max-width: 767px) { .pp-panel__topbar, .pp-panel__contenido { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-migas li:not(:last-child) { display: none; } .pp-migas li:last-child::before { content: none; } .pp-panel__contenido { padding-top: var(--tc-sp-6); } .pp-panel__herramientas .pp-meta { display: none; } }
+    /* /PP:panel */
+    /* PP:shell — copia de la barra lateral y la barra superior de admin-shell.html; en móvil el destino activo va justo tras la marca para que «estás aquí» se vea al cargar */
+    .pp-sidebar :focus-visible { outline-color: var(--tc-teal-on-navy); }
+    @media (max-width: 1023px) { .pp-sidebar__marca { order: -2; } .pp-sidelink[aria-current="page"] { order: -1; } }
+    /* /PP:shell */
     /* PP:filas */
-      .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
-      .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
-      .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
-      .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
-      .pp-fila:hover { background: var(--tc-surface-quiet); }
-      .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
-      .pp-fila--enlace { cursor: pointer; }
-      .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
-      .pp-fila__principal > p { margin: 0; }
-      .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
-      .pp-fila__titulo a { color: inherit; text-decoration: none; }
-      .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
-      .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
-      .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-      .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-      .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
-      .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
-      .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
-      .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
-      .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
-      .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
-      .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
-      @media (max-width: 767px) {
-        .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
-        .pp-fila__acciones { justify-content: flex-end; }
-        .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
-      }
-      /* /PP:filas */
-    /* PP:avisos */
-      .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
-      .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
-      .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
-      .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
-      .pp-aviso__titulo::after { content: " "; }
-      .pp-aviso__accion { flex: none; align-self: center; }
-      .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
-      .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
-      .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
-      .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
-      .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
-      .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
-      .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
-      @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
-      /* /PP:avisos */
+    .pp-filas { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .pp-filas__cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); min-height: 48px; padding: var(--tc-sp-2) var(--tc-sp-5); border-bottom: 1px solid var(--tc-border); }
+    .pp-filas__titulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--tc-sp-2) var(--tc-sp-6); padding: var(--tc-sp-4) var(--tc-sp-5); transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-fila + .pp-fila { border-top: 1px solid var(--tc-border); }
+    .pp-fila:hover { background: var(--tc-surface-quiet); }
+    .pp-fila--seleccionada, .pp-fila--seleccionada:hover { background: var(--tc-primary-surface); }
+    .pp-fila--enlace { cursor: pointer; }
+    .pp-fila__principal { min-width: 0; display: grid; gap: var(--tc-sp-1); }
+    .pp-fila__principal > p { margin: 0; }
+    .pp-fila__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); font-size: var(--tc-fs-body); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+    .pp-fila__titulo a { color: inherit; text-decoration: none; }
+    .pp-fila__titulo a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-fila__sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-fila__meta { font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-fila__nota { max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-fila__acciones { display: flex; align-items: center; gap: var(--tc-sp-2); }
+    .pp-actividad { display: grid; gap: var(--tc-sp-4); margin: 0; padding: 0; list-style: none; }
+    .pp-actividad__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--tc-sp-3); }
+    .pp-actividad__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); font-variant-numeric: tabular-nums; color: var(--tc-text-m); white-space: nowrap; }
+    .pp-actividad__texto { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .pp-actividad__texto strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-paginacion { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-3); margin-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .pp-paginacion > div { display: flex; gap: var(--tc-sp-2); }
+    @media (max-width: 767px) {
+      .pp-fila { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-4); }
+      .pp-fila__acciones { justify-content: flex-end; }
+      .pp-filas__cabecera { padding: var(--tc-sp-2) var(--tc-sp-4); }
+    }
+    /* /PP:filas */
+    /* PP:pestanas */
+    .pp-pestanas { display: flex; gap: var(--tc-sp-5); overflow-x: auto; border-bottom: 1px solid var(--tc-border); scrollbar-width: none; }
+    .pp-pestana { display: inline-flex; align-items: center; gap: var(--tc-sp-2); min-height: 44px; padding: 0 var(--tc-sp-1); border: 0; border-bottom: 2px solid transparent; background: none; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--tc-dur-fast) var(--tc-ease); }
+    .pp-pestana:hover { color: var(--tc-text-h); }
+    .pp-pestana[aria-selected="true"] { border-bottom-color: var(--tc-text-h); color: var(--tc-text-h); font-weight: var(--tc-fw-semibold); }
+    .pp-pestana__conteo { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-regular); font-variant-numeric: tabular-nums; color: var(--tc-text-s); }
+    .pp-pestana[aria-selected="true"] .pp-pestana__conteo { color: var(--tc-text-m); }
+    /* /PP:pestanas */
     /* PP:tabla */
-      .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
-      .pp-barra .pp-pestanas { border-bottom: 0; }
-      .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
-      .pp-buscador { position: relative; width: min(300px, 100%); }
-      .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
-      .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
-      .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
-      .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
-      .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
-      .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
-      .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
-      .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
-      .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
-      .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
-      .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
-      .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
-      .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-      .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
-      .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-      .pp-tabla__acciones { text-align: right; white-space: nowrap; }
-      .pp-tabla th.pp-tabla__acciones { text-align: right; }
-      .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
-      .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
-      @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
-      /* /PP:tabla */
+    .pp-barra { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-4); margin-bottom: var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); }
+    .pp-barra .pp-pestanas { border-bottom: 0; }
+    .pp-barra .pp-buscador { margin-bottom: var(--tc-sp-2); }
+    .pp-buscador { position: relative; width: min(300px, 100%); }
+    .pp-buscador .pp-input { min-height: 36px; padding-left: var(--tc-sp-8); padding-right: var(--tc-sp-8); font-size: var(--tc-fs-small); }
+    .pp-buscador__icono { position: absolute; left: var(--tc-sp-3); top: 50%; transform: translateY(-50%); color: var(--tc-text-s); pointer-events: none; }
+    .pp-buscador__atajo { position: absolute; right: var(--tc-sp-2); top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .pp-tabla-marco { max-height: 440px; overflow: auto; border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-card); box-shadow: var(--tc-sh-1); }
+    .pp-tabla { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: var(--tc-fs-small); }
+    .pp-tabla th, .pp-tabla td { padding: var(--tc-sp-3) var(--tc-sp-4); border-bottom: 1px solid var(--tc-border); text-align: left; vertical-align: middle; }
+    .pp-tabla thead th { position: sticky; top: 0; z-index: 1; padding-top: var(--tc-sp-2); padding-bottom: var(--tc-sp-2); background: var(--tc-card); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); white-space: nowrap; }
+    .pp-tabla tbody tr:last-child > * { border-bottom: 0; }
+    .pp-tabla tbody tr { transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-tabla tbody tr:hover { background: var(--tc-surface-quiet); }
+    .pp-tabla tbody tr[aria-selected="true"] { background: var(--tc-primary-surface); }
+    .pp-tabla tbody th { font-weight: var(--tc-fw-regular); }
+    .pp-tabla__perfil { display: block; font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-tabla__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .pp-tabla__num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pp-tabla__acciones { text-align: right; white-space: nowrap; }
+    .pp-tabla th.pp-tabla__acciones { text-align: right; }
+    .pp-si { color: var(--tc-ok-mark); font-weight: var(--tc-fw-bold); }
+    .pp-no { color: var(--tc-text-s); font-weight: var(--tc-fw-bold); }
+    @media (max-width: 767px) { .pp-barra { align-items: stretch; } .pp-buscador { width: 100%; } .pp-buscador .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-buscador__atajo { display: none; } }
+    /* /PP:tabla */
     /* PP:campos */
-      .pp-form { display: grid; gap: var(--tc-sp-5); }
-      .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
-      .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
-      .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
-      .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
-      .pp-input::placeholder { color: var(--tc-text-s); }
-      .pp-input:hover { border-color: var(--tc-text-s); }
-      .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
-      .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
-      .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
-      .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
-      .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
-      .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
-      .pp-form--alineado { gap: 0; }
-      .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
-      .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
-      .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
-      .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
-      .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
-      @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
-      /* /PP:campos */
+    .pp-form { display: grid; gap: var(--tc-sp-5); }
+    .pp-campo { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-label { display: block; padding: 0; font-family: var(--tc-font-body); font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .pp-label__opcional { font-weight: var(--tc-fw-regular); color: var(--tc-text-m); }
+    .pp-input { width: 100%; min-height: 40px; padding: var(--tc-sp-2) var(--tc-sp-3); border: 1px solid var(--tc-border-s); border-radius: var(--tc-r-md); background: var(--tc-card); color: var(--tc-text-h); font-family: var(--tc-font-body); font-size: var(--tc-fs-body); line-height: var(--tc-lh-tight); box-shadow: var(--tc-sh-1); transition: border-color var(--tc-dur) var(--tc-ease), box-shadow var(--tc-dur) var(--tc-ease); }
+    .pp-input::placeholder { color: var(--tc-text-s); }
+    .pp-input:hover { border-color: var(--tc-text-s); }
+    .pp-input:focus { outline: none; border-color: var(--tc-primary); box-shadow: var(--tc-sh-focus); }
+    .pp-input[aria-invalid="true"] { border-color: var(--tc-red); }
+    .pp-input[readonly] { background: var(--tc-bg-subtle); box-shadow: none; }
+    .pp-input--area { min-height: 104px; line-height: var(--tc-lh-body); resize: vertical; }
+    .pp-ayuda { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-text-m); }
+    .pp-error { display: flex; gap: var(--tc-sp-1); margin: 0; font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-danger-ink); }
+    .pp-form--alineado { gap: 0; }
+    .pp-form-fila { display: grid; grid-template-columns: 240px minmax(0, 440px); gap: var(--tc-sp-2) var(--tc-sp-8); padding: var(--tc-sp-5) 0; border-top: 1px solid var(--tc-border); }
+    .pp-form-fila:first-child { border-top: 0; padding-top: 0; }
+    .pp-form-fila__etiqueta { display: grid; align-content: start; gap: var(--tc-sp-1); }
+    .pp-form-fila__control { display: grid; gap: var(--tc-sp-2); min-width: 0; }
+    .pp-form__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--tc-sp-2); padding-top: var(--tc-sp-5); border-top: 1px solid var(--tc-border); }
+    @media (max-width: 767px) { .pp-input { min-height: 44px; font-size: var(--tc-fs-h3); } .pp-form-fila { grid-template-columns: minmax(0, 1fr); } }
+    /* /PP:campos */
     /* PP:select */
-      .pp-select { position: relative; }
-      .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
-      .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
-      /* /PP:select */
+    .pp-select { position: relative; }
+    .pp-select .pp-input { appearance: none; -webkit-appearance: none; padding-right: var(--tc-sp-10); cursor: pointer; }
+    .pp-select::after { content: ""; position: absolute; right: var(--tc-sp-4); top: 50%; width: 6px; height: 6px; border-right: 1.5px solid var(--tc-text-m); border-bottom: 1.5px solid var(--tc-text-m); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+    /* /PP:select */
+    /* PP:check */
+    .pp-check { display: flex; align-items: flex-start; gap: var(--tc-sp-3); min-height: 44px; padding: var(--tc-sp-2) 0; cursor: pointer; }
+    .pp-check input { width: 18px; height: 18px; flex: none; margin: var(--tc-sp-1) 0 0; accent-color: var(--tc-primary-strong); cursor: pointer; }
+    .pp-check__texto { font-size: var(--tc-fs-small); color: var(--tc-text-h); line-height: var(--tc-lh-body); }
+    .pp-check__ayuda { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    /* /PP:check */
+    /* PP:avisos */
+    .pp-aviso { display: flex; align-items: flex-start; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-4); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); background: var(--tc-surface-quiet); color: var(--tc-text-b); font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); }
+    .pp-aviso p { flex: 1; min-width: 0; margin: 0; }
+    .pp-aviso__icono { width: var(--tc-sp-4); flex: none; font-weight: var(--tc-fw-bold); text-align: center; }
+    .pp-aviso__titulo { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .pp-aviso__titulo::after { content: " "; }
+    .pp-aviso__accion { flex: none; align-self: center; }
+    .pp-aviso--ok { background: var(--tc-green-bg); border-color: var(--tc-green-bg); }
+    .pp-aviso--ok .pp-aviso__icono { color: var(--tc-ok-mark); }
+    .pp-aviso--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .pp-aviso--warn .pp-aviso__icono, .pp-aviso--warn .pp-aviso__titulo { color: var(--tc-warn-ink); }
+    .pp-aviso--danger { background: var(--tc-red-bg); border-color: var(--tc-red-bg); }
+    .pp-aviso--danger .pp-aviso__icono, .pp-aviso--danger .pp-aviso__titulo { color: var(--tc-danger-ink); }
+    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
+    @media (max-width: 767px) { .pp-aviso { flex-wrap: wrap; } .pp-aviso p { flex-basis: calc(100% - 28px); } .pp-aviso__accion { margin-left: calc(var(--tc-sp-4) + var(--tc-sp-3)); } }
+    /* /PP:avisos */
     /* PP:vacio */
       .pp-vacio { padding: var(--tc-sp-8) var(--tc-sp-6); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); }
       .pp-filas .pp-vacio, .pp-tabla-marco .pp-vacio { border: 0; border-radius: 0; }
@@ -234,6 +242,45 @@
       .pp-vacio__acciones { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); margin-top: var(--tc-sp-4); }
       @media (max-width: 767px) { .pp-vacio { padding: var(--tc-sp-6) var(--tc-sp-4); } }
       /* /PP:vacio */
+    /* PP:hoja */
+      .pp-hoja-velo { position: fixed; inset: 0; z-index: 50; background: var(--pp-overlay); }
+      .pp-hoja { position: fixed; top: 0; right: 0; bottom: 0; z-index: 51; display: flex; flex-direction: column; width: min(600px, 100%); background: var(--tc-card); border-left: 1px solid var(--tc-border); box-shadow: var(--tc-sh-3); }
+      .pp-hoja__cabecera { position: relative; padding: var(--tc-sp-6) var(--tc-sp-10) var(--tc-sp-5) var(--tc-sp-6); border-bottom: 1px solid var(--tc-border); }
+      .pp-hoja__cabecera h2 { margin: 0; font-size: var(--tc-fs-h3); line-height: var(--tc-lh-h3); }
+      .pp-hoja__cabecera p { margin: var(--tc-sp-1) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-hoja__cerrar { position: absolute; top: var(--tc-sp-4); right: var(--tc-sp-4); }
+      .pp-hoja__cuerpo { flex: 1; display: grid; align-content: start; gap: var(--tc-sp-6); overflow: auto; padding: var(--tc-sp-6); }
+      .pp-hoja__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--tc-sp-2); padding: var(--tc-sp-4) var(--tc-sp-6); border-top: 1px solid var(--tc-border); }
+      .pp-datos { display: grid; margin: 0; }
+      .pp-datos__fila { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: var(--tc-sp-4); padding: var(--tc-sp-3) 0; border-top: 1px solid var(--tc-border); }
+      .pp-datos__fila:first-child { border-top: 0; padding-top: 0; }
+      .pp-bloque .pp-datos__fila { border-top-color: var(--tc-primary-surface-border); }
+      .pp-bloque--declarado .pp-datos__fila { border-top-color: var(--tc-border); }
+      .pp-datos__fila dt { font-size: var(--tc-fs-small); color: var(--tc-text-m); }
+      .pp-datos__fila dd { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+      @media (max-width: 767px) { .pp-hoja__cabecera { padding: var(--tc-sp-5) var(--tc-sp-10) var(--tc-sp-4) var(--tc-sp-4); } .pp-hoja__cuerpo, .pp-hoja__pie { padding-left: var(--tc-sp-4); padding-right: var(--tc-sp-4); } .pp-datos__fila { grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-1); } }
+      /* /PP:hoja */
+    /* PP:toast */
+    .pp-toast { position: fixed; right: var(--tc-sp-6); bottom: var(--tc-sp-6); z-index: 60; display: flex; align-items: center; gap: var(--tc-sp-3); max-width: min(440px, calc(100% - 32px)); padding: var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-3) var(--tc-sp-4); border-radius: var(--tc-r-md); background: var(--tc-text-h); color: var(--tc-card); box-shadow: var(--tc-sh-3); font-size: var(--tc-fs-small); line-height: var(--tc-lh-h3); }
+    .pp-toast__marca { flex: none; font-weight: var(--tc-fw-bold); }
+    .pp-toast__texto { flex: 1; min-width: 0; margin: 0; }
+    .pp-toast__accion { flex: none; min-height: 32px; padding: 0 var(--tc-sp-2); border: 0; border-radius: var(--tc-r-sm); background: none; color: inherit; font: inherit; font-weight: var(--tc-fw-semibold); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .pp-toast__accion:hover { background: color-mix(in srgb, var(--tc-card) 12%, transparent); }
+    @media (max-width: 767px) { .pp-toast { left: var(--tc-sp-4); right: var(--tc-sp-4); bottom: var(--tc-sp-4); max-width: none; } .pp-toast__accion { min-height: 44px; } }
+    /* /PP:toast */
+  </style>
+  <style>
+    /* Composición propia de las pantallas EP-008. Valores visuales → var(--token). */
+
+    .pp-sidebar__pie--enlace { padding: var(--tc-sp-2); border-radius: var(--tc-r-sm); text-decoration: none; transition: background var(--tc-dur-fast) var(--tc-ease); }
+    .pp-sidebar__pie--enlace { margin-top: auto; }
+    .pp-sidebar__pie--enlace:hover { background: color-mix(in srgb, var(--tc-bg-topbar) 6%, transparent); }
+    .pp-sidebar__pie--enlace[aria-current="page"] { background: color-mix(in srgb, var(--tc-bg-topbar) 12%, transparent); }
+    @media (max-width: 1023px) { .pp-sidebar__pie--enlace { display: flex; margin: 0; padding: 0 var(--tc-sp-3); min-height: 44px; flex: none; } .pp-sidebar__pie--enlace .pp-avatar { display: none; } .pp-sidebar__pie--enlace .pp-persona__area { display: none; } .pp-sidebar__pie--enlace[aria-current="page"] { order: -1; } }
+    /* Destino inactivo: copia de la app (mp-sidelink--inactivo, opacidad 0.55, sin cursor de enlace) */
+    .mp-sidelink--inactivo { position: relative; opacity: 0.55; cursor: default; }
+    .mp-sidelink--inactivo:hover { background: none; color: inherit; }
+    .pp-aviso--info .pp-aviso__icono { color: var(--tc-text-m); }
 
     /* ── Composición propia de la pantalla medicion (prefijo md-) ── */
     .md-filtros { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); }
@@ -345,20 +392,142 @@
       .md-acierto__kpi { padding: var(--tc-sp-5) var(--tc-sp-4); border-right: 0; border-bottom: 1px solid var(--tc-border); }
     }
 
+  
+
+    .mp-pestanas { margin-bottom: var(--tc-sp-6); overflow-x: auto; scrollbar-width: none; }
+    .mp-pestanas .pp-pestana { white-space: nowrap; }
+    .mp-texto { margin: 0 0 var(--tc-sp-5); max-width: 72ch; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+    .mp-fuera { margin: 0 0 var(--tc-sp-6); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .mp-fuera strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .mp-avisos { margin-bottom: var(--tc-sp-5); }
+    /* tablero: rejilla de indicadores con hairlines (una superficie, no una tarjeta por cifra) */
+    .mp-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); overflow: hidden; }
+    .mp-kpi { display: flex; flex-direction: column; gap: var(--tc-sp-1); min-width: 0; padding: var(--tc-sp-5); border-right: 1px solid var(--tc-border); border-bottom: 1px solid var(--tc-border); }
+    .mp-kpi:nth-child(3n) { border-right: 0; }
+    .mp-kpi--ancha { grid-column: span 3; border-right: 0; }
+    .mp-kpi__rotulo { margin: 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .mp-kpi__cifra { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-h1); line-height: var(--tc-lh-h1); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); font-variant-numeric: tabular-nums; letter-spacing: var(--tc-ls-heading); }
+    .mp-kpi__cifra--nula { font-size: var(--tc-fs-body); line-height: var(--tc-lh-h3); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); letter-spacing: normal; }
+    .mp-kpi__lados { margin: 0; font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .mp-kpi__pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-1) var(--tc-sp-3); margin-top: auto; padding-top: var(--tc-sp-3); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .mp-kpi__meta { color: var(--tc-text-b); }
+    .mp-kpi__falta { margin: 0; font-size: var(--tc-fs-caption); line-height: var(--tc-lh-body); color: var(--tc-text-m); }
+    .mp-kpi__falta strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .mp-kpi--pendiente { background: var(--tc-surface-quiet); }
+    .mp-top { margin: 0; padding: 0; list-style: none; counter-reset: top; }
+    .mp-top__item { display: grid; grid-template-columns: 28px minmax(0, 1fr) 168px; align-items: baseline; gap: var(--tc-sp-3); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .mp-top__item + .mp-top__item { border-top: 1px solid var(--tc-border); }
+    .mp-top__pos { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-s); font-variant-numeric: tabular-nums; }
+    .mp-top__texto { min-width: 0; overflow-wrap: anywhere; }
+    .mp-top__num { font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+    .mp-top__nums { display: grid; grid-template-columns: 88px 64px; justify-content: end; gap: var(--tc-sp-2); }
+    .mp-top__num strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .mp-mask { padding: 0 var(--tc-sp-1); border-radius: var(--tc-r-sm); background: var(--tc-bg-subtle); font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .mp-empate { border-top: 1px dashed var(--tc-border-s); }
+    /* recorrido */
+    .mp-captura { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tc-sp-2) var(--tc-sp-5); margin-bottom: var(--tc-sp-6); padding: var(--tc-sp-3) var(--tc-sp-4); background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); font-size: var(--tc-fs-small); color: var(--tc-text-b); font-variant-numeric: tabular-nums; }
+    .mp-captura strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .mp-captura--warn { background: var(--tc-warn-surface); border-color: var(--tc-warn-border); }
+    .mp-eventos { margin: 0; padding: 0; list-style: none; background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); }
+    .mp-evento { display: grid; grid-template-columns: 32px 72px minmax(0, 1fr) auto; align-items: baseline; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+    .mp-evento + .mp-evento { border-top: 1px solid var(--tc-border); }
+    .mp-evento__n, .mp-evento__hora { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); font-variant-numeric: tabular-nums; }
+    .mp-evento__que strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .mp-evento__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .mp-opaco { font-family: var(--pp-mono); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .mp-datos { margin: 0 0 var(--tc-sp-4); }
+    .md-panel + .mp-kpis { margin-top: var(--tc-sp-4); }
+    .md-paso { grid-template-columns: 168px minmax(0, 1fr) 56px 176px; }
+    @media (max-width: 767px) { .md-paso { grid-template-columns: minmax(0, 1fr) auto auto; } .md-paso__sub { min-width: 0; } }
+    .mp-rotulo-desc { display: inline-flex; align-items: center; gap: var(--tc-sp-2); font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+    .mp-lectura { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); max-width: 76ch; }
+    .mp-lectura strong { font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+    .mp-condiciones { margin: 0; padding: 0; list-style: none; }
+    .mp-control + .mp-condiciones { border-top: 1px solid var(--tc-border); }
+    .mp-condicion { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: var(--tc-sp-2) var(--tc-sp-4); padding: var(--tc-sp-3) var(--tc-sp-5); font-size: var(--tc-fs-small); color: var(--tc-text-h); }
+    .mp-condicion + .mp-condicion { border-top: 1px solid var(--tc-border); }
+    .mp-condicion__sub { display: block; font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+    .mp-control { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tc-sp-3) var(--tc-sp-5); padding: var(--tc-sp-4) var(--tc-sp-5); }
+    .mp-control p { margin: 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
+    .mp-control p strong { font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+    .mp-control .pp-ayuda { margin: var(--tc-sp-1) 0 0; }
+    .pp-btn[disabled] { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    /* permisos en fila */
+    .mp-permisos { display: flex; flex-wrap: wrap; gap: 0 var(--tc-sp-5); }
+    .mp-permisos .pp-check { min-height: 32px; padding: 0; align-items: center; }
+    .mp-permisos .pp-check input { margin: 0; }
+    .pp-seccion__cabecera { flex-wrap: wrap; }
+    .pp-seccion__cabecera .pp-estado { white-space: normal; }
+    .mp-fila-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--tc-sp-2); }
+    .mp-tu { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .mp-grupo + .mp-grupo { margin-top: var(--tc-sp-8); }
+    .mp-form-linea { display: flex; flex-wrap: wrap; gap: var(--tc-sp-2); align-items: flex-start; }
+    .mp-form-linea .pp-input { flex: 1 1 280px; }
+    .mp-composiciones { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; border: 0; }
+    .mp-composicion { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--tc-sp-2); padding: var(--tc-sp-3) 0; }
+    .mp-composicion + .mp-composicion { border-top: 1px solid var(--tc-border); }
+    .mp-composicion .pp-input { width: 100%; }
+    @media (max-width: 1023px) {
+      .mp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mp-kpi:nth-child(3n) { border-right: 1px solid var(--tc-border); }
+      .mp-kpi:nth-child(2n) { border-right: 0; }
+      .mp-kpi--ancha { grid-column: span 2; }
+    }
+    @media (max-width: 767px) {
+      .mp-kpis { grid-template-columns: minmax(0, 1fr); }
+      .mp-kpi, .mp-kpi:nth-child(3n) { border-right: 0; }
+      .mp-kpi--ancha { grid-column: span 1; }
+      .mp-kpi { padding: var(--tc-sp-4); }
+      .mp-top__item { grid-template-columns: 24px minmax(0, 1fr); padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .mp-top__nums { grid-column: 2; display: flex; justify-content: flex-start; gap: var(--tc-sp-3); }
+      .mp-top__num { text-align: left; }
+      .mp-evento { grid-template-columns: 28px minmax(0, 1fr); padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .mp-evento__hora { grid-column: 2; grid-row: 2; }
+      .mp-evento__ambito { grid-column: 2; }
+      .mp-condicion { grid-template-columns: minmax(0, 1fr); padding: var(--tc-sp-3) var(--tc-sp-4); }
+      .mp-control { padding: var(--tc-sp-4); }
+      .mp-control .pp-btn { width: 100%; min-height: 44px; }
+      .mp-permisos .pp-check { min-height: 44px; }
+      .pp-fila__acciones { flex-wrap: wrap; }
+      .pp-fila__acciones .pp-btn { flex: 1 1 auto; }
+      .pp-form__acciones .pp-btn { flex: 1 1 0; }
+      .pp-hoja__pie .pp-btn { flex: 1 1 0; }
+      .mp-form-linea .pp-btn { width: 100%; min-height: 44px; }
+      .md-filtros .pp-select { flex: 1 1 100%; width: auto; }
+    }
+
+
+  </style>
+  <style>
+    /* PP:marca-ep008 — pasada de branding D105 (2026-10-02). Solo tokens del DS Trycore:
+       · series de gráfica en teal de marca (--tc-primary; colors.css: «acento, trazos, series de
+         gráfica»; 3,2:1 sobre blanco ≥ 3:1 de WCAG 1.4.11 para gráficos, nunca como texto);
+       · cifras clave en navy de autoridad (--pp-navy-ink: 14,8:1 en claro, #B4C3FF en oscuro) y
+         peso 700 de «cifras destacadas» (DESIGN.md › Tipografía);
+       · posición del top 10 en teal de texto (--pp-teal-ink, 5,3:1);
+       · opción elegida del conmutador con el tinte de selección de pp-btn--contorno[aria-pressed]. */
+    .mp-kpi__cifra, .md-kpi { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
+    .mp-kpi__cifra.mp-kpi__cifra--nula { font-weight: var(--tc-fw-medium); color: var(--tc-text-m); }
+    .md-paso__cifra { font-weight: var(--tc-fw-bold); color: var(--pp-navy-ink); }
+    .md-paso__cifra.md-tenue { font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+    .md-barra { background: var(--tc-primary); }
+    .mp-top__pos { color: var(--pp-teal-ink); }
+    .mp-top__num strong, .md-uso__num { color: var(--pp-navy-ink); }
+    .md-segmento button[aria-pressed="true"] { background: var(--tc-primary-surface); color: var(--tc-primary-ink); }
+    /* /PP:marca-ep008 */
   </style>
 </head>
 <body>
   <div class="pp-panel">
-    <!-- región: navegación / sidebar navy (patrón PP:panel) -->
-    <nav class="pp-sidebar" aria-label="Panel de Talento Humano">
+    <nav class="pp-sidebar" aria-label="Panel de People Service">
       <div class="pp-sidebar__marca">
         <svg class="pp-simbolo" viewBox="0 0 32 32" aria-hidden="true"><circle class="pp-simbolo__base" cx="16" cy="16" r="14"/><path class="pp-simbolo__linea" d="M7.5 20c4-9 11 3 17-8"/><circle class="pp-simbolo__nodo" cx="7.5" cy="20" r="2.4"/><circle class="pp-simbolo__nodo" cx="24.5" cy="12" r="2.4"/></svg>
-        <span><span class="pp-sidebar__titulo">Talento Humano</span><span class="pp-sidebar__sub">Portal de perfiles</span></span>
+        <span><span class="pp-sidebar__titulo">Panel de People Service</span><span class="pp-sidebar__sub">Dirección de Mercadeo</span></span>
       </div>
       <p class="pp-sidebar__seccion">Banco de perfiles</p>
       <a class="pp-sidelink" href="inventario-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Inventario<span class="pp-sidelink__conteo">128</span></a>
       <a class="pp-sidelink" href="importar-perfiles.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Importar</a>
-      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">7</span></a>
+      <a class="pp-sidelink" href="bandeja-vigencia.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>Vigencia<span class="pp-sidelink__conteo">9</span></a>
       <a class="pp-sidelink" href="catalogos.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z"/></svg>Catálogos</a>
       <a class="pp-sidelink" href="lexico-busqueda.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg>Léxico</a>
       <p class="pp-sidebar__seccion">Clientes</p>
@@ -367,173 +536,45 @@
       <a class="pp-sidelink" href="colocados.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Colocados</a>
       <a class="pp-sidelink" href="demanda-no-cubierta.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"/></svg>Demanda</a>
       <p class="pp-sidebar__seccion">Operación</p>
-      <a class="pp-sidelink" href="medicion.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
-      <a class="pp-sidelink" href="selecciones-curadas.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
-      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">2</span></a>
-      <div class="pp-sidebar__pie">
-        <span class="pp-avatar" aria-hidden="true">PG</span>
-        <span class="pp-persona"><span class="pp-persona__nombre">Paula Giraldo</span><span class="pp-persona__area">Sesión hasta las 6:40 p. m.</span></span>
-      </div>
+      <a class="pp-sidelink" href="medicion.html" aria-current="page"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Medición</a>
+      <a class="pp-sidelink" href="seguimiento-envios.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Envíos</a>
+      <a class="pp-sidelink" href="integraciones-fallidas.html"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Fallos<span class="pp-sidelink__conteo">1</span></a>
+      <a class="pp-sidebar__pie pp-sidebar__pie--enlace" href="admin-accesos.html">
+        <span class="pp-avatar" aria-hidden="true">JS</span>
+        <span class="pp-persona"><span class="pp-persona__nombre">Administración</span><span class="pp-persona__area">Jesús Segura</span></span>
+      </a>
     </nav>
-    
-
     <div class="pp-panel__cuerpo">
       <header class="pp-panel__topbar">
         <ol class="pp-migas"><li>Operación</li><li aria-current="page">Medición</li></ol>
         <div class="pp-panel__herramientas">
-          <span class="pp-meta">paula.giraldo@trycore.com</span>
+          <span class="pp-meta">jesus.segura@trycore.com</span>
           <a class="pp-btn pp-btn--fantasma pp-btn--sm" href="panel-acceso.html">Cerrar sesión</a>
         </div>
       </header>
-
       <main class="pp-panel__contenido" id="contenido">
         <div class="pp-encabezado">
           <div class="pp-encabezado__texto">
             <h1 class="pp-encabezado__titulo">Medición</h1>
-            <p class="pp-encabezado__meta">1–27 sep 2026 · 7 de 9 cuentas con enlace entraron · datos de hoy, 10:45 a. m.</p>
+            <p class="pp-encabezado__meta">1–31 oct 2026 · mes cerrado · 14 cuentas con sesiones reales · datos al 1 nov 2026, 12:05 a. m.</p>
           </div>
-          <form class="pp-encabezado__acciones md-filtros" aria-label="Filtrar el tablero" action="#">
-            <label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input" id="md-periodo"><option selected>Septiembre de 2026</option><option>Agosto de 2026</option><option>Últimos 7 días</option><option>Últimos 90 días</option></select></label>
-            <label class="pp-select"><span class="pp-sr">Cuenta</span><select class="pp-input" id="md-cuenta"><option selected>Todas las cuentas</option><option>Bancolombia</option><option>Grupo Éxito</option><option>Grupo Nutresa</option><option>Alpina</option><option>Davivienda</option><option>Seguros Bolívar</option><option>Celsia</option><option>Sura</option><option>Cementos Argos</option></select></label>
-          </form>
+          <form class="pp-encabezado__acciones md-filtros" aria-label="Elegir período" action="#"><label class="pp-select"><span class="pp-sr">Período</span><select class="pp-input"><option>Noviembre de 2026 (en curso)</option><option selected>Octubre de 2026</option><option>Septiembre de 2026</option><option>Agosto de 2026</option></select></label></form>
         </div>
-        <nav aria-label="Secciones del informe">
-          <ul class="md-indice">
-            <li class="md-indice__rotulo" aria-hidden="true">En esta página</li>
-            <li><a href="#embudo">Embudo</a></li>
-            <li><a href="#curaduria">Curaduría</a></li>
-            <li><a href="#filtros">Filtros</a></li>
-            <li><a href="#rutas">Rutas</a></li>
-            <li><a href="#atribucion">Atribución</a></li>
-          </ul>
-        </nav>
-        <section class="md-seccion" id="embudo" aria-labelledby="md-embudo-t">
-            <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="md-embudo-t">¿Dónde se cae la gente?</h2><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: embudo" aria-describedby="md-embudo-a"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="md-embudo-a">Cada paso cuenta personas distintas; debajo, sus sesiones. Grupo Éxito sumó 23 sesiones de 2 personas: cuenta como 2. En la tabla por cuenta, «con búsqueda» y «con ficha abierta» cuentan sesiones.</span></span></div><div class="md-seccion__lado"><div class="md-segmento" role="group" aria-label="Contar por"><button type="button" aria-pressed="true">Personas</button><button type="button" aria-pressed="false">Sesiones</button></div></div></div>
-            <div class="md-panel">
-              <ol class="md-embudo" aria-label="Embudo en personas distintas">
-              <li class="md-paso"><span class="md-paso__etiqueta">Entraron al portal</span><span class="md-pista" aria-hidden="true"><span class="md-barra" style="width: 100%"></span></span><span class="md-paso__cifra">38</span><span class="md-paso__sub">112 sesiones</span></li>
-              <li class="md-paso"><span class="md-paso__etiqueta">Buscaron</span><span class="md-pista" aria-hidden="true"><span class="md-barra" style="width: 76%"></span></span><span class="md-paso__cifra">29</span><span class="md-paso__sub">85 sesiones</span></li>
-              <li class="md-paso"><span class="md-paso__etiqueta">Abrieron una ficha</span><span class="md-pista" aria-hidden="true"><span class="md-barra" style="width: 63%"></span></span><span class="md-paso__cifra">24</span><span class="md-paso__sub">61 sesiones</span></li>
-              <li class="md-paso"><span class="md-paso__etiqueta">Solicitaron equipo</span><span class="md-pista" aria-hidden="true"><span class="md-barra" style="width: 29%"></span></span><span class="md-paso__cifra">11</span><span class="md-paso__sub">14 solicitudes</span></li>
-              </ol>
-            </div>
-            <h3 class="md-subtitulo">Por cuenta</h3>
-            <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="Embudo y acierto por cuenta">
-              <table class="pp-tabla md-tabla">
-                <caption class="pp-sr">Embudo y acierto de curaduría por cuenta, del 1 al 27 de septiembre de 2026</caption>
-                <thead><tr><th scope="col">Cuenta</th><th scope="col" class="md-der">Personas</th><th scope="col" class="md-der">Sesiones</th><th scope="col" class="md-der">Con búsqueda</th><th scope="col" class="md-der">Con ficha abierta</th><th scope="col" class="md-der">Solicitudes</th><th scope="col" class="md-der">Acierto</th></tr></thead>
-                <tbody>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Bancolombia</span><span class="pp-tabla__sub">Migración de pagos</span><span class="md-resumen" aria-hidden="true">9 personas · 24 sesiones · 4 solicitudes · acierto 3 de 4</span></th><td class="pp-tabla__num md-der">9</td><td class="pp-tabla__num md-der">24</td><td class="pp-tabla__num md-der">19</td><td class="pp-tabla__num md-der">14</td><td class="pp-tabla__num md-der">4</td><td class="pp-tabla__num md-der">3 de 4</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Grupo Éxito</span><span class="pp-tabla__sub">Analítica comercial</span><span class="md-resumen" aria-hidden="true">2 personas · 23 sesiones · 1 solicitud · acierto 1 de 1</span></th><td class="pp-tabla__num md-der">2</td><td class="pp-tabla__num md-der">23</td><td class="pp-tabla__num md-der">16</td><td class="pp-tabla__num md-der">9</td><td class="pp-tabla__num md-der">1</td><td class="pp-tabla__num md-der">1 de 1</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Grupo Nutresa</span><span class="pp-tabla__sub">Calidad de software</span><span class="md-resumen" aria-hidden="true">7 personas · 18 sesiones · 3 solicitudes · acierto 2 de 3</span></th><td class="pp-tabla__num md-der">7</td><td class="pp-tabla__num md-der">18</td><td class="pp-tabla__num md-der">14</td><td class="pp-tabla__num md-der">11</td><td class="pp-tabla__num md-der">3</td><td class="pp-tabla__num md-der">2 de 3</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Alpina</span><span class="pp-tabla__sub">App de distribuidores</span><span class="md-resumen" aria-hidden="true">6 personas · 15 sesiones · 2 solicitudes · acierto 1 de 2</span></th><td class="pp-tabla__num md-der">6</td><td class="pp-tabla__num md-der">15</td><td class="pp-tabla__num md-der">12</td><td class="pp-tabla__num md-der">9</td><td class="pp-tabla__num md-der">2</td><td class="pp-tabla__num md-der">1 de 2</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Davivienda</span><span class="pp-tabla__sub">Core bancario</span><span class="md-resumen" aria-hidden="true">6 personas · 14 sesiones · 2 solicitudes · sin curaduría</span></th><td class="pp-tabla__num md-der">6</td><td class="pp-tabla__num md-der">14</td><td class="pp-tabla__num md-der">11</td><td class="pp-tabla__num md-der">8</td><td class="pp-tabla__num md-der">2</td><td class="md-der"><span class="md-tenue">Sin curaduría</span></td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Seguros Bolívar</span><span class="pp-tabla__sub">Core de pólizas</span><span class="md-resumen" aria-hidden="true">5 personas · 12 sesiones · 1 solicitud · acierto 1 de 1</span></th><td class="pp-tabla__num md-der">5</td><td class="pp-tabla__num md-der">12</td><td class="pp-tabla__num md-der">9</td><td class="pp-tabla__num md-der">7</td><td class="pp-tabla__num md-der">1</td><td class="pp-tabla__num md-der">1 de 1</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Celsia</span><span class="pp-tabla__sub">Portal de clientes</span><span class="md-resumen" aria-hidden="true">3 personas · 6 sesiones · 1 solicitud · sin curaduría</span></th><td class="pp-tabla__num md-der">3</td><td class="pp-tabla__num md-der">6</td><td class="pp-tabla__num md-der">4</td><td class="pp-tabla__num md-der">3</td><td class="pp-tabla__num md-der">1</td><td class="md-der"><span class="md-tenue">Sin curaduría</span></td></tr>
-                  <tr class="md-fila-apagada"><th scope="row"><span class="pp-tabla__perfil">Sura</span><span class="pp-tabla__sub">Invitada el 18 sep</span></th><td colspan="6"><span class="md-tenue">Nadie ha entrado todavía con el enlace</span></td></tr>
-                  <tr class="md-fila-apagada"><th scope="row"><span class="pp-tabla__perfil">Cementos Argos</span><span class="pp-tabla__sub">Invitada el 24 sep</span></th><td colspan="6"><span class="md-tenue">Nadie ha entrado todavía con el enlace</span></td></tr>
-                </tbody>
-                <tfoot><tr><th scope="row"><span class="pp-tabla__perfil">Total</span><span class="md-resumen" aria-hidden="true">38 personas · 112 sesiones · 14 solicitudes · acierto 8 de 11</span></th><td class="pp-tabla__num md-der">38</td><td class="pp-tabla__num md-der">112</td><td class="pp-tabla__num md-der">85</td><td class="pp-tabla__num md-der">61</td><td class="pp-tabla__num md-der">14</td><td class="pp-tabla__num md-der">8 de 11</td></tr></tfoot>
-              </table>
-            </div>
+        <div class="pp-pestanas mp-pestanas" role="tablist" aria-label="Lecturas de Medición"><a class="pp-pestana" role="tab" aria-selected="true" href="medicion.html">Tablero del mes</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-embudo.html">Embudo</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-curaduria.html">Curaduría</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-filtros.html">Filtros y rutas</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-atribucion.html">Atribución</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-recorridos.html">Recorridos</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-pruebas.html">Pruebas del PRD</a><a class="pp-pestana" role="tab" aria-selected="false" href="medicion-experimento.html">Experimento</a></div>
+
+        <p class="mp-fuera">Quedaron fuera <strong>9 visitas internas</strong> (@trycore.com) y <strong>3 visitas demo</strong>. Solo cuentan sesiones reales: código verificado de un correo que no es @trycore.com, por un enlace sin la casilla «demo».</p>
+        <section class="md-seccion" aria-labelledby="mp-ind-t">
+          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-ind-t">Indicadores del mes</h2><span class="md-seccion__meta">cada uno junto a su meta del PRD</span></div>
+          <div class="mp-kpis"><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Conversión</p><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: conversión" aria-describedby="mp-a-conv"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="mp-a-conv">Cuentas con al menos una solicitud enviada en el mes entre cuentas que entraron en el mes (D70). La solicitud cuenta en el mes en que se envió y se toma de las solicitudes registradas, no del evento del navegador.</span></span></div><p class="mp-kpi__cifra">29 %</p><p class="mp-kpi__lados">4 de 14 cuentas que entraron enviaron al menos una solicitud</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 20 %</span><span class="pp-estado pp-estado--ok">Cumple</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Perfiles por solicitud</p></div><p class="mp-kpi__cifra">2,2</p><p class="mp-kpi__lados">13 perfiles en 6 solicitudes</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 1,8</span><span class="pp-estado pp-estado--ok">Cumple</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Calidad del brief (O4)</p><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: calidad del brief (O4)" aria-describedby="mp-a-o4"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="mp-a-o4">Solicitudes del mes con sector, fecha de inicio y duración diligenciados entre solicitudes del mes. Un campo cuenta si tiene valor.</span></span></div><p class="mp-kpi__cifra">83 %</p><p class="mp-kpi__lados">5 de 6 solicitudes con sector, fecha de inicio y duración</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 85 %</span><span class="pp-estado pp-estado--warn">Por debajo de la meta</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Días hasta la alineación (O3)</p><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: días hasta la alineación (O3)" aria-describedby="mp-a-o3"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="mp-a-o3">Días hábiles cruzados entre la solicitud enviada y la alineación agendada (calendario T-4, sin festivos). Las solicitudes sin agendar no entran en la mediana ni en el porcentaje: se cuentan aparte.</span></span></div><p class="mp-kpi__cifra">2 días hábiles</p><p class="mp-kpi__lados">mediana · 60 % agendadas en 3 días hábiles o menos (3 de 5) · 1 solicitud sigue sin alineación agendada<br>Última lectura de HubSpot: hoy, 6:00 a. m.</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≤ 3 días hábiles</span><span class="pp-estado pp-estado--ok">Cumple</span></div></div><div class="mp-kpi"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Acierto de la curaduría</p><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: acierto de la curaduría" aria-describedby="mp-a-ac"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="mp-a-ac">Solicitudes que incluyen al menos un perfil del conjunto curado de su enlace. Las que llegaron por enlaces sin conjunto curado quedan fuera del cálculo.</span></span></div><p class="mp-kpi__cifra">80 %</p><p class="mp-kpi__lados">4 de 5 solicitudes con un perfil del conjunto curado · 1 fuera por venir de un enlace sin selección</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 70 %</span><span class="pp-estado pp-estado--ok">Cumple</span></div></div><div class="mp-kpi mp-kpi--pendiente"><div class="md-seccion__grupo"><p class="mp-kpi__rotulo">Cuentas que envían al menos una solicitud</p></div><p class="mp-kpi__cifra mp-kpi__cifra--nula">Aún no se mide</p><p class="mp-kpi__falta">Falta <strong>EP-011</strong>: el denominador son las cuentas contactadas en cada edición y Envíos aún no las registra.</p><div class="mp-kpi__pie"><span class="mp-kpi__meta">Meta ≥ 35 % de las cuentas contactadas, por trimestre</span></div></div></div>
         </section>
-        <section class="md-seccion" id="curaduria" aria-labelledby="md-acierto-t">
-            <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="md-acierto-t">¿La selección enviada acierta?</h2><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: acierto de curaduría" aria-describedby="md-acierto-a"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="md-acierto-a">Solicitudes que incluyen al menos un perfil de la selección curada que se envió. Las que llegan por enlaces sin selección no entran en el cálculo ni cuentan como fallo.</span></span></div></div>
-            <div class="md-panel md-acierto">
-              <div class="md-acierto__kpi">
-                <p class="md-kpi">8 de 11</p>
-                <p class="md-kpi__texto">solicitudes con al menos un perfil de la selección</p>
-                <p class="md-nota">Quedan fuera 3 solicitudes de Davivienda y Celsia: llegaron por enlaces sin selección.</p>
-              </div>
-              <div class="md-acierto__lista">
-                <div class="pp-filas__cabecera"><h3 class="pp-filas__titulo">Pidieron solo perfiles que encontraron buscando</h3><span class="pp-meta">3</span></div>
-                <ul class="pp-lista">
-                  <li class="pp-fila">
-                    <div class="pp-fila__principal">
-                      <p class="pp-fila__titulo">Grupo Nutresa <span class="pp-fila__sub">Calidad de software · 19 sep</span></p>
-                      <p class="pp-fila__nota">Buscó <q>QA de automatización con Cypress, inglés B2</q></p>
-                    </div>
-                    <div class="pp-fila__acciones"><a class="pp-btn pp-btn--contorno pp-btn--sm" href="selecciones-curadas.html">Revisar selección</a></div>
-                  </li>
-                  <li class="pp-fila">
-                    <div class="pp-fila__principal">
-                      <p class="pp-fila__titulo">Bancolombia <span class="pp-fila__sub">Migración de pagos · 22 sep</span></p>
-                      <p class="pp-fila__nota">Buscó <q>analista de datos Power BI con experiencia en banca</q></p>
-                    </div>
-                    <div class="pp-fila__acciones"><a class="pp-btn pp-btn--contorno pp-btn--sm" href="selecciones-curadas.html">Revisar selección</a></div>
-                  </li>
-                  <li class="pp-fila">
-                    <div class="pp-fila__principal">
-                      <p class="pp-fila__titulo">Alpina <span class="pp-fila__sub">App de distribuidores · 25 sep</span></p>
-                      <p class="pp-fila__nota">Buscó <q>desarrollador móvil Flutter</q></p>
-                    </div>
-                    <div class="pp-fila__acciones"><a class="pp-btn pp-btn--contorno pp-btn--sm" href="selecciones-curadas.html">Revisar selección</a></div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-        </section>
-        <section class="md-seccion" id="filtros" aria-labelledby="md-facetas-t">
-            <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="md-facetas-t">¿Qué filtros usan de verdad?</h2><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: uso de filtros" aria-describedby="md-facetas-a"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="md-facetas-a">Sesiones que usaron cada faceta. Las que solo filtraron van aparte de las que filtraron después de escribir una instrucción.</span></span></div><div class="md-seccion__lado"><span class="md-seccion__meta">48 sesiones con filtros</span></div></div>
-            <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="Uso de filtros por faceta">
-              <table class="pp-tabla md-tabla">
-                <caption class="pp-sr">Sesiones que usaron cada faceta</caption>
-                <thead><tr><th scope="col">Faceta</th><th scope="col" class="md-der">Solo filtraron<span class="md-col-n">21 sesiones</span></th><th scope="col" class="md-der">Tras una instrucción<span class="md-col-n">27 sesiones</span></th><th scope="col">Valores más elegidos</th></tr></thead>
-                <tbody>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Disponibilidad</span><span class="md-resumen" aria-hidden="true">14 solo filtraron · 19 tras una instrucción · Disponible ahora 22 · En 2 a 4 semanas 9 · En 1 a 2 meses 2</span></th><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 67%"></span></span><span class="md-uso__num">14</span></span></td><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 70%"></span></span><span class="md-uso__num">19</span></span></td><td><p class="md-valores">Disponible ahora <span>22</span> · En 2 a 4 semanas <span>9</span> · En 1 a 2 meses <span>2</span></p></td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Rol</span><span class="md-resumen" aria-hidden="true">17 solo filtraron · 5 tras una instrucción · Desarrollo backend 9 · QA 7 · Analítica de datos 6</span></th><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 81%"></span></span><span class="md-uso__num">17</span></span></td><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 19%"></span></span><span class="md-uso__num">5</span></span></td><td><p class="md-valores">Desarrollo backend <span>9</span> · QA <span>7</span> · Analítica de datos <span>6</span></p></td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Seniority</span><span class="md-resumen" aria-hidden="true">9 solo filtraron · 11 tras una instrucción · Senior 13 · Semi-senior 7</span></th><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 43%"></span></span><span class="md-uso__num">9</span></span></td><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 41%"></span></span><span class="md-uso__num">11</span></span></td><td><p class="md-valores">Senior <span>13</span> · Semi-senior <span>7</span></p></td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Modalidad</span><span class="md-resumen" aria-hidden="true">6 solo filtraron · 8 tras una instrucción · Híbrido 8 · Remoto 6</span></th><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 29%"></span></span><span class="md-uso__num">6</span></span></td><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 30%"></span></span><span class="md-uso__num">8</span></span></td><td><p class="md-valores">Híbrido <span>8</span> · Remoto <span>6</span></p></td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Inglés</span><span class="md-resumen" aria-hidden="true">5 solo filtraron · 3 tras una instrucción · B2 o superior 8</span></th><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 24%"></span></span><span class="md-uso__num">5</span></span></td><td class="md-der"><span class="md-uso"><span class="md-pista md-pista--mini" aria-hidden="true"><span class="md-barra" style="width: 11%"></span></span><span class="md-uso__num">3</span></span></td><td><p class="md-valores">B2 o superior <span>8</span></p></td></tr>
-                  <tr class="md-fila-apagada"><th scope="row"><span class="pp-tabla__perfil">Ciudad</span></th><td colspan="3"><span class="md-tenue">Ninguna sesión la usó en el periodo</span></td></tr>
-                  <tr class="md-fila-apagada"><th scope="row"><span class="pp-tabla__perfil">Sector</span></th><td colspan="3"><span class="md-tenue">Ninguna sesión la usó en el periodo</span></td></tr>
-                </tbody>
-              </table>
-            </div>
-        </section>
-        <section class="md-seccion" id="rutas" aria-labelledby="md-rutas-t">
-            <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="md-rutas-t">¿Instrucción escrita o solo filtros?</h2><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: comparación de rutas" aria-describedby="md-rutas-a"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="md-rutas-a">Se compara solo cuando cada ruta tiene al menos 20 sesiones. Una sesión que escribe una instrucción y luego filtra cuenta como instrucción.</span></span></div><div class="md-seccion__lado"><span class="pp-estado pp-estado--ok">Muestra suficiente</span></div></div>
-            <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="Comparación de rutas de entrada">
-              <table class="pp-tabla md-tabla md-tabla--compacta">
-                <caption class="pp-sr">Comparación entre la ruta de instrucción escrita y la de solo filtros</caption>
-                <thead><tr><th scope="col"><span class="pp-sr">Indicador</span></th><th scope="col" class="md-der">Instrucción escrita<span class="md-col-n">64 sesiones</span></th><th scope="col" class="md-der">Solo filtros<span class="md-col-n">21 sesiones</span></th></tr></thead>
-                <tbody>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Tiempo hasta el primer perfil (mediana)</span><span class="md-resumen" aria-hidden="true">instrucción escrita 38 s · solo filtros 1 min 52 s</span></th><td class="pp-tabla__num md-der">38 s</td><td class="pp-tabla__num md-der">1 min 52 s</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Abrieron una ficha</span><span class="md-resumen" aria-hidden="true">instrucción escrita 49 de 64 · solo filtros 12 de 21</span></th><td class="pp-tabla__num md-der">49 de 64</td><td class="pp-tabla__num md-der">12 de 21</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Solicitudes</span><span class="md-resumen" aria-hidden="true">instrucción escrita 11 · solo filtros 3</span></th><td class="pp-tabla__num md-der">11</td><td class="pp-tabla__num md-der">3</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Filtraron después de instruir</span><span class="md-resumen" aria-hidden="true">instrucción escrita 27 de 64</span></th><td class="pp-tabla__num md-der">27 de 64</td><td class="pp-tabla__num md-der"><span class="md-tenue" title="La ruta de solo filtros no tiene instrucción">–</span></td></tr>
-                </tbody>
-              </table>
-            </div>
-        </section>
-        <section class="md-seccion" id="atribucion" aria-labelledby="md-atrib-t">
-            <div class="md-seccion__cabecera"><div class="md-seccion__grupo"><h2 class="md-seccion__titulo" id="md-atrib-t">¿De qué envío vino cada sesión?</h2><span class="md-ayuda"><button type="button" class="md-ayuda__boton" aria-label="Cómo se calcula: atribución" aria-describedby="md-atrib-a"><svg class="pp-icono pp-icono--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><span class="md-ayuda__texto" role="tooltip" id="md-atrib-a">Cada sesión queda atribuida a la cuenta, al correo con el que entró y al envío de origen. Sin parámetros de atribución queda como origen directo.</span></span></div><div class="md-seccion__lado"><span class="md-seccion__meta">101 de 112 sesiones atribuidas</span></div></div>
-            <div class="pp-con-lateral">
-              <div class="pp-tabla-marco md-sin-tope" tabindex="0" role="region" aria-label="Sesiones por envío">
-                <table class="pp-tabla md-tabla">
-                  <caption class="pp-sr">Sesiones atribuidas a cada envío</caption>
-                  <thead><tr><th scope="col">Envío</th><th scope="col" class="md-der">Fecha</th><th scope="col" class="md-der">Sesiones</th><th scope="col" class="md-der">Contacto principal</th><th scope="col" class="md-der">Otros invitados</th><th scope="col" class="md-der">Solicitudes</th></tr></thead>
-                  <tbody>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Boletín de septiembre</span><span class="pp-tabla__sub">Enviado desde HubSpot · 5 cuentas</span><span class="md-resumen" aria-hidden="true">1 sep · 63 sesiones · 7 solicitudes</span></th><td class="pp-tabla__num md-der">1 sep</td><td class="pp-tabla__num md-der">63</td><td class="pp-tabla__num md-der">44</td><td class="pp-tabla__num md-der">19</td><td class="pp-tabla__num md-der">7</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Selección curada · Grupo Nutresa</span><span class="pp-tabla__sub">Calidad de software</span><span class="md-resumen" aria-hidden="true">12 sep · 18 sesiones · 3 solicitudes</span></th><td class="pp-tabla__num md-der">12 sep</td><td class="pp-tabla__num md-der">18</td><td class="pp-tabla__num md-der">11</td><td class="pp-tabla__num md-der">7</td><td class="pp-tabla__num md-der">3</td></tr>
-                  <tr><th scope="row"><span class="pp-tabla__perfil">Enlaces sin selección</span><span class="pp-tabla__sub">Davivienda y Celsia</span><span class="md-resumen" aria-hidden="true">10 sep · 20 sesiones · 3 solicitudes</span></th><td class="pp-tabla__num md-der">10 sep</td><td class="pp-tabla__num md-der">20</td><td class="pp-tabla__num md-der">15</td><td class="pp-tabla__num md-der">5</td><td class="pp-tabla__num md-der">3</td></tr>
-                  <tr class="md-fila-apagada"><th scope="row"><span class="pp-tabla__perfil">Origen directo</span><span class="pp-tabla__sub">Sin parámetros de atribución</span><span class="md-resumen" aria-hidden="true">11 sesiones · 1 solicitud</span></th><td class="md-der"><span class="md-tenue" title="No se atribuye a ningún envío">–</span></td><td class="pp-tabla__num md-der">11</td><td class="md-der"><span class="md-tenue" title="No se atribuye a ningún envío">–</span></td><td class="md-der"><span class="md-tenue" title="No se atribuye a ningún envío">–</span></td><td class="pp-tabla__num md-der">1</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <aside class="md-lateral" aria-labelledby="md-ult-t">
-                <h3 class="md-lateral__titulo" id="md-ult-t">Últimas sesiones</h3>
-                <ol class="pp-actividad">
-                <li class="pp-actividad__item"><span class="pp-actividad__hora">27 sep 10:42</span><div class="pp-actividad__texto"><strong>Bancolombia</strong> · Boletín de septiembre<span class="md-correo">andres.vega@bancolombia.com.co</span><span class="pp-estado pp-estado--info md-invitado">Otro invitado del enlace</span></div></li>
-                <li class="pp-actividad__item"><span class="pp-actividad__hora">27 sep 09:15</span><div class="pp-actividad__texto"><strong>Bancolombia</strong> · Boletín de septiembre<span class="md-correo">camila.rios@bancolombia.com.co</span></div></li>
-                <li class="pp-actividad__item"><span class="pp-actividad__hora">26 sep 16:03</span><div class="pp-actividad__texto"><strong>Grupo Nutresa</strong> · Selección curada<span class="md-correo">paula.cardona@nutresa.com</span></div></li>
-                <li class="pp-actividad__item"><span class="pp-actividad__hora">26 sep 11:28</span><div class="pp-actividad__texto"><strong>Seguros Bolívar</strong> · Origen directo<span class="md-correo">diego.lozano@segurosbolivar.com</span></div></li>
-                </ol>
-              </aside>
-            </div>
+        <section class="md-seccion" aria-labelledby="mp-top-t">
+          <div class="md-seccion__cabecera"><h2 class="md-seccion__titulo" id="mp-top-t">Las 10 búsquedas sin resultados más repetidas</h2><span class="md-seccion__meta">ordenadas por cuentas distintas · las variantes de acentos, mayúsculas y plurales cuentan como una</span></div>
+          <div class="md-panel"><ol class="mp-top"><li class="mp-top__item"><span class="mp-top__pos">1</span><span class="mp-top__texto">«ingeniero de datos con Spark»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>4</strong> cuentas</span><span class="mp-top__num">9 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">2</span><span class="mp-top__texto">«desarrollador COBOL para core bancario»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>3</strong> cuentas</span><span class="mp-top__num">5 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">3</span><span class="mp-top__texto">«arquitecto SAP S/4HANA»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>3</strong> cuentas</span><span class="mp-top__num">4 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">4</span><span class="mp-top__texto">«QA de automatización con Playwright»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>2</strong> cuentas</span><span class="mp-top__num">6 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">5</span><span class="mp-top__texto">«analista de ciberseguridad con ISO 27001»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>2</strong> cuentas</span><span class="mp-top__num">3 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">6</span><span class="mp-top__texto">«líder técnico React Native»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>2</strong> cuentas</span><span class="mp-top__num">2 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">7</span><span class="mp-top__texto">«desarrolladora como <span class="mp-mask">[nombre del banco]</span> con Kotlin»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>2</strong> cuentas</span><span class="mp-top__num">2 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">8</span><span class="mp-top__texto">«especialista en Salesforce Marketing Cloud»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>1</strong> cuenta</span><span class="mp-top__num">4 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">9</span><span class="mp-top__texto">«científico de datos con experiencia en seguros»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>1</strong> cuenta</span><span class="mp-top__num">2 veces</span></span></li><li class="mp-top__item"><span class="mp-top__pos">10</span><span class="mp-top__texto">«DBA Oracle con turnos 24/7»</span><span class="mp-top__nums"><span class="mp-top__num"><strong>1</strong> cuenta</span><span class="mp-top__num">1 vez</span></span></li></ol></div>
+          <p class="md-nota">La misma lista, con las mismas cifras, la ve Talento Humano en <a class="pp-enlace" href="demanda-top10.html">Demanda</a>. Los correos, teléfonos y nombres del banco que escribió un cliente aparecen enmascarados.</p>
         </section>
       </main>
     </div>
   </div>
+
 </body>
 </html>
