@@ -1,7 +1,7 @@
 // Contrato HTTP de «Incompleto» y del aviso de lenguaje de inventario (EP-003 · sub-slice 2: HU-178,
 // HU-194) contra el servidor standalone real del panel (`ps_panel` por PgBouncer), con el banco
-// ficticio y sus cuatro heredados incompletos (PS-0245 sin SARO, PS-0246 sin SARO ni DISC, PS-0247 sin
-// DISC, PS-0248 sin modalidad). El listado (API y página) marca y filtra sin tocar estado ni portal;
+// ficticio y sus cuatro heredados incompletos (PS-0105 sin SARO, PS-0112 sin SARO ni DISC, PS-0118 sin
+// DISC, PS-0124 sin modalidad). El listado (API y página) marca y filtra sin tocar estado ni portal;
 // editar un incompleto sin completarlo pregunta con el motivo; completarlo lo publica y lo desmarca; el
 // Sello Personal no marca. El guardado devuelve `avisos[]` aparte del rechazo (también con 422 de fecha),
 // en el alta, el borrador y el publicado, sin bloquear publicar. Lo que ve el cliente se lee como
@@ -170,12 +170,12 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
     describe("HU-178 · marca y filtro «Incompleto»", () => {
       it("happy: la API del listado marca los tres ejemplos (SARO, DISC, modalidad) y los deja publicados y en el portal", async () => {
         expect(await marcas()).toEqual({
-          "PS-0245": `Incompleto: falta ${SARO}`,
-          "PS-0246": `Incompleto: falta ${SARO} y la fecha de la evaluación DISC`,
-          "PS-0247": "Incompleto: falta la fecha de la evaluación DISC",
-          "PS-0248": "Incompleto: falta la modalidad de prueba",
+          "PS-0105": `Incompleto: falta ${SARO}`,
+          "PS-0112": `Incompleto: falta ${SARO} y la fecha de la evaluación DISC`,
+          "PS-0118": "Incompleto: falta la fecha de la evaluación DISC",
+          "PS-0124": "Incompleto: falta la modalidad de prueba",
         });
-        for (const c of ["PS-0245", "PS-0246", "PS-0247", "PS-0248"]) {
+        for (const c of ["PS-0105", "PS-0112", "PS-0118", "PS-0124"]) {
           expect((await perfil(c)).estado).toBe("publicado");
           expect(await enPortal(c)).toBeDefined();
         }
@@ -192,7 +192,7 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
         const r = await leer("/inventario?estado=incompleto");
         expect(r.status).toBe(200);
         const html = await r.text();
-        for (const c of ["PS-0245", "PS-0246", "PS-0247", "PS-0248"]) expect(html).toContain(c);
+        for (const c of ["PS-0105", "PS-0112", "PS-0118", "PS-0124"]) expect(html).toContain(c);
         for (const c of ["PS-0142", "PS-0201", "PS-0160"]) expect(html).not.toContain(c);
         expect(html).toContain("Incompleto: falta la modalidad de prueba");
       });
@@ -206,15 +206,15 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
       });
 
       it("error: editar el resumen sin registrar SARO → la pregunta con el motivo (200 al previsualizar, 409 al confirmar); el portal conserva la versión vigente", async () => {
-        const p = await perfil("PS-0245");
-        const antes = await enPortal("PS-0245");
+        const p = await perfil("PS-0105");
+        const antes = await enPortal("PS-0105");
         const pregunta = `Este cambio no se puede publicar mientras falte ${SARO}: ¿descarto el cambio o paso el perfil a borrador?`;
         for (const [consulta, status] of [
           ["?previsualizar", 200],
           ["", 409],
         ] as const) {
           const r = await enviar(
-            `/api/v1/perfiles/PS-0245${consulta}`,
+            `/api/v1/perfiles/PS-0105${consulta}`,
             { resumen: "Resumen nuevo sin SARO." },
             { metodo: "PATCH", version: p.version },
           );
@@ -224,28 +224,28 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
           expect(d.pregunta).toBe(pregunta);
           expect(d.faltaPara).toBe(SARO);
         }
-        expect(await enPortal("PS-0245")).toEqual(antes);
-        expect((await perfil("PS-0245")).version).toBe(p.version);
+        expect(await enPortal("PS-0105")).toEqual(antes);
+        expect((await perfil("PS-0105")).version).toBe(p.version);
       });
 
       it("edge: registrar la fecha DISC → impacto sin pregunta; confirmar lo muestra en el portal y deja de marcarse", async () => {
-        const p = await perfil("PS-0247");
+        const p = await perfil("PS-0118");
         const pre = await enviar(
-          "/api/v1/perfiles/PS-0247?previsualizar",
+          "/api/v1/perfiles/PS-0118?previsualizar",
           { discFecha: "2026-05-04" },
           { metodo: "PATCH", version: p.version },
         );
         expect(pre.status).toBe(200);
         expect((await pre.json()).motivo).toBeUndefined();
         const r = await enviar(
-          "/api/v1/perfiles/PS-0247",
+          "/api/v1/perfiles/PS-0118",
           { discFecha: "2026-05-04" },
           { metodo: "PATCH", version: p.version },
         );
         expect(r.status).toBe(200);
-        expect((await enPortal("PS-0247")).disc).toBe("2026-05-04");
-        expect((await marcas())["PS-0247"]).toBeUndefined();
-        expect((await perfil("PS-0247")).estado).toBe("publicado");
+        expect((await enPortal("PS-0118")).disc).toBe("2026-05-04");
+        expect((await marcas())["PS-0118"]).toBeUndefined();
+        expect((await perfil("PS-0118")).estado).toBe("publicado");
       });
 
       it("edge: un publicado completo sin Sello Personal no se marca; se edita y publica sin registrarlo", async () => {

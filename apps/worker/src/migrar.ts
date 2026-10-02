@@ -2,6 +2,8 @@
 // `--sembrar-ficticios` siembra los perfiles ficticios, las modalidades de prueba y las consultas sin
 // coincidencia sintéticas y sale (local, CI y staging; EP-001 3.2, EP-006 1.8). Cada dato con el rol que
 // lo escribe en producción: el del worker ya no escribe consentimientos ni catálogos (ADR-0009, 0026).
+// Con `--heredados-incompletos` además siembra los cuatro publicados heredados sin SARO, DISC o
+// modalidad (HU-178; opcional, para la demo del panel: no mueve los conteos del banco base).
 // Falla (código ≠ 0) si no puede aplicar; admite la BD por delante y lo registra.
 // `MIGRAR_HASTA=<nombre>` aplica solo hasta esa migración (incluida): es el primer paso de un
 // expand/contract con datos que mueve el worker entre medias (EP-006 9.1: `MIGRAR_HASTA=0020_colocaciones`,
@@ -9,7 +11,7 @@
 import pg from "pg";
 import { exigirConfiguracion } from "@ps/infra/config";
 import { MIGRACIONES, migrarHastaElFinal } from "@ps/infra/postgres/migrar";
-import { sembrarFicticios } from "./sembrar-ficticios";
+import { sembrarFicticios, sembrarHeredadosIncompletos } from "./sembrar-ficticios";
 import { sembrarLexicoFicticio } from "./sembrar-lexico";
 
 const registrar = (e: Record<string, unknown>) =>
@@ -30,6 +32,13 @@ if (process.argv.includes("--sembrar-ficticios")) {
       registrar,
     });
     await sembrarLexicoFicticio({ bd: panel, candidatas: worker, appEnv: c.APP_ENV, registrar });
+    if (process.argv.includes("--heredados-incompletos"))
+      await sembrarHeredadosIncompletos({
+        bd: panel,
+        auditoria: { hmac: c.AUDIT_HMAC_KEY!, kek: c.AUDIT_KEK! },
+        appEnv: c.APP_ENV,
+        registrar,
+      });
     await Promise.all([panel.end(), worker.end()]);
     process.exit(0);
   } catch (e) {

@@ -207,10 +207,11 @@ export const PERFILES_FICTICIOS: PerfilFicticio[] = [
 // Publicados heredados incompletos (HU-178, HU-191; D62): se publicaron antes de que la guarda exigiera
 // las validaciones de entrada y les falta alguna. Siembra aparte y opcional (`sembrarHeredadosIncompletos`)
 // para no mover los conteos que fijan los tests y e2e del banco ficticio. Roles propios, que no comparten
-// con el banco base.
+// con el banco base. Códigos por debajo del mayor del banco base: el editor numera desde el mayor + 1,
+// así que sembrarlos tarde nunca choca con un perfil creado por el panel.
 export const HEREDADOS_INCOMPLETOS: PerfilFicticio[] = [
   {
-    codigo: "PS-0245",
+    codigo: "PS-0105",
     nombre: "Ricardo",
     primerApellido: "Mejía",
     estado: "publicado",
@@ -226,7 +227,7 @@ export const HEREDADOS_INCOMPLETOS: PerfilFicticio[] = [
     disponibleEnDias: 14,
   },
   {
-    codigo: "PS-0246",
+    codigo: "PS-0112",
     nombre: "Paula",
     primerApellido: "Cárdenas",
     estado: "publicado",
@@ -242,7 +243,7 @@ export const HEREDADOS_INCOMPLETOS: PerfilFicticio[] = [
     disponibleEnDias: 7,
   },
   {
-    codigo: "PS-0247",
+    codigo: "PS-0118",
     nombre: "Esteban",
     primerApellido: "Salazar",
     estado: "publicado",
@@ -258,7 +259,7 @@ export const HEREDADOS_INCOMPLETOS: PerfilFicticio[] = [
     disponibleEnDias: 0,
   },
   {
-    codigo: "PS-0248",
+    codigo: "PS-0124",
     nombre: "Juliana",
     primerApellido: "Ospina",
     estado: "publicado",
@@ -495,8 +496,8 @@ export async function sembrarFicticios(
   return { creados };
 }
 
-// Los cuatro heredados incompletos (PS-0245 sin SARO, PS-0246 sin SARO ni DISC, PS-0247 sin DISC,
-// PS-0248 sin modalidad de prueba), con los catálogos del banco base. Mismas garantías: nunca en
+// Los cuatro heredados incompletos (PS-0105 sin SARO, PS-0112 sin SARO ni DISC, PS-0118 sin DISC,
+// PS-0124 sin modalidad de prueba), con los catálogos del banco base. Mismas garantías: nunca en
 // producción, idempotente y auditado.
 export const sembrarHeredadosIncompletos = (ctx: ContextoFicticios) =>
   sembrarFicticios(ctx, HEREDADOS_INCOMPLETOS);

@@ -116,7 +116,7 @@ describe.skipIf(!HAY_BD)(
       ).rows;
       expect(filas).toEqual([
         {
-          codigo: "PS-0245",
+          codigo: "PS-0105",
           estado: "publicado",
           sin_alcance: true,
           sin_saro: true,
@@ -124,7 +124,7 @@ describe.skipIf(!HAY_BD)(
           sin_modalidad: false,
         },
         {
-          codigo: "PS-0246",
+          codigo: "PS-0112",
           estado: "publicado",
           sin_alcance: true,
           sin_saro: true,
@@ -132,7 +132,7 @@ describe.skipIf(!HAY_BD)(
           sin_modalidad: false,
         },
         {
-          codigo: "PS-0247",
+          codigo: "PS-0118",
           estado: "publicado",
           sin_alcance: false,
           sin_saro: false,
@@ -140,7 +140,7 @@ describe.skipIf(!HAY_BD)(
           sin_modalidad: false,
         },
         {
-          codigo: "PS-0248",
+          codigo: "PS-0124",
           estado: "publicado",
           sin_alcance: false,
           sin_saro: false,

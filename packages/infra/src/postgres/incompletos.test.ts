@@ -68,14 +68,14 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
   describe("tarea 2.2 · marca en el listado", () => {
     it("happy: cada heredado se marca con lo que le falta, sigue publicado y visible en el portal", async () => {
       expect(await marcas()).toEqual({
-        "PS-0245": "Incompleto: falta la verificación SARO (alcance y fecha)",
-        "PS-0246":
+        "PS-0105": "Incompleto: falta la verificación SARO (alcance y fecha)",
+        "PS-0112":
           "Incompleto: falta la verificación SARO (alcance y fecha) y la fecha de la evaluación DISC",
-        "PS-0247": "Incompleto: falta la fecha de la evaluación DISC",
-        "PS-0248": "Incompleto: falta la modalidad de prueba",
+        "PS-0118": "Incompleto: falta la fecha de la evaluación DISC",
+        "PS-0124": "Incompleto: falta la modalidad de prueba",
       });
       const filas = await listarInventario(panel);
-      for (const c of ["PS-0245", "PS-0246", "PS-0247", "PS-0248"]) {
+      for (const c of ["PS-0105", "PS-0112", "PS-0118", "PS-0124"]) {
         expect(filas.find((f) => f.codigo === c)?.estado).toBe("publicado");
         expect(await enPortal(c)).toBeDefined();
       }
@@ -113,14 +113,14 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
 
   describe("tarea 2.3 · editar un publicado incompleto", () => {
     it("error: cambiar el resumen sin registrar SARO → la pregunta de D1 con lo que falta; nada se escribe", async () => {
-      const p = (await leerPerfil(panel, "PS-0245"))!;
-      const antes = await enPortal("PS-0245");
+      const p = (await leerPerfil(panel, "PS-0105"))!;
+      const antes = await enPortal("PS-0105");
       for (const previsualizar of [true, false]) {
         const r = await editarPublicado(
           panel,
           claves,
           autor,
-          "PS-0245",
+          "PS-0105",
           p.version,
           { resumen: "Resumen nuevo sin SARO." },
           { previsualizar },
@@ -128,20 +128,20 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
         );
         expect(r.resultado).toBe("deja_incompleto");
       }
-      expect(await enPortal("PS-0245")).toEqual(antes);
-      expect((await leerPerfil(panel, "PS-0245"))!.version).toBe(p.version);
-      expect((await marcas())["PS-0245"]).toBe(
+      expect(await enPortal("PS-0105")).toEqual(antes);
+      expect((await leerPerfil(panel, "PS-0105"))!.version).toBe(p.version);
+      expect((await marcas())["PS-0105"]).toBe(
         "Incompleto: falta la verificación SARO (alcance y fecha)",
       );
     });
 
     it("edge: registrar la fecha DISC y confirmar → el cambio se ve en el portal y deja de marcarse", async () => {
-      const p = (await leerPerfil(panel, "PS-0247"))!;
+      const p = (await leerPerfil(panel, "PS-0118"))!;
       const pre = await editarPublicado(
         panel,
         claves,
         autor,
-        "PS-0247",
+        "PS-0118",
         p.version,
         { discFecha: "2026-05-04" },
         { previsualizar: true },
@@ -152,7 +152,7 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
         panel,
         claves,
         autor,
-        "PS-0247",
+        "PS-0118",
         p.version,
         { discFecha: "2026-05-04" },
         {},
@@ -160,10 +160,10 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
       );
       expect(r.resultado).toBe("aplicado");
       const disc = await portal.query(
-        `SELECT disc_fecha::text AS d FROM operacion.ficha_publicable WHERE codigo = 'PS-0247'`,
+        `SELECT disc_fecha::text AS d FROM operacion.ficha_publicable WHERE codigo = 'PS-0118'`,
       );
       expect(disc.rows[0].d).toBe("2026-05-04");
-      expect((await marcas())["PS-0247"]).toBeUndefined();
+      expect((await marcas())["PS-0118"]).toBeUndefined();
     });
   });
 
@@ -188,9 +188,9 @@ describe.skipIf(!HAY_BD)("«Incompleto» y su conteo (HU-178)", () => {
           )
         ).rows[0].id as string;
       const completar = {
-        "PS-0245": { saroAlcanceId: alcance, saroFecha: "2026-03-01" },
-        "PS-0246": { saroAlcanceId: alcance, saroFecha: "2026-03-01", discFecha: "2026-03-02" },
-        "PS-0248": { modalidadPruebaId: await prueba("PS-0248") },
+        "PS-0105": { saroAlcanceId: alcance, saroFecha: "2026-03-01" },
+        "PS-0112": { saroAlcanceId: alcance, saroFecha: "2026-03-01", discFecha: "2026-03-02" },
+        "PS-0124": { modalidadPruebaId: await prueba("PS-0124") },
       } as const;
       for (const [codigo, e] of Object.entries(completar)) {
         const p = (await leerPerfil(panel, codigo))!;
