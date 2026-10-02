@@ -443,7 +443,8 @@ export default async function Colocados({
             </div>
             <p className="cl-pie">
               El panel es la fuente: una fila de Operaciones nunca pisa un colocado registrado aquí.
-              El cliente ve la banda, nunca la fecha ni la cuenta.
+              En el banco el cliente ve la banda, nunca la fecha ni la cuenta; en la selección de su
+              correo, la fecha en que se libera.
             </p>
           </>
         )}

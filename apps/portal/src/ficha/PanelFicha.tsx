@@ -31,7 +31,9 @@ function Flecha(p: { href: string | null; etiqueta: string; atajo: string; d: st
 }
 
 export function PanelFicha(p: {
-  ficha: Ficha;
+  // `null`: el perfil está en la lista pero su ficha no puede mostrarse (dato heredado incompleto o
+  // dejó de publicarse): el panel se abre igual y lo dice, nunca una recarga muda (Release Gate R0).
+  ficha: Ficha | null;
   recorrido: Recorrido;
   lista: string;
   href: (codigo: string | null) => string;
@@ -72,7 +74,20 @@ export function PanelFicha(p: {
   return (
     <>
       <a className="pp-hoja-velo" href={cerrar} aria-hidden="true" tabIndex={-1} />
-      <FichaPerfil ficha={p.ficha} barra={barra} dialogo />
+      {p.ficha ? (
+        <FichaPerfil ficha={p.ficha} barra={barra} dialogo />
+      ) : (
+        <article className="pp-hoja fp-ficha" aria-labelledby="fp-titulo" role="dialog" aria-modal id="ficha">
+          {barra}
+          <header className="pp-hoja__cabecera">
+            <h2 id="fp-titulo">Esta ficha se está actualizando</h2>
+            <p>Talento Humano está completando los datos de este perfil.</p>
+          </header>
+          <div className="pp-hoja__cuerpo">
+            <p>Puedes seguir con los demás perfiles de la lista y volver a abrirla más tarde.</p>
+          </div>
+        </article>
+      )}
       <AtajosFicha anterior={enlaceDe(anterior)} siguiente={enlaceDe(siguiente)} cerrar={cerrar} />
     </>
   );
