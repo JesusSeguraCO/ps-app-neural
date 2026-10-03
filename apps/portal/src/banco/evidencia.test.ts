@@ -2,7 +2,7 @@
 // misma comparación que filtra la lista— y, si llegara un tipo sin plantilla, el registro técnico con el
 // tipo (D96), una vez por tipo y sin datos del perfil.
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { textoDeLinea } from "@ps/dominio/catalogo/evidencia";
+import { textoDeLinea } from "@ps/dominio/pruebas/evidencia";
 import { evidenciaDelBanco, registrarSinPlantilla } from "./evidencia";
 
 const perfiles = [

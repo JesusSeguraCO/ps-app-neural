@@ -5,9 +5,9 @@ import {
   criteriosDelFiltro,
   lineaDeEvidencia,
   lineasDeEvidencia,
-  textoDeLinea,
   type CriterioResuelto,
 } from "./evidencia";
+import { textoDeLinea } from "../pruebas/evidencia";
 
 const c = (
   tipo: string,

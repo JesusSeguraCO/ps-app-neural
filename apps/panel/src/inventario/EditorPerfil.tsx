@@ -41,6 +41,7 @@ import { BuscadorCatalogo, type ValorElegible } from "./BuscadorCatalogo";
 import type { PerfilParaFicha } from "./ficha";
 import { VistaPrevia } from "./VistaPrevia";
 import { AvisarTalentoHumano } from "./Avisar";
+import { ANCLA_CONDICION, VALIDACION_ENTRADA } from "./anclas";
 
 type Rol = OpcionesEditor["roles"][number];
 type Experiencia = ExperienciaEntrada & { clave: string };
@@ -70,17 +71,6 @@ const ERROR_CAMPO: Record<CampoObligatorio, { id: string; texto: string }> = {
   trayectoria: { id: "pe-trayectoria", texto: "Falta al menos una experiencia." },
 };
 
-// Campo del editor de cada condición de publicar (el salto de «Falta …» y del lateral).
-const ANCLA_CONDICION: Record<ClaveCondicion, string> = {
-  consentimiento: "consentimiento",
-  trayectoria: "pe-trayectoria",
-  disponibilidad: "pe-disp",
-  modalidad_prueba: "pe-prueba",
-  saro_alcance: "pe-saro-alcance",
-  saro_fecha: "pe-saro-fecha",
-  disc_fecha: "pe-disc-fecha",
-};
-const VALIDACION_ENTRADA = new Set<ClaveCondicion>(["saro_alcance", "saro_fecha", "disc_fecha"]);
 
 const MOTIVO: Record<string, string> = {
   fecha_verificacion_futura: MENSAJE_FECHA_FUTURA,
@@ -524,7 +514,7 @@ export function EditorPerfil(p: {
       (d.campo === "saroFecha" || d.campo === "discFecha")
     ) {
       setErrorFecha({ campo: d.campo, texto: MOTIVO[d.motivo]! });
-      irA(d.campo === "saroFecha" ? "pe-saro-fecha" : "pe-disc-fecha");
+      irA(ANCLA_CONDICION[d.campo === "saroFecha" ? "saro_fecha" : "disc_fecha"]);
     }
   }
 

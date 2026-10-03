@@ -8,10 +8,10 @@ import { useEffect, useState } from "react";
 import {
   MOTIVO_CONDICION,
   OPCIONES_DISPONIBILIDAD,
-  type ClaveCondicion,
 } from "@ps/dominio/inventario/perfil";
 import { enviarJson } from "../acceso/cliente";
 import { bandaCliente, cuerpoDisponibilidad, type EleccionDisponibilidad } from "./EstadoEnLista";
+import { ANCLA_CONDICION, esValidacionDeEntrada } from "./anclas";
 
 const CLAVE = "pp-publicacion-masiva";
 // Disponibilidad en bloque (HU-132 edge): el resultado se muestra por perfil tras recargar.
@@ -227,12 +227,6 @@ export function BarraSeleccion() {
   );
 }
 
-const CAMPO_DE_ENTRADA: Record<string, string> = {
-  saro_alcance: "pe-saro-alcance",
-  saro_fecha: "pe-saro-fecha",
-  disc_fecha: "pe-disc-fecha",
-};
-
 // Motivo y salida de un perfil que no se publicó.
 function motivo(f: Fallo): { nota: string; accion: string; href: string } {
   const editor = `/inventario/${f.codigo}`;
@@ -283,10 +277,12 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
     if (notas.length === 1) accion = { accion: "Elegir modalidad", href: `${editor}#pe-prueba` };
   }
   // Validaciones de entrada (HU-176): cada una con su «Falta …» exacto y el salto a su campo.
-  const entradas = (f.condiciones ?? []).filter((c) => c.clave in CAMPO_DE_ENTRADA);
-  for (const c of entradas) notas.push(`Falta ${MOTIVO_CONDICION[c.clave as ClaveCondicion]}.`);
+  const entradas = (f.condiciones ?? [])
+    .map((c) => c.clave)
+    .filter(esValidacionDeEntrada);
+  for (const c of entradas) notas.push(`Falta ${MOTIVO_CONDICION[c]}.`);
   if (entradas.length && notas.length === entradas.length)
-    accion = { accion: "Completar las validaciones", href: `${editor}#${CAMPO_DE_ENTRADA[entradas[0]!.clave]}` };
+    accion = { accion: "Completar las validaciones", href: `${editor}#${ANCLA_CONDICION[entradas[0]!]}` };
   const datos = f.faltanDatos ?? [];
   if (datos.length)
     notas.push(`Faltan datos: ${datos.map((x) => x.etiqueta.toLowerCase()).join(", ")}.`);

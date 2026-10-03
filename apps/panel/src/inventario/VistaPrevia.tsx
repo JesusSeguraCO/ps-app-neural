@@ -18,6 +18,7 @@ import {
 import { faltaDe, type EvaluacionPublicacion } from "@ps/dominio/inventario/perfil";
 import { FichaPerfil, type MarcasFicha } from "@ps/ui/FichaPerfil";
 import { datosFichaDePerfil, type PerfilParaFicha } from "./ficha";
+import { ANCLA_CONDICION, esValidacionDeEntrada } from "./anclas";
 
 const NECESIDAD: Record<Necesidad, string> = {
   remota: "Remota",
@@ -47,13 +48,6 @@ const OPCIONAL: Record<BloqueOpcional, string> = {
   formacion: "Formación",
   idiomas: "Idiomas",
   sectores: "Sectores",
-};
-
-// Dónde se completa cada bloque en el editor.
-const CAMPO_DE_ENTRADA: Record<string, string> = {
-  saro_alcance: "pe-saro-alcance",
-  saro_fecha: "pe-saro-fecha",
-  disc_fecha: "pe-disc-fecha",
 };
 
 const CAMPO_DE_BLOQUE: Record<BloqueFicha, string> = {
@@ -122,7 +116,7 @@ export function VistaPrevia(p: {
   );
   // Validaciones de entrada que faltan (HU-176): «Falta …» con su campo del editor.
   const entradas = p.evaluacion.condiciones.filter(
-    (c) => !c.cumple && c.clave in CAMPO_DE_ENTRADA,
+    (c) => !c.cumple && esValidacionDeEntrada(c.clave),
   );
   const vacios = opcionalesVacios(ficha);
   const primero = incompletos[0];
@@ -199,7 +193,7 @@ export function VistaPrevia(p: {
             <button
               type="button"
               className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
-              onClick={() => p.alVolver(CAMPO_DE_ENTRADA[entradas[0]!.clave])}
+              onClick={() => p.alVolver(ANCLA_CONDICION[entradas[0]!.clave])}
             >
               Ir al campo
             </button>

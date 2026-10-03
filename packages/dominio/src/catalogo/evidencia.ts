@@ -113,8 +113,6 @@ export function lineasDeEvidencia(criterios: readonly CriterioResuelto[]): Linea
   return criterios.map(lineaDeEvidencia);
 }
 
-export const textoDeLinea = (l: LineaEvidencia) => `${l.marca} ${l.texto}`;
-
 interface Clasificable {
   codigo: string;
   familia: string | null;

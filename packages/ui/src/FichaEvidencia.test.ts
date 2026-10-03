@@ -4,7 +4,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { armarFicha, type DatosFicha } from "@ps/contratos/ficha";
-import { lineasDeEvidencia, textoDeLinea } from "@ps/dominio/catalogo/evidencia";
+import { lineasDeEvidencia } from "@ps/dominio/catalogo/evidencia";
+import { textoDeLinea } from "@ps/dominio/pruebas/evidencia";
 import { FichaPerfil } from "./FichaPerfil";
 
 const datos: DatosFicha = {
