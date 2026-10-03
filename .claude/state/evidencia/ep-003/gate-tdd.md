@@ -1,6 +1,7 @@
 # EP-003 · gate tdd (cierre de la épica)
 
-- sha HEAD: e5ceb698a274f3f45917b44717d2b578d39750c4 (código de apps/ y packages/ idéntico al del runner y de las mutaciones; desde entonces solo e2e, tests/postman y evidencia)
+- sha HEAD: e5ceb698a274f3f45917b44717d2b578d39750c4 (sha de redacción de este gate)
+- Corrección (verificación adversarial, pasada 1, hallazgo 3): después de e5ceb69 **sí** cambió código: d751aa1 tocó `packages/dominio/src/importacion/plan.ts` y su test (`git diff --stat e5ceb69..f939e1d -- apps packages` → 2 ficheros). Queda cubierto: el runner corrió la suite completa en 9c04167, que ya incluye d751aa1 (`gate-journey-smoke.md`), y la pasada 1 (`wiring-pasada-1.md` §4) mató tres mutantes propios sobre esa refactorización (`faltasDePublicado` sin condiciones → 2 fallan; sin faltanDatos → 2 fallan; devuelve [] → 6 fallan). El cierre (anclas compartidas del panel y ayuda `textoDeLinea` movida a los tests) se re-ejecuta en `cierre-suite.md`.
 - rama: feature/ep-003-evidencia-del-perfil
 - hora: 2026-10-02T22:38:48Z
 - suite completa ejecutada en sha 71305dac2f3f5c380721dc2b27319762924cc86e por el runner fuera del chat (`runner-integracion.md`); cambios en apps/ y packages/ entre ese sha y HEAD: ninguno (solo e2e/tests/evidencia)

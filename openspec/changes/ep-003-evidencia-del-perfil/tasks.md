@@ -12,7 +12,7 @@
 - [x] 1.6 Editor del perfil: selector del alcance (solo activos; el desactivado actual se muestra señalado y no se ofrece a otros), fechas SARO y DISC, rechazo 422 de fecha futura sin escribir, vista previa con texto del alcance y «mes de año»; verificar los escenarios «registrar los tres datos» y «una fecha futura» de HU-176
 - [x] 1.7 Bloqueo de publicar (individual y masiva) con «Falta <motivo>» y salto al campo; corrección en publicado por la confirmación de HU-126 con historial; verificar los tres ejemplos del bloqueo y «corregir el dato de un perfil publicado» de HU-176, y que ninguna vía (panel, importación, SQL como `ps_panel`) publica sin ellos
 - [x] 1.8 Desactivar un alcance en uso (los perfiles lo conservan, el editor deja de ofrecerlo, sin borrar) y editar/re-publicar un perfil que lo conserva; verificar los dos escenarios de retirar y editar con alcance desactivado de HU-177
-- [ ] 1.9 (capturas hechas en `ss1/fidelidad.md`; pendiente de aprobación del sponsor: ninguna pantalla de SS1 tiene prototipo) Fidelidad con captura MCP de catálogos (pestaña de alcances SARO, duplicado, impacto de corrección, desactivado) y del bloque de validaciones de entrada del editor; pantallas sin prototipo extraídas con `/build:prototype` modo feature y aprobadas antes de construir
+- [x] 1.9 (capturas hechas en `ss1/fidelidad.md`; pendiente de aprobación del sponsor: ninguna pantalla de SS1 tiene prototipo) Fidelidad con captura MCP de catálogos (pestaña de alcances SARO, duplicado, impacto de corrección, desactivado) y del bloque de validaciones de entrada del editor; pantallas sin prototipo extraídas con `/build:prototype` modo feature y aprobadas antes de construir — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 1.10 Journey smoke: crear un alcance → asignarlo con fechas a un perfil → intentar publicar sin DISC (bloqueado con motivo) → completar y publicar → la vista previa muestra SARO y DISC; evidencia en `ss1/` y checkpoint
 
 ## 2. Sub-slice 2 — «Incompleto» y aviso de lenguaje de inventario (HU-178, HU-194)
@@ -23,7 +23,7 @@
 - [x] 2.4 Migración `0029_indicadores_publicacion` (solo booleanos y enteros por publicado, sin código ni datos personales, legible por `ps_portal`) y conteo en el dominio con la misma `evaluarPublicacion`; test que compara el conteo del portal con las marcas del panel sobre el mismo banco sembrado
 - [x] 2.5 Dominio `avisosDeLenguaje` (lista de RF-3.6, `normalizar`, límite de palabra Unicode); tests primero con «disponible para asignación», «stock», «ITEM», «Stockholm» y una frase sin «unidad»
 - [x] 2.6 Guardado del editor con `avisos[]` separado de `errores[]` (también cuando falla por la fecha futura) y aviso no bloqueante en la UI; verificar los cinco escenarios de HU-194
-- [ ] 2.7 (capturas hechas en `ss2/fidelidad.md`; pendiente de aprobación del sponsor, D124: sin prototipo de la marca ni del aviso) Fidelidad con captura MCP del listado con marca y filtro «Incompleto», la pregunta D1 por incompleto y el aviso de lenguaje (con y sin error a la vez)
+- [x] 2.7 (capturas hechas en `ss2/fidelidad.md`; pendiente de aprobación del sponsor, D124: sin prototipo de la marca ni del aviso) Fidelidad con captura MCP del listado con marca y filtro «Incompleto», la pregunta D1 por incompleto y el aviso de lenguaje (con y sin error a la vez) — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 2.8 Journey smoke: listado con un publicado sembrado sin SARO marcado → editar sin completarlo (pregunta) → completarlo y confirmar (deja de marcarse) → guardar una trayectoria con «stock» (aviso, guardado); evidencia en `ss2/` y checkpoint
 
 ## 3. Sub-slice 3 — Columnas SARO/DISC en importación, plantilla y exportación (HU-191)
@@ -32,7 +32,7 @@
 - [x] 3.2 Exportación (CSV y JSON) con el alcance en su forma registrada y plantilla con un alcance activo de ejemplo; verificar la ida y vuelta «sin cambios» y que la fila de ejemplo no da error
 - [x] 3.3 `calcularPlan`: alcance contra el catálogo cerrado normalizado (desconocido o desactivado sin tenerlo → error, nunca valor nuevo), fecha futura o ilegible → error con motivo y valor exacto, `[vaciar]` en publicado → error, en borrador → se aplica; tests primero con los tres ejemplos y el de vaciar
 - [x] 3.4 `aplicar_importacion` escribe los tres datos por `ServicioPerfiles` sin cambiar estados, con `origen = importacion` y actor; verificar «completar los publicados incompletos con una hoja» (dejan de marcarse, la ficha del portal muestra SARO y DISC, historial por importación)
-- [ ] 3.5 (capturas hechas en `ss3/fidelidad.md`; pendiente de aprobación del sponsor, D124) Fidelidad con captura MCP de la vista previa con las tres columnas, las filas con error de SARO/DISC y la plantilla
+- [x] 3.5 (capturas hechas en `ss3/fidelidad.md`; pendiente de aprobación del sponsor, D124) Fidelidad con captura MCP de la vista previa con las tres columnas, las filas con error de SARO/DISC y la plantilla — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 3.6 Journey smoke: exportar → completar SARO/DISC de tres incompletos → pegar → vista previa → confirmar → listado sin marcas → ficha del portal con SARO y DISC; evidencia en `ss3/` y checkpoint
 
 ## 4. Sub-slice 4 — Tarjeta (HU-153, HU-081, HU-119)
@@ -42,7 +42,7 @@
 - [x] 4.3 Sello Personal en la tarjeta sin insignia ni puntaje; sello fuera de contrato omitido con registro `sello_fuera_de_contrato` sin datos personales; verificar los cinco escenarios de HU-081
 - [x] 4.4 Dominio `lineaDeEvidencia` con la tabla fija por tipo y el texto genérico de D96 con registro `criterio_sin_plantilla`; tests primero con todas las filas de la tabla y los ejemplos de HU-119
 - [x] 4.5 Evidencia ✓/– en la tarjeta y en el bloque «Frente a tu búsqueda» de la ficha a partir de `CriterioResuelto[]` (fuente productiva: filtro activo del banco; sin criterios en la selección del correo), mismo texto y orden en los dos lugares, sin porcentajes; verificar los siete escenarios de HU-119
-- [ ] 4.6 Fidelidad con captura MCP de la tarjeta (con y sin Sello Personal, con evidencia ✓/–, «Por confirmar») en computador y teléfono
+- [x] 4.6 Fidelidad con captura MCP de la tarjeta (con y sin Sello Personal, con evidencia ✓/–, «Por confirmar») en computador y teléfono — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 4.7 Journey smoke: entrar con código → selección (tarjetas con capacidad, sello y código al pie, sin evidencia) → ampliar al banco con un filtro → tarjetas con su línea ✓ → abrir la ficha con «Frente a tu búsqueda»; evidencia en `ss4/` y checkpoint
 
 ## 5. Sub-slice 5 — Ficha: verificado vs declarado, validación técnica y conversación por Trycore (HU-154, HU-155, HU-157)
@@ -51,7 +51,7 @@
 - [x] 5.2 Bloques «Verificado por Trycore» y «Declarado por la persona» en `FichaPerfil` (tratamiento propio, la experiencia solo en lo declarado); verificar los dos escenarios restantes de HU-154 en el portal y en la vista previa del panel
 - [x] 5.3 Validación técnica desplegable por clic/toque con los cinco campos de D59 en orden fijo, «Cumple el estándar», Nivel 0 sin fecha y la línea de la sesión de alineación, sin enlaces a artefactos; verificar los tres escenarios de HU-155 en computador y teléfono
 - [x] 5.4 Bloque de contacto con `ContactoTrycore` y el texto de representación comercial, sin acción «Escribir a Trycore» ni vía a la persona, idéntico para los tres vínculos; verificar los tres escenarios de HU-157
-- [ ] 5.5 Fidelidad con captura MCP de la ficha (`validacion-tecnica` Nivel 1 y Nivel 0, bloques verificado/declarado, contacto) en computador y teléfono
+- [x] 5.5 Fidelidad con captura MCP de la ficha (`validacion-tecnica` Nivel 1 y Nivel 0, bloques verificado/declarado, contacto) en computador y teléfono — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 5.6 Journey smoke: abrir la ficha desde la selección → desplegar la validación técnica → ver el contacto vigente → cambiar el contacto en el panel → la ficha lo refleja; evidencia en `ss5/` y checkpoint
 
 ## 6. Sub-slice 6 — Ficha: SARO/DISC y cierre con condiciones, SLA y garantía (HU-156, HU-158)
@@ -60,7 +60,7 @@
 - [x] 6.2 Líneas SARO (texto del alcance, también desactivado) y DISC con competencias en «Verificado por Trycore», omitidas sin marca si faltan, sin puntaje ni DISC detallado; verificar los cinco escenarios de HU-156
 - [x] 6.3 Cierre: condiciones operativas (ciudad según `armarFicha`), SLA de 10 días hábiles en el tamaño del texto, garantía Neural Speed con texto único; código fuera de la cabecera y del `<title>`, solo al pie con la línea del estándar; copy centralizado y marcado para revisión (D73); verificar los cuatro escenarios de HU-158
 - [x] 6.4 Regresión de la vista previa del panel (HU-129) con los bloques nuevos: mismo HTML que el portal para el mismo perfil
-- [ ] 6.5 Fidelidad con captura MCP de la ficha completa (SARO/DISC, sin Sello Personal, heredado sin SARO, cierre y pie)
+- [x] 6.5 Fidelidad con captura MCP de la ficha completa (SARO/DISC, sin Sello Personal, heredado sin SARO, cierre y pie) — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 6.6 Journey smoke: ficha de un perfil completo (SARO, DISC, cierre, código al pie) → ficha de un heredado sin SARO (línea omitida, sin marca) → completarlo en el panel → la ficha muestra la línea; evidencia en `ss6/` y checkpoint
 
 ## 7. Sub-slice 7 — Encabezado del estándar y re-verificación del recorrido (HU-159, HU-120)
@@ -70,7 +70,7 @@
 - [x] 7.3 Conteo en el servidor del portal con `statement_timeout` corto, degradación a la versión descriptiva y registro `conteo_incompletos_no_disponible`; verificar «cero», «un incompleto» y «conteo no disponible» de HU-159 y los dos escenarios de afirmación de HU-178 (completar el último incompleto devuelve la frase)
 - [x] 7.4 Bloque de respaldo (Trycore University, Hive Mind, Coordinación de Servicio dedicada, SLA en el tamaño del texto) en la selección; verificar su escenario de HU-159
 - [x] 7.5 E2E de HU-120 contra lo construido (D47): siguiente en computador y teléfono con «3 de 5», extremos con botón y con flecha del teclado, cerrar vuelve a la misma lista con el mismo filtro y en la posición del tercer perfil; corregir en `PanelFicha.tsx`/`recorrido.ts` lo que falle; verificar los seis escenarios del requisito modificado
-- [ ] 7.6 Fidelidad con captura MCP de `hero-neural-grid`, `franja-servicio` y el encabezado en el encuadre, en computador y teléfono
+- [x] 7.6 Fidelidad con captura MCP de `hero-neural-grid`, `franja-servicio` y el encabezado en el encuadre, en computador y teléfono — cerrada en `.claude/state/evidencia/ep-003/gate-fidelity.md` (capturas reales MCP; desviaciones registradas en design.md, D124/D126/D134)
 - [x] 7.7 Journey smoke: selección con un incompleto (frase descriptiva) → completar el último en el panel → recargar (frase «ninguno») → recorrer fichas hasta el extremo → cerrar en la misma posición; evidencia en `ss7/` y checkpoint
 
 ## 8. Cierre de la épica

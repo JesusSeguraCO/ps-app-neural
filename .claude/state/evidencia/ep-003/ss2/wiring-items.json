@@ -4,6 +4,7 @@
   {"item_id": "HU-178-ac1c-incompleto-sin-modalidad", "kind": "hu_ac", "ref": "HU-178"},
   {"item_id": "HU-178-ac2-editar-sin-completar", "kind": "hu_ac", "ref": "HU-178"},
   {"item_id": "HU-178-ac3-completar-lo-que-falta", "kind": "hu_ac", "ref": "HU-178"},
+  {"item_id": "HU-178-ac4-ultimo-incompleto-devuelve-afirmacion", "kind": "hu_ac", "ref": "HU-178"},
   {"item_id": "HU-178-ac5-sello-no-marca", "kind": "hu_ac", "ref": "HU-178"},
   {"item_id": "HU-194-ac1-aviso-no-bloquea", "kind": "hu_ac", "ref": "HU-194"},
   {"item_id": "HU-194-ac2-aviso-con-error-de-fecha", "kind": "hu_ac", "ref": "HU-194"},
