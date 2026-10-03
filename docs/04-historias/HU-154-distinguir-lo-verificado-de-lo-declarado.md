@@ -56,6 +56,8 @@ Cubre **RF-3.12** (verificado contra autoreportado, marcado visualmente), **RF-3
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.4 · RF-3.6 · RF-3.7 · RF-3.9 · RF-3.12 · B.4 · D20 y D47 de EP-006 · D63 · D73 · validación 2026-10-02 (el aviso del panel sale a HU-194) · se apoya en HU-127 (clientes nombrados según consentimiento) y HU-129 (la vista previa usa este mismo componente) · habilita HU-155 y HU-156 (contenido del bloque verificado)
 
 ## INVEST

@@ -1,0 +1,18 @@
+S1 la validación cita la trayectoria: rc=1 · 1 failed | 12 passed (13)
+S2 resultado con el texto libre (puntaje): rc=1 · 2 failed | 11 passed (13)
+S3 orden de campos distinto: rc=1 · 1 failed | 12 passed (13)
+S4 fecha sin mes de año: rc=1 · 2 failed | 11 passed (13)
+S7 sin la línea de alineación: rc=1 · 1 failed | 12 passed (13)
+S8 alineación también en Nivel 0: rc=1 · 1 failed | 12 passed (13)
+S12 acción «Escribir a Trycore»: rc=1 · 1 failed | 12 passed (13)
+S5 plegada por omisión: rc=1 · 2 failed | 16 passed (18)
+S6 Nivel 0 con fecha pendiente: rc=1 · 2 failed | 16 passed (18)
+S9 enlace al artefacto: rc=1 · 3 failed | 15 passed (18)
+S10 el portal no pasa el contacto: rc=1 · 2 failed | 3 passed (5)
+S11 sin el respaldo de Trycore: rc=1 · 2 failed | 16 passed (18)
+S13 el vínculo se insinúa: rc=1 · 1 failed | 4 passed (5)
+S14 la motivación cruza por el catálogo: rc=1 · 1 failed | 4 passed (5)
+S15 el contacto no se relee: rc=1 · 1 failed | 4 passed (5)
+S16 la vista previa sin contacto: rc=1 · 1 failed
+S17 recorrido: validación no desplegable: rc=1 · 1 failed
+restaurado

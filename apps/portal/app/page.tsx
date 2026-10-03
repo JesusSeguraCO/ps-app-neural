@@ -4,9 +4,11 @@
 import { categoriasDeSeleccion } from "@ps/dominio/enlaces/seleccion";
 import { enLetras, avisoCambios, resumenFamilias, tituloSeleccion } from "@ps/dominio/enlaces/textos-seleccion";
 import { fechaDeColombia } from "@ps/dominio/fecha/colombia";
-import { conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
-import { datosDelBanco, datosDelEnlace, fichaDe } from "../src/banco/datos";
+import { cerrarFicha, conFicha, recorrido } from "@ps/dominio/catalogo/recorrido";
+import { EncabezadoEstandar, RespaldoServicio } from "@ps/ui/EncabezadoEstandar";
+import { contactoDeFicha, datosDelBanco, datosDelEnlace, fichaDe } from "../src/banco/datos";
 import { Encuadre } from "../src/banco/Encuadre";
+import { fraseDelPortal } from "../src/banco/estandar";
 import { PanelFicha } from "../src/ficha/PanelFicha";
 import { MarcoPortal } from "../src/marco/MarcoPortal";
 import { TarjetaPerfil } from "../src/seleccion/TarjetaPerfil";
@@ -14,6 +16,7 @@ import { exigirSesion } from "../src/sesion/exigirSesion";
 import "./aterrizaje.css";
 import "./banco.css";
 import "@ps/ui/ficha.css";
+import "@ps/ui/estandar.css";
 import "./ficha.css";
 
 export default async function Inicio({
@@ -22,7 +25,12 @@ export default async function Inicio({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sesion = await exigirSesion();
-  const [{ aterrizaje: a, equipo }, consulta] = await Promise.all([datosDelEnlace(sesion), searchParams]);
+  // El encabezado del estándar (HU-159): la frase según el conteo de incompletos, con tiempo acotado.
+  const [{ aterrizaje: a, equipo }, consulta, frase] = await Promise.all([
+    datosDelEnlace(sesion),
+    searchParams,
+    fraseDelPortal(),
+  ]);
   const { items, cambiaron, ningunoPublicado } = a.seleccion;
   const marco = { cuenta: a.cuenta, proyecto: a.proyecto, accesoHasta: a.vigenteHasta, enEquipo: equipo.perfiles.length };
 
@@ -31,7 +39,7 @@ export default async function Inicio({
     const banco = await datosDelBanco(sesion);
     return (
       <MarcoPortal {...marco} conSeleccion={false} activo="buscar">
-        <Encuadre taxonomia={banco.taxonomia} total={banco.perfiles.length} />
+        <Encuadre taxonomia={banco.taxonomia} total={banco.perfiles.length} frase={frase} />
       </MarcoPortal>
     );
   }
@@ -43,7 +51,7 @@ export default async function Inicio({
   const disponibles = items.flatMap((i) => (i.tipo === "disponible" ? [i.codigo] : []));
   const pedida = typeof consulta.ficha === "string" ? consulta.ficha : undefined;
   const paso = recorrido(disponibles, pedida);
-  const ficha = paso ? await fichaDe(sesion, pedida!) : null;
+  const [ficha, contacto] = paso ? await Promise.all([fichaDe(sesion, pedida!), contactoDeFicha()]) : [null, null];
   const familias = resumenFamilias(
     items.map((i) => (i.tipo === "disponible" ? i.perfil.familia : (i.resumen?.familia ?? null))),
   );
@@ -57,6 +65,8 @@ export default async function Inicio({
         <p className="pp-franja__texto">{a.razon}</p>
         <p className="pp-franja__firma">{`Seleccionados el ${enviado}`}</p>
       </section>
+
+      <EncabezadoEstandar frase={frase} />
 
       {ningunoPublicado && (
         <section className="pp-vacio ac-explorar" aria-labelledby="ac-explorar-t">
@@ -124,13 +134,21 @@ export default async function Inicio({
           ))}
         </ol>
       </section>
+      <RespaldoServicio />
     </MarcoPortal>
   );
   if (!paso) return pagina;
   return (
     <>
       <div inert>{pagina}</div>
-      <PanelFicha ficha={ficha} recorrido={paso} lista="selección para ti" href={href} />
+      <PanelFicha
+        ficha={ficha}
+        contacto={contacto ?? undefined}
+        recorrido={paso}
+        lista="selección para ti"
+        href={href}
+        cerrar={cerrarFicha("/", consulta, paso.abierto)}
+      />
     </>
   );
 }

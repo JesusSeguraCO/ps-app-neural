@@ -14,6 +14,7 @@ const valido = {
   modalidad: "Híbrido",
   pais: "Colombia",
   disponibilidad: "inmediato",
+  selloPersonal: ["Comunicación directa con negocio", "Rigor en la documentación"],
 };
 
 describe("contrato del catálogo (V8-4)", () => {
@@ -36,5 +37,21 @@ describe("contrato del catálogo (V8-4)", () => {
 
   it("la disponibilidad es una banda, nunca una fecha", () => {
     expect(PerfilCatalogo.safeParse({ ...valido, disponibilidad: "2026-10-01" }).success).toBe(false);
+  });
+
+  it("el Sello Personal viaja con 0 a 3 competencias no vacías (HU-081)", () => {
+    expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: [] }).success).toBe(true);
+    expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", "B", "C"] }).success).toBe(true);
+    expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", "B", "C", "D"] }).success).toBe(false);
+    expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", ""] }).success).toBe(false);
+    expect(PerfilCatalogo.safeParse({ ...valido, selloPersonal: ["A", "   "] }).success).toBe(false);
+    const sinSello: Partial<typeof valido> = { ...valido };
+    delete sinSello.selloPersonal;
+    expect(PerfilCatalogo.safeParse(sinSello).success).toBe(false);
+  });
+
+  it("las tecnologías conservan el orden de carga (la tarjeta corta en 5, la ficha hasta 8)", () => {
+    const ocho = ["Java", "Spring Boot", "Kafka", "PostgreSQL", "Docker", "AWS", "Redis", "Kubernetes"];
+    expect(PerfilCatalogo.parse({ ...valido, tecnologias: ocho }).tecnologias).toEqual(ocho);
   });
 });

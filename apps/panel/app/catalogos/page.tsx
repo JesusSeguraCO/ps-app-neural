@@ -1,5 +1,5 @@
 // Catálogos (HU-089, HU-143; prototipo catalogos y variantes): una pestaña por catálogo (roles,
-// familias, tecnologías, sectores y modalidades de prueba) con su uso en el banco, filtro de estado y
+// familias, tecnologías, sectores, modalidades de prueba, motivos de pausa y alcances SARO de HU-177) con su uso en el banco, filtro de estado y
 // búsqueda; crear, editar, desactivar, reactivar y fusionar en hojas laterales. Nada se borra. La
 // observadora ve la lista sin acciones (el servidor además le responde 403). Protegida: la guarda va
 // en la primera línea.
@@ -39,6 +39,7 @@ const CABECERA: Record<TipoCatalogo, string> = {
   sector: "Sector",
   modalidad_prueba: "Modalidad de prueba",
   motivo_pausa: "Motivo de pausa",
+  alcance_saro: "Alcance SARO",
 };
 const COLUMNA: Record<TipoCatalogo, string> = {
   rol: "Familia",
@@ -47,12 +48,14 @@ const COLUMNA: Record<TipoCatalogo, string> = {
   sector: "Publicados",
   modalidad_prueba: "Familia",
   motivo_pausa: "Ayuda al elegirlo",
+  alcance_saro: "Lo que ve el cliente",
 };
 
 function segundaColumna(tipo: TipoCatalogo, v: ValorListado): string {
   if (tipo === "familia") return v.modalidades ? `${v.modalidades}` : "Sin modalidades";
   if (tipo === "sector") return `${v.publicados}`;
   if (tipo === "motivo_pausa") return v.descripcion ?? "—";
+  if (tipo === "alcance_saro") return v.textoCliente ?? "—";
   return v.grupo ?? "—";
 }
 
@@ -252,8 +255,8 @@ export default async function Catalogos({
                   <td title={segundaColumna(tipo, v)}>{segundaColumna(tipo, v)}</td>
                   <td className="pp-tabla__num ct-num">
                     {v.perfiles}
-                    {tipo === "modalidad_prueba" && (
-                      <span className="pp-tabla__sub">{`${v.publicados} ${v.publicados === 1 ? "publicada" : "publicadas"}`}</span>
+                    {(tipo === "modalidad_prueba" || tipo === "alcance_saro") && (
+                      <span className="pp-tabla__sub">{`${v.publicados} ${tipo === "alcance_saro" ? (v.publicados === 1 ? "publicado" : "publicados") : v.publicados === 1 ? "publicada" : "publicadas"}`}</span>
                     )}
                   </td>
                   <td className="pp-tabla__acciones">

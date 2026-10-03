@@ -7,6 +7,9 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type BrowserContext } from "@playwright/test";
 import pg from "pg";
 
+// Orígenes del portal y del panel: por defecto los del playwright.config.ts; un entorno aislado los cambia.
+const PORTAL_URL = process.env.PORTAL_URL ?? "http://127.0.0.1:3100";
+const PANEL_URL = process.env.PANEL_URL ?? "http://127.0.0.1:3101";
 const CORREO = "e2e-marco@trycore.com";
 // Mismo número en e2e/acceso.portal.spec.ts: serializa los e2e que escriben el contacto de Trycore.
 const CANDADO_CONTACTO = 147_147;
@@ -386,6 +389,19 @@ test.describe("sesión vencida al guardar (HU-138 escenario 2, HU-151)", () => {
 });
 
 // Crea un perfil publicado por la API del panel (alta → consentimiento → publicar) y devuelve su código.
+// Un alcance SARO activo del catálogo (lo siembra `sembrarFicticios`; si la BD se sembró antes de la
+// 0027, se crea el mismo).
+async function alcanceSaro(bd: pg.Client): Promise<string> {
+  await bd.query(
+    `INSERT INTO inventario.catalogo_alcances_saro (nombre, texto_cliente)
+     SELECT 'Antecedentes judiciales, disciplinarios y fiscales', 'Verificamos sus antecedentes judiciales, disciplinarios y fiscales.'
+      WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_alcances_saro WHERE activo)`,
+  );
+  return (
+    await bd.query(`SELECT id FROM inventario.catalogo_alcances_saro WHERE activo ORDER BY nombre LIMIT 1`)
+  ).rows[0].id as string;
+}
+
 async function crearPublicado(
   page: import("@playwright/test").Page,
   nombre = "E2E",
@@ -415,6 +431,10 @@ async function crearPublicado(
     modalidadTrabajoId: await id("catalogo_modalidades", "hibrido"),
     disponibilidad: { opcion: "ahora" },
     modalidadPruebaId: await id("catalogo_modalidades_prueba", "Prueba práctica revisada por un arquitecto"),
+    // Validaciones de entrada (EP-003, D61): publicar exige alcance SARO del catálogo y las dos fechas.
+    saroAlcanceId: await alcanceSaro(bd),
+    saroFecha: "2026-03-15",
+    discFecha: "2026-04-10",
     experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
   };
   await bd.end();
@@ -503,8 +523,9 @@ test.describe("editar un publicado y su reporte (HU-126, HU-140, HU-130)", () =>
     await expect(page).toHaveURL(new RegExp(`/inventario/${codigo}$`));
     await expect(page.getByText("Reporte confirmado. La ficha del portal ya lo muestra, sin republicar.")).toBeVisible();
     await page.getByRole("button", { name: "Vista previa" }).click();
-    await expect(page.locator("#vp-fila-validacion")).toContainText("Aprobada, nivel senior");
-    await expect(page.locator("#vp-fila-validacion")).toContainText("Evaluó:");
+    // HU-155 (EP-003, D59): cinco campos en orden fijo; el resultado publicado es «Cumple el estándar».
+    await expect(page.locator("#vp-fila-validacion dt")).toHaveText(["Prueba aplicada", "Qué se evaluó", "Resultado", "Evaluador", "Fecha"]);
+    await expect(page.locator("#vp-fila-validacion")).toContainText("Cumple el estándar");
     for (const ancho of [320, 390]) {
       await page.setViewportSize({ width: ancho, height: 800 });
       const scroll = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
@@ -803,7 +824,7 @@ test.describe("carga de Operaciones (HU-150)", () => {
     const galletas = await page.context().cookies();
     const cab = {
       "x-ps-csrf": galletas.find((c) => c.name === "__Host-csrf")!.value,
-      origin: "http://127.0.0.1:3101",
+      origin: PANEL_URL,
       cookie: galletas.map((c) => `${c.name}=${c.value}`).join("; "),
     };
     try {
@@ -988,7 +1009,7 @@ test.describe("administración (HU-151, HU-147, HU-138)", () => {
       await page.getByLabel("Correo", { exact: true }).fill("servicio.clientes@trycore.com");
       await page.getByRole("button", { name: "Guardar contacto" }).click();
       await expect(page.getByText("Contacto guardado.")).toBeVisible();
-      await page.goto("http://127.0.0.1:3100/acceso?motivo=enlace_revocado");
+      await page.goto(`${PORTAL_URL}/acceso?motivo=enlace_revocado`);
       await expect(page.getByText("o escribe a People Service: servicio.clientes@trycore.com")).toBeVisible();
 
       // Registro del perfil: cada cambio con su autor.

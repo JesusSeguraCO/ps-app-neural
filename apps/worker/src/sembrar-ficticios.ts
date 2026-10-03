@@ -5,6 +5,7 @@
 import { randomBytes } from "node:crypto";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
+import { diaCivilDeColombia } from "@ps/dominio/fecha/colombia";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
 import { MODALIDADES_FICTICIAS } from "./sembrar-lexico";
 
@@ -26,6 +27,10 @@ export interface PerfilFicticio {
   disponibleEnDias: number;
   // Colocado (HU-137): sigue publicado; la cuenta de su colocación y su liberación = su disponibilidad.
   colocadoEn?: string;
+  // Publicado heredado (HU-178; D62): se publicó antes de que la guarda exigiera estas validaciones de
+  // entrada y no las tiene; sigue publicado y el panel lo marca «Incompleto». Se siembra publicándolo
+  // completo y quitándole el dato después (la guarda de la BD solo actúa al entrar en publicado).
+  heredadoSin?: Array<"saro" | "disc" | "modalidad">;
 }
 
 const MODALIDADES = { remoto: "Remoto", hibrido: "Híbrido", presencial: "Presencial" } as const;
@@ -200,6 +205,78 @@ export const PERFILES_FICTICIOS: PerfilFicticio[] = [
   },
 ];
 
+// Publicados heredados incompletos (HU-178, HU-191; D62): se publicaron antes de que la guarda exigiera
+// las validaciones de entrada y les falta alguna. Siembra aparte y opcional (`sembrarHeredadosIncompletos`)
+// para no mover los conteos que fijan los tests y e2e del banco ficticio. Roles propios, que no comparten
+// con el banco base. Códigos por debajo del mayor del banco base: el editor numera desde el mayor + 1,
+// así que sembrarlos tarde nunca choca con un perfil creado por el panel.
+export const HEREDADOS_INCOMPLETOS: PerfilFicticio[] = [
+  {
+    codigo: "PS-0105",
+    nombre: "Ricardo",
+    primerApellido: "Mejía",
+    estado: "publicado",
+    heredadoSin: ["saro"],
+    familia: "Desarrollo",
+    roles: ["Desarrollador backend Kotlin"],
+    seniority: "Senior",
+    anios: 9,
+    tecnologias: ["Java", "Spring Boot", "Oracle"],
+    sectores: ["Banca"],
+    modalidad: "remoto",
+    ciudad: "Bogotá",
+    disponibleEnDias: 14,
+  },
+  {
+    codigo: "PS-0112",
+    nombre: "Paula",
+    primerApellido: "Cárdenas",
+    estado: "publicado",
+    heredadoSin: ["saro", "disc"],
+    familia: "Datos",
+    roles: ["Arquitecta de datos"],
+    seniority: "Semi senior",
+    anios: 5,
+    tecnologias: ["Python", "Airflow", "BigQuery"],
+    sectores: ["Retail"],
+    modalidad: "hibrido",
+    ciudad: "Medellín",
+    disponibleEnDias: 7,
+  },
+  {
+    codigo: "PS-0118",
+    nombre: "Esteban",
+    primerApellido: "Salazar",
+    estado: "publicado",
+    heredadoSin: ["disc"],
+    familia: "Infraestructura",
+    roles: ["Ingeniero de plataforma"],
+    seniority: "Senior",
+    anios: 8,
+    tecnologias: ["Azure", "Terraform", "Kubernetes"],
+    sectores: ["Seguros"],
+    modalidad: "remoto",
+    ciudad: "Cali",
+    disponibleEnDias: 0,
+  },
+  {
+    codigo: "PS-0124",
+    nombre: "Juliana",
+    primerApellido: "Ospina",
+    estado: "publicado",
+    heredadoSin: ["modalidad"],
+    familia: "Calidad",
+    roles: ["Analista QA de rendimiento"],
+    seniority: "Semi senior",
+    anios: 4,
+    tecnologias: ["Cypress", "JavaScript", "Postman"],
+    sectores: ["Telecomunicaciones"],
+    modalidad: "hibrido",
+    ciudad: "Bogotá",
+    disponibleEnDias: 30,
+  },
+];
+
 export interface ContextoFicticios {
   bd: pg.Pool;
   auditoria: ClavesAuditoria;
@@ -238,11 +315,25 @@ export const MOTIVOS_PAUSA_FICTICIOS = [
   { nombre: "Decisión de Talento Humano", descripcion: "Se revisa el perfil o su evidencia." },
 ];
 
-function fechaEnDias(dias: number): string {
-  return new Date(Date.now() + dias * 86_400_000).toISOString().slice(0, 10);
+// Alcance SARO ficticio (HU-177; catálogo cerrado de la 0027): los perfiles sembrados fuera de borrador
+// lo llevan con su fecha y la de la evaluación DISC, porque entrar en publicado los exige (D61, 0028).
+// Texto ilustrativo, marcado para revisión de copy (D73) antes de cargar el catálogo real.
+export const ALCANCE_SARO_FICTICIO = {
+  nombre: "Antecedentes judiciales, disciplinarios y fiscales",
+  texto: "Verificamos sus antecedentes judiciales, disciplinarios y fiscales.",
+};
+export const FECHAS_VALIDACION_FICTICIAS = { saro: "2026-03-15", disc: "2026-04-10" };
+
+// El día civil de Bogotá (el «hoy» del portal), no el de UTC: entre las 19:00 y la medianoche de
+// Colombia UTC ya va un día adelante y «disponible hoy» se sembraba como «mañana».
+export function fechaEnDias(dias: number): string {
+  return diaCivilDeColombia(new Date(Date.now() + dias * 86_400_000));
 }
 
-export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creados: number }> {
+export async function sembrarFicticios(
+  ctx: ContextoFicticios,
+  perfiles: PerfilFicticio[] = PERFILES_FICTICIOS,
+): Promise<{ creados: number }> {
   if (ctx.appEnv === "produccion") {
     throw new Error("sembrar_ficticios: bloqueado en producción (solo local, CI y staging)");
   }
@@ -253,7 +344,12 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
        SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_motivos_pausa WHERE nombre = $1)`,
       [m.nombre, m.descripcion],
     );
-  for (const p of PERFILES_FICTICIOS) {
+  await ctx.bd.query(
+    `INSERT INTO inventario.catalogo_alcances_saro (nombre, texto_cliente)
+     SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM inventario.catalogo_alcances_saro WHERE nombre = $1)`,
+    [ALCANCE_SARO_FICTICIO.nombre, ALCANCE_SARO_FICTICIO.texto],
+  );
+  for (const p of perfiles) {
     const creado = await conAuditoria(ctx.bd, ctx.auditoria, async (tx) => {
       const existe = await tx.query(`SELECT 1 FROM inventario.perfiles WHERE codigo = $1`, [
         p.codigo,
@@ -319,6 +415,13 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
           `INSERT INTO inventario.consentimientos (perfil_id, alcance) VALUES ($1, 'dato ficticio de prueba: nombre, trayectoria y clientes')`,
           [id],
         );
+        await tx.query(
+          `UPDATE inventario.perfiles
+              SET saro_alcance_id = (SELECT id FROM inventario.catalogo_alcances_saro WHERE nombre = $2),
+                  saro_fecha = $3, disc_fecha = $4
+            WHERE id = $1`,
+          [id, ALCANCE_SARO_FICTICIO.nombre, FECHAS_VALIDACION_FICTICIAS.saro, FECHAS_VALIDACION_FICTICIAS.disc],
+        );
         // Un pausado lleva su motivo del catálogo (HU-133; migración 0019); pausado y archivado no
         // tienen disponibilidad (matriz D5, D32).
         await tx.query(
@@ -330,6 +433,22 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
             WHERE id = $1`,
           [id, p.estado, MOTIVOS_PAUSA_FICTICIOS[1]!.nombre],
         );
+        // Heredado (HU-178): se le quita lo que hoy exige la guarda, ya publicado.
+        if (p.heredadoSin?.length)
+          await tx.query(
+            `UPDATE inventario.perfiles
+                SET saro_alcance_id = CASE WHEN $2 THEN NULL ELSE saro_alcance_id END,
+                    saro_fecha = CASE WHEN $2 THEN NULL ELSE saro_fecha END,
+                    disc_fecha = CASE WHEN $3 THEN NULL ELSE disc_fecha END,
+                    modalidad_prueba_id = CASE WHEN $4 THEN NULL ELSE modalidad_prueba_id END
+              WHERE id = $1`,
+            [
+              id,
+              p.heredadoSin.includes("saro"),
+              p.heredadoSin.includes("disc"),
+              p.heredadoSin.includes("modalidad"),
+            ],
+          );
         if (p.colocadoEn)
           await tx.query(
             `INSERT INTO inventario.colocaciones (perfil_id, cuenta, inicio, liberacion, fuente)
@@ -363,7 +482,7 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
   // Trayectoria (RF-8.4: publicar exige al menos una experiencia; la ficha del portal la muestra, D47).
   // Aparte del alta para completar también lo sembrado antes: una por perfil, solo si no tiene ninguna,
   // sin cliente nombrado (el consentimiento ficticio no los incluye).
-  for (const p of PERFILES_FICTICIOS.filter((x) => x.estado !== "borrador"))
+  for (const p of perfiles.filter((x) => x.estado !== "borrador"))
     await ctx.bd.query(
       `INSERT INTO inventario.perfil_experiencias (perfil_id, orden, cargo, desde, descripcion)
        SELECT id, 1, $2, $3, $4 FROM inventario.perfiles p
@@ -376,6 +495,12 @@ export async function sembrarFicticios(ctx: ContextoFicticios): Promise<{ creado
         `Experiencia ficticia de prueba: ${p.tecnologias.slice(0, 2).join(" y ")} en ${p.sectores[0] ?? "proyectos de software"}.`,
       ],
     );
-  ctx.registrar({ evento: "ficticios_sembrados", creados, total: PERFILES_FICTICIOS.length });
+  ctx.registrar({ evento: "ficticios_sembrados", creados, total: perfiles.length });
   return { creados };
 }
+
+// Los cuatro heredados incompletos (PS-0105 sin SARO, PS-0112 sin SARO ni DISC, PS-0118 sin DISC,
+// PS-0124 sin modalidad de prueba), con los catálogos del banco base. Mismas garantías: nunca en
+// producción, idempotente y auditado.
+export const sembrarHeredadosIncompletos = (ctx: ContextoFicticios) =>
+  sembrarFicticios(ctx, HEREDADOS_INCOMPLETOS);

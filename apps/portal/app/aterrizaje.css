@@ -3,8 +3,6 @@
 .ac-franja { margin-bottom: var(--tc-sp-10); }
 .ac-aviso { margin-bottom: var(--tc-sp-4); }
 .ac-explorar { margin-bottom: var(--tc-sp-10); }
-.ac-disponible { flex-basis: 100%; margin-bottom: var(--tc-sp-1); }
-.pp-perfil__meta > .ac-disponible + li::before { content: none; }
 .pp-rejilla-perfiles > li { display: flex; min-width: 0; }
 .pp-rejilla-perfiles > li > .pp-perfil { flex: 1; }
 .ac-perfil__nota { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); color: var(--tc-text-b); }
@@ -16,3 +14,12 @@
   .cl-tema { order: 1; }
 }
 .pp-equipo__conteo--cero { background: var(--tc-bg-subtle); color: var(--tc-text-m); }
+/* Tarjeta de EP-003 (HU-081, HU-119; prototipo resultados): Sello Personal en el bloque verificado y la
+   evidencia ✓/– con su rótulo; sin insignia ni puntaje. */
+.pp-evidencia__criterios { display: grid; gap: var(--tc-sp-2); }
+.rs-sello { margin: var(--tc-sp-2) 0 0; padding-top: var(--tc-sp-2); border-top: 1px solid var(--tc-primary-surface-border); font-size: var(--tc-fs-caption); line-height: var(--tc-lh-h3); color: var(--tc-primary-surface-ink); }
+.rs-sello--solo { margin-top: 0; padding-top: 0; border-top: 0; }
+.rs-sello__rotulo { margin-right: var(--tc-sp-1); font-weight: var(--tc-fw-semibold); color: var(--tc-primary-ink); }
+/* El modo del chip («categoría», «rol») con opacidad .75 sobre el teal no llega a 4.5:1 (axe, EP-003 SS4):
+   texto pleno, sin cambiar el color del prototipo. Lo usan el filtro del banco y «explorar con el contexto». */
+.pp-chip--deseable .pp-chip__modo { opacity: 1; }

@@ -316,10 +316,15 @@ export type ResultadoRevertir =
   | { tipo: "sin_efecto"; estado: string }
   | { tipo: "rechazado"; motivo: string };
 
+// Validaciones de entrada (HU-191): solo se restauran si el estado previo las guardó; un lote aplicado
+// antes de EP-003 no las tiene y no debe vaciarlas al revertirse.
+const COLUMNAS_VALIDACION = ["saro_alcance_id", "saro_fecha", "disc_fecha"];
+
 async function restaurar(tx: pg.PoolClient, perfilId: string, previo: Record<string, unknown>) {
+  const columnas = [...COLUMNAS, ...COLUMNAS_VALIDACION.filter((c) => Object.hasOwn(previo, c))];
   await tx.query(
-    `UPDATE inventario.perfiles p SET (${COLUMNAS.join(", ")}) =
-       (SELECT ${COLUMNAS.map((c) => `r.${c}`).join(", ")} FROM jsonb_populate_record(NULL::inventario.perfiles, $2) r)
+    `UPDATE inventario.perfiles p SET (${columnas.join(", ")}) =
+       (SELECT ${columnas.map((c) => `r.${c}`).join(", ")} FROM jsonb_populate_record(NULL::inventario.perfiles, $2) r)
       WHERE p.id = $1`,
     [perfilId, JSON.stringify(previo)],
   );

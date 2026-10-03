@@ -6,6 +6,7 @@
 // el dato (es la misma regla que impide publicar); un opcional sin datos no se dibuja y no impide
 // publicar. «Ver como necesidad» muestra la ciudad solo si la necesidad es presencial o híbrida.
 import { useState } from "react";
+import type { ContactoTrycore } from "@ps/dominio/contacto/contacto";
 import {
   BLOQUE_DE_DATO,
   armarFicha,
@@ -14,9 +15,14 @@ import {
   type BloqueOpcional,
   type Necesidad,
 } from "@ps/contratos/ficha";
-import type { EvaluacionPublicacion } from "@ps/dominio/inventario/perfil";
+import {
+  faltaDe,
+  type Condicion,
+  type EvaluacionPublicacion,
+} from "@ps/dominio/inventario/perfil";
 import { FichaPerfil, type MarcasFicha } from "@ps/ui/FichaPerfil";
 import { datosFichaDePerfil, type PerfilParaFicha } from "./ficha";
+import { ANCLA_CONDICION, esValidacionDeEntrada } from "./anclas";
 
 const NECESIDAD: Record<Necesidad, string> = {
   remota: "Remota",
@@ -48,16 +54,42 @@ const OPCIONAL: Record<BloqueOpcional, string> = {
   sectores: "Sectores",
 };
 
-// Dónde se completa cada bloque en el editor.
 const CAMPO_DE_BLOQUE: Record<BloqueFicha, string> = {
   cabecera: "pe-rol",
   persona: "pe-nombre",
-  disponibilidad: "pe-disp",
+  disponibilidad: ANCLA_CONDICION.disponibilidad,
   modalidad: "pe-modalidad",
-  validacion: "pe-prueba",
-  trayectoria: "pe-trayectoria",
+  validacion: ANCLA_CONDICION.modalidad_prueba,
+  trayectoria: ANCLA_CONDICION.trayectoria,
   stack: "pe-tec",
 };
+
+// La salida del aviso de la vista previa: si solo faltan validaciones de entrada (HU-176), «Ir al
+// campo» de la primera; si falta un bloque que la ficha exige, completarlo; si no, el consentimiento.
+export type AccionAviso =
+  | { tipo: "campo"; campo: string; etiqueta: string }
+  | { tipo: "consentimiento" };
+
+export function accionDelAviso(a: {
+  primero?: BloqueFicha;
+  sinConsentimiento: boolean;
+  entradas: readonly Pick<Condicion, "clave">[];
+}): AccionAviso {
+  const e = a.entradas[0];
+  if (!a.primero && !a.sinConsentimiento && e)
+    return { tipo: "campo", campo: ANCLA_CONDICION[e.clave], etiqueta: "Ir al campo" };
+  if (a.primero)
+    return {
+      tipo: "campo",
+      campo: CAMPO_DE_BLOQUE[a.primero],
+      etiqueta: `Completar ${NOMBRE_BLOQUE[a.primero].toLowerCase()}`,
+    };
+  return { tipo: "consentimiento" };
+}
+
+// Las validaciones de entrada que faltan, cada una con su «Falta …» exacto (HU-176).
+export const entradasQueFaltan = (evaluacion: EvaluacionPublicacion) =>
+  evaluacion.condiciones.filter((c) => !c.cumple && esValidacionDeEntrada(c.clave));
 
 export function VistaPrevia(p: {
   perfil: PerfilParaFicha;
@@ -72,6 +104,7 @@ export function VistaPrevia(p: {
   etiquetaVolver?: string;
   // Registro de auditoría del perfil (HU-138), para ambos roles.
   enlaceRegistro?: string;
+  contacto?: ContactoTrycore;
   alPublicar: () => void;
   alRegistrarConsentimiento?: () => void;
   // Publicado con cambios sin guardar (prototipo vista-previa-ficha): la primaria es «Guardar cambios»,
@@ -112,8 +145,11 @@ export function VistaPrevia(p: {
   const sinConsentimiento = p.evaluacion.condiciones.some(
     (c) => c.clave === "consentimiento" && !c.cumple,
   );
+  // Validaciones de entrada que faltan (HU-176): «Falta …» con su campo del editor.
+  const entradas = entradasQueFaltan(p.evaluacion);
   const vacios = opcionalesVacios(ficha);
   const primero = incompletos[0];
+  const accion = accionDelAviso({ primero, sinConsentimiento, entradas });
 
   return (
     <>
@@ -178,15 +214,18 @@ export function VistaPrevia(p: {
                     ? `, y ${incompletos.length - 1} bloque${incompletos.length > 2 ? "s" : ""} más`
                     : ""
                 }${sinConsentimiento ? "; además falta el consentimiento nominal" : ""}.`
-              : "No se puede publicar sin el consentimiento nominal registrado."}
+              : sinConsentimiento
+                ? "No se puede publicar sin el consentimiento nominal registrado."
+                : "No se puede publicar todavía."}
+            {entradas.map((c) => ` ${faltaDe(c)}.`).join("")}
           </p>
-          {primero ? (
+          {accion.tipo === "campo" ? (
             <button
               type="button"
               className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
-              onClick={() => p.alVolver(CAMPO_DE_BLOQUE[primero])}
+              onClick={() => p.alVolver(accion.campo)}
             >
-              {`Completar ${NOMBRE_BLOQUE[primero].toLowerCase()}`}
+              {accion.etiqueta}
             </button>
           ) : (
             p.alRegistrarConsentimiento && (
@@ -225,6 +264,7 @@ export function VistaPrevia(p: {
             <FichaPerfil
               ficha={ficha}
               marcas={marcas}
+              contacto={p.contacto}
               pie={
                 <button
                   type="button"
@@ -300,7 +340,7 @@ export function VistaPrevia(p: {
                       {p.alRegistrarConsentimiento && (
                         <a
                           className="pp-enlace"
-                          href="#consentimiento"
+                          href={`#${ANCLA_CONDICION.consentimiento}`}
                           onClick={(e) => {
                             e.preventDefault();
                             p.alRegistrarConsentimiento!();

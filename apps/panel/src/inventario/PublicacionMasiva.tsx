@@ -5,9 +5,13 @@
 // a las demás con su motivo, sin abortar; el resultado se guarda para mostrarlo tras recargar
 // (`ResultadoPublicacion`), con la salida directa a resolver cada motivo.
 import { useEffect, useState } from "react";
-import { OPCIONES_DISPONIBILIDAD } from "@ps/dominio/inventario/perfil";
+import {
+  MOTIVO_CONDICION,
+  OPCIONES_DISPONIBILIDAD,
+} from "@ps/dominio/inventario/perfil";
 import { enviarJson } from "../acceso/cliente";
 import { bandaCliente, cuerpoDisponibilidad, type EleccionDisponibilidad } from "./EstadoEnLista";
+import { ANCLA_CONDICION, esValidacionDeEntrada } from "./anclas";
 
 const CLAVE = "pp-publicacion-masiva";
 // Disponibilidad en bloque (HU-132 edge): el resultado se muestra por perfil tras recargar.
@@ -17,7 +21,7 @@ interface ResultadoBloque {
   filas: Array<{ codigo: string; nombre: string; ok: boolean; motivo?: string; estado?: string }>;
 }
 
-interface Fallo {
+export interface Fallo {
   codigo: string;
   nombre: string;
   motivos: string[];
@@ -224,7 +228,7 @@ export function BarraSeleccion() {
 }
 
 // Motivo y salida de un perfil que no se publicó.
-function motivo(f: Fallo): { nota: string; accion: string; href: string } {
+export function motivo(f: Fallo): { nota: string; accion: string; href: string } {
   const editor = `/inventario/${f.codigo}`;
   if (f.motivos.includes("no_existe"))
     return {
@@ -254,7 +258,7 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
   const prueba = f.condiciones?.find((c) => c.clave === "modalidad_prueba");
   if (f.motivos.includes("consentimiento")) {
     notas.push("Falta el consentimiento nominal registrado.");
-    accion = { accion: "Registrar consentimiento", href: `${editor}#consentimiento` };
+    accion = { accion: "Registrar consentimiento", href: `${editor}#${ANCLA_CONDICION.consentimiento}` };
   }
   if (prueba?.detalle === "familia_sin_modalidades") {
     notas.push(
@@ -270,8 +274,15 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
             f.familia?.modalidades ? ` (${f.familia.nombre} tiene ${f.familia.modalidades})` : ""
           }.`,
     );
-    if (notas.length === 1) accion = { accion: "Elegir modalidad", href: `${editor}#pe-prueba` };
+    if (notas.length === 1) accion = { accion: "Elegir modalidad", href: `${editor}#${ANCLA_CONDICION.modalidad_prueba}` };
   }
+  // Validaciones de entrada (HU-176): cada una con su «Falta …» exacto y el salto a su campo.
+  const entradas = (f.condiciones ?? [])
+    .map((c) => c.clave)
+    .filter(esValidacionDeEntrada);
+  for (const c of entradas) notas.push(`Falta ${MOTIVO_CONDICION[c]}.`);
+  if (entradas.length && notas.length === entradas.length)
+    accion = { accion: "Completar las validaciones", href: `${editor}#${ANCLA_CONDICION[entradas[0]!]}` };
   const datos = f.faltanDatos ?? [];
   if (datos.length)
     notas.push(`Faltan datos: ${datos.map((x) => x.etiqueta.toLowerCase()).join(", ")}.`);

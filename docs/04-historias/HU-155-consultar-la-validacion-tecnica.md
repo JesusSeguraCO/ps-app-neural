@@ -60,6 +60,8 @@ Cubre **RF-3.10** (estructura fija de cinco campos, nunca vacía, nunca «no apl
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.10 · RF-3.11 · B.8.2 · B.8.3 · B.8.4 · B.9.2 · D29 y D30 de EP-006 · D59 · D63 · D73 · se apoya en HU-130 y HU-140 (EP-006, origen de los Niveles 0 y 1) · depende de HU-154 (bloque verificado donde vive)
 
 ## INVEST

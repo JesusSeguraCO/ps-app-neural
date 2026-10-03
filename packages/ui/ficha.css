@@ -15,7 +15,7 @@
 .fp-seccion__titulo--verificado { color: var(--tc-primary-ink); }
 .fp-ficha .pp-bloque--verificado { padding: var(--tc-sp-4); }
 .fp-sello { font-weight: var(--tc-fw-medium); }
-.fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-caption); color: var(--tc-text-m); }
+.fp-sub { display: block; margin-top: var(--tc-sp-1); font-size: var(--tc-fs-small); color: var(--tc-text-m); }
 .pp-bloque--verificado .fp-sub { color: var(--tc-primary-surface-ink); }
 .fp-ausente { color: var(--tc-text-m); }
 .fp-trayectoria { display: grid; gap: var(--tc-sp-3); margin: 0; padding: 0; list-style: none; }
@@ -28,3 +28,39 @@
 .vp-marca .vp-num { margin-right: var(--tc-sp-2); vertical-align: text-bottom; }
 a.vp-num { text-decoration: none; }
 .pp-datos__fila.vp-marca + .pp-datos__fila.vp-marca { margin-top: var(--tc-sp-2); }
+
+/* «Frente a tu búsqueda» (HU-119; prototipo ficha-perfil): una línea ✓/– por criterio activo. Sin la
+   columna de fuente del prototipo: la línea sale de la plantilla fija y nombra el dato registrado. */
+.fp-criterios { margin: 0; padding: 0; list-style: none; }
+.fp-criterio { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-3); align-items: baseline; padding: var(--tc-sp-3) 0; border-bottom: 1px solid var(--tc-border); }
+.fp-criterio:last-child { border-bottom: 0; }
+.fp-criterio__marca { font-weight: var(--tc-fw-bold); color: var(--tc-ok-mark); }
+.fp-criterio--no .fp-criterio__marca { color: var(--tc-text-s); }
+.fp-criterio__nombre { display: block; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); line-height: var(--tc-lh-h3); color: var(--tc-text-h); }
+.fp-criterio--no .fp-criterio__nombre { font-weight: var(--tc-fw-medium); color: var(--tc-text-b); }
+
+/* Validación técnica desplegable (HU-155; prototipo validacion-tecnica): dentro del bloque verificado, se
+   abre y cierra con clic o toque (details/summary nativo, foco visible), nunca con hover. */
+.fp-validacion { margin-top: var(--tc-sp-3); padding-top: var(--tc-sp-3); border-top: 1px solid var(--tc-primary-surface-border); }
+.fp-validacion__titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--tc-sp-2); min-height: 44px; cursor: pointer; list-style: none; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-semibold); color: var(--tc-text-h); }
+.fp-validacion__titulo::-webkit-details-marker { display: none; }
+.fp-validacion__titulo::after { content: ""; width: 8px; height: 8px; flex: none; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform var(--tc-dur-fast) var(--tc-ease); }
+.fp-validacion[open] > .fp-validacion__titulo::after { transform: rotate(-135deg); }
+.fp-validacion__titulo:focus-visible { outline: 2px solid var(--tc-primary); outline-offset: 2px; border-radius: var(--tc-r-sm); }
+.fp-validacion__campos { display: grid; gap: var(--tc-sp-2); margin: var(--tc-sp-1) 0 0; }
+.fp-validacion__campo { display: grid; grid-template-columns: minmax(120px, 30%) minmax(0, 1fr); gap: var(--tc-sp-1) var(--tc-sp-4); }
+.fp-validacion__campo dt { font-size: var(--tc-fs-caption); font-weight: var(--tc-fw-semibold); color: var(--tc-text-m); }
+.fp-validacion__campo dd { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-validacion__nota { margin: var(--tc-sp-3) 0 0; font-size: var(--tc-fs-caption); color: var(--tc-primary-surface-ink); }
+.fp-validacion__falta { margin: 0; }
+@media (max-width: 767px) { .fp-validacion__campo { grid-template-columns: minmax(0, 1fr); } }
+
+/* Conversación con Trycore (HU-157): el contacto vigente con el texto de representación comercial. */
+.fp-contacto__texto { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-contacto__quien { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-small); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+
+/* Cierre de la ficha (HU-158): el SLA y la garantía en el tamaño del texto de la ficha (RF-6.2, no en
+   letra pequeña); la referencia con el código, al pie y en letra pequeña (RF-3.5) sin bajar de 13 px (M-8). */
+.fp-servicio__sla { margin: 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); font-weight: var(--tc-fw-medium); color: var(--tc-text-h); }
+.fp-servicio__garantia { margin: var(--tc-sp-2) 0 0; font-size: var(--tc-fs-body); line-height: var(--tc-lh-body); color: var(--tc-text-b); }
+.fp-referencia { margin: 0; font-size: var(--tc-fs-small); line-height: var(--tc-lh-body); color: var(--tc-text-m); }

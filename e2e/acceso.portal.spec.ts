@@ -230,7 +230,8 @@ test.describe("cara cliente", () => {
     await page.keyboard.press("ArrowLeft");
     await expect(page).toHaveURL(/\/\?ficha=PS-0142$/);
     await page.keyboard.press("Escape");
-    await expect(page).toHaveURL(/\/$/);
+    // Vuelve a la misma lista, en la posición del perfil que estaba abierto (HU-120, EP-003 · SS7).
+    await expect(page).toHaveURL(/\/#p-0142$/);
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".pp-perfil")).toHaveCount(3);
 

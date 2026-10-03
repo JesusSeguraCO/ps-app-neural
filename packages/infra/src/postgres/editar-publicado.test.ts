@@ -6,6 +6,7 @@
 // La versión que se abrió (`If-Match`) se exige en todos los pasos.
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { entradaValidaciones } from "../pruebas/validaciones-entrada";
 import type pg from "pg";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
 import type { ClavesAuditoria } from "./auditoria";
@@ -36,6 +37,9 @@ async function rechazo(p: Promise<unknown>) {
   throw new Error("sin_rechazo");
 }
 
+// Alcance SARO y fechas para las entradas completas (lo siembra `sembrarFicticios`).
+let saroDisc: Awaited<ReturnType<typeof entradaValidaciones>>;
+
 describe.skipIf(!HAY_BD)("editar un perfil publicado (HU-126)", () => {
   let bd: BdPrueba;
   let panel: pg.Pool;
@@ -61,6 +65,8 @@ describe.skipIf(!HAY_BD)("editar un perfil publicado (HU-126)", () => {
     modalidadTrabajoId: ids.hibrido,
     disponibilidad: { opcion: "ahora" as const },
     modalidadPruebaId: ids.prueba,
+    // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+    ...saroDisc,
     aporte: "Integraciones estables.",
     experiencias: [
       { cargo: "Backend senior", desde: 2021, hasta: 2026, descripcion: "Pagos inmediatos." },
@@ -118,6 +124,10 @@ describe.skipIf(!HAY_BD)("editar un perfil publicado (HU-126)", () => {
       "Prueba práctica revisada por un arquitecto",
     );
   }, 60_000);
+
+  beforeAll(async () => {
+    saroDisc = await entradaValidaciones(bd.instalacion);
+  });
 
   afterAll(async () => {
     await bd?.cerrar();

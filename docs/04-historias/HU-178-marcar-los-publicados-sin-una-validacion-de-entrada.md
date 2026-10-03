@@ -89,6 +89,8 @@ Cubre **D62** y **D63** del sponsor sobre el motor de publicación del panel: **
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · B.6 · RF-8.2 · RF-8.4 · RF-8.10 · RF-3.4 · D10 · D60 · D62 · D63 · nace de D62 y D63 (2026-10-02) · toca el listado, el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-176 (datos SARO y DISC), HU-126 (confirmación de cambios en publicados) y HU-128 (guarda de publicación) · D80 y D81 (sponsor, 2026-10-02, segunda ronda) · validación 2026-10-02 (forma G/W/T y copy de la prueba técnica) · relacionada con HU-156 (la ficha omite el dato ausente), HU-159 (el encabezado afirma «ninguno» solo con 0 incompletos, D80) y HU-191 (completar por importación, D81)
 
 ## INVEST

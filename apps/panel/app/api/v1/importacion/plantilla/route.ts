@@ -1,4 +1,4 @@
-// GET /api/v1/importacion/plantilla?formato=csv|json (HU-088): la plantilla de muestra con los tres
+// GET /api/v1/importacion/plantilla?formato=csv|json (HU-088, HU-191): la plantilla de muestra con los tres
 // casos (actualizar, crear, archivar) y encabezados autoexplicativos. 403 observador · 400 formato.
 import { conAutorizacion, conBorde, conSesionPanel, respuestaJson } from "@ps/infra/http/envoltorios";
 import { plantillaDeMuestra } from "../../../../../src/importacion/servicio";

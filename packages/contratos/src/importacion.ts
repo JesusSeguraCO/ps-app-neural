@@ -125,6 +125,29 @@ export const CAMPOS_IMPORTACION: readonly CampoImportacion[] = [
     tipo: "texto",
     alias: ["modalidad de prueba", "prueba"],
   },
+  // Validaciones de entrada (HU-191, D81): el alcance sale del catálogo cerrado (nunca valor nuevo); las
+  // fechas, no posteriores a hoy. Solo la fecha DISC: el resultado detallado es B.4 y no tiene columna.
+  {
+    clave: "saroAlcance",
+    encabezado: "Alcance de la verificación SARO (del catálogo)",
+    ejemplo: "Antecedentes judiciales, disciplinarios y fiscales",
+    tipo: "texto",
+    alias: ["alcance saro", "saro alcance", "alcance de la verificacion saro", "verificacion saro"],
+  },
+  {
+    clave: "saroFecha",
+    encabezado: "Fecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)",
+    ejemplo: "2026-03-15",
+    tipo: "texto",
+    alias: ["fecha saro", "saro fecha", "fecha de la verificacion saro"],
+  },
+  {
+    clave: "discFecha",
+    encabezado: "Fecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)",
+    ejemplo: "2026-04-10",
+    tipo: "texto",
+    alias: ["fecha disc", "disc fecha", "fecha de la evaluacion disc"],
+  },
   {
     clave: "capacidad",
     encabezado: "Capacidad",
@@ -412,7 +435,8 @@ export function escribirErrores(
 }
 
 // Plantilla de muestra con los tres casos (spec §6, paso 1): actualizar un campo de un perfil que
-// existe, crear uno nuevo con todos sus datos y archivar uno.
+// existe, crear uno nuevo con todos sus datos y archivar uno. El alcance SARO del ejemplo lo pone
+// `ejemplosPlantilla` con uno activo del catálogo (HU-191), para que la fila de ejemplo no nazca con error.
 export const EJEMPLOS_PLANTILLA: readonly FilaFormato[] = [
   { codigo: "PS-0142", disponibilidad: "2026-11-01" },
   {
@@ -429,6 +453,8 @@ export const EJEMPLOS_PLANTILLA: readonly FilaFormato[] = [
     ciudad: "Bogotá",
     disponibilidad: "Disponible ahora",
     modalidadPrueba: "Prueba práctica revisada por un arquitecto",
+    saroFecha: "2026-03-15",
+    discFecha: "2026-04-10",
     capacidad: "Ingeniero Backend Senior",
     anclaje: "8 años en core bancario",
     resumen: "Backend con foco en sistemas transaccionales.",
@@ -442,3 +468,11 @@ export const EJEMPLOS_PLANTILLA: readonly FilaFormato[] = [
   },
   { codigo: "PS-0099", estado: "archivado" },
 ];
+
+// La plantilla con un alcance SARO activo del catálogo, escrito tal como está registrado; sin ninguno
+// activo, la celda queda vacía (nunca se inventa un valor del catálogo cerrado).
+export function ejemplosPlantilla(alcanceActivo: string | null): FilaFormato[] {
+  return EJEMPLOS_PLANTILLA.map((f) =>
+    f.codigo === "PS-0900" && alcanceActivo ? { ...f, saroAlcance: alcanceActivo } : { ...f },
+  );
+}

@@ -59,19 +59,28 @@ export function filtroDeConsulta(q: Consulta): FiltroBanco {
   return { tipo: "todo" };
 }
 
+// Una sola comparación por perfil: filtra la lista y resuelve el criterio de la evidencia ✓/– (HU-119).
+export function cumpleFiltro(
+  p: Clasificable,
+  filtro: FiltroBanco,
+  categoriasContexto: readonly string[],
+): boolean {
+  switch (filtro.tipo) {
+    case "todo":
+      return true;
+    case "categoria":
+      return p.familia === filtro.valor;
+    case "rol":
+      return p.roles.includes(filtro.valor);
+    case "contexto":
+      return p.familia !== null && categoriasContexto.includes(p.familia);
+  }
+}
+
 export function aplicarFiltro<P extends Clasificable>(
   perfiles: readonly P[],
   filtro: FiltroBanco,
   categoriasContexto: readonly string[],
 ): P[] {
-  switch (filtro.tipo) {
-    case "todo":
-      return [...perfiles];
-    case "categoria":
-      return perfiles.filter((p) => p.familia === filtro.valor);
-    case "rol":
-      return perfiles.filter((p) => p.roles.includes(filtro.valor));
-    case "contexto":
-      return perfiles.filter((p) => p.familia !== null && categoriasContexto.includes(p.familia));
-  }
+  return perfiles.filter((p) => cumpleFiltro(p, filtro, categoriasContexto));
 }

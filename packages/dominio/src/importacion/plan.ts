@@ -9,9 +9,23 @@
 import { clasificarNombre, masCercanos, normalizar } from "../catalogo/parecidos";
 import { evaluarCoherencia } from "../inventario/coherencia";
 import type { EstadoAlmacenado } from "../inventario/estados";
-import { OPCIONES_DISPONIBILIDAD, clienteEnDescripcion } from "../inventario/perfil";
+import {
+  type CampoObligatorio,
+  type ClaveCondicion,
+  type DatosParaPublicar,
+  OPCIONES_DISPONIBILIDAD,
+  clienteEnDescripcion,
+  evaluarPublicacion,
+  validarFechaVerificacion,
+} from "../inventario/perfil";
 import { CAMPOS_LISTA, CLAVES_CAMPO, VINCULO_FORMATO, type ClaveCampo } from "./campos";
-import { VACIAR, formatearExperiencia, leerExperiencia, partirLista, sinNeutralizar } from "./celdas";
+import {
+  VACIAR,
+  formatearExperiencia,
+  leerExperiencia,
+  partirLista,
+  sinNeutralizar,
+} from "./celdas";
 import type { ColumnaEmparejada } from "./emparejar";
 
 export type Valor = string | string[] | number | null;
@@ -27,6 +41,9 @@ export interface Catalogos {
   modalidades: readonly string[];
   modalidadesPrueba: ReadonlyArray<{ nombre: string; familia: string }>;
   motivosPausa: readonly string[];
+  // Catálogo cerrado de alcances SARO (HU-177, HU-191): activos y desactivados; un desactivado solo vale
+  // para el perfil que ya lo tiene.
+  alcancesSaro: ReadonlyArray<{ nombre: string; activo: boolean }>;
 }
 
 export type Modo = "crear_y_actualizar" | "solo_actualizar" | "solo_crear";
@@ -163,6 +180,21 @@ const TOPE_LISTA: Partial<Record<ClaveCampo, number>> = {
   experiencias: 12,
 };
 const LARGO_ELEMENTO: Partial<Record<ClaveCampo, number>> = { idiomas: 60, selloPersonal: 80 };
+// Validaciones de entrada (HU-191): ni vaciables en un publicado ni valores nuevos de la taxonomía.
+const VALIDACIONES_ENTRADA: ReadonlySet<ClaveCampo> = new Set([
+  "saroAlcance",
+  "saroFecha",
+  "discFecha",
+]);
+const NOMBRE_FECHA = { saroFecha: "La fecha SARO", discFecha: "La fecha DISC" } as const;
+export const MENSAJE_VACIAR_VALIDACION =
+  "No se puede vaciar una validación de entrada de un perfil publicado; pásalo a borrador desde el editor";
+// AAAA-MM-DD o DD/MM/AAAA (como se escribe en Colombia) → AAAA-MM-DD; null si no es una fecha.
+function fechaCivil(t: string): string | null {
+  const dmy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t);
+  const iso = dmy ? `${dmy[3]}-${dmy[2]!.padStart(2, "0")}-${dmy[1]!.padStart(2, "0")}` : t;
+  return fechaValida(iso) ? iso : null;
+}
 const ETIQUETA_TIPO_NUEVO = { rol: "rol", tecnologia: "tecnología", sector: "sector" } as const;
 
 function sumarDias(fecha: string, dias: number): string {
@@ -305,6 +337,36 @@ function leerCampo(ctx: Contexto, campo: ClaveCampo, celda: string): Valor | und
       );
     case "familia":
       return cerrado(ctx, campo, celda, k.familias, "familia");
+    case "saroAlcance": {
+      // Catálogo cerrado (D61): se compara normalizado y se guarda la forma registrada. Si es
+      // desactivado, la fila decide después si el perfil ya lo tenía.
+      const a = k.alcancesSaro.find((x) => normalizar(x.nombre) === normalizar(celda));
+      if (!a) {
+        ctx.errores.push({ campo, mensaje: `El alcance SARO no está en el catálogo: «${celda}»` });
+        return undefined;
+      }
+      return a.nombre;
+    }
+    case "saroFecha":
+    case "discFecha": {
+      const f = fechaCivil(celda);
+      if (!f) {
+        ctx.errores.push({
+          campo,
+          mensaje: `${NOMBRE_FECHA[campo]} no se reconoce como fecha: «${celda}»`,
+          opciones: ["AAAA-MM-DD", "DD/MM/AAAA"],
+        });
+        return undefined;
+      }
+      if (!validarFechaVerificacion(f, ctx.hoy).ok) {
+        ctx.errores.push({
+          campo,
+          mensaje: `La fecha de una verificación no puede ser posterior a hoy: «${celda}»`,
+        });
+        return undefined;
+      }
+      return f;
+    }
     case "tecnologias":
       return partirLista(celda).map((v) => abierto(ctx, campo, "tecnologia", v, k.tecnologias));
     case "sectores":
@@ -454,6 +516,25 @@ function evaluarFila(
       });
   }
 
+  // Alcance SARO desactivado: solo para el perfil que ya lo tiene (HU-177 edge, HU-191).
+  const alcance = leidos.saroAlcance;
+  if (
+    typeof alcance === "string" &&
+    !catalogos.alcancesSaro.find((a) => a.nombre === alcance)?.activo &&
+    actual?.saroAlcance !== alcance
+  ) {
+    ctx.errores.push({
+      campo: "saroAlcance",
+      mensaje: `El alcance SARO está desactivado en el catálogo: «${alcance}»`,
+    });
+    delete leidos.saroAlcance;
+  }
+  // Vaciar una validación de entrada de un publicado: la importación no pregunta ni cambia estados.
+  if (actual?.estado === "publicado")
+    for (const campo of VALIDACIONES_ENTRADA)
+      if (campo in leidos && leidos[campo] === null)
+        ctx.errores.push({ campo, mensaje: MENSAJE_VACIAR_VALIDACION });
+
   if (estado !== undefined) leidos.estado = estado;
   const resultante: FilaBanco = { ...(actual ?? {}), ...leidos, codigo };
   if (!actual) resultante.estado = "borrador";
@@ -533,10 +614,14 @@ function evaluarFila(
   return { ...base, grupo: cambios.length ? "actualizado" : "sin_cambios" };
 }
 
-// Lo que la publicación exige de la ficha y la importación puede quitar (evaluarPublicacion; el
-// consentimiento no viaja en el archivo). La modalidad de prueba vale si está en el catálogo de la
-// importación —que solo trae las activas— y es de la familia del rol.
+// Lo que la publicación exige de la ficha y la importación puede quitar: lo decide la misma guarda que
+// el panel (evaluarPublicacion), no una segunda lista (gate data EP-003). La ficha del archivo se
+// traduce a sus datos igual que el panel (perfiles-panel.ts): la modalidad de prueba vale si está en el
+// catálogo de la importación —que solo trae las activas— y es de la familia del rol. El consentimiento
+// no viaja en el archivo, así que no entra en la comparación.
 const ETIQUETA_FALTA = {
+  nombre: "sin nombre",
+  primerApellido: "sin primer apellido",
   rol: "sin rol",
   seniority: "sin seniority",
   aniosExperiencia: "sin años de experiencia",
@@ -546,22 +631,75 @@ const ETIQUETA_FALTA = {
   disponibilidad: "sin disponibilidad",
   experiencias: "sin trayectoria",
   modalidadPrueba: "sin modalidad de prueba de la familia de su rol",
+  saroAlcance: "sin alcance de la verificación SARO",
+  saroFecha: "sin fecha de la verificación SARO",
+  discFecha: "sin fecha de la evaluación DISC",
 } as const satisfies Partial<Record<ClaveCampo, string>>;
 type CampoExigido = keyof typeof ETIQUETA_FALTA;
 
-function faltasDePublicado(f: FilaBanco, catalogos: Catalogos): CampoExigido[] {
-  const vacio = (v: Valor | undefined) =>
-    v === null ||
-    v === undefined ||
-    (typeof v === "string" && !v.trim()) ||
-    (Array.isArray(v) && !v.length);
-  const faltas = (Object.keys(ETIQUETA_FALTA) as CampoExigido[]).filter(
-    (c) => c !== "modalidadPrueba" && vacio(f[c]),
-  );
+// De la clave de la guarda única al campo del archivo.
+const CAMPO_DE_FALTA: Record<
+  CampoObligatorio | Exclude<ClaveCondicion, "consentimiento">,
+  CampoExigido
+> = {
+  nombre: "nombre",
+  primer_apellido: "primerApellido",
+  rol: "rol",
+  tecnologias: "tecnologias",
+  seniority: "seniority",
+  anios_experiencia: "aniosExperiencia",
+  ciudad: "ciudad",
+  modalidad_trabajo: "modalidad",
+  disponibilidad: "disponibilidad",
+  trayectoria: "experiencias",
+  modalidad_prueba: "modalidadPrueba",
+  saro_alcance: "saroAlcance",
+  saro_fecha: "saroFecha",
+  disc_fecha: "discFecha",
+};
+
+export function datosParaPublicarDeFila(f: FilaBanco, catalogos: Catalogos): DatosParaPublicar {
+  const lleno = (v: Valor | undefined) =>
+    !(
+      v === null ||
+      v === undefined ||
+      (typeof v === "string" && !v.trim()) ||
+      (Array.isArray(v) && !v.length)
+    );
+  const cuantos = (v: Valor | undefined) => (Array.isArray(v) ? v.length : 0);
   const familia = typeof f.familia === "string" ? normalizar(f.familia) : null;
   const prueba = catalogos.modalidadesPrueba.find((m) => m.nombre === f.modalidadPrueba);
-  if (!prueba || !familia || normalizar(prueba.familia) !== familia) faltas.push("modalidadPrueba");
-  return faltas;
+  return {
+    nombre: typeof f.nombre === "string" ? f.nombre : "",
+    primerApellido: typeof f.primerApellido === "string" ? f.primerApellido : "",
+    rol: lleno(f.rol),
+    tecnologias: cuantos(f.tecnologias),
+    seniority: lleno(f.seniority),
+    aniosExperiencia: lleno(f.aniosExperiencia) ? Number(f.aniosExperiencia) : null,
+    ciudad: lleno(f.ciudad),
+    modalidadTrabajo: lleno(f.modalidad),
+    disponibilidadFecha:
+      typeof f.disponibilidad === "string" && f.disponibilidad.trim() ? f.disponibilidad : null,
+    experiencias: cuantos(f.experiencias),
+    modalidadPrueba: {
+      elegida: lleno(f.modalidadPrueba),
+      activa: Boolean(prueba && familia && normalizar(prueba.familia) === familia),
+    },
+    familiaConModalidades:
+      !familia || catalogos.modalidadesPrueba.some((m) => normalizar(m.familia) === familia),
+    consentimiento: null,
+    saro: { alcance: lleno(f.saroAlcance), fecha: lleno(f.saroFecha) },
+    disc: { fecha: lleno(f.discFecha) },
+  };
+}
+
+function faltasDePublicado(f: FilaBanco, catalogos: Catalogos): CampoExigido[] {
+  const e = evaluarPublicacion(datosParaPublicarDeFila(f, catalogos));
+  const claves = [
+    ...e.faltanDatos.map((x) => x.campo),
+    ...e.condiciones.flatMap((c) => (c.cumple || c.clave === "consentimiento" ? [] : [c.clave])),
+  ];
+  return [...new Set(claves.map((c) => CAMPO_DE_FALTA[c as keyof typeof CAMPO_DE_FALTA]))];
 }
 
 // ─── el plan ─────────────────────────────────────────────────────────────────────────────────

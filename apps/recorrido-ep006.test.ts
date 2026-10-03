@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DobleCorreo } from "@ps/infra/mailgun/index";
 import { verificarCadena } from "@ps/infra/postgres/auditoria";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
+import { entradaValidaciones } from "@ps/infra/pruebas/validaciones-entrada";
 import {
   arrancarServidor,
   entornoDev,
@@ -170,6 +171,8 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
           "catalogo_modalidades_prueba",
           "Prueba práctica revisada por un arquitecto",
         ),
+        // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+        ...(await entradaValidaciones(bd.instalacion)),
         experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos inmediatos." }],
       });
       expect(r.status).toBe(201);
@@ -257,9 +260,11 @@ describe.skipIf(!HAY_BD || !hayBuild("panel") || !hayBuild("portal"))(
       const html = await pagina(portal, `/?ficha=${codigo}`, cookieCliente);
       expect(html).toContain("1 de 1 · selección para ti");
       expect(html).toContain("Verificado por Trycore");
-      expect(html).toContain("Aprobada, nivel senior");
-      expect(html).toContain("Célula de arquitectura de Trycore");
-      expect(html).toMatch(/Evaluó: .+\./);
+      // HU-155 (EP-003, D59): cinco campos; el resultado publicado es «Cumple el estándar», no el texto libre.
+      expect(html).toMatch(/Resultado\s+Cumple el estándar/);
+      expect(html).toMatch(/Evaluador\s+Célula de arquitectura de Trycore/);
+      expect(html).toMatch(/Qué se evaluó\s+\S/);
+      expect(html).not.toContain("Aprobada, nivel senior");
     });
 
     it("7 · importar y revertir: el worker aplica el lote y luego lo deshace; el perfil vuelve a como estaba", async () => {

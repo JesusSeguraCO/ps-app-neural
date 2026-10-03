@@ -183,3 +183,31 @@ describe("registro de auditoría por perfil (HU-138)", () => {
     expect(paginar([], 1)).toMatchObject({ pagina: 1, paginas: 1, filas: [] });
   });
 });
+
+describe("registro · validaciones de entrada SARO/DISC (HU-176 edge: quién, cuándo, antes y después)", () => {
+  it("cada dato con su etiqueta en el grupo de validación; el alcance por su nombre y las fechas legibles", () => {
+    expect(campoDelRegistro("perfiles", "saro_alcance")).toEqual({
+      etiqueta: "Alcance de la verificación SARO",
+      grupo: "validacion",
+    });
+    expect(campoDelRegistro("perfiles", "saro_fecha")).toEqual({
+      etiqueta: "Fecha de la verificación SARO",
+      grupo: "validacion",
+    });
+    expect(campoDelRegistro("perfiles", "disc_fecha")).toEqual({
+      etiqueta: "Fecha de la evaluación DISC",
+      grupo: "validacion",
+    });
+    expect(presentarValor("perfiles", "saro_fecha", "2026-02-20", nombre)).toBe("20 feb 2026");
+    expect(
+      presentarValor("perfiles", "saro_alcance", "11111111-1111-4111-8111-111111111111", nombre),
+    ).toBe("Desarrolladora backend");
+  });
+
+  it("el texto de un alcance del catálogo con su etiqueta", () => {
+    expect(campoDelRegistro("catalogo_alcances_saro", "texto_cliente")).toEqual({
+      etiqueta: "Lo que ve el cliente",
+      grupo: "contenido",
+    });
+  });
+});

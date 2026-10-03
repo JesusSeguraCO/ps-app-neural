@@ -6,6 +6,9 @@ import { defineConfig } from "vitest/config";
 const vacio = fileURLToPath(new URL("./scripts/server-only-vacio.mjs", import.meta.url));
 
 export default defineConfig({
+  // Los componentes de las apps Next (tsconfig con `jsx: preserve`) también se dibujan en los tests con
+  // el runtime automático de React, como los de `packages/ui`.
+  oxc: { jsx: { runtime: "automatic" } },
   resolve: {
     alias: { "server-only": vacio },
   },

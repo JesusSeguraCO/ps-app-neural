@@ -50,6 +50,7 @@ const CATALOGOS = [
   "catalogo_modalidades_prueba",
   "catalogo_tecnologias",
   "catalogo_sectores",
+  "catalogo_alcances_saro",
 ];
 
 const UUIDS = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;

@@ -3,7 +3,7 @@
 // esto escribe en el banco: se comprueba que `perfiles` y la versión global quedan intactos.
 import { createHash, randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { CAMPOS_IMPORTACION, leer } from "@ps/contratos/importacion";
+import { CAMPOS_IMPORTACION, escribirTabla, leer } from "@ps/contratos/importacion";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 import {
   arrancarServidor,
@@ -192,16 +192,14 @@ describe.skipIf(!HAY_BD || !hayBuild("panel"))(
         const csv = await (await leerRuta("/api/v1/importacion/exportar?formato=csv")).text();
         const disp = CAMPOS_IMPORTACION.findIndex((c) => c.clave === "disponibilidad");
         const lineas = csv.split("\r\n");
+        // Se lee como CSV de verdad (EP-003: el alcance SARO lleva comas y va entre comillas).
+        const tabla = leer(csv);
+        if (!tabla.ok) throw new Error(tabla.motivo);
+        const filas = tabla.tabla.filas.map((f) => [...f.celdas]);
         let cambiadas = 0;
-        const editado = lineas
-          .map((l, i) => {
-            if (i === 0 || !l || cambiadas === 2 || l.includes('"')) return l;
-            const celdas = l.split(",");
-            celdas[disp] = "2031-01-0" + (cambiadas + 1);
-            cambiadas++;
-            return celdas.join(",");
-          })
-          .join("\r\n");
+        for (const f of filas)
+          if (cambiadas < 2 && f[disp]) f[disp] = "2031-01-0" + ++cambiadas;
+        const editado = escribirTabla("csv", tabla.tabla.encabezados, filas);
         const e = await (await enviar("/api/v1/importacion/emparejar", { texto: editado })).json();
         const r = await enviar("/api/v1/importacion/lotes", {
           texto: editado,

@@ -77,6 +77,8 @@ Reemplaza a **HU-079**, descartada al cerrarse D-15. El logro cuantificado no ex
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-14.0 · RF-14.1 · RF-3.8 · B.6 · D63 · validación 2026-10-02 · reemplaza a HU-079 · depende de HU-153 (la tarjeta en la que vive el bloque) · relacionada con HU-119 y HU-118 (compiten por la misma atención en la tarjeta, RF-3.8)
 
 ## INVEST

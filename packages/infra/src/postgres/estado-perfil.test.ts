@@ -5,6 +5,7 @@
 // de publicar con la disponibilidad nueva; archivar es idempotente; la bandeja lee lo que toca revisar.
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { entradaValidaciones } from "../pruebas/validaciones-entrada";
 import type pg from "pg";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
 import type { ClavesAuditoria } from "./auditoria";
@@ -45,6 +46,9 @@ async function rechazo(p: Promise<unknown>) {
   throw new Error("sin_rechazo");
 }
 
+// Alcance SARO y fechas para las entradas completas (lo siembra `sembrarFicticios`).
+let saroDisc: Awaited<ReturnType<typeof entradaValidaciones>>;
+
 describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-136)", () => {
   let bd: BdPrueba;
   let panel: pg.Pool;
@@ -68,6 +72,8 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
       modalidadTrabajoId: ids.hibrido,
       disponibilidad: { opcion: "ahora" },
       modalidadPruebaId: ids.prueba,
+    // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+    ...saroDisc,
       experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos." }],
       ...extra,
     });
@@ -124,6 +130,10 @@ describe.skipIf(!HAY_BD)("disponibilidad, pausa y vigencia (HU-132, HU-133, HU-1
     );
     motivo = await id("catalogo_motivos_pausa", "En licencia o ausencia temporal");
   }, 60_000);
+
+  beforeAll(async () => {
+    saroDisc = await entradaValidaciones(bd.instalacion);
+  });
 
   afterAll(async () => {
     await bd?.cerrar();

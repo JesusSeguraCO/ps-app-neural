@@ -39,13 +39,17 @@ export async function cuerpoDe<T>(req: Request, esquema: z.ZodType<T>): Promise<
 // es válida en forma pero no en el dominio (valor inexistente, familia requerida…).
 const CONFLICTO = new Set(["duplicado", "parecido", "ya_decidida", "mismo_valor", "distinto_catalogo", "distinta_familia", "modalidad_repetida", "version_distinta", "editar_publicado", "sin_consentimiento", "archivado", "nombre_repetido", "lote_no_calculado", "lote_no_aplicado", "no_es_la_ultima", "no_publicable", "transicion_invalida", "no_es_publicado", "borrador_resuelto", "modalidad_cambio", "no_aplica", "incoherencia", "ya_colocado", "ya_inscrito", "ultimo_administrador", "dado_de_baja"]);
 
-export async function responderRechazos(acto: () => Promise<Response>): Promise<Response> {
+// `extra` viaja también en el rechazo: el aviso de lenguaje de HU-194 se muestra aparte del error.
+export async function responderRechazos(
+  acto: () => Promise<Response>,
+  extra: Record<string, unknown> = {},
+): Promise<Response> {
   try {
     return await acto();
   } catch (e) {
     if (!(e instanceof RechazoInventario)) throw e;
     const status = e.motivo === "no_existe" ? 404 : CONFLICTO.has(e.motivo) ? 409 : 422;
-    return respuestaJson(status, { motivo: e.motivo, ...e.detalle });
+    return respuestaJson(status, { motivo: e.motivo, ...e.detalle, ...extra });
   }
 }
 
@@ -100,6 +104,11 @@ export const entradaPerfil = z.strictObject({
   idiomas: z.array(z.string().max(60)).max(8).optional(),
   selloPersonal: z.array(z.string().max(80)).max(3).optional(),
   aporte: corto(280),
+  // Validaciones de entrada (HU-176): el alcance es un id del catálogo cerrado, nunca texto; las fechas,
+  // AAAA-MM-DD (la regla de no futura la aplica el dominio con su mensaje).
+  saroAlcanceId: z.uuid().nullish(),
+  saroFecha: fechaCivil.nullish(),
+  discFecha: fechaCivil.nullish(),
   experiencias: z
     .array(
       z.strictObject({

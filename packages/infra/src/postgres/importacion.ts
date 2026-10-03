@@ -44,7 +44,8 @@ export async function bancoEnFormato(bd: Consultor): Promise<FilaBanco[]> {
             mo.nombre AS modalidad, ci.nombre AS ciudad,
             to_char(p.disponibilidad_fecha, 'YYYY-MM-DD') AS disponibilidad,
             mp.nombre AS modalidad_prueba, p.capacidad, p.anclaje, p.resumen, p.formacion, p.vinculo,
-            p.idiomas, p.sello_personal, mpa.nombre AS motivo_pausa,
+            p.idiomas, p.sello_personal, mpa.nombre AS motivo_pausa, sa.nombre AS saro_alcance,
+            to_char(p.saro_fecha, 'YYYY-MM-DD') AS saro_fecha, to_char(p.disc_fecha, 'YYYY-MM-DD') AS disc_fecha,
             COALESCE((SELECT json_agg(json_build_object('cargo', e.cargo, 'cliente', e.cliente_nombrado,
                                                         'desde', e.desde, 'hasta', e.hasta,
                                                         'descripcion', e.descripcion) ORDER BY e.orden)
@@ -56,6 +57,7 @@ export async function bancoEnFormato(bd: Consultor): Promise<FilaBanco[]> {
        LEFT JOIN inventario.catalogo_ciudades ci ON ci.id = p.ciudad_id
        LEFT JOIN inventario.catalogo_modalidades_prueba mp ON mp.id = p.modalidad_prueba_id
        LEFT JOIN inventario.catalogo_motivos_pausa mpa ON mpa.id = p.motivo_pausa_id
+       LEFT JOIN inventario.catalogo_alcances_saro sa ON sa.id = p.saro_alcance_id
       ORDER BY p.codigo`,
   );
   return r.rows.map((p) => {
@@ -76,6 +78,10 @@ export async function bancoEnFormato(bd: Consultor): Promise<FilaBanco[]> {
       ciudad: p.ciudad,
       disponibilidad: p.disponibilidad,
       modalidadPrueba: p.modalidad_prueba,
+      // El alcance como está registrado en el catálogo (HU-191); las fechas en AAAA-MM-DD.
+      saroAlcance: p.saro_alcance,
+      saroFecha: p.saro_fecha,
+      discFecha: p.disc_fecha,
       capacidad: p.capacidad,
       anclaje: p.anclaje,
       resumen: p.resumen,
@@ -127,6 +133,11 @@ export async function catalogosImportacion(bd: Consultor): Promise<Catalogos> {
     motivosPausa: await nombres(
       `SELECT nombre FROM inventario.catalogo_motivos_pausa ORDER BY nombre`,
     ),
+    alcancesSaro: (
+      await bd.query(
+        `SELECT nombre, activo FROM inventario.catalogo_alcances_saro WHERE ${vivo} ORDER BY nombre`,
+      )
+    ).rows,
   };
 }
 
@@ -615,4 +626,13 @@ export async function erroresDelLote(bd: Consultor, id: string): Promise<Errores
     todas,
     causaComun,
   };
+}
+
+// Un alcance SARO activo para el ejemplo de la plantilla (HU-191), o null si no hay ninguno.
+export async function alcanceActivoDeEjemplo(bd: Consultor): Promise<string | null> {
+  const r = await bd.query(
+    `SELECT nombre FROM inventario.catalogo_alcances_saro
+      WHERE activo AND fusionado_en_id IS NULL ORDER BY nombre LIMIT 1`,
+  );
+  return (r.rows[0]?.nombre as string | undefined) ?? null;
 }

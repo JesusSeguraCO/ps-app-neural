@@ -92,6 +92,8 @@ Cubre **RF-6.1** (encabezado breve antes del primer resultado, sin bloquear la e
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-6.1 · RF-6.2 · RF-6.3 · RF-6.4 · RF-3.8 · B.6 · D59 · D64 · D73 · D80 · D97 · validación 2026-10-02 (copy de la prueba técnica) · depende de HU-178 (conteo de publicados incompletos) · pantallas compartidas con EP-001 (HU-091, HU-093, HU-144, banco ampliado), EP-002 y EP-009 · relacionada con HU-158 (SLA y recordatorio del estándar en la ficha) y HU-153 (tarjeta sin insignia)
 
 ## INVEST

@@ -64,6 +64,8 @@ Cubre **RF-3.3** (se publican nombre y primer apellido; no foto, correo, teléfo
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-3.3 · RF-3.3.1 · RF-3.3.2 · RF-3.13.4 · B.4 · D-1 · D-10 · D73 · depende de HU-147 (contacto de Trycore, EP-006) · relacionada con HU-158 (cierre de la ficha) y HU-154 (lista negra en la ficha)
 
 ## INVEST

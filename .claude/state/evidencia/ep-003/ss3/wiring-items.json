@@ -1,0 +1,14 @@
+[
+  {"item_id": "HU-191-ac1-completar-incompletos-con-hoja", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "HU-191-ac2-exportacion-ida-y-vuelta", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "HU-191-ac3-plantilla-tres-columnas", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "HU-191-ac4a-alcance-fuera-de-catalogo", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "HU-191-ac4b-fecha-saro-futura", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "HU-191-ac4c-fecha-disc-ilegible", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "HU-191-ac5-vaciar-en-publicado", "kind": "hu_ac", "ref": "HU-191"},
+  {"item_id": "INT-SS3-emparejar-fecha-disc-sin-abrir-b4", "kind": "integration_point", "ref": "EP-003#b4-disc"},
+  {"item_id": "INT-SS3-aplicar-worker-servicio-perfiles", "kind": "integration_point", "ref": "EP-003#aplicar-importacion"},
+  {"item_id": "INT-SS3-revertir-restaura-saro-disc", "kind": "integration_point", "ref": "EP-003#revertir-importacion"},
+  {"item_id": "INT-SS3-alcance-desactivado-no-se-asigna", "kind": "integration_point", "ref": "EP-003#alcance-desactivado"},
+  {"item_id": "INT-SS3-journey-smoke", "kind": "integration_point", "ref": "EP-003#journey-ss3"}
+]

@@ -40,7 +40,7 @@ describe("FichaPerfil · validación técnica", () => {
     expect(html(datos)).toContain("Validada por Trycore con un reto de código.");
   });
 
-  it("Nivel 1: modalidad · resultado, evaluador · fecha y los criterios evaluados", () => {
+  it("Nivel 1 (HU-155, D59): prueba aplicada, qué se evaluó, «Cumple el estándar», evaluador y mes de año", () => {
     const h = html({
       ...datos,
       reporte: {
@@ -51,8 +51,31 @@ describe("FichaPerfil · validación técnica", () => {
         criterios: ["Diseño de servicios", "Cobertura de pruebas"],
       },
     });
-    expect(h).toContain("Reto de código sustentado · Aprobada, nivel senior");
-    expect(h).toContain("Célula de arquitectura de Trycore · 29 sep 2026");
-    expect(h).toContain("Evaluó: Diseño de servicios · Cobertura de pruebas.");
+    expect(h).toContain("<dt>Prueba aplicada</dt><dd>Reto de código sustentado</dd>");
+    expect(h).toContain("<dt>Qué se evaluó</dt><dd>Diseño de servicios · Cobertura de pruebas</dd>");
+    expect(h).toContain("<dt>Resultado</dt><dd>Cumple el estándar</dd>");
+    expect(h).toContain("<dt>Evaluador</dt><dd>Célula de arquitectura de Trycore</dd>");
+    expect(h).toContain("<dt>Fecha</dt><dd>septiembre de 2026</dd>");
+  });
+});
+
+describe("FichaPerfil · SARO y DISC (HU-176, vista previa = ficha del portal)", () => {
+  it("en «Verificado por Trycore»: el texto del alcance con su mes, y la DISC con su mes", () => {
+    const h = html({
+      ...datos,
+      saro: { texto: "Verificamos antecedentes judiciales, disciplinarios y fiscales.", fecha: "2026-03-15" },
+      disc: { fecha: "2026-04-10" },
+    });
+    const verificado = h.slice(h.indexOf("Verificado por Trycore"), h.indexOf("Declarado por la persona"));
+    expect(verificado).toContain("Verificación de seguridad SARO");
+    expect(verificado).toContain("Verificamos antecedentes judiciales, disciplinarios y fiscales. · marzo de 2026");
+    expect(verificado).toContain("Evaluación DISC");
+    expect(verificado).toContain("abril de 2026");
+  });
+
+  it("sin datos no dibuja la línea ni deja hueco (D62)", () => {
+    const h = html({ ...datos, saro: null, disc: null });
+    expect(h).not.toContain("Verificación de seguridad SARO");
+    expect(h).not.toContain("Evaluación DISC");
   });
 });

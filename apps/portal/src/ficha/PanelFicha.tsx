@@ -1,8 +1,11 @@
 // Ficha del perfil en panel lateral sobre la lista (prototipo ficha-perfil--sin-criterios; HU-120, D47).
 // La dibuja el mismo componente que la vista previa del panel (HU-129): lo que el cliente ve es lo que
-// Talento Humano previsualizó. Sin criterios de búsqueda no hay bloque de evidencia (HU-119 · error).
+// Talento Humano previsualizó. Con un filtro activo del banco, «Frente a tu búsqueda» lleva las mismas
+// líneas ✓/– que la tarjeta; sin criterios (la selección del correo) no hay bloque (HU-119 · edge).
 // Anterior, siguiente y cerrar son enlaces: la lista de detrás no se pierde ni se recarga distinta.
 import type { FichaPerfil as Ficha } from "@ps/contratos/ficha";
+import type { LineaEvidencia } from "@ps/dominio/catalogo/evidencia";
+import type { ContactoTrycore } from "@ps/dominio/contacto/contacto";
 import type { Recorrido } from "@ps/dominio/catalogo/recorrido";
 import { FichaPerfil } from "@ps/ui/FichaPerfil";
 import { AtajosFicha } from "./AtajosFicha";
@@ -37,9 +40,13 @@ export function PanelFicha(p: {
   recorrido: Recorrido;
   lista: string;
   href: (codigo: string | null) => string;
+  // Cerrar vuelve a la misma lista, con su filtro, en la posición del perfil abierto (HU-120).
+  cerrar: string;
+  evidencia?: readonly LineaEvidencia[];
+  contacto?: ContactoTrycore;
 }) {
   const { posicion, total, anterior, siguiente } = p.recorrido;
-  const cerrar = p.href(null);
+  const cerrar = p.cerrar;
   const enlaceDe = (c: string | null) => (c ? p.href(c) : null);
   const barra = (
     <div className="fp-barra">
@@ -75,7 +82,7 @@ export function PanelFicha(p: {
     <>
       <a className="pp-hoja-velo" href={cerrar} aria-hidden="true" tabIndex={-1} />
       {p.ficha ? (
-        <FichaPerfil ficha={p.ficha} barra={barra} dialogo />
+        <FichaPerfil ficha={p.ficha} barra={barra} dialogo evidencia={p.evidencia} contacto={p.contacto} />
       ) : (
         <article className="pp-hoja fp-ficha" aria-labelledby="fp-titulo" role="dialog" aria-modal id="ficha">
           {barra}

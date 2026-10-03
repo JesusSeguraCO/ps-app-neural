@@ -8,6 +8,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import type pg from "pg";
 import type { SesionPortalVerificada } from "@ps/dominio/acceso/sesion";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
+import { entradaValidaciones } from "../pruebas/validaciones-entrada";
 import type { ClavesAuditoria } from "./auditoria";
 import { fichaDelPortal } from "./catalogo";
 import { crearPerfil, leerPerfil, publicarPerfil, registrarConsentimiento } from "./perfiles-panel";
@@ -39,6 +40,9 @@ async function rechazo(p: Promise<unknown>) {
   throw new Error("sin_rechazo");
 }
 
+// Alcance SARO y fechas para las entradas completas (lo siembra `sembrarFicticios`).
+let saroDisc: Awaited<ReturnType<typeof entradaValidaciones>>;
+
 describe.skipIf(!HAY_BD)("reporte de validación (HU-140, HU-130)", () => {
   let bd: BdPrueba;
   let panel: pg.Pool;
@@ -60,6 +64,8 @@ describe.skipIf(!HAY_BD)("reporte de validación (HU-140, HU-130)", () => {
     modalidadTrabajoId: ids.hibrido,
     disponibilidad: { opcion: "ahora" as const },
     modalidadPruebaId: ids.prueba,
+    // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+    ...saroDisc,
     experiencias: [{ cargo: "Backend senior", desde: 2021, hasta: 2026, descripcion: "Pagos." }],
     ...extra,
   });
@@ -115,6 +121,10 @@ describe.skipIf(!HAY_BD)("reporte de validación (HU-140, HU-130)", () => {
       [ids.prueba],
     );
   }, 60_000);
+
+  beforeAll(async () => {
+    saroDisc = await entradaValidaciones(bd.instalacion);
+  });
 
   afterAll(async () => {
     await bd?.cerrar();

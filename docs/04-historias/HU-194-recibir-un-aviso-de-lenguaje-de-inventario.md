@@ -69,6 +69,8 @@ Cubre el lado del panel de **RF-3.6** (la calidez la carga la prosa; prohibido e
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.18 · RF-3.6 · RF-8 · RF-16 · D60 · D73 · validación 2026-10-02 · nace del edge case retirado de HU-154 · toca el editor del panel de **EP-006, que sigue cerrada** · depende de HU-125 (editor del perfil), HU-126 (editar un publicado) y HU-176 (la regla de fecha no futura que usa el escenario de error) · relacionada con HU-154 (la ficha que lee la trayectoria)
 
 ## INVEST

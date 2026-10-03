@@ -50,6 +50,28 @@ export function fechaCivil(aaaammdd: string): string {
   return `${d} ${MESES[m! - 1]} ${a}`;
 }
 
+const MESES_LARGOS = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+
+// «marzo de 2026» para una fecha civil AAAA-MM-DD: así muestra la ficha cuándo se hizo una verificación
+// (SARO, DISC; HU-176, HU-156), sin el día.
+export function mesDeAnio(aaaammdd: string): string {
+  const [a, m] = aaaammdd.split("-").map(Number);
+  return `${MESES_LARGOS[m! - 1]} de ${a}`;
+}
+
 const bogota = (fecha: Date) => new Date(fecha.getTime() - 5 * 3_600_000);
 const mismoDia = (a: Date, b: Date) =>
   a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCDate() === b.getUTCDate();

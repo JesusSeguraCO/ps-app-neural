@@ -4,6 +4,8 @@
 .pe-alerta { margin-bottom: var(--tc-sp-6); }
 .pe-alerta ul { margin: var(--tc-sp-1) 0 0; padding-left: var(--tc-sp-4); }
 .pe-alerta li + li { margin-top: var(--tc-sp-1); }
+/* Expresión de inventario señalada en el aviso de lenguaje (HU-194). */
+.pe-expresion { padding: 0 2px; border-radius: var(--tc-r-sm); background: var(--tc-amber-soft); color: inherit; font-weight: var(--tc-fw-semibold); }
 .pe-lienzo { background: var(--tc-card); border: 1px solid var(--tc-border); border-radius: var(--tc-r-md); box-shadow: var(--tc-sh-1); padding: var(--tc-sp-8) var(--tc-sp-8) 0; }
 .pe-lienzo .pp-form-fila { padding-top: var(--tc-sp-8); padding-bottom: var(--tc-sp-8); }
 .pe-lienzo .pp-form-fila:first-child { padding-top: 0; }

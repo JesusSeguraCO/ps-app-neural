@@ -11,7 +11,7 @@ import {
   type EstadoSeleccion,
   type SeleccionReevaluada,
 } from "@ps/dominio/enlaces/seleccion";
-import { proyectar } from "./catalogo";
+import { COLUMNAS_TARJETA, proyectar } from "./catalogo";
 
 export interface Aterrizaje {
   cuenta: string;
@@ -36,10 +36,7 @@ export async function aterrizajeDelEnlace(
   if (!enlace) throw new Error("enlace de la sesión inexistente");
   const codigos: string[] = enlace.codigos_perfil;
   const publicados = await bd.query(
-    `SELECT codigo, nombre, primer_apellido, familia, roles, seniority, anios_experiencia, tecnologias,
-            sectores, modalidad, pais, disponibilidad_fecha::text AS disponibilidad_fecha,
-            disponibilidad_actualizada_en
-       FROM operacion.catalogo_publicable WHERE codigo = ANY($1)`,
+    `SELECT ${COLUMNAS_TARJETA} FROM operacion.catalogo_publicable WHERE codigo = ANY($1)`,
     [codigos],
   );
   const otros = await bd.query(

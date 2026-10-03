@@ -1,0 +1,3496 @@
+{
+ "info": {
+  "name": "EP-003 · Evidencia del perfil (contrato API)",
+  "description": "Generada por tests/postman/generar-ep-003.mjs. Correr con tests/postman/correr-ep-003.sh (BD aislada ps_ep003, portal :3210, panel :3211).",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+ },
+ "variable": [
+  {
+   "key": "codigo",
+   "value": ""
+  },
+  {
+   "key": "version",
+   "value": ""
+  },
+  {
+   "key": "alcanceId",
+   "value": ""
+  },
+  {
+   "key": "codigoBorrador",
+   "value": ""
+  },
+  {
+   "key": "sondeos",
+   "value": 0
+  }
+ ],
+ "item": [
+  {
+   "name": "1 · Catálogo de alcances SARO: alta",
+   "item": [
+    {
+     "name": "lista el catálogo con el texto de cara al cliente",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"valores[] con textoCliente\", () => { const j = pm.response.json(); pm.expect(j.valores).to.be.an(\"array\").that.is.not.empty; j.valores.forEach((v) => { pm.expect(v).to.include.keys(\"id\", \"nombre\", \"activo\", \"textoCliente\", \"perfiles\", \"publicados\"); pm.expect(v.textoCliente).to.be.a(\"string\").and.not.empty; }); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro"
+     }
+    },
+    {
+     "name": "crear un alcance → 201",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"valor con claves exactas\", () => { const j = pm.response.json(); pm.expect(Object.keys(j)).to.eql([\"valor\"]); pm.expect(Object.keys(j.valor).sort()).to.eql([\"advertencia\", \"familia\", \"id\", \"nombre\"]); pm.expect(j.valor.nombre).to.eql(\"Alcance n3-\" + pm.variables.get(\"run\")); });",
+         "pm.collectionVariables.set(\"alcanceId\", pm.response.json().valor.id);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance n3-{{run}}\",\"textoCliente\":\"Verificamos sus antecedentes ante Policía y Procuraduría (n3).\"}"
+      }
+     }
+    },
+    {
+     "name": "duplicado idéntico salvo mayúsculas → 409 con el existente",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+         "pm.test(\"motivo duplicado\", () => pm.expect(pm.response.json().motivo).to.eql(\"duplicado\"));",
+         "pm.test(\"señala el existente\", () => { const j = pm.response.json(); pm.expect(j.existente.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"ALCANCE N3-{{run}}\",\"textoCliente\":\"Otro texto.\"}"
+      }
+     }
+    },
+    {
+     "name": "sin texto de cara al cliente → 422 texto_cliente_requerido",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo texto_cliente_requerido\", () => pm.expect(pm.response.json().motivo).to.eql(\"texto_cliente_requerido\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance sin texto n3-{{run}}\"}"
+      }
+     }
+    },
+    {
+     "name": "texto en blanco → 422 texto_cliente_requerido",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo texto_cliente_requerido\", () => pm.expect(pm.response.json().motivo).to.eql(\"texto_cliente_requerido\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance en blanco n3-{{run}}\",\"textoCliente\":\"   \"}"
+      }
+     }
+    },
+    {
+     "name": "texto de 281 caracteres → 422 texto_cliente_largo con el máximo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo texto_cliente_largo\", () => pm.expect(pm.response.json().motivo).to.eql(\"texto_cliente_largo\"));",
+         "pm.test(\"maximo 280\", () => { const j = pm.response.json(); pm.expect(j.maximo).to.eql(280); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance largo n3-{{run}}\",\"textoCliente\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
+      }
+     }
+    },
+    {
+     "name": "texto de exactamente 280 caracteres → 201 (límite)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance limite n3-{{run}}\",\"textoCliente\":\"Verificamos sus antecedentes judiciales, disciplinarios y fiscales ante las entidades oficiales. Verificamos sus antecedentes judiciales, disciplinarios y fiscales ante las entidades oficiales. Verificamos sus antecedentes judiciales, disciplinarios y fiscales ante las entidades.\"}"
+      }
+     }
+    },
+    {
+     "name": "entrada fuera de forma → 400",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+         "pm.test(\"motivo entrada_invalida\", () => pm.expect(pm.response.json().motivo).to.eql(\"entrada_invalida\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":7}"
+      }
+     }
+    },
+    {
+     "name": "observadora crea → 403 sin_permiso",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance obs n3-{{run}}\",\"textoCliente\":\"Verificamos sus antecedentes ante Policía y Procuraduría (n3).\"}"
+      }
+     }
+    },
+    {
+     "name": "fichas que dependen del alcance nuevo: ninguna",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"sin publicados\", () => { const j = pm.response.json(); pm.expect(j.publicados).to.eql([]); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}"
+     }
+    }
+   ]
+  },
+  {
+   "name": "2 · Perfiles: SARO, DISC y avisos",
+   "item": [
+    {
+     "name": "crear sin SARO/DISC, con lenguaje de inventario → 201 + aviso",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"aviso de lenguaje de inventario «disponible para asignación»\", () => { const j = pm.response.json(); pm.expect(j.avisos).to.eql([{ tipo: \"lenguaje_inventario\", expresion: \"disponible para asignación\" }]); });",
+         "pm.test(\"nace en borrador con saro/disc vacíos\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"borrador\"); pm.expect(j.perfil.saro).to.eql({ alcance: null, fecha: null }); pm.expect(j.perfil.disc).to.eql({ fecha: null }); });",
+         "pm.test(\"evaluación con las tres condiciones nuevas sin cumplir\", () => { const j = pm.response.json(); [\"saro_alcance\", \"saro_fecha\", \"disc_fecha\"].forEach((k) => pm.expect(j.perfil.evaluacion.condiciones.find((c) => c.clave === k).cumple).to.eql(false)); pm.expect(j.perfil.evaluacion.publicable).to.eql(false); });",
+         "pm.collectionVariables.set(\"codigo\", pm.response.json().perfil.codigo);",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"Backend senior\",\"desde\":2021,\"descripcion\":\"Pagos inmediatos; recurso disponible para asignación.\"}]}"
+      }
+     }
+    },
+    {
+     "name": "la expresión con otra escritura («ITEM») también avisa",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"aviso de lenguaje de inventario «ITEM»\", () => { const j = pm.response.json(); pm.expect(j.avisos).to.eql([{ tipo: \"lenguaje_inventario\", expresion: \"ITEM\" }]); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Cada ITEM del backlog.\"}]}"
+      }
+     }
+    },
+    {
+     "name": "dentro de otra palabra («itemizada») no avisa",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"avisos vacío\", () => { const j = pm.response.json(); pm.expect(j.avisos).to.eql([]); });",
+         "pm.collectionVariables.set(\"codigoBorrador\", pm.response.json().perfil.codigo);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}]}"
+      }
+     }
+    },
+    {
+     "name": "fecha SARO futura → 422 con el campo, y el aviso aparte",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo fecha_verificacion_futura\", () => pm.expect(pm.response.json().motivo).to.eql(\"fecha_verificacion_futura\"));",
+         "pm.test(\"campo saroFecha\", () => { const j = pm.response.json(); pm.expect(j.campo).to.eql(\"saroFecha\"); pm.expect(j.valor).to.eql(pm.variables.get(\"manana\")); });",
+         "pm.test(\"aviso de lenguaje de inventario «disponible para asignación»\", () => { const j = pm.response.json(); pm.expect(j.avisos).to.eql([{ tipo: \"lenguaje_inventario\", expresion: \"disponible para asignación\" }]); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"Backend senior\",\"desde\":2021,\"descripcion\":\"Pagos inmediatos; recurso disponible para asignación.\"}],\"saroAlcanceId\":\"{{alcanceId}}\",\"saroFecha\":\"{{manana}}\",\"discFecha\":\"{{hoy}}\"}"
+      }
+     }
+    },
+    {
+     "name": "fecha DISC futura → 422 campo discFecha",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo fecha_verificacion_futura\", () => pm.expect(pm.response.json().motivo).to.eql(\"fecha_verificacion_futura\"));",
+         "pm.test(\"campo discFecha\", () => { const j = pm.response.json(); pm.expect(j.campo).to.eql(\"discFecha\"); pm.expect(j.avisos).to.eql([]); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}],\"discFecha\":\"{{manana}}\"}"
+      }
+     }
+    },
+    {
+     "name": "fecha que no existe (31 de febrero) → 422 ilegible",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo fecha_verificacion_ilegible\", () => pm.expect(pm.response.json().motivo).to.eql(\"fecha_verificacion_ilegible\"));",
+         "pm.test(\"campo saroFecha\", () => { const j = pm.response.json(); pm.expect(j.campo).to.eql(\"saroFecha\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}],\"saroFecha\":\"2026-02-31\"}"
+      }
+     }
+    },
+    {
+     "name": "fecha SARO de hoy → 201 (límite)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"guarda alcance y fechas\", () => { const j = pm.response.json(); pm.expect(j.perfil.saro.alcance.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); pm.expect(j.perfil.saro.fecha).to.eql(pm.variables.get(\"hoy\")); pm.expect(j.perfil.disc.fecha).to.eql(pm.variables.get(\"hoy\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}],\"saroAlcanceId\":\"{{alcanceId}}\",\"saroFecha\":\"{{hoy}}\",\"discFecha\":\"{{hoy}}\"}"
+      }
+     }
+    },
+    {
+     "name": "alcance como texto libre (no uuid) → 400",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+         "pm.test(\"motivo entrada_invalida\", () => pm.expect(pm.response.json().motivo).to.eql(\"entrada_invalida\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}],\"saroAlcanceId\":\"Antecedentes judiciales\"}"
+      }
+     }
+    },
+    {
+     "name": "alcance que no está en el catálogo → 422 valor_no_disponible",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo valor_no_disponible\", () => pm.expect(pm.response.json().motivo).to.eql(\"valor_no_disponible\"));",
+         "pm.test(\"señala la tabla\", () => { const j = pm.response.json(); pm.expect(j.tabla).to.eql(\"catalogo_alcances_saro\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}],\"saroAlcanceId\":\"00000000-0000-4000-8000-000000000000\"}"
+      }
+     }
+    },
+    {
+     "name": "observadora crea → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}]}"
+      }
+     }
+    },
+    {
+     "name": "registrar el consentimiento",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}/consentimiento",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombreApellido\":true,\"trayectoria\":true,\"clientes\":true}"
+      }
+     }
+    },
+    {
+     "name": "publicar sin SARO/DISC → 409 «Falta el alcance de la verificación SARO»",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+         "pm.test(\"motivo no_publicable\", () => pm.expect(pm.response.json().motivo).to.eql(\"no_publicable\"));",
+         "pm.test(\"«Falta el alcance de la verificación SARO» con su campo\", () => { const j = pm.response.json(); const c = j.evaluacion.condiciones.find((x) => x.clave === \"saro_alcance\"); pm.expect(c.cumple).to.eql(false); pm.expect(\"Falta \" + c.motivo).to.eql(\"Falta el alcance de la verificación SARO\"); pm.expect(c.campo).to.eql(\"saro_alcance\"); });",
+         "pm.test(\"«Falta la fecha de la verificación SARO» con su campo\", () => { const j = pm.response.json(); const c = j.evaluacion.condiciones.find((x) => x.clave === \"saro_fecha\"); pm.expect(c.cumple).to.eql(false); pm.expect(\"Falta \" + c.motivo).to.eql(\"Falta la fecha de la verificación SARO\"); pm.expect(c.campo).to.eql(\"saro_fecha\"); });",
+         "pm.test(\"«Falta la fecha de la evaluación DISC» con su campo\", () => { const j = pm.response.json(); const c = j.evaluacion.condiciones.find((x) => x.clave === \"disc_fecha\"); pm.expect(c.cumple).to.eql(false); pm.expect(\"Falta \" + c.motivo).to.eql(\"Falta la fecha de la evaluación DISC\"); pm.expect(c.campo).to.eql(\"disc_fecha\"); });",
+         "pm.test(\"consentimiento cumple\", () => { const j = pm.response.json(); pm.expect(j.evaluacion.condiciones.find((c) => c.clave === \"consentimiento\").cumple === true).to.eql(true); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}/publicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "guardar el alcance SARO",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"alcance con su texto de cara al cliente\", () => { const j = pm.response.json(); pm.expect(j.perfil.saro.alcance).to.eql({ id: pm.collectionVariables.get(\"alcanceId\"), nombre: \"Alcance n3-\" + pm.variables.get(\"run\"), textoCliente: \"Verificamos sus antecedentes ante Policía y Procuraduría (n3).\", activo: true }); pm.expect(j.avisos).to.eql([]); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":\"{{alcanceId}}\"}"
+      }
+     }
+    },
+    {
+     "name": "publicar sin fecha SARO → 409 «Falta la fecha de la verificación SARO»",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+         "pm.test(\"motivo no_publicable\", () => pm.expect(pm.response.json().motivo).to.eql(\"no_publicable\"));",
+         "pm.test(\"saro_alcance cumple\", () => { const j = pm.response.json(); pm.expect(j.evaluacion.condiciones.find((c) => c.clave === \"saro_alcance\").cumple === true).to.eql(true); });",
+         "pm.test(\"«Falta la fecha de la verificación SARO» con su campo\", () => { const j = pm.response.json(); const c = j.evaluacion.condiciones.find((x) => x.clave === \"saro_fecha\"); pm.expect(c.cumple).to.eql(false); pm.expect(\"Falta \" + c.motivo).to.eql(\"Falta la fecha de la verificación SARO\"); pm.expect(c.campo).to.eql(\"saro_fecha\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}/publicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "guardar fecha SARO futura → 422 y nada escrito",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo fecha_verificacion_futura\", () => pm.expect(pm.response.json().motivo).to.eql(\"fecha_verificacion_futura\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroFecha\":\"{{manana}}\"}"
+      }
+     }
+    },
+    {
+     "name": "guardar la fecha SARO",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"fecha guardada\", () => { const j = pm.response.json(); pm.expect(j.perfil.saro.fecha).to.eql(\"2026-09-15\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroFecha\":\"2026-09-15\"}"
+      }
+     }
+    },
+    {
+     "name": "publicar sin fecha DISC → 409 «Falta la fecha de la evaluación DISC»",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+         "pm.test(\"saro_fecha cumple\", () => { const j = pm.response.json(); pm.expect(j.evaluacion.condiciones.find((c) => c.clave === \"saro_fecha\").cumple === true).to.eql(true); });",
+         "pm.test(\"«Falta la fecha de la evaluación DISC» con su campo\", () => { const j = pm.response.json(); const c = j.evaluacion.condiciones.find((x) => x.clave === \"disc_fecha\"); pm.expect(c.cumple).to.eql(false); pm.expect(\"Falta \" + c.motivo).to.eql(\"Falta la fecha de la evaluación DISC\"); pm.expect(c.campo).to.eql(\"disc_fecha\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}/publicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "guardar la fecha DISC",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"evaluación publicable\", () => { const j = pm.response.json(); pm.expect(j.perfil.disc.fecha).to.eql(\"2026-09-20\"); pm.expect(j.perfil.evaluacion.publicable).to.eql(true); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"discFecha\":\"2026-09-20\"}"
+      }
+     }
+    },
+    {
+     "name": "publicar completo → 200 publicado",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"publicado\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"publicado\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}/publicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "listado: el publicado completo no lleva marca Incompleto",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"incompleto null\", () => { const j = pm.response.json(); const f = j.perfiles.find((p) => p.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(f.estado).to.eql(\"publicado\"); pm.expect(f.incompleto).to.eql(null); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles"
+     }
+    },
+    {
+     "name": "previsualizar corregir la fecha DISC de un publicado → impacto en meses",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"cambio de cara al cliente\", () => { const j = pm.response.json(); pm.expect(Object.keys(j).sort()).to.eql([\"avisos\", \"impacto\", \"perfil\"]); pm.expect(j.impacto.cambios).to.deep.include({ campo: \"disc\", etiqueta: \"Evaluación DISC\", antes: \"septiembre de 2026\", despues: \"agosto de 2026\" }); pm.expect(j.perfil.disc.fecha).to.eql(\"2026-09-20\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"discFecha\":\"2026-08-01\"}"
+      }
+     }
+    },
+    {
+     "name": "confirmar la corrección",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"fecha corregida y sigue publicado\", () => { const j = pm.response.json(); pm.expect(j.perfil.disc.fecha).to.eql(\"2026-08-01\"); pm.expect(j.perfil.estado).to.eql(\"publicado\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"discFecha\":\"2026-08-01\"}"
+      }
+     }
+    },
+    {
+     "name": "D1 · previsualizar quitar el alcance → 200 deja_incompleto con la pregunta",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"motivo deja_incompleto\", () => pm.expect(pm.response.json().motivo).to.eql(\"deja_incompleto\"));",
+         "pm.test(\"pregunta D1\", () => { const j = pm.response.json(); pm.expect(j.pregunta).to.eql(\"Este cambio deja el perfil incompleto: ¿descarto el cambio o paso el perfil a borrador?\"); pm.expect(j.yaIncompleto).to.eql(false); pm.expect(j.faltaPara).to.be.a(\"string\").and.not.empty; });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":null}"
+      }
+     }
+    },
+    {
+     "name": "D1 · confirmar sin responder la pregunta → 409",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+         "pm.test(\"motivo deja_incompleto\", () => pm.expect(pm.response.json().motivo).to.eql(\"deja_incompleto\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":null}"
+      }
+     }
+    },
+    {
+     "name": "D1 · resolución descartar → 200 y nada escrito",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"descartado, alcance intacto\", () => { const j = pm.response.json(); pm.expect(j.descartado).to.eql(true); pm.expect(j.perfil.saro.alcance.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); pm.expect(j.perfil.estado).to.eql(\"publicado\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}?resolucion=descartar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":null}"
+      }
+     }
+    },
+    {
+     "name": "observadora edita → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"discFecha\":\"2026-08-02\"}"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "3 · Portal: catálogo y ficha",
+   "item": [
+    {
+     "name": "catálogo sin sesión → 401 sin datos",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 401\", () => pm.response.to.have.status(401));",
+         "pm.test(\"motivo sin_sesion\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_sesion\"));",
+         "pm.test(\"sin perfiles\", () => pm.expect(pm.response.text()).to.not.include(\"codigo\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       }
+      ],
+      "url": "{{portal}}/api/v1/catalogo"
+     }
+    },
+    {
+     "name": "catálogo sin cabecera de borde → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"sin perfiles\", () => pm.expect(pm.response.text()).to.not.include(\"PS-\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/api/v1/catalogo"
+     }
+    },
+    {
+     "name": "catálogo con sesión → 200, claves exactas, sin B.4 ni «Incompleto»",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"cache-control private, no-store\", () => pm.expect(pm.response.headers.get(\"cache-control\")).to.include(\"no-store\"));",
+         "pm.test(\"nosniff\", () => pm.expect(pm.response.headers.get(\"x-content-type-options\")).to.eql(\"nosniff\"));",
+         "pm.test(\"solo {perfiles}\", () => { const j = pm.response.json(); pm.expect(Object.keys(j)).to.eql([\"perfiles\"]); pm.expect(j.perfiles).to.be.an(\"array\").that.is.not.empty; });",
+         "pm.test(\"cada perfil con las 13 claves exactas\", () => { const j = pm.response.json(); const k = [\"codigo\",\"nombre\",\"primerApellido\",\"familia\",\"roles\",\"seniority\",\"aniosExperiencia\",\"tecnologias\",\"sectores\",\"modalidad\",\"pais\",\"disponibilidad\",\"selloPersonal\"]; j.perfiles.forEach((p) => pm.expect(Object.keys(p)).to.have.members(k).and.have.lengthOf(k.length)); });",
+         "pm.test(\"selloPersonal ≤ 3 sin vacíos\", () => { const j = pm.response.json(); j.perfiles.forEach((p) => { pm.expect(p.selloPersonal.length).to.be.at.most(3); p.selloPersonal.forEach((s) => pm.expect(s.trim()).to.not.eql(\"\")); }); });",
+         "pm.test(\"ni Incompleto ni falta en el cuerpo\", () => { const h = pm.response.text(); pm.expect(h).to.not.match(/ncomplet|\"falta/i); });",
+         "pm.test(\"sin claves B.4 ni internas\", () => { const h = pm.response.text(); pm.expect(h).to.not.match(/\\\\?\"(foto|fotoUrl|cv|curriculum|telefono|celular|correo|email|motivacion|proyeccion|discDetalle|disc_detalle|perfilDisc|promedio|certificaciones|saroAlcanceId|saro_alcance_id|evaluacion|faltaPara|incompleto|consentimiento)\\\\?\":/i); });",
+         "pm.test(\"el perfil publicado de la corrida llega\", () => { const j = pm.response.json(); pm.expect(j.perfiles.map((p) => p.codigo)).to.include(pm.collectionVariables.get(\"codigo\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/api/v1/catalogo"
+     }
+    },
+    {
+     "name": "ficha del perfil: texto del alcance y mes; nunca id ni nombre interno",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"html\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"text/html\"));",
+         "pm.test(\"cache-control private, no-store\", () => pm.expect(pm.response.headers.get(\"cache-control\")).to.include(\"no-store\"));",
+         "pm.test(\"Verificación de seguridad SARO con el texto de cara al cliente y el mes\", () => { const h = pm.response.text(); pm.expect(h).to.include(\"Verificación de seguridad SARO\"); pm.expect(h).to.include(\"Verificamos sus antecedentes ante Policía y Procuraduría (n3). · septiembre de 2026\"); });",
+         "pm.test(\"Evaluación DISC con el mes\", () => { const h = pm.response.text(); pm.expect(h).to.include(\"Evaluación DISC\"); pm.expect(h).to.include(\"agosto de 2026\"); });",
+         "pm.test(\"ni el id ni el nombre interno del alcance\", () => { const h = pm.response.text(); pm.expect(h).to.not.include(pm.collectionVariables.get(\"alcanceId\")); pm.expect(h).to.not.include(\"Alcance n3-\" + pm.variables.get(\"run\")); });",
+         "pm.test(\"ni fecha exacta de las verificaciones\", () => { const h = pm.response.text(); pm.expect(h).to.not.include(\"2026-09-15\"); pm.expect(h).to.not.include(\"2026-08-01\"); });",
+         "pm.test(\"sin claves B.4 ni internas ni «Incompleto»\", () => { const h = pm.response.text(); pm.expect(h).to.not.match(/\\\\?\"(foto|fotoUrl|cv|curriculum|telefono|celular|correo|email|motivacion|proyeccion|discDetalle|disc_detalle|perfilDisc|promedio|certificaciones|saroAlcanceId|saro_alcance_id|evaluacion|faltaPara|incompleto|consentimiento)\\\\?\":/i); pm.expect(h).to.not.match(/ncomplet/i); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/banco?ficha={{codigo}}"
+     }
+    }
+   ]
+  },
+  {
+   "name": "4 · Alcance SARO en uso: corregir y retirar",
+   "item": [
+    {
+     "name": "previsualizar el texto nuevo → impacto con las fichas publicadas",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"impacto exacto\", () => { const j = pm.response.json(); pm.expect(Object.keys(j)).to.eql([\"impacto\"]); pm.expect(Object.keys(j.impacto).sort()).to.eql([\"publicados\", \"textoCliente\"]); pm.expect(j.impacto.textoCliente).to.eql(\"Verificamos sus antecedentes ante Policía y Procuraduría (n3).\"); pm.expect(j.impacto.publicados.map((p) => p.codigo)).to.include(pm.collectionVariables.get(\"codigo\")); j.impacto.publicados.forEach((p) => pm.expect(Object.keys(p).sort()).to.eql([\"codigo\", \"nombre\"])); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance n3-{{run}}\",\"textoCliente\":\"Verificamos sus antecedentes ante Policía, Procuraduría y Contraloría (n3).\"}"
+      }
+     }
+    },
+    {
+     "name": "previsualizar no escribió: el catálogo conserva el texto",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"texto anterior\", () => { const j = pm.response.json(); pm.expect(j.valores.find((v) => v.id === pm.collectionVariables.get(\"alcanceId\")).textoCliente).to.eql(\"Verificamos sus antecedentes ante Policía y Procuraduría (n3).\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro"
+     }
+    },
+    {
+     "name": "previsualizar en un catálogo sin texto de cara al cliente → 409 no_aplica",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+         "pm.test(\"motivo no_aplica\", () => pm.expect(pm.response.json().motivo).to.eql(\"no_aplica\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/tecnologia/{{tecnologiaId}}?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Kafka\"}"
+      }
+     }
+    },
+    {
+     "name": "previsualizar un alcance inexistente → 404",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 404\", () => pm.response.to.have.status(404));",
+         "pm.test(\"motivo no_existe\", () => pm.expect(pm.response.json().motivo).to.eql(\"no_existe\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/00000000-0000-4000-8000-000000000000?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"x\",\"textoCliente\":\"y\"}"
+      }
+     }
+    },
+    {
+     "name": "confirmar con texto de 281 → 422 texto_cliente_largo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo texto_cliente_largo\", () => pm.expect(pm.response.json().motivo).to.eql(\"texto_cliente_largo\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance n3-{{run}}\",\"textoCliente\":\"ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}"
+      }
+     }
+    },
+    {
+     "name": "observadora corrige → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance n3-{{run}}\",\"textoCliente\":\"Verificamos sus antecedentes ante Policía, Procuraduría y Contraloría (n3).\"}"
+      }
+     }
+    },
+    {
+     "name": "confirmar el texto nuevo → 200",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"valor\", () => { const j = pm.response.json(); pm.expect(j.valor.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Alcance n3-{{run}}\",\"textoCliente\":\"Verificamos sus antecedentes ante Policía, Procuraduría y Contraloría (n3).\"}"
+      }
+     }
+    },
+    {
+     "name": "la ficha del portal ya muestra el texto nuevo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"texto nuevo\", () => { const h = pm.response.text(); pm.expect(h).to.include(\"Verificamos sus antecedentes ante Policía, Procuraduría y Contraloría (n3). · septiembre de 2026\"); pm.expect(h).to.not.include(\"Verificamos sus antecedentes ante Policía y Procuraduría (n3).\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/banco?ficha={{codigo}}"
+     }
+    },
+    {
+     "name": "observadora retira → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}/desactivar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "retirar el alcance en uso → 200 con sus dependientes",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"inactivo y en uso\", () => { const j = pm.response.json(); pm.expect(j.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); pm.expect(j.activo).to.eql(false); pm.expect(j.dependientes).to.be.at.least(1); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}/desactivar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "retirado: la ficha publicada sigue mostrando su texto",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"texto del alcance retirado\", () => { const h = pm.response.text(); pm.expect(h).to.include(\"Verificamos sus antecedentes ante Policía, Procuraduría y Contraloría (n3).\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/banco?ficha={{codigo}}"
+     }
+    },
+    {
+     "name": "retirado: no se puede asignar a un perfil nuevo → 422",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo valor_no_disponible\", () => pm.expect(pm.response.json().motivo).to.eql(\"valor_no_disponible\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"nombre\":\"Lorena\",\"primerApellido\":\"Newman{{run}}\",\"rolId\":\"{{rolId}}\",\"tecnologiaIds\":[\"{{tecnologiaId}}\"],\"seniorityId\":\"{{seniorityId}}\",\"aniosExperiencia\":8,\"ciudadId\":\"{{ciudadId}}\",\"modalidadTrabajoId\":\"{{modalidadId}}\",\"disponibilidad\":{\"opcion\":\"ahora\"},\"modalidadPruebaId\":\"{{modalidadPruebaId}}\",\"experiencias\":[{\"cargo\":\"QA\",\"desde\":2020,\"descripcion\":\"Lista itemizada de pruebas de regresión.\"}],\"saroAlcanceId\":\"{{alcanceId}}\"}"
+      }
+     }
+    },
+    {
+     "name": "reactivar el alcance",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"activo\", () => { const j = pm.response.json(); pm.expect(j.activo).to.eql(true); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/catalogos/alcance_saro/{{alcanceId}}/reactivar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "5 · Importación: plantilla y exportación",
+   "item": [
+    {
+     "name": "plantilla CSV con las columnas SARO/DISC",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"text/csv adjunto\", () => { pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"text/csv\"); pm.expect(pm.response.headers.get(\"content-disposition\")).to.match(/^attachment; filename=\"plantilla-importacion-\\d{4}-\\d{2}-\\d{2}\\.csv\"$/); });",
+         "pm.test(\"cache-control private, no-store\", () => pm.expect(pm.response.headers.get(\"cache-control\")).to.include(\"no-store\"));",
+         "pm.test(\"columnas SARO/DISC tras la modalidad de prueba\", () => { const h = pm.response.text(); const c = h.split(\"\\n\")[0]; pm.expect(c).to.include(\"Modalidad de prueba (del catálogo de su familia),Alcance de la verificación SARO (del catálogo),Fecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA),Fecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/plantilla?formato=csv"
+     }
+    },
+    {
+     "name": "plantilla JSON: la fila de alta trae saroAlcance, saroFecha y discFecha",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"fila de alta\", () => { const j = pm.response.json(); pm.expect(j).to.be.an(\"array\"); const alta = j.find((f) => f.nombre); pm.expect(alta).to.include.keys(\"saroAlcance\", \"saroFecha\", \"discFecha\"); pm.expect(alta.saroFecha).to.match(/^\\d{4}-\\d{2}-\\d{2}$/); pm.expect(alta.discFecha).to.match(/^\\d{4}-\\d{2}-\\d{2}$/); pm.expect(alta).to.not.have.any.keys(\"saroAlcanceId\", \"foto\", \"cv\", \"correo\", \"telefono\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/plantilla?formato=json"
+     }
+    },
+    {
+     "name": "plantilla en otro formato → 400",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 400\", () => pm.response.to.have.status(400));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/plantilla?formato=xlsx"
+     }
+    },
+    {
+     "name": "observadora pide la plantilla → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/plantilla?formato=csv"
+     }
+    },
+    {
+     "name": "exportar CSV: el perfil sale con alcance (nombre interno) y fechas",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"text/csv adjunto\", () => { pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"text/csv\"); pm.expect(pm.response.headers.get(\"content-disposition\")).to.include(\"attachment\"); });",
+         "pm.test(\"columnas SARO/DISC tras la modalidad de prueba\", () => { const h = pm.response.text(); const c = h.split(\"\\n\")[0]; pm.expect(c).to.include(\"Modalidad de prueba (del catálogo de su familia),Alcance de la verificación SARO (del catálogo),Fecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA),Fecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\"); });",
+         "pm.test(\"fila del perfil\", () => { const h = pm.response.text(); const f = h.split(\"\\n\").find((l) => l.startsWith(pm.collectionVariables.get(\"codigo\") + \",\")); pm.expect(f).to.include(\",Prueba práctica revisada por un arquitecto,Alcance n3-\" + pm.variables.get(\"run\") + \",2026-09-15,2026-08-01,\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/exportar?formato=csv"
+     }
+    },
+    {
+     "name": "exportar JSON: saroAlcance, saroFecha y discFecha del perfil",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"item del perfil\", () => { const j = pm.response.json(); const p = j.find((x) => x.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(p.saroAlcance).to.eql(\"Alcance n3-\" + pm.variables.get(\"run\")); pm.expect(p.saroFecha).to.eql(\"2026-09-15\"); pm.expect(p.discFecha).to.eql(\"2026-08-01\"); pm.expect(p).to.not.have.any.keys(\"saroAlcanceId\", \"foto\", \"cv\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/exportar?formato=json"
+     }
+    },
+    {
+     "name": "observadora exporta → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/exportar?formato=csv"
+     }
+    }
+   ]
+  },
+  {
+   "name": "5b · Importación por lotes con SARO/DISC",
+   "item": [
+    {
+     "name": "emparejar: las tres columnas SARO/DISC van a su campo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"formato tsv y 1 fila\", () => { const j = pm.response.json(); pm.expect(j.formato).to.eql(\"tsv\"); pm.expect(j.totalFilas).to.eql(1); });",
+         "pm.test(\"destinos\", () => { const j = pm.response.json(); const d = Object.fromEntries(j.emparejamiento.map((c) => [c.columna, c.destino.tipo === \"campo\" ? c.destino.clave : null])); pm.expect(d).to.eql({\"Código\":\"codigo\",\"Alcance de la verificación SARO (del catálogo)\":\"saroAlcance\",\"Fecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\":\"saroFecha\",\"Fecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\":\"discFecha\"}); });",
+         "pm.collectionVariables.set(\"columnasSaro\", JSON.stringify(pm.response.json().emparejamiento.map((c) => ({ columna: c.columna, clave: c.destino.tipo === \"campo\" ? c.destino.clave : null }))));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/emparejar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigoBorrador}}\\tAlcance n3-{{run}}\\t15/09/2026\\t{{hoy}}\"}"
+      }
+     }
+    },
+    {
+     "name": "vista previa con errores: [vaciar] el SARO de un publicado, fecha futura y alcance fuera del catálogo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"content-type json\", () => pm.expect(pm.response.headers.get(\"content-type\")).to.include(\"application/json\"));",
+         "pm.test(\"lote calculado\", () => { const j = pm.response.json(); pm.expect(j.loteId).to.match(/^[0-9a-f-]{36}$/); pm.expect(j.modo).to.eql(\"crear_y_actualizar\"); });",
+         "pm.test(\"publicado: [vaciar] el alcance → con error, nada que aplicar\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(f.grupo).to.eql(\"con_error\"); pm.expect(f.cambios).to.eql([]); pm.expect(f.errores).to.deep.include({ campo: \"saroAlcance\", mensaje: \"No se puede vaciar una validación de entrada de un perfil publicado; pásalo a borrador desde el editor\" }); });",
+         "pm.test(\"borrador: fecha SARO futura y alcance desconocido → con error en su campo\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigoBorrador\")); pm.expect(f.grupo).to.eql(\"con_error\"); const c = f.errores.map((e) => e.campo); pm.expect(c).to.include(\"saroFecha\"); pm.expect(c).to.include(\"saroAlcance\"); });",
+         "pm.test(\"conteos: 2 con error, nada aplicable\", () => { const j = pm.response.json(); pm.expect(j.plan.conteos.con_error).to.eql(2); pm.expect(j.plan.resumen.actualizar).to.eql(0); });",
+         "pm.collectionVariables.set(\"loteError\", pm.response.json().loteId);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigo}}\\t[vaciar]\\t\\t\\n{{codigoBorrador}}\\tAlcance que no existe {{run}}\\t{{manana}}\\t{{hoy}}\",\"formato\":\"tsv\",\"modo\":\"crear_y_actualizar\",\"columnas\":{{columnasSaro}}}"
+      }
+     }
+    },
+    {
+     "name": "aplicar un lote sin filas aplicables → 422 nada_que_aplicar",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+         "pm.test(\"motivo nada_que_aplicar\", () => pm.expect(pm.response.json().motivo).to.eql(\"nada_que_aplicar\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteError}}/aplicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "observadora calcula un lote → 403",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 403\", () => pm.response.to.have.status(403));",
+         "pm.test(\"motivo sin_permiso\", () => pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso\"));"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{obsSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigoBorrador}}\\tAlcance n3-{{run}}\\t15/09/2026\\t{{hoy}}\",\"formato\":\"tsv\",\"modo\":\"crear_y_actualizar\",\"columnas\":{{columnasSaro}}}"
+      }
+     }
+    },
+    {
+     "name": "vista previa válida: el borrador recibe alcance y fechas (DD/MM/AAAA se lee)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+         "pm.test(\"borrador → actualizado con los tres cambios\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigoBorrador\")); pm.expect(f.grupo).to.eql(\"actualizado\"); pm.expect(f.errores).to.eql([]); const d = Object.fromEntries(f.cambios.map((c) => [c.campo, c.despues])); pm.expect(d).to.eql({ saroAlcance: \"Alcance n3-\" + pm.variables.get(\"run\"), saroFecha: \"2026-09-15\", discFecha: pm.variables.get(\"hoy\") }); });",
+         "pm.test(\"publicado con lo mismo → sin cambios\", () => { const j = pm.response.json(); const f = j.plan.filas.find((x) => x.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(f.grupo).to.eql(\"sin_cambios\"); });",
+         "pm.test(\"la vista previa no expone el id del alcance\", () => { const h = pm.response.text(); pm.expect(h).to.not.include(pm.collectionVariables.get(\"alcanceId\")); });",
+         "pm.collectionVariables.set(\"loteSaro\", pm.response.json().loteId);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"texto\":\"Código\\tAlcance de la verificación SARO (del catálogo)\\tFecha de la verificación SARO (AAAA-MM-DD o DD/MM/AAAA)\\tFecha de la evaluación DISC (AAAA-MM-DD o DD/MM/AAAA)\\n{{codigoBorrador}}\\tALCANCE N3-{{run}}\\t15/09/2026\\t{{hoy}}\\n{{codigo}}\\tAlcance n3-{{run}}\\t2026-09-15\\t2026-08-01\",\"formato\":\"tsv\",\"modo\":\"crear_y_actualizar\",\"columnas\":{{columnasSaro}}}"
+      }
+     }
+    },
+    {
+     "name": "aplicar → 202 con el trabajo del worker",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 202\", () => pm.response.to.have.status(202));",
+         "pm.test(\"trabajoId\", () => { const j = pm.response.json(); pm.expect(j.trabajoId).to.be.a(\"string\").and.not.empty; });",
+         "pm.collectionVariables.set(\"trabajoSaro\", pm.response.json().trabajoId);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteSaro}}/aplicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "aplicar dos veces devuelve el mismo trabajo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 202\", () => pm.response.to.have.status(202));",
+         "pm.test(\"mismo trabajo\", () => { const j = pm.response.json(); pm.expect(j.trabajoId).to.eql(pm.collectionVariables.get(\"trabajoSaro\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteSaro}}/aplicar",
+      "body": {
+       "mode": "raw",
+       "raw": "{}"
+      }
+     }
+    },
+    {
+     "name": "seguir el lote hasta aplicado (worker real sobre la BD aislada)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "const fase = pm.response.json().lote.fase; const n = Number(pm.collectionVariables.get(\"sondeos\") || 0);\nif (fase !== \"aplicado\" && n < 40) { pm.collectionVariables.set(\"sondeos\", n + 1); setTimeout(() => {}, 500); postman.setNextRequest(pm.info.requestName); }\nelse { pm.collectionVariables.set(\"sondeos\", 0); pm.test(\"fase aplicado\", () => pm.expect(fase).to.eql(\"aplicado\")); pm.test(\"confirmado por quien aplicó\", () => pm.expect(pm.response.json().lote.confirmadoPor).to.be.a(\"string\").and.not.empty); pm.test(\"sin filas con error\", () => pm.expect(pm.response.json().errores.filas).to.eql(0)); }"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/lotes/{{loteSaro}}"
+     }
+    },
+    {
+     "name": "el perfil importado tiene SARO y DISC y sigue en borrador (la importación nunca publica)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"saro, disc y estado\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"borrador\"); pm.expect(j.perfil.saro.alcance.id).to.eql(pm.collectionVariables.get(\"alcanceId\")); pm.expect(j.perfil.saro.fecha).to.eql(\"2026-09-15\"); pm.expect(j.perfil.disc.fecha).to.eql(pm.variables.get(\"hoy\")); [\"saro_alcance\", \"saro_fecha\", \"disc_fecha\"].forEach((k) => pm.expect(j.perfil.evaluacion.condiciones.find((c) => c.clave === k).cumple).to.eql(true)); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigoBorrador}}"
+     }
+    },
+    {
+     "name": "el publicado de la corrida no cambió",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"intacto\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"publicado\"); pm.expect(j.perfil.saro.fecha).to.eql(\"2026-09-15\"); pm.expect(j.perfil.disc.fecha).to.eql(\"2026-08-01\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}"
+     }
+    },
+    {
+     "name": "la exportación ya trae el borrador con sus validaciones",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"item del borrador\", () => { const j = pm.response.json(); const p = j.find((x) => x.codigo === pm.collectionVariables.get(\"codigoBorrador\")); pm.expect(p.saroAlcance).to.eql(\"Alcance n3-\" + pm.variables.get(\"run\")); pm.expect(p.saroFecha).to.eql(\"2026-09-15\"); pm.expect(p.discFecha).to.eql(pm.variables.get(\"hoy\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/importacion/exportar?formato=json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "6 · Publicado heredado sin SARO (HU-178)",
+   "item": [
+    {
+     "name": "preparar: quitar el SARO por debajo de la app (ayudante)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"una fila\", () => { const j = pm.response.json(); pm.expect(j.filas).to.eql(1); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{ayudante}}/heredado?codigo={{codigo}}"
+     }
+    },
+    {
+     "name": "listado: marca «Incompleto: falta la verificación SARO (alcance y fecha)»",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"marca exacta\", () => { const j = pm.response.json(); const f = j.perfiles.find((p) => p.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(f.estado).to.eql(\"publicado\"); pm.expect(f.incompleto).to.eql(\"Incompleto: falta la verificación SARO (alcance y fecha)\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles"
+     }
+    },
+    {
+     "name": "releer el perfil (versión vigente)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}"
+     }
+    },
+    {
+     "name": "editar sin completarlo → 200 deja_incompleto: no se publica mientras falte",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"motivo deja_incompleto\", () => pm.expect(pm.response.json().motivo).to.eql(\"deja_incompleto\"));",
+         "pm.test(\"pregunta de HU-178\", () => { const j = pm.response.json(); pm.expect(j.yaIncompleto).to.eql(true); pm.expect(j.faltaPara).to.eql(\"la verificación SARO (alcance y fecha)\"); pm.expect(j.pregunta).to.eql(\"Este cambio no se puede publicar mientras falte la verificación SARO (alcance y fecha): ¿descarto el cambio o paso el perfil a borrador?\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"aniosExperiencia\":9}"
+      }
+     }
+    },
+    {
+     "name": "portal: el catálogo lo sirve sin marca Incompleto",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"presente con claves exactas\", () => { const j = pm.response.json(); const p = j.perfiles.find((x) => x.codigo === pm.collectionVariables.get(\"codigo\")); pm.expect(Object.keys(p)).to.have.members([\"codigo\",\"nombre\",\"primerApellido\",\"familia\",\"roles\",\"seniority\",\"aniosExperiencia\",\"tecnologias\",\"sectores\",\"modalidad\",\"pais\",\"disponibilidad\",\"selloPersonal\"]); });",
+         "pm.test(\"sin Incompleto\", () => { const h = pm.response.text(); pm.expect(h).to.not.match(/ncomplet|\"falta/i); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/api/v1/catalogo"
+     }
+    },
+    {
+     "name": "portal: la ficha omite el SARO sin marca y conserva el DISC",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"sin fila SARO ni marca\", () => { const h = pm.response.text(); pm.expect(h).to.not.include(\"Verificación de seguridad SARO\"); pm.expect(h).to.not.match(/ncomplet|Falta la/i); pm.expect(h).to.include(\"Evaluación DISC\"); pm.expect(h).to.include(\"agosto de 2026\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/banco?ficha={{codigo}}"
+     }
+    },
+    {
+     "name": "completar lo que falta: previsualizar",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"impacto, sin pregunta\", () => { const j = pm.response.json(); pm.expect(j.motivo).to.be.undefined; pm.expect(j.impacto.cambios.map((c) => c.campo)).to.include(\"seguridad\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}?previsualizar",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":\"{{alcanceId}}\",\"saroFecha\":\"2026-09-15\"}"
+      }
+     }
+    },
+    {
+     "name": "completar lo que falta: confirmar → publicado completo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.collectionVariables.set(\"version\", pm.response.json().perfil.version);",
+         "pm.test(\"publicable\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"publicado\"); pm.expect(j.perfil.evaluacion.publicable).to.eql(true); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":\"{{alcanceId}}\",\"saroFecha\":\"2026-09-15\"}"
+      }
+     }
+    },
+    {
+     "name": "listado: ya sin marca",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"incompleto null\", () => { const j = pm.response.json(); pm.expect(j.perfiles.find((p) => p.codigo === pm.collectionVariables.get(\"codigo\")).incompleto).to.eql(null); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles"
+     }
+    },
+    {
+     "name": "D1 · pasar a borrador (resolución a_borrador) sale del portal",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"borrador\", () => { const j = pm.response.json(); pm.expect(j.perfil.estado).to.eql(\"borrador\"); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-csrf={{csrf}}; __Host-pp={{adminSesion}}"
+       },
+       {
+        "key": "origin",
+        "value": "{{panel}}"
+       },
+       {
+        "key": "x-ps-csrf",
+        "value": "{{csrf}}"
+       },
+       {
+        "key": "if-match",
+        "value": "\"{{version}}\""
+       },
+       {
+        "key": "content-type",
+        "value": "application/json"
+       }
+      ],
+      "url": "{{panel}}/api/v1/perfiles/{{codigo}}?resolucion=a_borrador",
+      "body": {
+       "mode": "raw",
+       "raw": "{\"saroAlcanceId\":null}"
+      }
+     }
+    },
+    {
+     "name": "portal: el perfil en borrador ya no está en el catálogo",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "exec": [
+         "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+         "pm.test(\"ausente\", () => { const j = pm.response.json(); pm.expect(j.perfiles.map((p) => p.codigo)).to.not.include(pm.collectionVariables.get(\"codigo\")); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "x-ps-edge",
+        "value": "{{borde}}"
+       },
+       {
+        "key": "cookie",
+        "value": "__Host-ps={{portalSesion}}"
+       }
+      ],
+      "url": "{{portal}}/api/v1/catalogo"
+     }
+    }
+   ]
+  }
+ ]
+}

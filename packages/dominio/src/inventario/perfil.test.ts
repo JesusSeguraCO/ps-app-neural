@@ -23,10 +23,12 @@ const completo: DatosParaPublicar = {
   modalidadPrueba: { elegida: true, activa: true },
   familiaConModalidades: true,
   consentimiento: { vigente: true, nominal: true },
+  saro: { alcance: true, fecha: true },
+  disc: { fecha: true },
 };
 
 describe("evaluarPublicacion (HU-125)", () => {
-  it("un perfil completo cumple las 4 condiciones y no le falta nada", () => {
+  it("un perfil completo cumple las 7 condiciones y no le falta nada", () => {
     const r = evaluarPublicacion(completo);
     expect(r.publicable).toBe(true);
     expect(r.condiciones.map((c) => [c.clave, c.cumple])).toEqual([
@@ -34,6 +36,9 @@ describe("evaluarPublicacion (HU-125)", () => {
       ["trayectoria", true],
       ["disponibilidad", true],
       ["modalidad_prueba", true],
+      ["saro_alcance", true],
+      ["saro_fecha", true],
+      ["disc_fecha", true],
     ]);
     expect(r.faltanDatos).toEqual([]);
   });

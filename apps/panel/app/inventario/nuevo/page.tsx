@@ -2,6 +2,7 @@
 // y lleva a su ficha en el panel. Solo la administradora crea perfiles: la observadora vuelve al
 // inventario con el aviso de consulta y el intento queda registrado (HU-124); el servidor además
 // responde 403. Protegida: la guarda va en la primera línea.
+import { leerContacto } from "@ps/infra/postgres/contacto";
 import { redirect } from "next/navigation";
 import { puede } from "@ps/dominio/acceso/permisos";
 import { opcionesEditor } from "@ps/infra/postgres/perfiles-panel";
@@ -23,7 +24,7 @@ export default async function NuevoPerfil() {
     await registrarRechazoDePagina(sesion, "perfil.escribir", "/inventario/nuevo");
     redirect("/inventario?rechazado=nuevo");
   }
-  const opciones = await opcionesEditor(poolDe("panel"));
+  const [opciones, contacto] = await Promise.all([opcionesEditor(poolDe("panel")), leerContacto(poolDe("panel"))]);
   return (
     <MarcoPanel
       sesion={sesion}
@@ -36,6 +37,7 @@ export default async function NuevoPerfil() {
         escribe
         registraConsentimiento
         hoy={hoyEnColombia()}
+        contacto={contacto}
       />
       <AvisoDecision />
     </MarcoPanel>

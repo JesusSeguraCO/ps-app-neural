@@ -1,0 +1,21 @@
+[
+  {"item_id": "HU-177-ac1-crear-alcance-con-texto", "kind": "hu_ac", "ref": "HU-177"},
+  {"item_id": "HU-177-ac2-identico-salvo-mayusculas", "kind": "hu_ac", "ref": "HU-177"},
+  {"item_id": "HU-177-ac3-corregir-texto-en-uso", "kind": "hu_ac", "ref": "HU-177"},
+  {"item_id": "HU-177-ac4-retirar-alcance-en-uso", "kind": "hu_ac", "ref": "HU-177"},
+  {"item_id": "HU-177-ac5-editar-perfil-con-alcance-desactivado", "kind": "hu_ac", "ref": "HU-177"},
+  {"item_id": "HU-176-ac1-registrar-tres-datos", "kind": "hu_ac", "ref": "HU-176"},
+  {"item_id": "HU-176-ac2-fecha-futura", "kind": "hu_ac", "ref": "HU-176"},
+  {"item_id": "HU-176-ac3a-publicar-sin-alcance-saro", "kind": "hu_ac", "ref": "HU-176"},
+  {"item_id": "HU-176-ac3b-publicar-sin-fecha-saro", "kind": "hu_ac", "ref": "HU-176"},
+  {"item_id": "HU-176-ac3c-publicar-sin-fecha-disc", "kind": "hu_ac", "ref": "HU-176"},
+  {"item_id": "HU-176-ac4-corregir-dato-publicado", "kind": "hu_ac", "ref": "HU-176"},
+  {"item_id": "INT-SS1-migracion-0027-catalogo-permisos", "kind": "integration_point", "ref": "EP-003#0027"},
+  {"item_id": "INT-SS1-migracion-0028-vistas-sin-b4", "kind": "integration_point", "ref": "EP-003#0028"},
+  {"item_id": "INT-SS1-guarda-sql-ps-panel", "kind": "integration_point", "ref": "EP-003#guarda-bd"},
+  {"item_id": "INT-SS1-publicacion-masiva", "kind": "integration_point", "ref": "EP-003#publicar-varios"},
+  {"item_id": "INT-SS1-observador-403", "kind": "integration_point", "ref": "EP-003#permisos-panel"},
+  {"item_id": "INT-SS1-fusion-alcance", "kind": "integration_point", "ref": "EP-003#fusion"},
+  {"item_id": "INT-SS1-ficha-portal-ps-portal", "kind": "integration_point", "ref": "EP-003#ficha-portal"},
+  {"item_id": "INT-SS1-journey-smoke", "kind": "integration_point", "ref": "EP-003#journey-ss1"}
+]

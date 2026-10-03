@@ -4,6 +4,7 @@
 // liberación no se escribe nada; la pestaña lista por vencimiento con la cuenta, el inicio y el autor.
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { entradaValidaciones } from "../pruebas/validaciones-entrada";
 import type pg from "pg";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "../pruebas/bd-prueba";
 import type { ClavesAuditoria } from "./auditoria";
@@ -41,6 +42,9 @@ const BOGOTA_MS = -5 * 3_600_000;
 const enDias = (n: number) =>
   new Date(Date.now() + BOGOTA_MS + n * 86_400_000).toISOString().slice(0, 10);
 
+// Alcance SARO y fechas para las entradas completas (lo siembra `sembrarFicticios`).
+let saroDisc: Awaited<ReturnType<typeof entradaValidaciones>>;
+
 describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
   let bd: BdPrueba;
   let panel: pg.Pool;
@@ -63,6 +67,8 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
       modalidadTrabajoId: ids.hibrido,
       disponibilidad: { opcion: "ahora" },
       modalidadPruebaId: ids.prueba,
+    // Validaciones de entrada SARO/DISC (EP-003, D61): publicar las exige.
+    ...saroDisc,
       experiencias: [{ cargo: "Backend senior", desde: 2021, descripcion: "Pagos." }],
     });
     const c = await registrarConsentimiento(panel, claves, autor, p.codigo, {
@@ -122,6 +128,10 @@ describe.skipIf(!HAY_BD)("colocados (HU-137)", () => {
       "Prueba práctica revisada por un arquitecto",
     );
   }, 60_000);
+
+  beforeAll(async () => {
+    saroDisc = await entradaValidaciones(bd.instalacion);
+  });
 
   afterAll(async () => {
     await bd?.cerrar();

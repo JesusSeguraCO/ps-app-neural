@@ -1,0 +1,47 @@
+[
+ {
+  "item_id": "HU-156-ac1-saro-disc-como-contenido",
+  "kind": "hu_ac",
+  "ref": "HU-156"
+ },
+ {
+  "item_id": "HU-156-ac2-heredado-sin-dato-sin-marca",
+  "kind": "hu_ac",
+  "ref": "HU-156"
+ },
+ {
+  "item_id": "HU-156-ac3-disc-sin-sello-personal",
+  "kind": "hu_ac",
+  "ref": "HU-156"
+ },
+ {
+  "item_id": "HU-156-ac4-sin-puntaje-ni-disc-detallado",
+  "kind": "hu_ac",
+  "ref": "HU-156"
+ },
+ {
+  "item_id": "HU-158-ac1-cierre-condiciones-sla-garantia",
+  "kind": "hu_ac",
+  "ref": "HU-158"
+ },
+ {
+  "item_id": "HU-158-ac2-neural-speed-del-servicio",
+  "kind": "hu_ac",
+  "ref": "HU-158"
+ },
+ {
+  "item_id": "HU-158-ac3-codigo-solo-al-pie",
+  "kind": "hu_ac",
+  "ref": "HU-158"
+ },
+ {
+  "item_id": "INT-SS6-vista-previa-misma-ficha",
+  "kind": "integration_point",
+  "ref": "EP-003#vista-previa-ss6"
+ },
+ {
+  "item_id": "INT-SS6-journey-smoke",
+  "kind": "integration_point",
+  "ref": "EP-003#journey-ss6"
+ }
+]

@@ -8,13 +8,16 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
+import { diaCivilDeColombia } from "@ps/dominio/fecha/colombia";
 import { evaluarCoherencia, type Incoherencia } from "@ps/dominio/inventario/coherencia";
+import { estadoDeEntrada } from "@ps/dominio/inventario/entrada";
 import { ESTADO_INICIAL, transicion, type EstadoAlmacenado } from "@ps/dominio/inventario/estados";
 import {
   clienteEnDescripcion,
   evaluarPublicacion,
   fechaDeOpcionDisponibilidad,
   validarConsentimiento,
+  validarFechaVerificacion,
   type EvaluacionPublicacion,
   type OpcionDisponibilidad,
 } from "@ps/dominio/inventario/perfil";
@@ -60,6 +63,11 @@ export interface EntradaPerfil {
   selloPersonal?: string[];
   aporte?: string | null;
   experiencias?: ExperienciaEntrada[];
+  // Validaciones de entrada (HU-176; D61): alcance SARO elegido del catálogo cerrado (activo, o el
+  // desactivado que el perfil ya tenía), fecha SARO y fecha DISC (AAAA-MM-DD, no posteriores a hoy).
+  saroAlcanceId?: string | null;
+  saroFecha?: string | null;
+  discFecha?: string | null;
 }
 
 export interface ExperienciaPerfil {
@@ -129,6 +137,13 @@ export interface PerfilEditor {
   pausa: { motivo: string | null; desde: string | null } | null;
   // Colocación vigente (HU-137): el colocado sigue publicado; su disponibilidad es la liberación.
   colocacion: ColocacionPerfil | null;
+  // Verificación de seguridad bajo SARO y evaluación DISC (HU-176). Un alcance desactivado que el
+  // perfil conserva se lee con `activo: false` (HU-177 edge).
+  saro: {
+    alcance: { id: string; nombre: string; textoCliente: string; activo: boolean } | null;
+    fecha: string | null;
+  };
+  disc: { fecha: string | null };
   evaluacion: EvaluacionPublicacion;
   // Contradicción entre estado y disponibilidad (HU-134, matriz D5): ALTA bloquea publicar.
   coherencia: Incoherencia | null;
@@ -165,6 +180,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
             mo.nombre AS modalidad_nombre, mo.texto_cliente AS modalidad_texto,
             mp.nombre AS prueba_nombre, mp.activo AS prueba_activa, mp.texto_cliente AS prueba_texto,
             mp.familia_id AS prueba_familia, mz.nombre AS motivo_pausa_nombre,
+            sa.nombre AS saro_nombre, sa.texto_cliente AS saro_texto, sa.activo AS saro_activo,
             (SELECT to_jsonb(x) FROM (
                SELECT c.cuenta, c.inicio::text AS inicio, c.liberacion::text AS liberacion, c.fuente,
                       c.registrado_en AS "registradoEn"
@@ -179,6 +195,7 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
        LEFT JOIN inventario.catalogo_modalidades mo ON mo.id = p.modalidad_id
        LEFT JOIN inventario.catalogo_modalidades_prueba mp ON mp.id = p.modalidad_prueba_id
        LEFT JOIN inventario.catalogo_motivos_pausa mz ON mz.id = p.motivo_pausa_id
+       LEFT JOIN inventario.catalogo_alcances_saro sa ON sa.id = p.saro_alcance_id
       WHERE p.codigo = $1`,
     [codigo],
   );
@@ -313,6 +330,18 @@ export async function leerPerfil(bd: Consultor, codigo: string): Promise<PerfilE
         ? { motivo: p.motivo_pausa_nombre ?? null, desde: p.pausado_en?.toISOString() ?? null }
         : null,
     colocacion: p.colocacion ?? null,
+    saro: {
+      alcance: p.saro_alcance_id
+        ? {
+            id: p.saro_alcance_id,
+            nombre: p.saro_nombre,
+            textoCliente: p.saro_texto,
+            activo: p.saro_activo,
+          }
+        : null,
+      fecha: fecha(p.saro_fecha),
+    },
+    disc: { fecha: fecha(p.disc_fecha) },
   };
   return {
     ...perfil,
@@ -352,6 +381,9 @@ function evaluar(p: Omit<PerfilEditor, "evaluacion" | "coherencia">): Evaluacion
     consentimiento: p.consentimiento
       ? { vigente: p.consentimiento.vigente, nominal: p.consentimiento.nominal }
       : null,
+    // Se pregunta si tiene alcance, no si está activo (HU-177 edge).
+    saro: { alcance: Boolean(p.saro.alcance), fecha: Boolean(p.saro.fecha) },
+    disc: { fecha: Boolean(p.disc.fecha) },
   });
 }
 
@@ -368,6 +400,9 @@ export interface FilaInventario {
   actualizadoEn: string;
   consentimiento: boolean;
   faltan: number;
+  // «Incompleto: falta …» de un publicado que la guarda rechazaría hoy (HU-178, D62); null si no.
+  // Dato interno del panel: nunca cruza al portal.
+  incompleto: string | null;
   pausa: PerfilEditor["pausa"];
   coherencia: Incoherencia | null;
 }
@@ -395,6 +430,7 @@ export async function listarInventario(bd: Consultor): Promise<FilaInventario[]>
       consentimiento: Boolean(p.consentimiento?.vigente),
       faltan:
         p.evaluacion.faltanDatos.length + p.evaluacion.condiciones.filter((c) => !c.cumple).length,
+      incompleto: estadoDeEntrada(p.estado, p.evaluacion).texto,
       pausa: p.pausa,
       coherencia: p.coherencia,
     });
@@ -414,6 +450,8 @@ export interface OpcionesEditor {
   ciudades: Array<OpcionValor & { pais: string }>;
   modalidadesTrabajo: Array<OpcionValor & { textoCliente: string }>;
   modalidadesPrueba: Array<OpcionValor & { familiaId: string; textoCliente: string }>;
+  // Solo los alcances SARO activos (HU-177): el desactivado que un perfil conserva lo trae el perfil.
+  alcancesSaro: Array<OpcionValor & { textoCliente: string }>;
 }
 export async function opcionesEditor(bd: Consultor): Promise<OpcionesEditor> {
   const q = async (sql: string) => (await bd.query(sql)).rows;
@@ -444,6 +482,10 @@ export async function opcionesEditor(bd: Consultor): Promise<OpcionesEditor> {
       `SELECT id, nombre, familia_id AS "familiaId", texto_cliente AS "textoCliente"
          FROM inventario.catalogo_modalidades_prueba WHERE activo ORDER BY nombre`,
     ),
+    alcancesSaro: await q(
+      `SELECT id, nombre, texto_cliente AS "textoCliente" FROM inventario.catalogo_alcances_saro
+        WHERE activo ORDER BY nombre`,
+    ),
   };
 }
 
@@ -462,6 +504,7 @@ async function resolver(
   tx: Consultor,
   e: EntradaPerfil,
   familiaActual: string | null,
+  o: { ahora: Date; saroAlcanceActual: string | null },
 ): Promise<Resueltos> {
   const activo = async (tabla: string, id: string, columnas = "id") => {
     const r = await tx.query(
@@ -488,6 +531,20 @@ async function resolver(
     if (clienteEnDescripcion(x.descripcion, texto(x.cliente)))
       throw new RechazoInventario("cliente_en_texto", { cargo: x.cargo, cliente: x.cliente });
   if ((e.selloPersonal?.length ?? 0) > 3) throw new RechazoInventario("sello_maximo_tres");
+  // Alcance SARO del catálogo cerrado (HU-177): asignarlo exige activo; el desactivado que el perfil ya
+  // tiene se conserva al guardar (no se reasigna, se deja).
+  if (e.saroAlcanceId && e.saroAlcanceId !== o.saroAlcanceActual)
+    await activo("catalogo_alcances_saro", e.saroAlcanceId);
+  // Fechas de verificación no posteriores a hoy en Bogotá (HU-176): nada se escribe si una no vale.
+  const hoy = diaCivilDeColombia(o.ahora);
+  for (const campo of ["saroFecha", "discFecha"] as const) {
+    const v = validarFechaVerificacion(e[campo] ?? null, hoy);
+    if (!v.ok)
+      throw new RechazoInventario(
+        v.motivo === "fecha_futura" ? "fecha_verificacion_futura" : "fecha_verificacion_ilegible",
+        { campo, valor: e[campo] },
+      );
+  }
   return { rol, tecnologias, sectores, ciudad };
 }
 
@@ -520,6 +577,9 @@ function foto(p: PerfilEditor | null): Record<string, string | null> {
     idiomas: j(p?.idiomas),
     sello_personal: j(p?.selloPersonal),
     aporte: p?.aporte ?? null,
+    saro_alcance: p?.saro.alcance?.id ?? null,
+    saro_fecha: p?.saro.fecha ?? null,
+    disc_fecha: p?.disc.fecha ?? null,
     experiencias: j(
       p?.experiencias.map(({ cargo, cliente, desde, hasta, descripcion }) => ({
         cargo,
@@ -601,6 +661,9 @@ async function escribirCampos(
   if (e.vinculo !== undefined) fijar("vinculo", e.vinculo);
   if (e.idiomas !== undefined) fijar("idiomas", lista(e.idiomas));
   if (e.selloPersonal !== undefined) fijar("sello_personal", lista(e.selloPersonal));
+  if (e.saroAlcanceId !== undefined) fijar("saro_alcance_id", e.saroAlcanceId);
+  if (e.saroFecha !== undefined) fijar("saro_fecha", e.saroFecha);
+  if (e.discFecha !== undefined) fijar("disc_fecha", e.discFecha);
   if (sets.length)
     await tx.query(`UPDATE inventario.perfiles SET ${sets.join(", ")} WHERE id = $1`, vals);
 
@@ -666,7 +729,7 @@ export async function altaEnTransaccion(
   e: EntradaPerfil,
   o: { origen: "panel" | "importacion"; ahora: Date; codigo?: string },
 ): Promise<{ perfil: PerfilEditor; cambios: CambioAuditado[] }> {
-  const r = await resolver(tx, e, null);
+  const r = await resolver(tx, e, null, { ahora: o.ahora, saroAlcanceActual: null });
   let codigo = o.codigo;
   if (!codigo) {
     // El siguiente código bajo candado: dos altas a la vez no chocan.
@@ -702,7 +765,10 @@ export async function edicionEnTransaccion(
   e: EntradaPerfil,
   o: { origen: "panel" | "importacion"; ahora: Date },
 ): Promise<{ perfil: PerfilEditor; cambios: CambioAuditado[] }> {
-  const r = await resolver(tx, e, antes.familia?.id ?? null);
+  const r = await resolver(tx, e, antes.familia?.id ?? null, {
+    ahora: o.ahora,
+    saroAlcanceActual: antes.saro.alcance?.id ?? null,
+  });
   await escribirCampos(tx, antes.id, e, r, o.ahora, antes);
   const perfil = (await leerPerfil(tx, antes.codigo))!;
   return { perfil, cambios: diferencias(antes, perfil, autor, o.origen) };

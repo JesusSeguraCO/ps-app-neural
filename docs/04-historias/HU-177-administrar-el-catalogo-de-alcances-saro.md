@@ -75,6 +75,8 @@ Cubre la parte de **D61** que define el alcance SARO como **catálogo cerrado ad
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · B.7 · RF-3.2 · RF-8.16 · D60 · D61 · D73 (copy) · validación 2026-10-02 (editar con un alcance desactivado) · nace de D61 (2026-10-02) · reutiliza las reglas de catálogo de HU-089 (EP-006, construida y cerrada) · habilita a HU-176 · relacionada con HU-156 (ficha que muestra el alcance) y HU-138 (historial)
 
 ## INVEST
