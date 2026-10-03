@@ -1,0 +1,1472 @@
+{
+ "origen": "resumen de newman-ep-003.json (export completo de 135 MB fuera del repositorio por el límite de 100 MB de GitHub; se regenera con tests/postman/correr-ep-003.sh)",
+ "stats": {
+  "iterations": {
+   "total": 1,
+   "pending": 0,
+   "failed": 0
+  },
+  "items": {
+   "total": 82,
+   "pending": 0,
+   "failed": 0
+  },
+  "scripts": {
+   "total": 82,
+   "pending": 0,
+   "failed": 0
+  },
+  "prerequests": {
+   "total": 82,
+   "pending": 0,
+   "failed": 0
+  },
+  "requests": {
+   "total": 82,
+   "pending": 0,
+   "failed": 0
+  },
+  "tests": {
+   "total": 82,
+   "pending": 0,
+   "failed": 0
+  },
+  "assertions": {
+   "total": 211,
+   "pending": 0,
+   "failed": 0
+  },
+  "testScripts": {
+   "total": 82,
+   "pending": 0,
+   "failed": 0
+  },
+  "prerequestScripts": {
+   "total": 0,
+   "pending": 0,
+   "failed": 0
+  }
+ },
+ "failures": [],
+ "error": null,
+ "executions": [
+  {
+   "item": "lista el catálogo con el texto de cara al cliente",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "content-type json",
+     "ok": true
+    },
+    {
+     "nombre": "valores[] con textoCliente",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "crear un alcance → 201",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "content-type json",
+     "ok": true
+    },
+    {
+     "nombre": "valor con claves exactas",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "duplicado idéntico salvo mayúsculas → 409 con el existente",
+   "metodo": "POST",
+   "codigo": 409,
+   "aserciones": [
+    {
+     "nombre": "status 409",
+     "ok": true
+    },
+    {
+     "nombre": "motivo duplicado",
+     "ok": true
+    },
+    {
+     "nombre": "señala el existente",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "sin texto de cara al cliente → 422 texto_cliente_requerido",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo texto_cliente_requerido",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "texto en blanco → 422 texto_cliente_requerido",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo texto_cliente_requerido",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "texto de 281 caracteres → 422 texto_cliente_largo con el máximo",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo texto_cliente_largo",
+     "ok": true
+    },
+    {
+     "nombre": "maximo 280",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "texto de exactamente 280 caracteres → 201 (límite)",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "entrada fuera de forma → 400",
+   "metodo": "POST",
+   "codigo": 400,
+   "aserciones": [
+    {
+     "nombre": "status 400",
+     "ok": true
+    },
+    {
+     "nombre": "motivo entrada_invalida",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora crea → 403 sin_permiso",
+   "metodo": "POST",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "fichas que dependen del alcance nuevo: ninguna",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "sin publicados",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "crear sin SARO/DISC, con lenguaje de inventario → 201 + aviso",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "content-type json",
+     "ok": true
+    },
+    {
+     "nombre": "aviso de lenguaje de inventario «disponible para asignación»",
+     "ok": true
+    },
+    {
+     "nombre": "nace en borrador con saro/disc vacíos",
+     "ok": true
+    },
+    {
+     "nombre": "evaluación con las tres condiciones nuevas sin cumplir",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "la expresión con otra escritura («ITEM») también avisa",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "aviso de lenguaje de inventario «ITEM»",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "dentro de otra palabra («itemizada») no avisa",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "avisos vacío",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "fecha SARO futura → 422 con el campo, y el aviso aparte",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo fecha_verificacion_futura",
+     "ok": true
+    },
+    {
+     "nombre": "campo saroFecha",
+     "ok": true
+    },
+    {
+     "nombre": "aviso de lenguaje de inventario «disponible para asignación»",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "fecha DISC futura → 422 campo discFecha",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo fecha_verificacion_futura",
+     "ok": true
+    },
+    {
+     "nombre": "campo discFecha",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "fecha que no existe (31 de febrero) → 422 ilegible",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo fecha_verificacion_ilegible",
+     "ok": true
+    },
+    {
+     "nombre": "campo saroFecha",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "fecha SARO de hoy → 201 (límite)",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "guarda alcance y fechas",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "alcance como texto libre (no uuid) → 400",
+   "metodo": "POST",
+   "codigo": 400,
+   "aserciones": [
+    {
+     "nombre": "status 400",
+     "ok": true
+    },
+    {
+     "nombre": "motivo entrada_invalida",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "alcance que no está en el catálogo → 422 valor_no_disponible",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo valor_no_disponible",
+     "ok": true
+    },
+    {
+     "nombre": "señala la tabla",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora crea → 403",
+   "metodo": "POST",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "registrar el consentimiento",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "publicar sin SARO/DISC → 409 «Falta el alcance de la verificación SARO»",
+   "metodo": "POST",
+   "codigo": 409,
+   "aserciones": [
+    {
+     "nombre": "status 409",
+     "ok": true
+    },
+    {
+     "nombre": "motivo no_publicable",
+     "ok": true
+    },
+    {
+     "nombre": "«Falta el alcance de la verificación SARO» con su campo",
+     "ok": true
+    },
+    {
+     "nombre": "«Falta la fecha de la verificación SARO» con su campo",
+     "ok": true
+    },
+    {
+     "nombre": "«Falta la fecha de la evaluación DISC» con su campo",
+     "ok": true
+    },
+    {
+     "nombre": "consentimiento cumple",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "guardar el alcance SARO",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "alcance con su texto de cara al cliente",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "publicar sin fecha SARO → 409 «Falta la fecha de la verificación SARO»",
+   "metodo": "POST",
+   "codigo": 409,
+   "aserciones": [
+    {
+     "nombre": "status 409",
+     "ok": true
+    },
+    {
+     "nombre": "motivo no_publicable",
+     "ok": true
+    },
+    {
+     "nombre": "saro_alcance cumple",
+     "ok": true
+    },
+    {
+     "nombre": "«Falta la fecha de la verificación SARO» con su campo",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "guardar fecha SARO futura → 422 y nada escrito",
+   "metodo": "PATCH",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo fecha_verificacion_futura",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "guardar la fecha SARO",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "fecha guardada",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "publicar sin fecha DISC → 409 «Falta la fecha de la evaluación DISC»",
+   "metodo": "POST",
+   "codigo": 409,
+   "aserciones": [
+    {
+     "nombre": "status 409",
+     "ok": true
+    },
+    {
+     "nombre": "saro_fecha cumple",
+     "ok": true
+    },
+    {
+     "nombre": "«Falta la fecha de la evaluación DISC» con su campo",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "guardar la fecha DISC",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "evaluación publicable",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "publicar completo → 200 publicado",
+   "metodo": "POST",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "publicado",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "listado: el publicado completo no lleva marca Incompleto",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "incompleto null",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "previsualizar corregir la fecha DISC de un publicado → impacto en meses",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "cambio de cara al cliente",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "confirmar la corrección",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "fecha corregida y sigue publicado",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "D1 · previsualizar quitar el alcance → 200 deja_incompleto con la pregunta",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "motivo deja_incompleto",
+     "ok": true
+    },
+    {
+     "nombre": "pregunta D1",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "D1 · confirmar sin responder la pregunta → 409",
+   "metodo": "PATCH",
+   "codigo": 409,
+   "aserciones": [
+    {
+     "nombre": "status 409",
+     "ok": true
+    },
+    {
+     "nombre": "motivo deja_incompleto",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "D1 · resolución descartar → 200 y nada escrito",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "descartado, alcance intacto",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora edita → 403",
+   "metodo": "PATCH",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "catálogo sin sesión → 401 sin datos",
+   "metodo": "GET",
+   "codigo": 401,
+   "aserciones": [
+    {
+     "nombre": "status 401",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_sesion",
+     "ok": true
+    },
+    {
+     "nombre": "sin perfiles",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "catálogo sin cabecera de borde → 403",
+   "metodo": "GET",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "sin perfiles",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "catálogo con sesión → 200, claves exactas, sin B.4 ni «Incompleto»",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "content-type json",
+     "ok": true
+    },
+    {
+     "nombre": "cache-control private, no-store",
+     "ok": true
+    },
+    {
+     "nombre": "nosniff",
+     "ok": true
+    },
+    {
+     "nombre": "solo {perfiles}",
+     "ok": true
+    },
+    {
+     "nombre": "cada perfil con las 13 claves exactas",
+     "ok": true
+    },
+    {
+     "nombre": "selloPersonal ≤ 3 sin vacíos",
+     "ok": true
+    },
+    {
+     "nombre": "ni Incompleto ni falta en el cuerpo",
+     "ok": true
+    },
+    {
+     "nombre": "sin claves B.4 ni internas",
+     "ok": true
+    },
+    {
+     "nombre": "el perfil publicado de la corrida llega",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "ficha del perfil: texto del alcance y mes; nunca id ni nombre interno",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "html",
+     "ok": true
+    },
+    {
+     "nombre": "cache-control private, no-store",
+     "ok": true
+    },
+    {
+     "nombre": "Verificación de seguridad SARO con el texto de cara al cliente y el mes",
+     "ok": true
+    },
+    {
+     "nombre": "Evaluación DISC con el mes",
+     "ok": true
+    },
+    {
+     "nombre": "ni el id ni el nombre interno del alcance",
+     "ok": true
+    },
+    {
+     "nombre": "ni fecha exacta de las verificaciones",
+     "ok": true
+    },
+    {
+     "nombre": "sin claves B.4 ni internas ni «Incompleto»",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "previsualizar el texto nuevo → impacto con las fichas publicadas",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "impacto exacto",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "previsualizar no escribió: el catálogo conserva el texto",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "texto anterior",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "previsualizar en un catálogo sin texto de cara al cliente → 409 no_aplica",
+   "metodo": "PATCH",
+   "codigo": 409,
+   "aserciones": [
+    {
+     "nombre": "status 409",
+     "ok": true
+    },
+    {
+     "nombre": "motivo no_aplica",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "previsualizar un alcance inexistente → 404",
+   "metodo": "PATCH",
+   "codigo": 404,
+   "aserciones": [
+    {
+     "nombre": "status 404",
+     "ok": true
+    },
+    {
+     "nombre": "motivo no_existe",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "confirmar con texto de 281 → 422 texto_cliente_largo",
+   "metodo": "PATCH",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo texto_cliente_largo",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora corrige → 403",
+   "metodo": "PATCH",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "confirmar el texto nuevo → 200",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "valor",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "la ficha del portal ya muestra el texto nuevo",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "texto nuevo",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora retira → 403",
+   "metodo": "POST",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "retirar el alcance en uso → 200 con sus dependientes",
+   "metodo": "POST",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "inactivo y en uso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "retirado: la ficha publicada sigue mostrando su texto",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "texto del alcance retirado",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "retirado: no se puede asignar a un perfil nuevo → 422",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo valor_no_disponible",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "reactivar el alcance",
+   "metodo": "POST",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "activo",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "plantilla CSV con las columnas SARO/DISC",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "text/csv adjunto",
+     "ok": true
+    },
+    {
+     "nombre": "cache-control private, no-store",
+     "ok": true
+    },
+    {
+     "nombre": "columnas SARO/DISC tras la modalidad de prueba",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "plantilla JSON: la fila de alta trae saroAlcance, saroFecha y discFecha",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "fila de alta",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "plantilla en otro formato → 400",
+   "metodo": "GET",
+   "codigo": 400,
+   "aserciones": [
+    {
+     "nombre": "status 400",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora pide la plantilla → 403",
+   "metodo": "GET",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "exportar CSV: el perfil sale con alcance (nombre interno) y fechas",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "text/csv adjunto",
+     "ok": true
+    },
+    {
+     "nombre": "columnas SARO/DISC tras la modalidad de prueba",
+     "ok": true
+    },
+    {
+     "nombre": "fila del perfil",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "exportar JSON: saroAlcance, saroFecha y discFecha del perfil",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "item del perfil",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora exporta → 403",
+   "metodo": "GET",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "emparejar: las tres columnas SARO/DISC van a su campo",
+   "metodo": "POST",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "content-type json",
+     "ok": true
+    },
+    {
+     "nombre": "formato tsv y 1 fila",
+     "ok": true
+    },
+    {
+     "nombre": "destinos",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "vista previa con errores: [vaciar] el SARO de un publicado, fecha futura y alcance fuera del catálogo",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "content-type json",
+     "ok": true
+    },
+    {
+     "nombre": "lote calculado",
+     "ok": true
+    },
+    {
+     "nombre": "publicado: [vaciar] el alcance → con error, nada que aplicar",
+     "ok": true
+    },
+    {
+     "nombre": "borrador: fecha SARO futura y alcance desconocido → con error en su campo",
+     "ok": true
+    },
+    {
+     "nombre": "conteos: 2 con error, nada aplicable",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "aplicar un lote sin filas aplicables → 422 nada_que_aplicar",
+   "metodo": "POST",
+   "codigo": 422,
+   "aserciones": [
+    {
+     "nombre": "status 422",
+     "ok": true
+    },
+    {
+     "nombre": "motivo nada_que_aplicar",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "observadora calcula un lote → 403",
+   "metodo": "POST",
+   "codigo": 403,
+   "aserciones": [
+    {
+     "nombre": "status 403",
+     "ok": true
+    },
+    {
+     "nombre": "motivo sin_permiso",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "vista previa válida: el borrador recibe alcance y fechas (DD/MM/AAAA se lee)",
+   "metodo": "POST",
+   "codigo": 201,
+   "aserciones": [
+    {
+     "nombre": "status 201",
+     "ok": true
+    },
+    {
+     "nombre": "borrador → actualizado con los tres cambios",
+     "ok": true
+    },
+    {
+     "nombre": "publicado con lo mismo → sin cambios",
+     "ok": true
+    },
+    {
+     "nombre": "la vista previa no expone el id del alcance",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "aplicar → 202 con el trabajo del worker",
+   "metodo": "POST",
+   "codigo": 202,
+   "aserciones": [
+    {
+     "nombre": "status 202",
+     "ok": true
+    },
+    {
+     "nombre": "trabajoId",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "aplicar dos veces devuelve el mismo trabajo",
+   "metodo": "POST",
+   "codigo": 202,
+   "aserciones": [
+    {
+     "nombre": "status 202",
+     "ok": true
+    },
+    {
+     "nombre": "mismo trabajo",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "seguir el lote hasta aplicado (worker real sobre la BD aislada)",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "fase aplicado",
+     "ok": true
+    },
+    {
+     "nombre": "confirmado por quien aplicó",
+     "ok": true
+    },
+    {
+     "nombre": "sin filas con error",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "el perfil importado tiene SARO y DISC y sigue en borrador (la importación nunca publica)",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "saro, disc y estado",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "el publicado de la corrida no cambió",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "intacto",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "la exportación ya trae el borrador con sus validaciones",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "item del borrador",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "preparar: quitar el SARO por debajo de la app (ayudante)",
+   "metodo": "POST",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "una fila",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "listado: marca «Incompleto: falta la verificación SARO (alcance y fecha)»",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "marca exacta",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "releer el perfil (versión vigente)",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "editar sin completarlo → 200 deja_incompleto: no se publica mientras falte",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "motivo deja_incompleto",
+     "ok": true
+    },
+    {
+     "nombre": "pregunta de HU-178",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "portal: el catálogo lo sirve sin marca Incompleto",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "presente con claves exactas",
+     "ok": true
+    },
+    {
+     "nombre": "sin Incompleto",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "portal: la ficha omite el SARO sin marca y conserva el DISC",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "sin fila SARO ni marca",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "completar lo que falta: previsualizar",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "impacto, sin pregunta",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "completar lo que falta: confirmar → publicado completo",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "publicable",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "listado: ya sin marca",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "incompleto null",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "D1 · pasar a borrador (resolución a_borrador) sale del portal",
+   "metodo": "PATCH",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "borrador",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "item": "portal: el perfil en borrador ya no está en el catálogo",
+   "metodo": "GET",
+   "codigo": 200,
+   "aserciones": [
+    {
+     "nombre": "status 200",
+     "ok": true
+    },
+    {
+     "nombre": "ausente",
+     "ok": true
+    }
+   ]
+  }
+ ]
+}

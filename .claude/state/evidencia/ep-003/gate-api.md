@@ -73,3 +73,9 @@ quedan (archivados) perfiles=4 no archivados=0 alcances=0 usuarios activos=0 cla
 ```
 82 peticiones, 211 aserciones, 0 fallidas. La limitación anterior («importación por lotes no está en Newman») queda
 cerrada. Log: `newman-ep-003-head.log`; export JSON: `newman-ep-003.json`. Veredicto: PASS.
+
+## Nota (2026-10-03): export JSON fuera del repositorio
+`newman-ep-003.json` (135 MB) supera el límite de 100 MB de GitHub y se quitó del historial de la rama
+(`mapa-sha-filtrado.md`). Se versiona `newman-ep-003.resumen.json` con las stats (82 peticiones, 211 aserciones,
+0 fallos), los fallos (ninguno) y las aserciones por petición; el export completo se regenera con
+`tests/postman/correr-ep-003.sh` y queda en local sin seguimiento.
