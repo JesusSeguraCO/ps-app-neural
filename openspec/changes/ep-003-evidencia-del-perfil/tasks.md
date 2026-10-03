@@ -78,6 +78,6 @@
 - [x] 8.1 Recorrido integrado de punta a punta: alcance → captura → bloqueo → incompleto → importación → tarjeta → ficha → encabezado; verificar en verde con la base real
 - [x] 8.2 Tests de contrato (Newman) de los endpoints nuevos o ampliados del panel y del portal (fase api) y gate `data` (`data-consistency-checker`) sobre la guarda, el conteo y las plantillas de evidencia
 - [x] 8.3 Fidelidad final de todas las pantallas del slice con desviaciones aprobadas en `design.md`
-- [ ] 8.4 Verificación adversarial de cableado (`wiring-adversarial-verifier`, contexto virgen) y cierre de `wiring_verified`, sin exigir HU-079 ni HU-175 (fuera de alcance por el DoR y D101)
+- [x] 8.4 Verificación adversarial de cableado (`wiring-adversarial-verifier`, contexto virgen) y cierre de `wiring_verified`, sin exigir HU-079 ni HU-175 (fuera de alcance por el DoR y D101) — pasada 1 (`wiring-pasada-1.md`) y pasada 2 incremental (`wiring-pasada-2.md`, cierre en `wiring-pasada-2-cierre.md`), ambas PASA; gate cerrado en el runtime
 - [ ] 8.5 DoD con `dor-dod-gatekeeper`; referencias `> OpenSpec change: ep-003-evidencia-del-perfil` en EP-003 y sus 15 HU; verificar con `change-epic-coherence`
 - [ ] 8.6 PR a `main` y archivo del change con los specs sincronizados en `openspec/specs/`; verificar `openspec validate --specs` en verde tras archivar

@@ -87,6 +87,8 @@ Cubre **RF-8.15** (importación masiva: RF-8.15.1, RF-8.15.5 vista previa, RF-8.
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.18 · RF-8.15 (8.15.1, 8.15.5, 8.15.7, 8.15.9) · B.6 · B.7 · D60 · D61 · D62 · D81 (sponsor, 2026-10-02) · validación 2026-10-02 · spec `docs/10-specs/importacion-masiva.md` · toca la importación, la plantilla y la exportación de **EP-006, que sigue cerrada** · depende de HU-176 (los tres campos y su guarda), HU-177 (catálogo de alcances), HU-086 y HU-141 (vista previa y confirmación) y HU-088 (plantilla y exportación) · relacionada con HU-178 (la marca «incompleto» se retira) y HU-159 (encabezado del estándar, D80)
 
 ## INVEST

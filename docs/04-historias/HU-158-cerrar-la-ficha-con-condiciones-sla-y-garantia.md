@@ -67,6 +67,8 @@ Cubre el cierre de **RF-3.2** («cierra con condiciones operativas, SLA y la gar
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.5 · RF-3.8 · RF-6.2 · RF-6.5 · RF-14.5 · B.6 · B.8.5 · D-18 · D64 · D73 · depende de HU-154 (estructura de la ficha) · relacionada con HU-157 (contacto de Trycore), HU-159 (el estándar declarado arriba), HU-129 (vista previa con el mismo componente) y HU-082 (necesidad presencial, EP-009)
 
 ## INVEST

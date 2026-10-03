@@ -128,6 +128,8 @@ Sector e idioma salen de los ejemplos del PRD; los demás son propuesta del mode
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-13.10 · RF-16.1 · RF-13.12.3 · RF-3.4 · D73 (copy) · D96 (tipo sin plantilla) · validación 2026-10-02 (plantilla por tipo) · depende de HU-153 (tarjeta) · la integración con el motor RF-13.8 y HU-118 (EP-009) es de HU-174 (EP-009 por D87) · relacionada con HU-121 (EP-002), HU-076 (EP-010) y HU-120 (la ficha donde vive «Frente a tu búsqueda»)
 
 ## INVEST

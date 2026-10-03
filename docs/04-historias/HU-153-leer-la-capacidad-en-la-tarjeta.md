@@ -57,6 +57,8 @@ Cubre **RF-3.1** (D-1 revertida, D-25: sector opcional y con varios valores), **
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-3.1 · RF-3.5 · RF-3.13 · RF-13.5.5 · B.1 · B.2 · D-1 · D-25 · D64 · D73 · reutiliza la banda de EP-001/EP-006 · habilita HU-081 y HU-119 (bloques que viven en esta tarjeta) · relacionada con HU-082 (ciudad, EP-009)
 
 ## INVEST

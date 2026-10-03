@@ -109,6 +109,8 @@ prd_version_alineada: 4.13
 
 ## EP-003 — Evidencia del perfil
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 **Resumen.** Tarjeta y ficha que comunican una capacidad verificada —no una persona— con las cuatro dimensiones Neural-Grid, la trayectoria en prosa humana, condiciones operativas y SLA.
 
 **Justificación.** Es donde se juega la conversión y, sobre todo, donde se juega la marca. Aquí se materializa la decisión D-1 revertida: nombre y primer apellido, con la capacidad como descriptor inmediato y el código relegado al pie. Si esta épica se ejecuta mal, el portal se siente un catálogo de personas y el daño no se repara con copy.

@@ -82,6 +82,8 @@ Cubre la parte de captura de **B.7** (campos del perfil: validación de segurida
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** (sub-slice inicial, D60) · PRD v4.17 · RF-8 · RF-8.4 · RF-8.10 · B.1 · B.6 · B.7 · RF-3.2 · RF-3.4 · D60 · D61 · D63 · validación 2026-10-02 (forma G/W/T) · nace de la partición de HU-156 (2026-10-02) · toca el editor y la guarda de publicación del panel de **EP-006, que sigue cerrada** · depende de HU-125 y HU-126 (editor del perfil), HU-128 (guarda de publicación) y HU-177 (catálogo de alcances SARO) · alimenta a HU-156 · el trato de los perfiles ya publicados es de HU-178 · la importación masiva de estos datos es de HU-191 (D81) · relacionada con HU-129 (vista previa) y HU-138 (historial)
 
 ## INVEST

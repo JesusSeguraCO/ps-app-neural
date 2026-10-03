@@ -74,6 +74,8 @@ Cubre la parte de seguridad y DISC de **RF-3.2** («el contenido concreto de las
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-3.2 · RF-3.4 · RF-3.8 · B.1 · B.4 · B.6 · B.7 · D60 · D61 · D62 · D63 · depende de HU-154 (bloque verificado) y HU-176 (captura de SARO y DISC, sub-slice inicial de EP-003) · relacionada con HU-177 (catálogo de alcances), HU-178 (publicados incompletos en el panel), HU-081 y HU-155
 
 ## INVEST

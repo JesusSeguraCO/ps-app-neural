@@ -69,6 +69,8 @@ Tomado de Juicebox (evidencia A). Reemplaza la navegación a pantalla completa, 
 
 ## Trazabilidad
 
+> OpenSpec change: ep-003-evidencia-del-perfil
+
 Épica madre: **EP-003** · PRD v4.17 · RF-13.11 · parte de recorrer construida en EP-006 por D47 · sumar y quitar desde la ficha pasó a HU-175 (2026-10-02; quitar por D73) · relacionada con HU-119 (bloque «Frente a tu búsqueda» de la ficha) y HU-121 (abrir la ficha desde la tabla, EP-002)
 
 ## INVEST
