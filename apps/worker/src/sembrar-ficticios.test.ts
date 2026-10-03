@@ -1,17 +1,35 @@
 // Siembra de perfiles ficticios (EP-001 · tarea 3.2): solo en local, CI y staging; con
 // APP_ENV=produccion se niega antes de tocar la BD. Contra PostgreSQL real con `ps_worker`.
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type pg from "pg";
 import { verificarCadena } from "@ps/infra/postgres/auditoria";
 import { HAY_BD, crearBdPrueba, type BdPrueba } from "@ps/infra/pruebas/bd-prueba";
 import {
   HEREDADOS_INCOMPLETOS,
   PERFILES_FICTICIOS,
+  fechaEnDias,
   sembrarFicticios,
   sembrarHeredadosIncompletos,
 } from "./sembrar-ficticios";
 
 const CLAVES = { hmac: "h".repeat(48), kek: "k".repeat(48) };
+
+// La disponibilidad sembrada cuenta en días civiles de Bogotá, como el portal: a las 19:30 de Colombia
+// (00:30 UTC del día siguiente) «disponible hoy» sigue siendo hoy y no mañana.
+describe("fecha de disponibilidad sembrada (día civil de Bogotá)", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("de noche en Colombia, hoy es el día de Bogotá aunque UTC ya vaya un día adelante", () => {
+    vi.useFakeTimers({ now: new Date("2026-10-03T00:30:00Z") });
+    expect(fechaEnDias(0)).toBe("2026-10-02");
+    expect(fechaEnDias(7)).toBe("2026-10-09");
+  });
+
+  it("de día los dos relojes coinciden", () => {
+    vi.useFakeTimers({ now: new Date("2026-10-02T15:00:00Z") });
+    expect(fechaEnDias(0)).toBe("2026-10-02");
+  });
+});
 
 describe("sembrarFicticios se niega en producción", () => {
   it("con APP_ENV=produccion lanza sin usar la BD", async () => {

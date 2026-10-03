@@ -5,6 +5,7 @@
 import { randomBytes } from "node:crypto";
 import type pg from "pg";
 import { envolverClave } from "@ps/dominio/auditoria/cadena";
+import { diaCivilDeColombia } from "@ps/dominio/fecha/colombia";
 import { conAuditoria, type ClavesAuditoria } from "@ps/infra/postgres/auditoria";
 import { MODALIDADES_FICTICIAS } from "./sembrar-lexico";
 
@@ -323,8 +324,10 @@ export const ALCANCE_SARO_FICTICIO = {
 };
 export const FECHAS_VALIDACION_FICTICIAS = { saro: "2026-03-15", disc: "2026-04-10" };
 
-function fechaEnDias(dias: number): string {
-  return new Date(Date.now() + dias * 86_400_000).toISOString().slice(0, 10);
+// El día civil de Bogotá (el «hoy» del portal), no el de UTC: entre las 19:00 y la medianoche de
+// Colombia UTC ya va un día adelante y «disponible hoy» se sembraba como «mañana».
+export function fechaEnDias(dias: number): string {
+  return diaCivilDeColombia(new Date(Date.now() + dias * 86_400_000));
 }
 
 export async function sembrarFicticios(
