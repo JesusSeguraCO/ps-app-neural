@@ -15,7 +15,11 @@ import {
   type BloqueOpcional,
   type Necesidad,
 } from "@ps/contratos/ficha";
-import { faltaDe, type EvaluacionPublicacion } from "@ps/dominio/inventario/perfil";
+import {
+  faltaDe,
+  type Condicion,
+  type EvaluacionPublicacion,
+} from "@ps/dominio/inventario/perfil";
 import { FichaPerfil, type MarcasFicha } from "@ps/ui/FichaPerfil";
 import { datosFichaDePerfil, type PerfilParaFicha } from "./ficha";
 import { ANCLA_CONDICION, esValidacionDeEntrada } from "./anclas";
@@ -53,12 +57,39 @@ const OPCIONAL: Record<BloqueOpcional, string> = {
 const CAMPO_DE_BLOQUE: Record<BloqueFicha, string> = {
   cabecera: "pe-rol",
   persona: "pe-nombre",
-  disponibilidad: "pe-disp",
+  disponibilidad: ANCLA_CONDICION.disponibilidad,
   modalidad: "pe-modalidad",
-  validacion: "pe-prueba",
-  trayectoria: "pe-trayectoria",
+  validacion: ANCLA_CONDICION.modalidad_prueba,
+  trayectoria: ANCLA_CONDICION.trayectoria,
   stack: "pe-tec",
 };
+
+// La salida del aviso de la vista previa: si solo faltan validaciones de entrada (HU-176), «Ir al
+// campo» de la primera; si falta un bloque que la ficha exige, completarlo; si no, el consentimiento.
+export type AccionAviso =
+  | { tipo: "campo"; campo: string; etiqueta: string }
+  | { tipo: "consentimiento" };
+
+export function accionDelAviso(a: {
+  primero?: BloqueFicha;
+  sinConsentimiento: boolean;
+  entradas: readonly Pick<Condicion, "clave">[];
+}): AccionAviso {
+  const e = a.entradas[0];
+  if (!a.primero && !a.sinConsentimiento && e)
+    return { tipo: "campo", campo: ANCLA_CONDICION[e.clave], etiqueta: "Ir al campo" };
+  if (a.primero)
+    return {
+      tipo: "campo",
+      campo: CAMPO_DE_BLOQUE[a.primero],
+      etiqueta: `Completar ${NOMBRE_BLOQUE[a.primero].toLowerCase()}`,
+    };
+  return { tipo: "consentimiento" };
+}
+
+// Las validaciones de entrada que faltan, cada una con su «Falta …» exacto (HU-176).
+export const entradasQueFaltan = (evaluacion: EvaluacionPublicacion) =>
+  evaluacion.condiciones.filter((c) => !c.cumple && esValidacionDeEntrada(c.clave));
 
 export function VistaPrevia(p: {
   perfil: PerfilParaFicha;
@@ -115,11 +146,10 @@ export function VistaPrevia(p: {
     (c) => c.clave === "consentimiento" && !c.cumple,
   );
   // Validaciones de entrada que faltan (HU-176): «Falta …» con su campo del editor.
-  const entradas = p.evaluacion.condiciones.filter(
-    (c) => !c.cumple && esValidacionDeEntrada(c.clave),
-  );
+  const entradas = entradasQueFaltan(p.evaluacion);
   const vacios = opcionalesVacios(ficha);
   const primero = incompletos[0];
+  const accion = accionDelAviso({ primero, sinConsentimiento, entradas });
 
   return (
     <>
@@ -189,21 +219,13 @@ export function VistaPrevia(p: {
                 : "No se puede publicar todavía."}
             {entradas.map((c) => ` ${faltaDe(c)}.`).join("")}
           </p>
-          {!primero && !sinConsentimiento && entradas[0] ? (
+          {accion.tipo === "campo" ? (
             <button
               type="button"
               className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
-              onClick={() => p.alVolver(ANCLA_CONDICION[entradas[0]!.clave])}
+              onClick={() => p.alVolver(accion.campo)}
             >
-              Ir al campo
-            </button>
-          ) : primero ? (
-            <button
-              type="button"
-              className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
-              onClick={() => p.alVolver(CAMPO_DE_BLOQUE[primero])}
-            >
-              {`Completar ${NOMBRE_BLOQUE[primero].toLowerCase()}`}
+              {accion.etiqueta}
             </button>
           ) : (
             p.alRegistrarConsentimiento && (
@@ -318,7 +340,7 @@ export function VistaPrevia(p: {
                       {p.alRegistrarConsentimiento && (
                         <a
                           className="pp-enlace"
-                          href="#consentimiento"
+                          href={`#${ANCLA_CONDICION.consentimiento}`}
                           onClick={(e) => {
                             e.preventDefault();
                             p.alRegistrarConsentimiento!();

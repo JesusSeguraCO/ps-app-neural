@@ -21,7 +21,7 @@ interface ResultadoBloque {
   filas: Array<{ codigo: string; nombre: string; ok: boolean; motivo?: string; estado?: string }>;
 }
 
-interface Fallo {
+export interface Fallo {
   codigo: string;
   nombre: string;
   motivos: string[];
@@ -228,7 +228,7 @@ export function BarraSeleccion() {
 }
 
 // Motivo y salida de un perfil que no se publicó.
-function motivo(f: Fallo): { nota: string; accion: string; href: string } {
+export function motivo(f: Fallo): { nota: string; accion: string; href: string } {
   const editor = `/inventario/${f.codigo}`;
   if (f.motivos.includes("no_existe"))
     return {
@@ -258,7 +258,7 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
   const prueba = f.condiciones?.find((c) => c.clave === "modalidad_prueba");
   if (f.motivos.includes("consentimiento")) {
     notas.push("Falta el consentimiento nominal registrado.");
-    accion = { accion: "Registrar consentimiento", href: `${editor}#consentimiento` };
+    accion = { accion: "Registrar consentimiento", href: `${editor}#${ANCLA_CONDICION.consentimiento}` };
   }
   if (prueba?.detalle === "familia_sin_modalidades") {
     notas.push(
@@ -274,7 +274,7 @@ function motivo(f: Fallo): { nota: string; accion: string; href: string } {
             f.familia?.modalidades ? ` (${f.familia.nombre} tiene ${f.familia.modalidades})` : ""
           }.`,
     );
-    if (notas.length === 1) accion = { accion: "Elegir modalidad", href: `${editor}#pe-prueba` };
+    if (notas.length === 1) accion = { accion: "Elegir modalidad", href: `${editor}#${ANCLA_CONDICION.modalidad_prueba}` };
   }
   // Validaciones de entrada (HU-176): cada una con su «Falta …» exacto y el salto a su campo.
   const entradas = (f.condiciones ?? [])

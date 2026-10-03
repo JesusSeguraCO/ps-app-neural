@@ -67,8 +67,8 @@ const ERROR_CAMPO: Record<CampoObligatorio, { id: string; texto: string }> = {
   anios_experiencia: { id: "pe-anios", texto: "Faltan los años de experiencia." },
   ciudad: { id: "pe-ciudad", texto: "Falta la ciudad." },
   modalidad_trabajo: { id: "pe-modalidad", texto: "Falta la modalidad de trabajo." },
-  disponibilidad: { id: "pe-disp", texto: "Falta la banda de disponibilidad." },
-  trayectoria: { id: "pe-trayectoria", texto: "Falta al menos una experiencia." },
+  disponibilidad: { id: ANCLA_CONDICION.disponibilidad, texto: "Falta la banda de disponibilidad." },
+  trayectoria: { id: ANCLA_CONDICION.trayectoria, texto: "Falta al menos una experiencia." },
 };
 
 
@@ -440,7 +440,7 @@ export function EditorPerfil(p: {
           ? texto
           : `${texto} Elige primero el rol: la modalidad sale del catálogo de su familia.`,
       );
-      const el = document.getElementById(rol ? "pe-prueba" : "pe-rol");
+      const el = document.getElementById(rol ? ANCLA_CONDICION.modalidad_prueba : "pe-rol");
       el?.scrollIntoView({ block: "center" });
       el?.focus();
     };
@@ -1728,7 +1728,7 @@ export function EditorPerfil(p: {
             <ul className="pe-faltas">
               {sinConsentimiento && (
                 <li className="pe-falta">
-                  <a href={perfil ? "#pe-registrar-consent" : "#consentimiento"}>
+                  <a href={perfil ? "#pe-registrar-consent" : `#${ANCLA_CONDICION.consentimiento}`}>
                     Registrar el consentimiento nominal
                   </a>
                 </li>
@@ -1737,7 +1737,9 @@ export function EditorPerfil(p: {
                 <li className="pe-falta">
                   <a
                     href={
-                      sinPrueba.detalle === "familia_sin_modalidades" ? "#pe-rol" : "#pe-prueba"
+                      sinPrueba.detalle === "familia_sin_modalidades"
+                        ? "#pe-rol"
+                        : `#${ANCLA_CONDICION.modalidad_prueba}`
                     }
                   >
                     {sinPrueba.detalle === "familia_sin_modalidades"
@@ -2035,7 +2037,10 @@ function AvisoBloqueo(p: {
         </>
       );
     accion = (
-      <a className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion" href="#pe-prueba">
+      <a
+        className="pp-btn pp-btn--contorno pp-btn--sm pp-aviso__accion"
+        href={`#${ANCLA_CONDICION.modalidad_prueba}`}
+      >
         Elegir modalidad
       </a>
     );

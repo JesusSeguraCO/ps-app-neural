@@ -43,5 +43,11 @@ describe("anclas de las condiciones de publicar (HU-176, HU-178)", () => {
     }
     for (const f of ["./VistaPrevia.tsx", "./PublicacionMasiva.tsx"])
       expect(fuente(f), f).not.toMatch(/"pe-saro-alcance"|"pe-saro-fecha"|"pe-disc-fecha"/);
+    // Tampoco el resto de condiciones: ningún salto (href, foco, «Falta …») escrito a mano a su campo;
+    // los `id=` y `htmlFor=` del propio campo en el editor sí son literales.
+    const saltoAMano =
+      /(href=|getElementById\(|id: )[^\n]*"#?(pe-prueba|pe-disp|pe-trayectoria|consentimiento)"|#(pe-prueba|consentimiento)`/;
+    for (const f of ["./EditorPerfil.tsx", "./VistaPrevia.tsx", "./PublicacionMasiva.tsx"])
+      expect(fuente(f), f).not.toMatch(saltoAMano);
   });
 });
